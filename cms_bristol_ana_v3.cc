@@ -1,6 +1,9 @@
 //#====================================================#
 //# Last update:
 //
+// 2 Oct 09: a) small bug fix in fillHistoNjet_DataAndMC(): "_Wjet" -> "__Wjet" (line 6557).
+//           b) replace els_cIso with the recommended els_dr04EcalRecHitSumEt + els_dr04HcalTowerSumEt.
+//
 // 30 Sep 09: Preparation for OctoberX. Adapt code to run on "soup", ie mixture of signal and bg events.
 //            Added "wenu" and "zee" cross sections. Fill histos as "Wjets", "Zjets" respectively.
 //            Added SetJetAlgo switch to use different jet collection (for SC5 only so far).
@@ -1719,7 +1722,9 @@ bool ana::EventLoop(){
    chain->SetBranchStatus("els_dPhiIn",1);
    chain->SetBranchStatus("els_eOverPIn",1);
    chain->SetBranchStatus("els_tIso",1);
-   chain->SetBranchStatus("els_cIso",1);
+   //   chain->SetBranchStatus("els_cIso",1);
+   chain->SetBranchStatus("els_dr04EcalRecHitSumEt",1);
+   chain->SetBranchStatus("els_dr04HcalTowerSumEt",1);
    chain->SetBranchStatus("els_d0dum",1);
    chain->SetBranchStatus("els_vx",1);
    chain->SetBranchStatus("els_vy",1);
@@ -3047,14 +3052,14 @@ bool ana::EventLoop(){
        //float RelTrkIso = els_tIso->at(i)/els_et->at(i);
 	 
        //Compute Combined RelIso for electrons
-       float CombRelIso = (els_cIso->at(i) + els_tIso->at(i))/els_et->at(i);// 10-9-09
-       float CombRelIso2 = els_et->at(i)/(els_et->at(i) + els_cIso->at(i) + els_tIso->at(i) ); //norm
+       float CombRelIso = (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i) + els_tIso->at(i))/els_et->at(i);// 10-9-09
+       float CombRelIso2 = els_et->at(i)/(els_et->at(i) + els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i) + els_tIso->at(i) ); //norm
 
        /*
        if(CombRelIso<0) {
 	 cout << "electron no " << i << " has negative RelIso (" << CombRelIso << ")\n";
 	 cout << " et  = " << els_et->at(i) << endl;
-	 cout << " cIso  = " << els_cIso->at(i) << endl;
+	 cout << " cIso  = " << els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i) << endl;
 	 cout << " tIso  = " << els_tIso->at(i) << endl;
 	 cout << " RelCalIso = " << RelCalIso << endl;
 	 cout << " RelTrkIso = " << RelTrkIso << endl << endl;
@@ -3174,7 +3179,7 @@ bool ana::EventLoop(){
 	   if (fabs(els_eta->at(i)) < 1.442) { //Barrel
 
 	     //Find out what isolation looks like (out of the box)
-	     h_cIso_barrel->Fill(els_cIso->at(i), this_weight); //<-- add weight
+	     h_cIso_barrel->Fill(els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i), this_weight); //<-- add weight
 	     h_tIso_barrel->Fill(els_tIso->at(i), this_weight);
 	     
 	     //Plot electron ID quantities	 
@@ -3221,7 +3226,7 @@ bool ana::EventLoop(){
 	   else if (fabs(els_eta->at(i)) > 1.560 && fabs(els_eta->at(i)) < 2.5) { //Endcap
 
 	     //Find out what isolation looks like (out of the box)
-	     h_cIso_endcap->Fill(els_cIso->at(i), this_weight);
+	     h_cIso_endcap->Fill(els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i), this_weight);
 	     h_tIso_endcap->Fill(els_tIso->at(i), this_weight);
 	       
 	     //Plot electron ID quantities	 
@@ -3836,7 +3841,7 @@ bool ana::EventLoop(){
 				!isMuon,(this_met > METCUT),!isZ,!isConversion};
 	 
 	 float d0_corrected = fabs(compute_d0("electron",i)); //abs
-	 float RelCalIso = els_cIso->at(i)/els_et->at(i);
+	 float RelCalIso = (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i))/els_et->at(i);
 	 float RelTrkIso = els_tIso->at(i)/els_et->at(i);
 	 
 	 if( (RelCalIso+RelTrkIso) > 0.1 ) { eleBoolcuts[3] = 0; }
@@ -4076,7 +4081,7 @@ bool ana::EventLoop(){
        // To identify the index of the most isolated GoodEle in the Nels collection
        /*
        for(unsigned int i=0; i<Nels; ++i){
-	 float tempComIso = (els_tIso->at(i) + els_cIso->at(i))/els_et->at(i);
+	 float tempComIso = (els_tIso->at(i) + els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i))/els_et->at(i);
 	 if( (tempComIso - CombRelIso)/CombRelIso  < 1e-5 ){ ii_GoodEle_mostIso = i; break;}
 	 //changed 280909 to make relative comparison due to diff of 1.01e-6 for one event.e-5 = 0.001% 
        }
@@ -4090,7 +4095,7 @@ bool ana::EventLoop(){
 	 printf(" smallest isolation: %12.10f\n" ,CombRelIso);
 	 cout << " Isolation of all electrons: " << endl;	 
 	 for(unsigned int j=0; j<Nels; ++j){
-	   float tmpIso = (els_tIso->at(j) + els_cIso->at(j))/els_et->at(j);
+	   float tmpIso = (els_tIso->at(j) + els_dr04EcalRecHitSumEt->at(j) + els_dr04HcalTowerSumEt->at(j))/els_et->at(j);
 	   printf("ele %d : %12.10f\n",j, tmpIso);
 	 }
        }
@@ -4387,7 +4392,7 @@ bool ana::EventLoop(){
 	 // fill for all electrons        
 	 for(unsigned int ie=0; ie<Nels; ie++){
 
-	   double tmpRelIso = (els_tIso->at(ie)+els_cIso->at(ie)) / els_et->at(ie);
+	   double tmpRelIso = (els_tIso->at(ie) + els_dr04EcalRecHitSumEt->at(ie) + els_dr04HcalTowerSumEt->at(ie)) / els_et->at(ie);
 
 
 	   // barrel or endcap?
@@ -4535,10 +4540,12 @@ bool ana::EventLoop(){
 	   */
 
 	   // cout << "** CombRelIso = " << CombRelIso << endl;
-	   if(CombRelIso<0) {
-	     cout << "** attention: negative CombRelIso (" << CombRelIso << ")" << endl;
-	     if(CombRelIso < -0.01) cout << " (Less than -0.01!) **";
-	     cout << endl;
+	   if(debug() || ev<10000){
+	     if(CombRelIso<0) {
+	       cout << "** attention: negative CombRelIso (" << CombRelIso << ")";
+	       if(CombRelIso < -0.01) cout << " (Less than -0.01!) **";
+	       cout << endl;
+	     }
 	   }
 	 
 	   if(debug()) cout << "-> Filling Reliso NES histograms, L2" << endl;
@@ -6552,11 +6559,11 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float value, const do
 	if(h>0) h->Fill(value, w);
 
       } else if(isWjets) { //wj
-	h = (TH1F*)histf->Get( Form("%s_Wjet", hname) );
+	h = (TH1F*)histf->Get( Form("%s__Wjet", hname) );
 	if(h>0) h->Fill(value, w);
 
       } else if(isZjets) { //zj
-	h = (TH1F*)histf->Get( Form("%s_%s__Zjet", hname ) );
+	h = (TH1F*)histf->Get( Form("%s__Zjet", hname ) );
 	if(h>0) h->Fill(value, w);
     
       } else if(isQCD) {
@@ -6585,7 +6592,7 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float value, const do
 	h = (TH1F*)histf->Get( Form("%s__singleTop", hname) );
 	if(h>0) h->Fill(value, w);
 	if(isTW) {
-	  h = (TH1F*)histf->Get( Form("%s_%s__tW", hname) );
+	  h = (TH1F*)histf->Get( Form("%s__tW", hname) );
 	  if(h>0) h->Fill(value, w);
 	}else if(isTchan){
 	  h = (TH1F*)histf->Get( Form("%s__tchan", hname) );
