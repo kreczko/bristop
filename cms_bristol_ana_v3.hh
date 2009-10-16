@@ -517,6 +517,8 @@ public:
    vector<float>   *tcmets_ex;
    vector<float>   *tcmets_ey;
    vector<float>   *tcmets_sumEt;
+   vector<float>   *tcmets_et_muonCor;
+   vector<float>   *tcmets_phi_muonCor;
    UInt_t          Ntracks;
    vector<float>   *tracks_chi2;
    vector<float>   *tracks_ndof;
@@ -1060,6 +1062,8 @@ public:
    TBranch        *b_tcmets_ex;   //!
    TBranch        *b_tcmets_ey;   //!
    TBranch        *b_tcmets_sumEt;   //!
+   TBranch        *b_tcmets_et_muonCor;   //!
+   TBranch        *b_tcmets_phi_muonCor;   //!
    TBranch        *b_Ntracks;   //!
    TBranch        *b_tracks_chi2;   //!
    TBranch        *b_tracks_ndof;   //!
@@ -1144,6 +1148,10 @@ public:
   void    SetMETcut(float);
   void    SetHTcut(float);
 
+  void    SetAESHTcut(float);
+  void    SetAESMETcut(float);
+  void    SetAESZveto_TwoEle(bool);
+
   void    StudySystematics(const string, const string);
 
 //   float calcMinimumDeltaRJJ(const jet* const TightJet[], const int nTightJet);
@@ -1155,8 +1163,10 @@ public:
   void ConversionStudySwitch(bool val) {m_ConversionStudies = val;};
   void PlotRelisoNES(bool val) { m_plotRelisoNES = val; };
   void SetDebug(bool val) { m_debug = val; };
-
   void SetJetAlgo(string val) { m_jetAlgo = val; };
+  void SetMETAlgo(string val) { m_metAlgo = val; };
+  void SetLHCEnergyInTeV(double val) { m_LHCEnergyInTeV = val; };
+  void SetRunOnSD(bool val) { m_run_on_SD = val; };
 
 private:
 
@@ -1247,6 +1257,9 @@ private:
   bool   m_debug;
   bool   m_ConversionStudies;
   string m_jetAlgo;
+  string m_metAlgo;
+  double m_LHCEnergyInTeV;
+  bool   m_run_on_SD;
 
   // cuts
   float ELE_ETCUT;
@@ -1255,6 +1268,9 @@ private:
   float METCUT;
   float HTCUT;
   int nCutSetInScript;
+  float AES_HT_cut;
+  float AES_MET_cut;
+  bool  useSimpleZvetoAES;
 
   float intlumi;   // integrated luminosity assumed
   bool useNewReliso;
@@ -1352,7 +1368,10 @@ private:
   bool doPlotRelisoNES() const { return m_plotRelisoNES; };
   bool debug() const { return m_debug; };
   string jetAlgo() const { return m_jetAlgo; };
-
+  string metAlgo() const { return m_metAlgo; };
+  double LHCEnergyInTeV() const { return m_LHCEnergyInTeV; };
+  bool RunOnSD() const { return m_run_on_SD; };
+  
   void PrintConversionTable();
   int ConversionCounter;
   int ConversionArray[20][2][5];
