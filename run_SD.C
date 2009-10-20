@@ -19,8 +19,8 @@
 	myana->SetDebug(0);
         myana->ConversionStudySwitch(0);
 
-	//myana->SetJetAlgo("SC5"); //Default or SC5
-	//myana->SetMETAlgo("tcmet"); //Default or tcmet
+	//myana->SetJetAlgo("Default"); //Default, SC5, or pfjet
+	//myana->SetMETAlgo("Default"); //Default, calomet_mujes, tcmet, or pfmet
 
 
         // Set cuts
@@ -32,7 +32,7 @@
 
 	// SD
         myana->SetRunOnSD( 1 ); //0 or 1
-        myana->SetAESMETcut(  20.0 );
+        myana->SetAESMETcut(  15.0 );
         myana->SetAESHTcut(  200.0 );
         myana->SetAESZveto_TwoEle( 1 ); //0 or 1
 
@@ -56,7 +56,7 @@
 	myana->SetLimit(-10);
 	myana->EventLoop();
 	
-	//	myana->EstimateQCD();
+	//myana->EstimateQCD();
        	
         watch.Stop();
         watch.Print();
