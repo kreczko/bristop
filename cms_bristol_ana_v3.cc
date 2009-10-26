@@ -1,6 +1,8 @@
 //#====================================================#
 //# Last update:
 //
+// 25 Oct 09: Adapted to run correctly for 7TeV SD.
+//
 // 20 Oct 09: Added ability to use caloMET mu+JES corrected.
 //
 // 16 Oct 09: Added ability to use PFjet and PFmet.
@@ -560,17 +562,32 @@ void ana::SetEventWeightMap(){ //only if run on MC
    
    //OctX for SD
    if( RunOnSD() ){
-     // rescale weight by filter efficiency (N_SD/N_ori), and prescale factor
-     //                                              N_SD / N_ori    * pres
-     weightMap["ttbar"] =  weightMap["ttbar"] *      3270 /   529750 * 100.;
-     weightMap["wenu"]  =  weightMap["wenu"]  *     87514 /  2142960 * 20;
-     weightMap["zee"]   =  weightMap["zee"]   *     15092 /  2682355 * 100;
-     weightMap["enri1"] =  weightMap["enri1"] *   6242601 / 33638282 ;
-     weightMap["enri2"] =  weightMap["enri2"] *  10792435 / 38360886 ;
-     weightMap["enri3"] =  weightMap["enri3"] *   2538711 /  5729547 ;
-     weightMap["bce1"]  =  weightMap["bce1"]  *    393019 /  2383833 ;
-     weightMap["bce2"]  =  weightMap["bce2"]  *    769808 /  2035108 ;
-     weightMap["bce3"]  =  weightMap["bce3"]  *    641522 /  1038080 ;
+     if( LHCEnergyInTeV()==10 ){
+       // rescale weight by filter efficiency (N_SD/N_ori), and prescale factor
+       //                                              N_SD / N_ori    * pres
+       weightMap["ttbar"] =  weightMap["ttbar"] *      3270 /   529750 * 100.;
+       weightMap["wenu"]  =  weightMap["wenu"]  *     87514 /  2142960 * 20;
+       weightMap["zee"]   =  weightMap["zee"]   *     15092 /  2682355 * 100;
+       weightMap["enri1"] =  weightMap["enri1"] *   6242601 / 33638282 ;
+       weightMap["enri2"] =  weightMap["enri2"] *  10792435 / 38360886 ;
+       weightMap["enri3"] =  weightMap["enri3"] *   2538711 /  5729547 ;
+       weightMap["bce1"]  =  weightMap["bce1"]  *    393019 /  2383833 ;
+       weightMap["bce2"]  =  weightMap["bce2"]  *    769808 /  2035108 ;
+       weightMap["bce3"]  =  weightMap["bce3"]  *    641522 /  1038080 ;
+     }
+     else if (LHCEnergyInTeV()==7 ){
+       // rescale weight by filter efficiency (N_SD/N_ori), and prescale factor
+       //                                              N_SD / N_ori    * pres
+       weightMap["ttbar"] =  weightMap["ttbar"] *     3841 /   626610 * 100.;
+       weightMap["wenu"]  =  weightMap["wenu"]  *    85505 /  2078361 * 20;
+       weightMap["zee"]   =  weightMap["zee"]   *    14683 /  2538855 * 100;
+       weightMap["enri1"] =  weightMap["enri1"] *  6169999 / 33505929 ;
+       weightMap["enri2"] =  weightMap["enri2"] *  9054696 / 32168675 ;
+       weightMap["enri3"] =  weightMap["enri3"] *  2463429 /  5551386 ;
+       weightMap["bce1"]  =  weightMap["bce1"]  *   432380 /  2752942 ;
+       weightMap["bce2"]  =  weightMap["bce2"]  *   840100 /  2261916 ; 
+       weightMap["bce3"]  =  weightMap["bce3"]  *   682720 /  1097829 ;
+     }
    }
    // for skim
    if(run_on_octX_skim){
