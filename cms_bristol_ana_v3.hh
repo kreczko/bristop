@@ -201,6 +201,41 @@ public:
    vector<float>   *jets_n90;
    vector<float>   *jets_area;
    vector<float>   *jets_mass;
+
+  UInt_t          NjetsKT4;
+  vector<float>   *jetsKT4_energy;
+  vector<float>   *jetsKT4_et;
+  vector<float>   *jetsKT4_eta;
+  vector<float>   *jetsKT4_phi;
+  vector<float>   *jetsKT4_pt;
+  vector<float>   *jetsKT4_px;
+  vector<float>   *jetsKT4_py;
+  vector<float>   *jetsKT4_pz;
+  vector<float>   *jetsKT4_status;
+  vector<float>   *jetsKT4_theta;
+  vector<float>   *jetsKT4_btag_TC_highPur;
+  vector<float>   *jetsKT4_btag_TC_highEff;
+  vector<float>   *jetsKT4_btag_jetProb;
+  vector<float>   *jetsKT4_btag_jetBProb;
+  vector<float>   *jetsKT4_btag_softEle;
+  vector<float>   *jetsKT4_btag_softMuon;
+  vector<float>   *jetsKT4_btag_softMuonNoIP;
+  vector<float>   *jetsKT4_btag_secVertex;
+  vector<float>   *jetsKT4_chgEmE;
+  vector<float>   *jetsKT4_chgHadE;
+  vector<float>   *jetsKT4_chgMuE;
+  vector<float>   *jetsKT4_chg_Mult;
+  vector<float>   *jetsKT4_neutralEmE;
+  vector<float>   *jetsKT4_neutralHadE;
+  vector<float>   *jetsKT4_neutral_Mult;
+  vector<float>   *jetsKT4_mu_Mult;
+  vector<float>   *jetsKT4_emf;
+  vector<float>   *jetsKT4_ehf;
+  vector<float>   *jetsKT4_n60;
+  vector<float>   *jetsKT4_n90;
+  vector<float>   *jetsKT4_area;
+  vector<float>   *jetsKT4_mass;
+
    UInt_t          NjetsSC5;
    vector<float>   *jetsSC5_energy;
    vector<float>   *jetsSC5_et;
@@ -313,6 +348,24 @@ public:
    vector<float>   *mets_phi_muonCor;
    vector<float>   *mets_et_JESCor;
    vector<float>   *mets_phi_JESCor;
+   UInt_t          NmetsAK5L2;
+   vector<float>   *metsAK5L2_et;
+   vector<float>   *metsAK5L2_phi;
+   vector<float>   *metsAK5L2_ex;
+   vector<float>   *metsAK5L2_ey;
+   vector<float>   *metsAK5L2_sumEt;
+   vector<float>   *metsAK5L2_et_muonCor;
+   vector<float>   *metsAK5L2_phi_muonCor;
+   vector<float>   *metsAK5L2_et_JESCor;
+   vector<float>   *metsAK5L2_phi_JESCor;
+   UInt_t          NmetsKT4;
+   vector<float>   *metsKT4_et;
+   vector<float>   *metsKT4_phi;
+   vector<float>   *metsKT4_ex;
+   vector<float>   *metsKT4_ey;
+   vector<float>   *metsKT4_sumEt;
+   vector<float>   *metsKT4_et_JESCor;
+   vector<float>   *metsKT4_phi_JESCor;
    UInt_t          NmetsSC5;
    vector<float>   *metsSC5_et;
    vector<float>   *metsSC5_phi;
@@ -552,6 +605,7 @@ public:
    vector<float>   *tracks_highPurity;
    UInt_t          run;
    UInt_t          event;
+   UInt_t          lumiBlock;
 
    // List of branches
    TBranch        *b_NPFJets;   //!
@@ -741,7 +795,41 @@ public:
    TBranch        *b_jets_n90;   //!
    TBranch        *b_jets_area;   //!
    TBranch        *b_jets_mass;   //!
-  /* ///3099
+
+   TBranch        *b_jetsKT4_energy;   //!
+   TBranch        *b_jetsKT4_et;   //!
+   TBranch        *b_jetsKT4_eta;   //!
+   TBranch        *b_jetsKT4_phi;   //!
+   TBranch        *b_jetsKT4_pt;   //!
+   TBranch        *b_jetsKT4_px;   //!
+   TBranch        *b_jetsKT4_py;   //!
+   TBranch        *b_jetsKT4_pz;   //!
+   TBranch        *b_jetsKT4_status;   //!
+   TBranch        *b_jetsKT4_theta;   //!
+   TBranch        *b_jetsKT4_btag_TC_highPur;   //!
+   TBranch        *b_jetsKT4_btag_TC_highEff;   //!
+   TBranch        *b_jetsKT4_btag_jetProb;   //!
+   TBranch        *b_jetsKT4_btag_jetBProb;   //!
+   TBranch        *b_jetsKT4_btag_softEle;   //!
+   TBranch        *b_jetsKT4_btag_softMuon;   //!
+   TBranch        *b_jetsKT4_btag_softMuonNoIP;   //!
+   TBranch        *b_jetsKT4_btag_secVertex;   //!
+   TBranch        *b_jetsKT4_chgEmE;   //!
+   TBranch        *b_jetsKT4_chgHadE;   //!
+   TBranch        *b_jetsKT4_chgMuE;   //!
+   TBranch        *b_jetsKT4_chg_Mult;   //!
+   TBranch        *b_jetsKT4_neutralEmE;   //!
+   TBranch        *b_jetsKT4_neutralHadE;   //!
+   TBranch        *b_jetsKT4_neutral_Mult;   //!
+   TBranch        *b_jetsKT4_mu_Mult;   //!
+   TBranch        *b_jetsKT4_emf;   //!
+   TBranch        *b_jetsKT4_ehf;   //!
+   TBranch        *b_jetsKT4_n60;   //!
+   TBranch        *b_jetsKT4_n90;   //!
+   TBranch        *b_jetsKT4_area;   //!
+   TBranch        *b_jetsKT4_mass;   //!
+
+   ///3099
    TBranch        *b_NjetsSC5;   //!
    TBranch        *b_jetsSC5_energy;   //!
    TBranch        *b_jetsSC5_et;   //!
@@ -775,7 +863,7 @@ public:
    TBranch        *b_jetsSC5_n90;   //!
    TBranch        *b_jetsSC5_area;   //!
    TBranch        *b_jetsSC5_mass;   //!
-  */
+ 
    TBranch        *b_Nmc_doc;   //!
    TBranch        *b_mc_doc_id;   //!
    TBranch        *b_mc_doc_pt;   //!
@@ -855,7 +943,26 @@ public:
    TBranch        *b_mets_phi_muonCor;   //!
    TBranch        *b_mets_et_JESCor;   //!
    TBranch        *b_mets_phi_JESCor;   //!
-  /* //3099
+   //New 41109
+   TBranch        *b_NmetsAK5L2;   //!
+   TBranch        *b_metsAK5L2_et;   //!
+   TBranch        *b_metsAK5L2_phi;   //!
+   TBranch        *b_metsAK5L2_ex;   //!
+   TBranch        *b_metsAK5L2_ey;   //!
+   TBranch        *b_metsAK5L2_sumEt;   //!
+   TBranch        *b_metsAK5L2_et_muonCor;   //!
+   TBranch        *b_metsAK5L2_phi_muonCor;   //!
+   TBranch        *b_metsAK5L2_et_JESCor;   //!
+   TBranch        *b_metsAK5L2_phi_JESCor;   //!
+   //3099
+   TBranch        *b_NmetsKT4;   //!
+   TBranch        *b_metsKT4_et;   //!
+   TBranch        *b_metsKT4_phi;   //!
+   TBranch        *b_metsKT4_ex;   //!
+   TBranch        *b_metsKT4_ey;   //!
+   TBranch        *b_metsKT4_sumEt;   //!
+   TBranch        *b_metsKT4_et_JESCor;   //!
+   TBranch        *b_metsKT4_phi_JESCor;   //!
    TBranch        *b_NmetsSC5;   //!
    TBranch        *b_metsSC5_et;   //!
    TBranch        *b_metsSC5_phi;   //!
@@ -865,7 +972,7 @@ public:
    TBranch        *b_metsSC5_sumEt;   //!
    TBranch        *b_metsSC5_et_JESCor;   //!
    TBranch        *b_metsSC5_phi_JESCor;   //!
-  */
+  
    TBranch        *b_Nmus;   //!
    TBranch        *b_mus_energy;   //!
    TBranch        *b_mus_et;   //!
@@ -1097,6 +1204,7 @@ public:
    TBranch        *b_tracks_highPurity;   //!
    TBranch        *b_run;   //!
    TBranch        *b_event;   //!
+   TBranch        *b_lumiBlock;   //!
 
 
   //-----------------------
@@ -1356,6 +1464,8 @@ private:
 
   bool  is_mc_present(const int) const;
   float compute_d0(const string, const int) const;
+  float compute_mtw(const TVector2&, const TVector2&) const;
+
   void  PrintGenParticles() const;
 
 

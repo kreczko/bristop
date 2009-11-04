@@ -1,7 +1,16 @@
 //#====================================================#
 //# Last update:
 //
-// 25 Oct 09: Adapted to run correctly for 7TeV SD.
+// 4 Nov 09: add met option "calomet_muL2" for L2RelJet + muon MET.
+//           add new variables after all but met cuts: ele_eta, ele_et, j0_eta, j0_et
+//           DR(e,j), DPhi(e,j).
+// 3 Nov 09: expand MET histo for diff njet bins.
+// 2 Nov 09: correct for histo-filling.
+// 30 Oct 09: Added mtw plot (transverse mass of W->lnu) & Delta Phi(e,met).
+// 29 Oct 09: minor update.
+// 28 Oct 09: Added luminosity block info.
+//
+// 24 Oct 09: Adapted to run correctly for 7TeV SD.
 //
 // 20 Oct 09: Added ability to use caloMET mu+JES corrected.
 //
@@ -189,6 +198,8 @@ const bool run_on_octX_skim = 0; // <---- set temporary swith here
 //const bool useSimpleZvetoAES = 0;
 //const bool useSimpleZvetoAES_reject_two_RL_electrons = 0;
 
+bool use_old_Z_veto = false; //TEMPORARY
+
 
 void ana::SetInputFile(const char* fname) {
   
@@ -213,7 +224,7 @@ void ana::SetInputFile(const char* fname) {
 void ana::SetOutputFirstName(const string name) {
 
   //cout << "start of SetOutputFirstName" << endl;
-  cout << "Total number in chain: "<< chain->GetEntries() << " events\n";
+  cout << "Total number in chain: "<< chain->GetEntries() << " events\n\n";
 
   string secondname = "noname";
 
@@ -424,8 +435,10 @@ void ana::SetAESZveto_TwoEle(bool val){
 
 void ana::PrintCuts() const {
   
-  cout << "***********************************************" << endl;
-  cout << "\n  LHC c.o.m Energy :  "<< LHCEnergyInTeV() << " TeV\n" << endl;
+  if(IsData()) cout << " This run uses   REAL   Data\n\n";
+  else         cout << " This run uses   MONTE CARLO   Data\n\n";
+  cout << "***********************************************\n\n";
+  cout << "  LHC c.o.m Energy :  "<< LHCEnergyInTeV() << " TeV\n" << endl;
   cout << "***********************************************" << endl;
   if(nCutSetInScript<4) {
     cout << "\n  WARNING! WARNING! YOU HAVE NOT SET ALL 4 CUTS!!!" << endl;
@@ -448,8 +461,9 @@ void ana::PrintCuts() const {
   cout << "\n Jet collection:  " << jetAlgo() << endl;
   cout << "\n MET collection:  " << metAlgo() << endl;
   cout << "\n***********************************************" << endl;
+  cout << "\n\n use_old_Z_veto : "<<  use_old_Z_veto << endl << endl;
 
-}
+}//PrintCuts
 
 long ana::GetNinit(const string mc) const {
 
@@ -532,12 +546,10 @@ void ana::DefineCrossSection(){
     cross_section["bce2"]  = 0.0593e9 * 0.00234;  //xs 0.0593 mb
     cross_section["bce3"]  =  0.906e6 * 0.0104 ;  //xs 0.906e-3 mb
     
-    //cross_section["vqq"]   =           ?. ;   //xs 290 pb (W->lep)(LO)
     cross_section["tW"]    =            11. ;   //xs  29 pb (NLO) inclusive t,W decay
-    //cross_section["tchan"] =  130.0 * 0.324 ;   //xs 130 pb (NLO) * BR(t->blnu)
-    //cross_section["schan"] =    5.0 * 0.324 ;   //xs   5 pb (NLO) * BR(t->blnu)   
+
   } else {
-    if(!IsData()) cout << "WARNING: Cross section values are not undefined!" << endl;
+    if(!IsData()) cout << "WARNING: Cross section values are not defined!" << endl;
   }
 
 }
@@ -601,36 +613,6 @@ double ana::GetWeight(string mc) const {
   return weightMap.find(mc)->second;
 }
 
-/*
-void ana::SetEventWeightMap(){ //only if run on MC
-
-   // Declare the event weights
-
-   weightMap["data"]  = 1.0;
-
-   weightMap["ttbar"] =          414. *  intlumi / GetNinit("ttbar"); //xs 414 (NLO+NLL at 10TeV)   241.7 pb (LO)
-   weightMap["ttjet"] =          414. *  intlumi / GetNinit("ttjet");
-   weightMap["wjet"]  =   (40e3*1.14) *  intlumi / GetNinit("wjet");  //xs 40 nb  (K-factor=1.14)
-   weightMap["zjet"]  =  (3.7e3*1.14) *  intlumi / GetNinit("zjet");  //xs 3.7 nb (K-factor=1.14)
-
-   weightMap["enri1"] = 0.40e9 * 0.008 * intlumi / GetNinit("enri1");  //xs 0.4 mb (*filter efficiency=0.008)
-   weightMap["enri2"] = 0.10e9 * 0.047 * intlumi / GetNinit("enri2");  //xs 0.1 mb
-   weightMap["enri3"] =  1.9e6 * 0.15  * intlumi / GetNinit("enri3");  //xs 1.9e-3 mb
-
-   weightMap["bce1"]  = 0.40e9 * 4.8e-4 * intlumi / GetNinit("bce1");  //xs 0.4 mb
-   weightMap["bce2"]  = 0.10e9 * 2.4e-3 * intlumi / GetNinit("bce2");  //xs 0.1 mb
-   weightMap["bce3"]  =  1.9e6 * 0.012  * intlumi / GetNinit("bce3");  //xs 1.9e-3 mb
-
-   weightMap["vqq"]   =  290. * intlumi / GetNinit("vqq");     //xs 290 pb (W->lep)(LO)
-   weightMap["tW"]    =   29. * intlumi / GetNinit("tW");      //xs  29 pb (NLO) inclusive t,W decay
-   weightMap["tchan"] =  130.0 * 0.324 * intlumi / GetNinit("tchan");   //xs 130 pb (NLO) * BR(t->blnu)
-   weightMap["schan"] =    5.0 * 0.324 * intlumi / GetNinit("schan");   //xs   5 pb (NLO) * BR(t->blnu)
-
-   //weightMap["undefined"] = 1.0;
-}
-*/
-
-bool use_old_Z_veto = 0; //TEMPORARY
 
 ana::ana(){
 
@@ -647,7 +629,7 @@ ana::ana(){
    cout << "\n*        C M S     B R I S T O L     T O P     A N A L Y S I S        *";
    cout << "\n*                                                                     *";
    cout << "\n***********************************************************************";
-   cout << "\n\n use_old_Z_veto : "<<  use_old_Z_veto << endl;
+   //   cout << "\n\n use_old_Z_veto : "<<  use_old_Z_veto << endl;
    cout << endl << endl; 
 
    //mytool = 0;
@@ -857,6 +839,40 @@ ana::ana(){
    jets_n90 = 0;
    jets_area = 0;
    jets_mass = 0;
+
+   jetsKT4_energy = 0;
+   jetsKT4_et = 0;
+   jetsKT4_eta = 0;
+   jetsKT4_phi = 0;
+   jetsKT4_pt = 0;
+   jetsKT4_px = 0;
+   jetsKT4_py = 0;
+   jetsKT4_pz = 0;
+   jetsKT4_status = 0;
+   jetsKT4_theta = 0;
+   jetsKT4_btag_TC_highPur = 0;
+   jetsKT4_btag_TC_highEff = 0;
+   jetsKT4_btag_jetProb = 0;
+   jetsKT4_btag_jetBProb = 0;
+   jetsKT4_btag_softEle = 0;
+   jetsKT4_btag_softMuon = 0;
+   jetsKT4_btag_softMuonNoIP = 0;
+   jetsKT4_btag_secVertex = 0;
+   jetsKT4_chgEmE = 0;
+   jetsKT4_chgHadE = 0;
+   jetsKT4_chgMuE = 0;
+   jetsKT4_chg_Mult = 0;
+   jetsKT4_neutralEmE = 0;
+   jetsKT4_neutralHadE = 0;
+   jetsKT4_neutral_Mult = 0;
+   jetsKT4_mu_Mult = 0;
+   jetsKT4_emf = 0;
+   jetsKT4_ehf = 0;
+   jetsKT4_n60 = 0;
+   jetsKT4_n90 = 0;
+   jetsKT4_area = 0;
+   jetsKT4_mass = 0;
+
    jetsSC5_energy = 0;
    jetsSC5_et = 0;
    jetsSC5_eta = 0;
@@ -964,6 +980,22 @@ ana::ana(){
    mets_phi_muonCor = 0;
    mets_et_JESCor = 0;
    mets_phi_JESCor = 0;
+   metsAK5L2_et = 0;
+   metsAK5L2_phi = 0;
+   metsAK5L2_ex = 0;
+   metsAK5L2_ey = 0;
+   metsAK5L2_sumEt = 0;
+   metsAK5L2_et_muonCor = 0;
+   metsAK5L2_phi_muonCor = 0;
+   metsAK5L2_et_JESCor = 0;
+   metsAK5L2_phi_JESCor = 0;
+   metsKT4_et = 0;
+   metsKT4_phi = 0;
+   metsKT4_ex = 0;
+   metsKT4_ey = 0;
+   metsKT4_sumEt = 0;
+   metsKT4_et_JESCor = 0;
+   metsKT4_phi_JESCor = 0;
    metsSC5_et = 0;
    metsSC5_phi = 0;
    metsSC5_ex = 0;
@@ -1499,7 +1531,25 @@ ana::ana(){
    chain->SetBranchAddress("mets_phi_muonCor", &mets_phi_muonCor, &b_mets_phi_muonCor);
    chain->SetBranchAddress("mets_et_JESCor", &mets_et_JESCor, &b_mets_et_JESCor);
    chain->SetBranchAddress("mets_phi_JESCor", &mets_phi_JESCor, &b_mets_phi_JESCor);
-   /* ///3099
+   // New 41109 4 Nov
+   chain->SetBranchAddress("NmetsAK5L2", &NmetsAK5L2, &b_NmetsAK5L2);
+   chain->SetBranchAddress("metsAK5L2_et", &metsAK5L2_et, &b_metsAK5L2_et);
+   chain->SetBranchAddress("metsAK5L2_phi", &metsAK5L2_phi, &b_metsAK5L2_phi);
+   chain->SetBranchAddress("metsAK5L2_ex", &metsAK5L2_ex, &b_metsAK5L2_ex);
+   chain->SetBranchAddress("metsAK5L2_ey", &metsAK5L2_ey, &b_metsAK5L2_ey);
+   chain->SetBranchAddress("metsAK5L2_sumEt", &metsAK5L2_sumEt, &b_metsAK5L2_sumEt);
+   chain->SetBranchAddress("metsAK5L2_et_muonCor", &metsAK5L2_et_muonCor, &b_metsAK5L2_et_muonCor);
+   chain->SetBranchAddress("metsAK5L2_phi_muonCor", &metsAK5L2_phi_muonCor, &b_metsAK5L2_phi_muonCor);
+   chain->SetBranchAddress("metsAK5L2_et_JESCor", &metsAK5L2_et_JESCor, &b_metsAK5L2_et_JESCor);
+   chain->SetBranchAddress("metsAK5L2_phi_JESCor", &metsAK5L2_phi_JESCor, &b_metsAK5L2_phi_JESCor);
+   chain->SetBranchAddress("NmetsKT4", &NmetsKT4, &b_NmetsKT4);
+   chain->SetBranchAddress("metsKT4_et", &metsKT4_et, &b_metsKT4_et);
+   chain->SetBranchAddress("metsKT4_phi", &metsKT4_phi, &b_metsKT4_phi);
+   chain->SetBranchAddress("metsKT4_ex", &metsKT4_ex, &b_metsKT4_ex);
+   chain->SetBranchAddress("metsKT4_ey", &metsKT4_ey, &b_metsKT4_ey);
+   chain->SetBranchAddress("metsKT4_sumEt", &metsKT4_sumEt, &b_metsKT4_sumEt);
+   chain->SetBranchAddress("metsKT4_et_JESCor", &metsKT4_et_JESCor, &b_metsKT4_et_JESCor);
+   chain->SetBranchAddress("metsKT4_phi_JESCor", &metsKT4_phi_JESCor, &b_metsKT4_phi_JESCor);
    chain->SetBranchAddress("NmetsSC5", &NmetsSC5, &b_NmetsSC5);
    chain->SetBranchAddress("metsSC5_et", &metsSC5_et, &b_metsSC5_et);
    chain->SetBranchAddress("metsSC5_phi", &metsSC5_phi, &b_metsSC5_phi);
@@ -1507,8 +1557,7 @@ ana::ana(){
    chain->SetBranchAddress("metsSC5_ey", &metsSC5_ey, &b_metsSC5_ey);
    chain->SetBranchAddress("metsSC5_sumEt", &metsSC5_sumEt, &b_metsSC5_sumEt);
    chain->SetBranchAddress("metsSC5_et_JESCor", &metsSC5_et_JESCor, &b_metsSC5_et_JESCor);
-   chain->SetBranchAddress("metsSC5_phi_JESCor", &metsSC5_phi_JESCor, &b_metsSC5_phi_JESCor);
-   */
+   chain->SetBranchAddress("metsSC5_phi_JESCor", &metsSC5_phi_JESCor, &b_metsSC5_phi_JESCor); 
    chain->SetBranchAddress("Nmus", &Nmus, &b_Nmus);
    chain->SetBranchAddress("mus_energy", &mus_energy, &b_mus_energy);
    chain->SetBranchAddress("mus_et", &mus_et, &b_mus_et);
@@ -1740,6 +1789,7 @@ ana::ana(){
    chain->SetBranchAddress("tracks_highPurity", &tracks_highPurity, &b_tracks_highPurity);
    chain->SetBranchAddress("run", &run, &b_run);
    chain->SetBranchAddress("event", &event, &b_event);
+   chain->SetBranchAddress("lumiBlock", &lumiBlock, &b_lumiBlock);
 
    // HLT tree (nonIso ele trigger)
    //chain2->SetBranchAddress("HLT_Ele10_SW_L1R", &HLT_Ele10_SW_L1R, &b_HLT_Ele10_SW_L1R); //(8E29, startup)
@@ -1805,16 +1855,10 @@ ana::ana(){
 
 bool ana::EventLoop(){
   
-  
-
-
 
    // Get the number of events/entries in the file chain
    Long64_t nEvents = chain->GetEntries(); 
    if(nEvents==0) { cout << "No input event found, stop." << endl; return false; }
-
-   if (IsData()) cout << "\n Running on DATA\n" << endl;   
-   else          cout << "\n Running on MONTE CARLO\n" << endl;
 
 
    if(GetTrigger()) { chain->AddFriend(chain2); }
@@ -1824,6 +1868,7 @@ bool ana::EventLoop(){
    chain->SetBranchStatus("*",0); //disable all branches
    chain->SetBranchStatus("run",1);
    chain->SetBranchStatus("event",1);
+   chain->SetBranchStatus("lumiBlock",1);
    chain->SetBranchStatus("beamSpot_x",1); //beam spot
    chain->SetBranchStatus("beamSpot_y",1);
    chain->SetBranchStatus("Nels",1); //electrons
@@ -1895,6 +1940,7 @@ bool ana::EventLoop(){
      chain->SetBranchStatus("jets_energy",1);
      chain->SetBranchStatus("jets_eta",1);
      chain->SetBranchStatus("jets_pt",1);
+
    } else if (jetAlgo()=="pfjet") { //PFJet
      chain->SetBranchStatus(Form("NPFJets"),1); //jets
      chain->SetBranchStatus("PFJets_px",1);
@@ -1903,33 +1949,55 @@ bool ana::EventLoop(){
      chain->SetBranchStatus("PFJets_energy",1);
      chain->SetBranchStatus("PFJets_eta",1);
      chain->SetBranchStatus("PFJets_pt",1);
+
    } else { //if not using default jets
-     chain->SetBranchStatus(Form("Njets%s",jetAlgo().c_str()),1); //jets
-     chain->SetBranchStatus(Form("jets%s_px",jetAlgo().c_str()),1);
-     chain->SetBranchStatus(Form("jets%s_py",jetAlgo().c_str()),1);
-     chain->SetBranchStatus(Form("jets%s_pz",jetAlgo().c_str()),1);
+     chain->SetBranchStatus(Form("Njets%s",      jetAlgo().c_str()),1); //jets
+     chain->SetBranchStatus(Form("jets%s_px",    jetAlgo().c_str()),1);
+     chain->SetBranchStatus(Form("jets%s_py",    jetAlgo().c_str()),1);
+     chain->SetBranchStatus(Form("jets%s_pz",    jetAlgo().c_str()),1);
      chain->SetBranchStatus(Form("jets%s_energy",jetAlgo().c_str()),1);
-     chain->SetBranchStatus(Form("jets%s_eta",jetAlgo().c_str()),1);
-     chain->SetBranchStatus(Form("jets%s_pt",jetAlgo().c_str()),1);
+     chain->SetBranchStatus(Form("jets%s_eta",   jetAlgo().c_str()),1);
+     chain->SetBranchStatus(Form("jets%s_pt",    jetAlgo().c_str()),1);
    } 
+
+   // 30-10-09
+   chain->SetBranchStatus("Nmets",1);
+   chain->SetBranchStatus("mets_et_muonCor",1);
+   chain->SetBranchStatus("mets_phi_muonCor",1);
+   chain->SetBranchStatus("mets_et",1);
+   chain->SetBranchStatus("mets_phi",1);
 
    if(metAlgo()=="Default") { //muCor caloMET
      chain->SetBranchStatus("Nmets",1);
      chain->SetBranchStatus("mets_et_muonCor",1);
      chain->SetBranchStatus("mets_phi_muonCor",1);
+
    } else if(metAlgo()=="calomet_mujes") {
-     chain->SetBranchStatus("Nmets",1); //MET
+     chain->SetBranchStatus("Nmets",1);
      chain->SetBranchStatus("mets_et",1);
      chain->SetBranchStatus("mets_phi",1);
-   } else if ( metAlgo()=="tcmet" ) {
-     chain->SetBranchStatus("Ntcmets",1); //tcMET
-     chain->SetBranchStatus("tcmets_et",1);
-     chain->SetBranchStatus("tcmets_phi",1);
+
+   } else if(metAlgo()=="calomet_muL2") {
+     chain->SetBranchStatus("NmetsAK5L2",1);
+     chain->SetBranchStatus("metsAK5L2_et",1);
+     chain->SetBranchStatus("metsAK5L2_phi",1);
+
+   } else if (metAlgo()=="tcmet"){  //tcMET
+     chain->SetBranchStatus("NtcMets",1);
+     chain->SetBranchStatus("tcMets_et",1);
+     chain->SetBranchStatus("tcMets_phi",1);
+
    } else if (metAlgo()=="pfmet"){  //PFMET
      chain->SetBranchStatus("NPFMets",1);
      chain->SetBranchStatus("PFMets_et",1);
      chain->SetBranchStatus("PFMets_phi",1);
+ 
+   } else { //CaloMET: SC5, KT4
+     chain->SetBranchStatus(Form("Nmets%s",   metAlgo().c_str()),1);
+     chain->SetBranchStatus(Form("mets%s_et", metAlgo().c_str()),1);
+     chain->SetBranchStatus(Form("mets%s_phi",metAlgo().c_str()),1);;
    }
+
    chain->SetBranchStatus("Ntracks",1); //tracks
    chain->SetBranchStatus("tracks_pt",1);
    chain->SetBranchStatus("tracks_phi",1);
@@ -2104,7 +2172,30 @@ bool ana::EventLoop(){
    addHistoDataAndMC( h_metAlone,     "metAlone",     "Missing ET (no cut)",  200, 0, 200);
    addHistoDataAndMC( h_metAlone_phi, "metAlone_phi", "MET #phi (no cut)",   50,-3.2,3.2);
    
-   //=====================================
+
+
+
+   //=======================
+   //
+   // Explore new variables
+   //
+   //=======================
+   // 4-11-09: explore var after all but MET cuts
+   TDirectory *dir_explore = histf->mkdir("explore","explore new var after all but MET cuts (>=4j)");
+   dir_explore->cd();
+   TH1F *h_exp_ele_et[nclass];  // selected ele et
+   TH1F *h_exp_ele_eta[nclass]; // selected ele eta
+   TH1F *h_exp_j0_pt[nclass];   // leading jet pt
+   TH1F *h_exp_DRej[nclass];    // DR(e,j0)
+   TH1F *h_exp_DPhiej[nclass];  // DPhi(e,j0)
+
+   addHistoDataAndMC( h_exp_ele_et,  "ele_et",  "ele E_{T}",   50, 0, 100 );
+   addHistoDataAndMC( h_exp_ele_eta, "ele_eta", "ele #eta",   50, -2.5, 2.5 );
+   addHistoDataAndMC( h_exp_j0_pt,   "j0_pt",   "leading jet p_{T}", 100, 0, 200 );
+   addHistoDataAndMC( h_exp_DRej,    "DRej",    "#DeltaR(e,j0)",   60, 0, 6 );
+   addHistoDataAndMC( h_exp_DPhiej,  "DPhiej",  "#Delta#Phi(e,j0)", 64, -3.2, 3.2 );
+
+
 
 
    //--------------------
@@ -2223,17 +2314,59 @@ bool ana::EventLoop(){
    //New directories for kinematics plots
    TDirectory *dir_HT  = histf->mkdir("HT","HT after all but HT cut");
    TDirectory *dir_MET = histf->mkdir("MET","MET after all but MET cut");
-   TH1F *h_ht[nclass];
-   TH1F *h_met[nclass];
-   dir_HT->cd();   addHistoDataAndMC( h_ht,  "HT",  "HT (after all but HT cut)", 100, 0, 1000);
-   dir_MET->cd();  addHistoDataAndMC( h_met, "met", "Missing ET (after all but MET cut)", 200, 0, 200);
+   TH1F *h_ht[7][nclass];
+   TH1F *h_met[7][nclass]; //user-chosen MET
+   TH1F *h_met_mu[7][nclass]; //muon-MET
+   TH1F *h_met_t1[7][nclass]; //type1-MET
+   //   dir_HT->cd();   addHistoDataAndMC( h_ht,  "HT",  "HT (after all but HT cut)", 100, 0, 1000);
+   //   dir_MET->cd();  addHistoDataAndMC( h_met, "met", "Missing ET", 200, 0, 200);
+   dir_HT->cd();   
+   addHisto_Njet_DataAndMC( h_ht,  "HT",  "HT (after all but HT cut)", 100, 0, 1000);
+   dir_MET->cd();
+   addHisto_Njet_DataAndMC( h_met,    "met",    "MET (n-1)",      200, 0, 200);
+   addHisto_Njet_DataAndMC( h_met_mu, "met_mu", "#muMET (n-1)",   200, 0, 200);
+   addHisto_Njet_DataAndMC( h_met_t1, "met_t1", "Type1MET (n-1)", 200, 0, 200);
    //TH1F *h_metAlone[nclass];
    //addHistoDataAndMC( h_metAlone, "metAlone", "Missing ET (no other cuts)", 200, 0, 200);
-   TH1F *h_met_ante_ISO[nclass];
-   addHistoDataAndMC( h_met_ante_ISO, "met_ante_ISO", "Missing ET (before ISO cut)", 200, 0, 200);
-   histf->cd();
-   
+   TH1F *h_met_ante_ISO[nclass]; //user-chosen MET
+   TH1F *h_met_ante_ISO_mu[nclass];
+   TH1F *h_met_ante_ISO_t1[nclass];
+   addHistoDataAndMC( h_met_ante_ISO,    "met_ante_ISO", "Missing ET (1 GooEle, before ISO cut)", 200, 0, 200);
+   addHistoDataAndMC( h_met_ante_ISO_mu, "met_ante_ISO_mu", "muMET (1 GooEle, before ISO cut)", 200, 0, 200);
+   addHistoDataAndMC( h_met_ante_ISO_t1, "met_ante_ISO_t1", "Type1MET (1 GooEle, before ISO cut)", 200, 0, 200);
+   //   histf->cd();
 
+   // NEW: 30-10-09, mTW
+   TDirectory *dir_mtw = histf->mkdir("mtw","mT(W) W transverse mass");
+   dir_mtw->cd();
+   TH1F *h_mtw_mu_incl[nclass]; //inclusive
+   TH1F *h_mtw_t1_incl[nclass]; //type 1 calomet
+   // after all but MET cut
+   TH1F *h_mtw_mu[7][nclass];
+   TH1F *h_mtw_t1[7][nclass];
+   //   TDirectory *dir_mtw_1 = dir_mtw->mkdir("muonCorCaloMET","muon-corrected caloMET");
+   //   TDirectory *dir_mtw_2 = dir_mtw->mkdir("type1CaloMET","type1 (mu+jes) caloMET");
+   addHistoDataAndMC( h_mtw_mu_incl, "mtw_mu_incl", "mT(W) #mu-cor caloMet (incl, leading isolated ele)",  100, 0, 200);
+   addHistoDataAndMC( h_mtw_t1_incl, "mtw_t1_incl", "mT(W) type1 caloMet (incl, leading isolated ele)",   100, 0, 200);
+   addHisto_Njet_DataAndMC( h_mtw_mu, "mtw_mu", "mT(W) #mu-cor caloMet (after all but MET cut)",100, 0, 200);
+   addHisto_Njet_DataAndMC( h_mtw_t1, "mtw_t1", "mT(W) type1 caloMet (after all but MET cut)", 100, 0, 200);
+
+
+   // NEW: 30-10-09
+   TDirectory *dir_DPhiEmet = histf->mkdir("DPhi_ele_met","Delta phi(isoele,met)");
+   dir_DPhiEmet->cd();
+   TH1F *h_DPhiEmet_mu_incl[nclass];
+   TH1F *h_DPhiEmet_t1_incl[nclass];
+   TH1F *h_DPhiEmet_mu[7][nclass];
+   TH1F *h_DPhiEmet_t1[7][nclass];
+   addHistoDataAndMC( h_DPhiEmet_mu_incl, "DPhiEmet_mu_incl", "#Delta#Phi(e,met) #mu-cor caloMet (incl, leading isolated ele)",   64, -3.2, 3.2);
+   addHistoDataAndMC( h_DPhiEmet_t1_incl, "DPhiEmet_t1_incl", "#Delta#Phi(e,met) type 1 caloMet (incl, leading isolated ele)",   64, -3.2, 3.2);
+   addHisto_Njet_DataAndMC( h_DPhiEmet_mu, "DPhiEmet_mu", "#Delta#Phi(e,met) #mu-cor caloMet (after all but MET cut)", 64, -3.2, 3.2);
+   addHisto_Njet_DataAndMC( h_DPhiEmet_t1, "DPhiEmet_t1", "#Delta#Phi(e,met) type 1 caloMet (after all but MET cut)", 64, -3.2, 3.2);
+
+
+   TDirectory *dir_conv = histf->mkdir("conversion","conversion");
+   dir_conv->cd();
    //81FB
    Conv_Opti[0] = new TH2D("ConvOptimization_ttbar","ConvOptimization_ttbar",100,-1,1,100,-1,1);
    Conv_OptiL[0] = new TH2D("ConvOptimization_ttbar_l","ConvOptimization_ttbar_l",100,-10,10,100,-10,10);
@@ -2307,10 +2440,6 @@ bool ana::EventLoop(){
 
 
    histf->cd();
-   //Triggers
-   TH1F *all_trigger_EM  = new TH1F("all_trigger_EM","fired EM trigger (unweighted)",2,-0.5,1.5);
-   TH1F *all_trigger_EM2 = new TH1F("all_trigger_EM_weighted","fired EM trigger (weighted)",2,-0.5,1.5);
-   all_trigger_EM2->Sumw2();
 
 
    //==================
@@ -2669,7 +2798,6 @@ bool ana::EventLoop(){
      }//4 levels of cut
    }
 
-   histf->cd();
 
    //TL: W+jets estimation: m3 plots (12-1-09)
    TDirectory *dir_wjets = histf->mkdir("Wjets_estimation","m3 plots");
@@ -2839,8 +2967,8 @@ bool ana::EventLoop(){
    //
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   fprintf(outfile,"%6s %10s %8s %8s   %6s %14s  %8s %8s %8s\n",
-	   "run","event","tree","entry","ntj","leadingJetET","met","HT","mc");
+   fprintf(outfile,"%6s %10s %10s %8s %8s   %6s %14s  %8s %8s %8s\n",
+	   "run","event","lumiBlock","tree","entry","ntj","leadingJetET","met","HT","mc");
 
    if(debug()) cout << "\n Will start main Event Loop"<< endl;
 
@@ -2874,9 +3002,9 @@ bool ana::EventLoop(){
    int nEvent_DR_ele_muo_less_than_01 = 0;
 
 
-   for(Long64_t ev=0; ev<nEvents; ev++) {
+   for(Long64_t ev=0; ev<nEvents; ++ev) {
 
-     counter++;
+     ++counter;
 
      Long64_t lflag = chain->LoadTree(ev);
      if (lflag < 0) break;
@@ -2893,15 +3021,17 @@ bool ana::EventLoop(){
        //goodrun = mytool->good_run(run);
      }
 
-     if(debug()||ev%5000==0) cout << " current entry " << lflag 
-				  << " tree # " << chain->GetTreeNumber()  
-				  << " name " << chain->GetCurrentFile()->GetName() 
-				  << " evt size " << nbytes << endl        
-				  << " <<< Run Number "<< run 
-				  << "  Event Number "<< event << " >>> " 
-				  << " Events processed " << ev/100 << " k" 
-				  << "  good run " << goodrun << endl;
-
+     if(debug() || ev<10 || ev%5000==0) {
+       if(ev<10) cout << "\nBegin processing event no. " << ev+1;
+       else   	 cout << "\nBegin processing event no. " << (ev+1)/1000 << " k";
+       cout << ". GoodRun=" << goodrun ;
+       cout << "  << Run "<< run << ", Event "<< event << ", LumiSection " << lumiBlock << " >>\n"
+	    << " entry " << lflag 
+	    << ", tree # " << chain->GetTreeNumber()  
+	    << ", file " << chain->GetCurrentFile()->GetName() 
+	    << ", EvtSize " << nbytes << endl;
+     }
+     
      // 2- Check Trigger 
      if(debug()) cout << " Checking Trigger"<< endl;
 
@@ -2919,8 +3049,6 @@ bool ana::EventLoop(){
 	 else  cout << " FAIL Single Electron Trigger"<< endl;
        }
      }
-     all_trigger_EM->Fill(fired_single_em);
-     all_trigger_EM2->Fill(fired_single_em,this_weight); // with weight
      
 
      // If running on MC, check type of MC from input filename
@@ -3774,14 +3902,6 @@ bool ana::EventLoop(){
      int nGoodJet =0;
      int ntj = 0;
 
-//      for(unsigned int i = 0; i<Njets; ++i) {
-//        if (jets_pt->at(i) > JET_PTCUT &&
-// 	   fabs(jets_eta->at(i)) < 2.4) {
-// 	 TLorentzVector jt(jets_px->at(i),jets_py->at(i),jets_pz->at(i),jets_energy->at(i));
-// 	 nGoodJet++;
-// 	 jets.push_back(jt);
-//        }
-//      } 
      if (jetAlgo()=="Default") {
        for(unsigned int i = 0; i<Njets; ++i) {
 	 if (jets_pt->at(i) > JET_PTCUT &&
@@ -3796,6 +3916,15 @@ bool ana::EventLoop(){
 	 if (jetsSC5_pt->at(i) > JET_PTCUT &&
 	     fabs(jetsSC5_eta->at(i)) < 2.4) {
 	   TLorentzVector jt(jetsSC5_px->at(i),jetsSC5_py->at(i),jetsSC5_pz->at(i),jetsSC5_energy->at(i));
+	   nGoodJet++;
+	   jets.push_back(jt);
+	 }
+       }
+     } else if (jetAlgo()=="KT4") {
+       for(unsigned int i = 0; i<NjetsKT4; ++i) {
+	 if (jetsKT4_pt->at(i) > JET_PTCUT &&
+	     fabs(jetsKT4_eta->at(i)) < 2.4) {
+	   TLorentzVector jt(jetsKT4_px->at(i),jetsKT4_py->at(i),jetsKT4_pz->at(i),jetsKT4_energy->at(i));
 	   nGoodJet++;
 	   jets.push_back(jt);
 	 }
@@ -3929,6 +4058,18 @@ bool ana::EventLoop(){
        this_met     = mets_et->at(0);
        this_met_phi = mets_phi->at(0);
 
+     } else if (metAlgo()=="calomet_muL2") {
+       this_met     = metsAK5L2_et->at(0);
+       this_met_phi = metsAK5L2_phi->at(0);
+
+     } else if (metAlgo()=="SC5") {
+       this_met     = metsSC5_et->at(0);
+       this_met_phi = metsSC5_phi->at(0);
+
+     } else if (metAlgo()=="KT4") {
+       this_met     = metsKT4_et->at(0);
+       this_met_phi = metsKT4_phi->at(0);
+
      } else if ( metAlgo()=="tcmet" ) {
        this_met     = tcmets_et->at(0);
        this_met_phi = tcmets_phi->at(0);
@@ -3938,22 +4079,23 @@ bool ana::EventLoop(){
        this_met_phi = PFMets_phi->at(0);
      }
 
-     /*
-     float this_met = 0;
-     float this_met_phi = 0 ;
-     if (jetAlgo()=="Default"){
-       if (Nmets > 1) cout << "WARNING: more than 1 met object, using index = 0 one" << endl;
-       this_met     = mets_et_muonCor->at(0);
-       this_met_phi = mets_phi_muonCor->at(0);
-     } else if (jetAlgo()=="SC5"){
-       if (NmetsSC5 > 1) cout << "WARNING: more than 1 met object, using index = 0 one" << endl;
-       this_met     = metsSC5_et_muonCor->at(0);
-       this_met_phi = metsSC5_phi_muonCor->at(0);
-     }
-     */
+     TVector2 met2v_mu;
+     TVector2 met2v_t1;
+     met2v_mu.SetMagPhi( mets_et_muonCor->at(0), mets_phi_muonCor->at(0) );
+     met2v_t1.SetMagPhi( mets_et->at(0),         mets_phi->at(0) );
+     
+
+
+     // MET eta? Not meaningful.
+     //TLorentzVector met4p(this_met*cos(this_met_phi),this_met*sin(this_met_phi),0,this_met);     
+     //float this_met_eta = met4p.Eta();
+     //cout << "MET px = " << this_met*cos(this_met_phi) << endl;
+     //cout << "MET py = " << this_met*sin(this_met_phi) << endl;
+     //cout << "MET eta = " << this_met_eta << endl;
 
      fillHistoDataAndMC( h_metAlone,     this_met,     this_weight);
      fillHistoDataAndMC( h_metAlone_phi, this_met_phi, this_weight);
+
 
 
 
@@ -3972,8 +4114,45 @@ bool ana::EventLoop(){
      for (unsigned int i=0; i<jets.size(); ++i) {
        ht += jets.at(i).Pt();
      }
-	
+     
+     // compute mT(W)
+     //     float this_mtw = -1;
+     float this_mu_mtw = -1;
+     float this_t1_mtw = -1;
+     float this_mu_DPhiEmet = -1;
+     float this_t1_DPhiEmet = -1;
 
+     if(iso_electrons.size()>0) {
+
+       TVector2 e2v( iso_electrons.at(0).Px(), iso_electrons.at(0).Py() );
+
+       this_mu_mtw = compute_mtw( e2v, met2v_mu );      // muon-corr. caloMET
+       this_t1_mtw = compute_mtw( e2v, met2v_t1 );      // type 1 caloMET
+       fillHistoDataAndMC( h_mtw_mu_incl, this_mu_mtw, this_weight );
+       fillHistoDataAndMC( h_mtw_t1_incl, this_t1_mtw, this_weight ); 
+
+       /*
+       cout << "\n\nele:     px = " << e2v.X()  << ",  py = " << e2v.Y() << ",  phi = " << e2v.Phi()<< endl;
+       cout << "miss (mu): px = " << met2v_mu.X() << ",  py = " << met2v_mu.Y() << ",  phi = " << met2v_mu.Phi() << endl;
+       float dphi = e2v.Phi() - met2v_mu.Phi() ;
+       cout << "phi(ele) - phi(miss) = " << dphi << endl;
+       if(fabs(dphi) > TMath::Pi() ) dphi = 2*TMath::Pi() - fabs(dphi);
+       cout << " correct = " << dphi << endl;
+       */
+       //       TVector2 eee(iso_electrons.at(0).P() ;
+
+       this_mu_DPhiEmet = ( e2v ).DeltaPhi( met2v_mu );
+       this_t1_DPhiEmet = ( e2v ).DeltaPhi( met2v_t1 );
+       /*
+       cout  << "\nthis_mu_DPhiEmet = " << this_mu_DPhiEmet << endl;
+       cout  << " ele phi = " << iso_electrons.at(0).Phi() << endl;
+       cout  << " miss phi (mu) = "<< met2v_mu.Phi() << endl;
+       cout  << " miss phi (t1) = "<< met2v_t1.Phi() << endl;
+       */
+       fillHistoDataAndMC( h_DPhiEmet_mu_incl, this_mu_DPhiEmet, this_weight );
+       fillHistoDataAndMC( h_DPhiEmet_t1_incl, this_t1_DPhiEmet, this_weight );
+
+     }
 
 
 
@@ -4205,7 +4384,9 @@ bool ana::EventLoop(){
      if(debug()) cout << " Starting << ANALYSIS >>" << endl;
 
      if(goodrun && fired_single_em && nGoodEle > 0){
-       fillHistoDataAndMC( h_met_ante_ISO, this_met, this_weight);
+       fillHistoDataAndMC( h_met_ante_ISO,    this_met,       this_weight ); //user-chosen MET
+       fillHistoDataAndMC( h_met_ante_ISO_mu, met2v_mu.Mod(), this_weight );
+       fillHistoDataAndMC( h_met_ante_ISO_t1, met2v_t1.Mod(), this_weight );
      }
 
      //E+jets Analysis
@@ -4217,21 +4398,39 @@ bool ana::EventLoop(){
        fillHistoDataAndMC( h_ed0_pass, this_isoele_d0, this_weight );
 
        //Print out for each selected event
-       fprintf(outfile,"%6d %10d %8d %8lld  %6dj %14.2f  %8.2f %8.2f %8s  E_PLUS_JET \n",
-	       run, event, chain->GetTreeNumber(), lflag, nGoodJet, jets.at(0).Et(), this_met, ht, this_mc.c_str());
+       fprintf(outfile,"%6d %10d %10d %8d %8lld  %6dj %14.2f  %8.2f %8.2f %8s\n",
+	       run, event, lumiBlock, chain->GetTreeNumber(), 
+	       lflag, nGoodJet, jets.at(0).Pt(), this_met, ht, this_mc.c_str());
      }
 
 
      // (21 Feb 09) make some kinematics plots for events passing N-1 cuts (HT,MET)
-     if( goodrun  &&  fired_single_em  &&  nGoodIsoEle > 0 &&
-     	 !isMuon  &&  !isZ  &&  !isConversion  &&  !isDifferentInteraction && nGoodJet>=4 ) {
+     if( goodrun  &&  fired_single_em  &&  nGoodIsoEle==1  &&
+     	 !isMuon  &&  !isZ  &&  !isConversion  &&  !isDifferentInteraction ) {
 
-       if ( this_met > METCUT )    //after all but MET cut
-	 fillHistoDataAndMC( h_ht, ht, this_weight);
-
-       if ( ht >= HTCUT )         //after all but HT cut
-	 fillHistoDataAndMC( h_met, this_met, this_weight);
+       if ( this_met > METCUT )    //after all but HT cut
+	 fillHisto_Njet_DataAndMC( h_ht, ht, this_weight );
+	 
+       if ( ht >= HTCUT ) {        //after all but MET cut
+	 fillHisto_Njet_DataAndMC( h_met,    this_met,       this_weight ); //user-chosen MET
+	 fillHisto_Njet_DataAndMC( h_met_mu, met2v_mu.Mod(), this_weight );
+	 fillHisto_Njet_DataAndMC( h_met_t1, met2v_t1.Mod(), this_weight );
+       }
+       // after all but MET/HT/Njet cuts
+       fillHisto_Njet_DataAndMC( h_mtw_mu, this_mu_mtw, this_weight );
+       fillHisto_Njet_DataAndMC( h_mtw_t1, this_t1_mtw, this_weight );
        
+       fillHisto_Njet_DataAndMC( h_DPhiEmet_mu, this_mu_DPhiEmet, this_weight );
+       fillHisto_Njet_DataAndMC( h_DPhiEmet_t1, this_t1_DPhiEmet, this_weight );
+
+       // inspect distributions of the selected events
+       fillHistoDataAndMC( h_exp_ele_et,  iso_electrons.at(0).Et(),  this_weight );
+       fillHistoDataAndMC( h_exp_ele_eta, iso_electrons.at(0).Eta(), this_weight );
+       fillHistoDataAndMC( h_exp_j0_pt,   jets.at(0).Pt(),           this_weight );
+
+       fillHistoDataAndMC( h_exp_DRej,    iso_electrons.at(0).DeltaR(   jets.at(0) ),  this_weight );
+       fillHistoDataAndMC( h_exp_DPhiej,  iso_electrons.at(0).DeltaPhi( jets.at(0) ),  this_weight );
+
      }
 
 
@@ -9003,6 +9202,51 @@ float ana::compute_d0 ( const string lepton, const int i ) const {
   return d0_corrected;
 }//end compute_d0
 //---------------------------------------------------------------------------------------------
+
+//--------- compute mT(W) given electron 4-vector and MET -------------------------------------
+float ana::compute_mtw ( const TVector2& e, const TVector2& miss ) const {
+  
+  float leppx = e.Px();
+  float leppy = e.Py();
+  float lepet = e.Mod();
+  //cout << "lep: px=" << leppx << "  py=" << leppy << " et=" << lepet << endl;
+  
+  //  float mspx = mset * sin(msphi);
+  //  float mspy = mset * cos(msphi);
+  float mspx = miss.Px();
+  float mspy = miss.Py();
+  float mset = miss.Mod();
+
+  //  float mset = TMath::Hypot(mspx,mspy);
+  //cout << "met: px=" << mspx << "  py=" << mspy << "  mset=" << mset << endl;
+  
+  // need ET, px, py
+  // leppt = lepet
+  //double leppx = (*electrons)[which_e].px();
+  //double leppy = (*electrons)[which_e].py();
+  //double mspx = (*mets)[0].px();
+  //double mspy = (*mets)[0].py();
+  /*      
+	  cout << "lepet "  << electron_ET << endl;
+	  cout << "mspx "  << mspx << endl;
+	  cout << "mspy "  << mspy << endl;
+	  cout << "mset "  << missing_ET << endl;
+  */
+  float z1 = pow( ( lepet + mset ), 2);
+  float z2 = pow( (leppx + mspx), 2 ) + pow( (leppy + mspy), 2 );
+  //  double z2 = 2*(leppx*mspx + leppy*mspy) ;                                               
+  
+  float z3 = z1 - z2;
+  float mtlm = -1.0;
+  //cout << "z1/z2/z3: "  << z1 << " / " << z2 << " / " << z3 << endl;                        
+  
+  if (z3 > 0) {
+    mtlm = sqrt( z3 );
+  }
+  //cout << "mtlm: " << mtlm << endl;                    
+  return mtlm;
+  
+}//end compute_mtw
 
 void ana::PrintGenParticles() const {
   cout << setfill('-') << setw(105) << "" << setfill(' ') << endl;
