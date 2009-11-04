@@ -796,6 +796,7 @@ public:
    TBranch        *b_jets_area;   //!
    TBranch        *b_jets_mass;   //!
 
+   TBranch        *b_NjetsKT4;   //!
    TBranch        *b_jetsKT4_energy;   //!
    TBranch        *b_jetsKT4_et;   //!
    TBranch        *b_jetsKT4_eta;   //!

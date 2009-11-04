@@ -2,8 +2,8 @@
 //# Last update:
 //
 // 4 Nov 09: add met option "calomet_muL2" for L2RelJet + muon MET.
-//           add new variables after all but met cuts: ele_eta, ele_et, j0_eta, j0_et
-//           DR(e,j), DPhi(e,j).
+//           add new variables after all but met cuts: ele_eta, ele_et, j0_pt, j1_pt
+//           DR(e,j), DPhi(e,j), DR(j,j).
 // 3 Nov 09: expand MET histo for diff njet bins.
 // 2 Nov 09: correct for histo-filling.
 // 30 Oct 09: Added mtw plot (transverse mass of W->lnu) & Delta Phi(e,met).
@@ -1417,7 +1417,40 @@ ana::ana(){
    chain->SetBranchAddress("jets_n90", &jets_n90, &b_jets_n90);
    chain->SetBranchAddress("jets_area", &jets_area, &b_jets_area);
    chain->SetBranchAddress("jets_mass", &jets_mass, &b_jets_mass);
-   /* ///3099
+
+   chain->SetBranchAddress("NjetsKT4", &NjetsKT4, &b_NjetsKT4);
+   chain->SetBranchAddress("jetsKT4_energy", &jetsKT4_energy, &b_jetsKT4_energy);
+   chain->SetBranchAddress("jetsKT4_et", &jetsKT4_et, &b_jetsKT4_et);
+   chain->SetBranchAddress("jetsKT4_eta", &jetsKT4_eta, &b_jetsKT4_eta);
+   chain->SetBranchAddress("jetsKT4_phi", &jetsKT4_phi, &b_jetsKT4_phi);
+   chain->SetBranchAddress("jetsKT4_pt", &jetsKT4_pt, &b_jetsKT4_pt);
+   chain->SetBranchAddress("jetsKT4_px", &jetsKT4_px, &b_jetsKT4_px);
+   chain->SetBranchAddress("jetsKT4_py", &jetsKT4_py, &b_jetsKT4_py);
+   chain->SetBranchAddress("jetsKT4_pz", &jetsKT4_pz, &b_jetsKT4_pz);
+   chain->SetBranchAddress("jetsKT4_status", &jetsKT4_status, &b_jetsKT4_status);
+   chain->SetBranchAddress("jetsKT4_theta", &jetsKT4_theta, &b_jetsKT4_theta);
+   chain->SetBranchAddress("jetsKT4_btag_TC_highPur", &jetsKT4_btag_TC_highPur, &b_jetsKT4_btag_TC_highPur);
+   chain->SetBranchAddress("jetsKT4_btag_TC_highEff", &jetsKT4_btag_TC_highEff, &b_jetsKT4_btag_TC_highEff);
+   chain->SetBranchAddress("jetsKT4_btag_jetProb", &jetsKT4_btag_jetProb, &b_jetsKT4_btag_jetProb);
+   chain->SetBranchAddress("jetsKT4_btag_jetBProb", &jetsKT4_btag_jetBProb, &b_jetsKT4_btag_jetBProb);
+   chain->SetBranchAddress("jetsKT4_btag_softEle", &jetsKT4_btag_softEle, &b_jetsKT4_btag_softEle);
+   chain->SetBranchAddress("jetsKT4_btag_softMuon", &jetsKT4_btag_softMuon, &b_jetsKT4_btag_softMuon);
+   chain->SetBranchAddress("jetsKT4_btag_softMuonNoIP", &jetsKT4_btag_softMuonNoIP, &b_jetsKT4_btag_softMuonNoIP);
+   chain->SetBranchAddress("jetsKT4_btag_secVertex", &jetsKT4_btag_secVertex, &b_jetsKT4_btag_secVertex);
+   chain->SetBranchAddress("jetsKT4_chgEmE", &jetsKT4_chgEmE, &b_jetsKT4_chgEmE);
+   chain->SetBranchAddress("jetsKT4_chgHadE", &jetsKT4_chgHadE, &b_jetsKT4_chgHadE);
+   chain->SetBranchAddress("jetsKT4_chgMuE", &jetsKT4_chgMuE, &b_jetsKT4_chgMuE);
+   chain->SetBranchAddress("jetsKT4_chg_Mult", &jetsKT4_chg_Mult, &b_jetsKT4_chg_Mult);
+   chain->SetBranchAddress("jetsKT4_neutralEmE", &jetsKT4_neutralEmE, &b_jetsKT4_neutralEmE);
+   chain->SetBranchAddress("jetsKT4_neutralHadE", &jetsKT4_neutralHadE, &b_jetsKT4_neutralHadE);
+   chain->SetBranchAddress("jetsKT4_neutral_Mult", &jetsKT4_neutral_Mult, &b_jetsKT4_neutral_Mult);
+   chain->SetBranchAddress("jetsKT4_mu_Mult", &jetsKT4_mu_Mult, &b_jetsKT4_mu_Mult);
+   chain->SetBranchAddress("jetsKT4_emf", &jetsKT4_emf, &b_jetsKT4_emf);
+   chain->SetBranchAddress("jetsKT4_ehf", &jetsKT4_ehf, &b_jetsKT4_ehf);
+   chain->SetBranchAddress("jetsKT4_n60", &jetsKT4_n60, &b_jetsKT4_n60);
+   chain->SetBranchAddress("jetsKT4_n90", &jetsKT4_n90, &b_jetsKT4_n90);
+   chain->SetBranchAddress("jetsKT4_area", &jetsKT4_area, &b_jetsKT4_area);
+   chain->SetBranchAddress("jetsKT4_mass", &jetsKT4_mass, &b_jetsKT4_mass);
    chain->SetBranchAddress("NjetsSC5", &NjetsSC5, &b_NjetsSC5);
    chain->SetBranchAddress("jetsSC5_energy", &jetsSC5_energy, &b_jetsSC5_energy);
    chain->SetBranchAddress("jetsSC5_et", &jetsSC5_et, &b_jetsSC5_et);
@@ -1451,7 +1484,7 @@ ana::ana(){
    chain->SetBranchAddress("jetsSC5_n90", &jetsSC5_n90, &b_jetsSC5_n90);
    chain->SetBranchAddress("jetsSC5_area", &jetsSC5_area, &b_jetsSC5_area);
    chain->SetBranchAddress("jetsSC5_mass", &jetsSC5_mass, &b_jetsSC5_mass);
-   */
+
    chain->SetBranchAddress("Nmc_doc", &Nmc_doc, &b_Nmc_doc);
    chain->SetBranchAddress("mc_doc_id", &mc_doc_id, &b_mc_doc_id);
    chain->SetBranchAddress("mc_doc_pt", &mc_doc_pt, &b_mc_doc_pt);
@@ -1532,6 +1565,7 @@ ana::ana(){
    chain->SetBranchAddress("mets_et_JESCor", &mets_et_JESCor, &b_mets_et_JESCor);
    chain->SetBranchAddress("mets_phi_JESCor", &mets_phi_JESCor, &b_mets_phi_JESCor);
    // New 41109 4 Nov
+   /*
    chain->SetBranchAddress("NmetsAK5L2", &NmetsAK5L2, &b_NmetsAK5L2);
    chain->SetBranchAddress("metsAK5L2_et", &metsAK5L2_et, &b_metsAK5L2_et);
    chain->SetBranchAddress("metsAK5L2_phi", &metsAK5L2_phi, &b_metsAK5L2_phi);
@@ -1542,6 +1576,7 @@ ana::ana(){
    chain->SetBranchAddress("metsAK5L2_phi_muonCor", &metsAK5L2_phi_muonCor, &b_metsAK5L2_phi_muonCor);
    chain->SetBranchAddress("metsAK5L2_et_JESCor", &metsAK5L2_et_JESCor, &b_metsAK5L2_et_JESCor);
    chain->SetBranchAddress("metsAK5L2_phi_JESCor", &metsAK5L2_phi_JESCor, &b_metsAK5L2_phi_JESCor);
+   */
    chain->SetBranchAddress("NmetsKT4", &NmetsKT4, &b_NmetsKT4);
    chain->SetBranchAddress("metsKT4_et", &metsKT4_et, &b_metsKT4_et);
    chain->SetBranchAddress("metsKT4_phi", &metsKT4_phi, &b_metsKT4_phi);
@@ -2186,14 +2221,18 @@ bool ana::EventLoop(){
    TH1F *h_exp_ele_et[nclass];  // selected ele et
    TH1F *h_exp_ele_eta[nclass]; // selected ele eta
    TH1F *h_exp_j0_pt[nclass];   // leading jet pt
+   TH1F *h_exp_j1_pt[nclass];   // 2n-leading jet pt
    TH1F *h_exp_DRej[nclass];    // DR(e,j0)
    TH1F *h_exp_DPhiej[nclass];  // DPhi(e,j0)
+   TH1F *h_exp_DRjj[nclass];    // DR(j0,j1)
 
-   addHistoDataAndMC( h_exp_ele_et,  "ele_et",  "ele E_{T}",   50, 0, 100 );
+   addHistoDataAndMC( h_exp_ele_et,  "ele_et",  "ele E_{T}",   50, 20, 120 );
    addHistoDataAndMC( h_exp_ele_eta, "ele_eta", "ele #eta",   50, -2.5, 2.5 );
    addHistoDataAndMC( h_exp_j0_pt,   "j0_pt",   "leading jet p_{T}", 100, 0, 200 );
+   addHistoDataAndMC( h_exp_j1_pt,   "j1_pt",   "2nd leading jet p_{T}", 100, 0, 200 );
    addHistoDataAndMC( h_exp_DRej,    "DRej",    "#DeltaR(e,j0)",   60, 0, 6 );
    addHistoDataAndMC( h_exp_DPhiej,  "DPhiej",  "#Delta#Phi(e,j0)", 64, -3.2, 3.2 );
+   addHistoDataAndMC( h_exp_DRjj,    "DRjj",    "#DeltaR(j0,j1)", 60, 0, 6 );
 
 
 
@@ -3005,13 +3044,14 @@ bool ana::EventLoop(){
    for(Long64_t ev=0; ev<nEvents; ++ev) {
 
      ++counter;
+     //if(counter<900) continue;
 
      Long64_t lflag = chain->LoadTree(ev);
      if (lflag < 0) break;
 
      int nbytes = chain->GetEntry(ev);
 
-     if(ev>100) m_debug = false; // turn off debug message after 100 events
+     //     if(ev>100) m_debug = false; // turn off debug message after 100 events
 
 
      // 1- Check for good run (only applicable to data)
@@ -3022,7 +3062,7 @@ bool ana::EventLoop(){
      }
 
      if(debug() || ev<10 || ev%5000==0) {
-       if(ev<10) cout << "\nBegin processing event no. " << ev+1;
+       if(debug()||ev<10) cout << "\nBegin processing event no. " << ev+1;
        else   	 cout << "\nBegin processing event no. " << (ev+1)/1000 << " k";
        cout << ". GoodRun=" << goodrun ;
        cout << "  << Run "<< run << ", Event "<< event << ", LumiSection " << lumiBlock << " >>\n"
@@ -4405,6 +4445,7 @@ bool ana::EventLoop(){
 
 
      // (21 Feb 09) make some kinematics plots for events passing N-1 cuts (HT,MET)
+     if(debug()) cout << "[DEBUG] Filling N-1 histograms"<< endl;
      if( goodrun  &&  fired_single_em  &&  nGoodIsoEle==1  &&
      	 !isMuon  &&  !isZ  &&  !isConversion  &&  !isDifferentInteraction ) {
 
@@ -4418,21 +4459,22 @@ bool ana::EventLoop(){
        }
        // after all but MET/HT/Njet cuts
        fillHisto_Njet_DataAndMC( h_mtw_mu, this_mu_mtw, this_weight );
-       fillHisto_Njet_DataAndMC( h_mtw_t1, this_t1_mtw, this_weight );
-       
+       fillHisto_Njet_DataAndMC( h_mtw_t1, this_t1_mtw, this_weight );       
        fillHisto_Njet_DataAndMC( h_DPhiEmet_mu, this_mu_DPhiEmet, this_weight );
        fillHisto_Njet_DataAndMC( h_DPhiEmet_t1, this_t1_DPhiEmet, this_weight );
 
        // inspect distributions of the selected events
-       fillHistoDataAndMC( h_exp_ele_et,  iso_electrons.at(0).Et(),  this_weight );
-       fillHistoDataAndMC( h_exp_ele_eta, iso_electrons.at(0).Eta(), this_weight );
-       fillHistoDataAndMC( h_exp_j0_pt,   jets.at(0).Pt(),           this_weight );
-
-       fillHistoDataAndMC( h_exp_DRej,    iso_electrons.at(0).DeltaR(   jets.at(0) ),  this_weight );
-       fillHistoDataAndMC( h_exp_DPhiej,  iso_electrons.at(0).DeltaPhi( jets.at(0) ),  this_weight );
-
+       if( Njet() >= 4 ) {
+	 fillHistoDataAndMC( h_exp_ele_et,  iso_electrons.at(0).Et(),  this_weight );
+	 fillHistoDataAndMC( h_exp_ele_eta, iso_electrons.at(0).Eta(), this_weight );
+	 fillHistoDataAndMC( h_exp_j0_pt,   jets.at(0).Pt(),           this_weight );
+	 fillHistoDataAndMC( h_exp_j1_pt,   jets.at(1).Pt(),           this_weight );
+	 fillHistoDataAndMC( h_exp_DRej,    iso_electrons.at(0).DeltaR(   jets.at(0) ),  this_weight );
+	 fillHistoDataAndMC( h_exp_DPhiej,  iso_electrons.at(0).DeltaPhi( jets.at(0) ),  this_weight );
+	 fillHistoDataAndMC( h_exp_DRjj,    jets.at(0).DeltaPhi( jets.at(1) ),  this_weight );
+       }
      }
-
+     if(debug()) cout << "[DEBUG] After N-1"<< endl;
 
 
 
@@ -4952,9 +4994,9 @@ bool ana::EventLoop(){
 	   // cout << "** CombRelIso = " << CombRelIso << endl;
 
 	   if(CombRelIso<0) {
-	     static short mm = 0; //print the first 50 occurances.
-	     if(mm==0) cout << "(Printing the first 50 occurances.)"<< endl;
-	     if(mm<50) {
+	     static short mm = 0;
+	     if(mm==0) cout << "(Printing the first 20 occurances.)"<< endl;
+	     if(mm<20) {
 	       cout << "** attention: negative CombRelIso (" << CombRelIso << ")" << endl;
 	       ++mm;
 	     }
@@ -4970,7 +5012,7 @@ bool ana::EventLoop(){
 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L2", CombRelIso, this_weight );
 
 
-	   if( !isMuon  &&  !isZ  ) {
+	   if( !isMuon  &&  !isZ ) {
 
 	     if(debug()) cout << "-> Filling Reliso NES histograms, L3" << endl;
 
@@ -6800,6 +6842,7 @@ void ana::addHistoDataAndMC( TH1F* h[], const string name, const string title,
 //-------- my method to fill 1D histograms (acc to MC type when running on MC) -------------
 void ana::fillHistoDataAndMC(TH1F* h[], const float value, const double w ) const {
 
+  if(debug()) cout << "\nStart of << fillHistoDataAndMC >>: " << h[0]->GetName() << endl;
   h[0]->Fill(value, w); //all events (data)
   if(!IsData()) { //run on MC
     if      (isTTbar)       h[1]->Fill(value,w);
@@ -6819,6 +6862,7 @@ void ana::fillHistoDataAndMC(TH1F* h[], const float value, const double w ) cons
       else if (isSchan)     h[15]->Fill(value,w);
     }
   }
+  if(debug()) cout << "End of << fillHistoDataAndMC >>" << endl;
 }
 //--------------------------------------------------------------------------------------
 
@@ -6826,7 +6870,7 @@ void ana::fillHistoDataAndMC(TH1F* h[], const float value, const double w ) cons
 //-------------- my method to fill 1D histograms acc to njet & mctype -----------------------------
 void ana::fillHistoNjet_DataAndMC(const string name, const float value, const double w ) {
   
-  if(debug()) cout << "\n Start of << fillHistoNjet_DataAndMC >>" << endl;
+  if(debug()) cout << "\nStart of << fillHistoNjet_DataAndMC >>" << endl;
 
   const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
 
@@ -6849,7 +6893,7 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float value, const do
     if(debug()) cout <<  "Filling histo: " << hname << endl;
 
     h = (TH1F*)histf->Get( Form("%s", hname) );
-    if(debug()) { if(h>0) h->ls(); else cout << "histo not found" << endl; }
+    if( debug() && h==0 ) cout << "histo not found" << endl;
 
     if(h>0) h->Fill(value, w);  
 
@@ -6906,13 +6950,13 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float value, const do
     }//if run on MC
   }// loop: "allj", "0-4j",">=4j"
   
-  if(debug()) cout << " End of << fillHistoNjet_DataAndMC >>" << endl;
+  if(debug()) cout << "End of << fillHistoNjet_DataAndMC >>" << endl;
 }
 
 //-------------- my method to fill 2D histograms acc to njet & mctype -----------------------------
 void ana::fillHistoNjet_DataAndMC(const string name, const float v1, const float v2, const double w ) {
   
-  if(debug()) cout << "\n Start of << fillHistoNjet_DataAndMC (h2D) >>" << endl;
+  if(debug()) cout << "\nStart of << fillHistoNjet_DataAndMC (h2D) >>" << endl;
 
   const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
 
@@ -6935,7 +6979,7 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float v1, const float
     if(debug()) cout <<  "Filling histo: " << hname << endl;
 
     h = (TH2F*)histf->Get( Form("%s", hname) );
-    if(debug()) { if(h>0) h->ls(); else cout << "histo not found" << endl; }
+    if( debug() && h==0 ) cout << "histo not found" << endl;
     
     if(h>0) h->Fill(v1, v2, w);  
 
@@ -6992,7 +7036,7 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float v1, const float
     }//if run on MC
   }// loop: "allj", "0-4j",">=4j"
   
-  if(debug()) cout << " End of << fillHistoNjet_DataAndMC (h2D) >>" << endl;
+  if(debug()) cout << "End of << fillHistoNjet_DataAndMC (h2D) >>" << endl;
 }
 
 
@@ -7030,8 +7074,8 @@ void ana::addHisto_Njet_DataAndMC( TH1F* h[7][16], const string name, const stri
 //-------------- my method to fill  1D  histograms acc to njet & mctype ------------------
 void ana::fillHisto_Njet_DataAndMC( TH1F* h[7][16], const float value, const double w ) {
 
-  if(debug()) cout << "\n Start of << fillHisto_Njet_DataAndMC >>" << endl;
-  
+  if(debug()) cout << "\nStart of << fillHisto_Njet_DataAndMC >>: " << h[0][0]->GetName() << endl;
+
   // ALL data (2nd dimention = eventClass = 0)  
   fillHistoNjet2D( h, 0, value, w );
 
@@ -7053,7 +7097,7 @@ void ana::fillHisto_Njet_DataAndMC( TH1F* h[7][16], const float value, const dou
       else if(isSchan)	  fillHistoNjet2D( h, 15, value, w );
     }
   }
-  if(debug()) cout << " End of << fillHisto_Njet_DataAndMC >>" << endl;
+  if(debug()) cout << "End of << fillHisto_Njet_DataAndMC >>" << endl;
 }
 
 //----------------------------------------------------------------------------------------
