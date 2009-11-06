@@ -1,6 +1,10 @@
 //#====================================================#
 //# Last update:
 //
+// 6 Nob 09: Fix DRjj, add DPhijj, add met:ele_eta scatter plot. Add a fillHisto function.
+//           Add conter_pass.
+// 5 Nov 09: Print out file name of selected events in log, print a list at the end.
+//           Add jets_emf>0.01 minimal cut as recommended by jetMET (for caloJets only).
 // 4 Nov 09: add met option "calomet_muL2" for L2RelJet + muon MET.
 //           add new variables after all but met cuts: ele_eta, ele_et, j0_pt, j1_pt
 //           DR(e,j), DPhi(e,j), DR(j,j).
@@ -199,6 +203,11 @@ const bool run_on_octX_skim = 0; // <---- set temporary swith here
 //const bool useSimpleZvetoAES_reject_two_RL_electrons = 0;
 
 bool use_old_Z_veto = false; //TEMPORARY
+
+const string mcname[16]  = { "data", "ttbar", "QCD", "enri1", "enri2" ,"enri3", "bce1","bce2","bce3",
+			     "wj", "zj","vqq", "singleTop","tW","tchan","schan" };
+const string mclabel[16] = { "data", "signal","QCD","enri1","enri2","enri3","bce1","bce2","bce3",
+			     "W+jets","Z+jets","VQQ", "singleTop","tW","t-chan","s-chan" };
 
 
 void ana::SetInputFile(const char* fname) {
@@ -503,7 +512,7 @@ void ana::SetMCFlag(){
 
 
 void ana::DefineCrossSection(){
-
+  
   if ( LHCEnergyInTeV()==10 ) { //10TeV = default
     cross_section["ttbar"] =          414. ;  //xs 414 (NLO+NLL at 10TeV)   241.7 pb (LO)
     cross_section["ttjet"] =          414. ;
@@ -616,9 +625,8 @@ double ana::GetWeight(string mc) const {
 
 ana::ana(){
 
-
-   // (TL) Print out code compilation time and current time
-   cout << "Compilation Date/Time = " << __DATE__ << "  " << __TIME__ << endl;
+   // Print out code compilation time and current time
+   cout << "\nCompilation Date/Time = " << __DATE__ << "  " << __TIME__ << endl;
    TDatime now;
    cout << "Current local ";
    now.Print();
@@ -1975,6 +1983,7 @@ bool ana::EventLoop(){
      chain->SetBranchStatus("jets_energy",1);
      chain->SetBranchStatus("jets_eta",1);
      chain->SetBranchStatus("jets_pt",1);
+     chain->SetBranchStatus("jets_emf",1);
 
    } else if (jetAlgo()=="pfjet") { //PFJet
      chain->SetBranchStatus(Form("NPFJets"),1); //jets
@@ -1993,6 +2002,7 @@ bool ana::EventLoop(){
      chain->SetBranchStatus(Form("jets%s_energy",jetAlgo().c_str()),1);
      chain->SetBranchStatus(Form("jets%s_eta",   jetAlgo().c_str()),1);
      chain->SetBranchStatus(Form("jets%s_pt",    jetAlgo().c_str()),1);
+     chain->SetBranchStatus(Form("jets%s_emf",   jetAlgo().c_str()),1);
    } 
 
    // 30-10-09
@@ -2104,6 +2114,7 @@ bool ana::EventLoop(){
    const short nclass = 16; //data+mc
 
 
+
    // Add 17-9-09
    TDirectory *dir_DRemu = histf->mkdir("DRemu","Delta R(e,mu)");
    dir_DRemu->cd();
@@ -2131,7 +2142,7 @@ bool ana::EventLoop(){
    TH1F *h_ele_eta[4][nclass];
    TH1F *h_ele_phi[4][nclass];
    TH1F *h_ele_iso[4][nclass];
-   addHistoDataAndMC( h_nele, "nele", "N(e) (no cut)", 6,0,6);
+   addHistoDataAndMC( h_nele,       "nele",     "N(e) (no cut)", 6,0,6);
    addHistoDataAndMC( h_ele_ET[0],  "ele_ET",   "E_{T}(all e) (nocut)",            50,0,100);
    addHistoDataAndMC( h_ele_ET[1],  "ele1_ET",  "E_{T}(leading e: no cut)",        50,0,100);
    addHistoDataAndMC( h_ele_ET[2],  "ele2_ET",  "E_{T}(2^{nd} leading e: no cut)", 50,0,100);
@@ -2148,6 +2159,8 @@ bool ana::EventLoop(){
    addHistoDataAndMC( h_ele_iso[1], "ele1_iso", "RelIso(leading e: no cut)",        1000,0,2);
    addHistoDataAndMC( h_ele_iso[2], "ele2_iso", "RelIso(2^{nd} leading e: no cut)", 1000,0,2);
    addHistoDataAndMC( h_ele_iso[3], "ele3_iso", "RelIso(3^{rd} leading e: no cut)", 1000,0,2);   
+
+
    /*
    // NOTE: if want plots for 1,2..j, use the following
    TH1F *h_nele[7][nclass];
@@ -2225,6 +2238,8 @@ bool ana::EventLoop(){
    TH1F *h_exp_DRej[nclass];    // DR(e,j0)
    TH1F *h_exp_DPhiej[nclass];  // DPhi(e,j0)
    TH1F *h_exp_DRjj[nclass];    // DR(j0,j1)
+   TH1F *h_exp_DPhijj[nclass];  // DPhi(j0,j1)
+   TH2F *h_exp_met_v_eeta[nclass];  // met:ele_eta
 
    addHistoDataAndMC( h_exp_ele_et,  "ele_et",  "ele E_{T}",   50, 20, 120 );
    addHistoDataAndMC( h_exp_ele_eta, "ele_eta", "ele #eta",   50, -2.5, 2.5 );
@@ -2233,7 +2248,8 @@ bool ana::EventLoop(){
    addHistoDataAndMC( h_exp_DRej,    "DRej",    "#DeltaR(e,j0)",   60, 0, 6 );
    addHistoDataAndMC( h_exp_DPhiej,  "DPhiej",  "#Delta#Phi(e,j0)", 64, -3.2, 3.2 );
    addHistoDataAndMC( h_exp_DRjj,    "DRjj",    "#DeltaR(j0,j1)", 60, 0, 6 );
-
+   addHistoDataAndMC( h_exp_DPhijj,  "DPhijj",  "#Delta#Phi(j0,j1)", 64, -3.2, 3.2 );
+   addHistoDataAndMC( h_exp_met_v_eeta,  "met_v_eeta", "met v #eta(e)", 50, 0, 100, 50, -2.5, 2.5 );
 
 
 
@@ -2985,12 +3001,13 @@ bool ana::EventLoop(){
 
 
    int counter = 0;
+   int counter_pass = 0;
    int printLevel = 0;
 
 
-   std::cout << " Starting! nEvents is " << nEvents << " counter is " << counter << std::endl;
+   cout << " Starting! nEvents is " << nEvents << " counter is " << counter << endl;
    if(GetLimit() > 0) nEvents = GetLimit();
-   std::cout << " Limited nEvents to " << nEvents <<std::endl;
+   cout << " Limited nEvents to " << nEvents << endl;
 
 
 
@@ -3006,9 +3023,10 @@ bool ana::EventLoop(){
    //
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   fprintf(outfile,"%6s %10s %10s %8s %8s   %6s %14s  %8s %8s %8s\n",
-	   "run","event","lumiBlock","tree","entry","ntj","leadingJetET","met","HT","mc");
-
+   fprintf(outfile,"%7s %6s %10s %10s %8s %8s %6s %13s %6s %8s %8s   %s\n",
+	   "no","run","event","lumiSec","tree","entry","ntj","leadingJetET","met","HT","mc", "file");
+   fprintf(outfile,"---------------------------------------------------------");
+   fprintf(outfile,"---------------------------------------------------------\n");
    if(debug()) cout << "\n Will start main Event Loop"<< endl;
 
 
@@ -3040,6 +3058,8 @@ bool ana::EventLoop(){
    // Monitor number of events with DR(e,mu) < 0.1
    int nEvent_DR_ele_muo_less_than_01 = 0;
 
+   // record list of "interesting" files that contain selected events
+   set<string> interestingFiles;
 
    for(Long64_t ev=0; ev<nEvents; ++ev) {
 
@@ -3358,6 +3378,8 @@ bool ana::EventLoop(){
 
      //cout << "\n==> There are  " << Nels << "  reco-electrons in this event."<<endl;
 
+     // basic
+     fillHistoDataAndMC( h_nele, Nels, this_weight );
 
 
      for (unsigned int i = 0; i<Nels; ++i) {
@@ -3944,8 +3966,9 @@ bool ana::EventLoop(){
 
      if (jetAlgo()=="Default") {
        for(unsigned int i = 0; i<Njets; ++i) {
-	 if (jets_pt->at(i) > JET_PTCUT &&
-	     fabs(jets_eta->at(i)) < 2.4) {
+	 if ( jets_pt->at(i) > JET_PTCUT   &&
+	      fabs(jets_eta->at(i)) < 2.4  &&
+	      jets_emf->at(i) > 0.01 )  { //<-- NEW: jets_emf
 	   TLorentzVector jt(jets_px->at(i),jets_py->at(i),jets_pz->at(i),jets_energy->at(i));
 	   nGoodJet++;
 	   jets.push_back(jt);
@@ -3954,7 +3977,8 @@ bool ana::EventLoop(){
      } else if (jetAlgo()=="SC5") {
        for(unsigned int i = 0; i<NjetsSC5; ++i) {
 	 if (jetsSC5_pt->at(i) > JET_PTCUT &&
-	     fabs(jetsSC5_eta->at(i)) < 2.4) {
+	     fabs(jetsSC5_eta->at(i)) < 2.4 &&
+	     jetsSC5_emf->at(i) > 0.01 )  {
 	   TLorentzVector jt(jetsSC5_px->at(i),jetsSC5_py->at(i),jetsSC5_pz->at(i),jetsSC5_energy->at(i));
 	   nGoodJet++;
 	   jets.push_back(jt);
@@ -3963,7 +3987,8 @@ bool ana::EventLoop(){
      } else if (jetAlgo()=="KT4") {
        for(unsigned int i = 0; i<NjetsKT4; ++i) {
 	 if (jetsKT4_pt->at(i) > JET_PTCUT &&
-	     fabs(jetsKT4_eta->at(i)) < 2.4) {
+	     fabs(jetsKT4_eta->at(i)) < 2.4 &&
+	     jetsKT4_emf->at(i) > 0.01 )  {
 	   TLorentzVector jt(jetsKT4_px->at(i),jetsKT4_py->at(i),jetsKT4_pz->at(i),jetsKT4_energy->at(i));
 	   nGoodJet++;
 	   jets.push_back(jt);
@@ -3972,7 +3997,7 @@ bool ana::EventLoop(){
      } else if (jetAlgo()=="pfjet") {
        for(unsigned int i = 0; i<NPFJets; ++i) {
 	 if (PFJets_pt->at(i) > JET_PTCUT &&
-	     fabs(PFJets_eta->at(i)) < 2.4) {
+	     fabs(PFJets_eta->at(i)) < 2.4 ) {// NB: EMF cannot be calculated for PFJets
 	   TLorentzVector jt(PFJets_px->at(i),PFJets_py->at(i),PFJets_pz->at(i),PFJets_energy->at(i));
 	   nGoodJet++;
 	   jets.push_back(jt);
@@ -4044,9 +4069,6 @@ bool ana::EventLoop(){
      fillHisto_Njet_DataAndMC( h_nEle_s3_idRL,    nRobustLooseEle, 1.0 ); //also pass eidRL
      fillHisto_Njet_DataAndMC( h_nEle_s3_idRT,    nGoodEle,        1.0 ); //also pass eidRT
 
-     // (TL) Aug09
-     fillHistoDataAndMC( h_nele, Nels, this_weight );
-     // fillHisto_Njet_DataAndMC( h_nele, Nels, this_weight );
 
 
 
@@ -4432,15 +4454,19 @@ bool ana::EventLoop(){
      //E+jets Analysis
      if(e_plus_jet_pass && nGoodJet >= 4) {
 	  
+       ++counter_pass;
+
        //Sample hist
        pass_ht->Fill(ht, this_weight);
        pass_met->Fill(this_met, this_weight);
        fillHistoDataAndMC( h_ed0_pass, this_isoele_d0, this_weight );
 
        //Print out for each selected event
-       fprintf(outfile,"%6d %10d %10d %8d %8lld  %6dj %14.2f  %8.2f %8.2f %8s\n",
-	       run, event, lumiBlock, chain->GetTreeNumber(), 
-	       lflag, nGoodJet, jets.at(0).Pt(), this_met, ht, this_mc.c_str());
+       fprintf(outfile,"%7d %6d %10d %10d %8d %8lld %5dj %11.2f %8.2f %8.2f %8s   %s\n",
+	       counter_pass, run, event, lumiBlock, chain->GetTreeNumber(), 
+	       lflag, nGoodJet, jets.at(0).Pt(), this_met, ht, this_mc.c_str(),
+	       chain->GetCurrentFile()->GetName());
+       interestingFiles.insert( chain->GetCurrentFile()->GetName() );
      }
 
 
@@ -4471,7 +4497,9 @@ bool ana::EventLoop(){
 	 fillHistoDataAndMC( h_exp_j1_pt,   jets.at(1).Pt(),           this_weight );
 	 fillHistoDataAndMC( h_exp_DRej,    iso_electrons.at(0).DeltaR(   jets.at(0) ),  this_weight );
 	 fillHistoDataAndMC( h_exp_DPhiej,  iso_electrons.at(0).DeltaPhi( jets.at(0) ),  this_weight );
-	 fillHistoDataAndMC( h_exp_DRjj,    jets.at(0).DeltaPhi( jets.at(1) ),  this_weight );
+	 fillHistoDataAndMC( h_exp_DRjj,    jets.at(0).DeltaR(   jets.at(1) ), this_weight );
+	 fillHistoDataAndMC( h_exp_DPhijj,  jets.at(0).DeltaPhi( jets.at(1) ), this_weight );
+	 fillHistoDataAndMC( h_exp_met_v_eeta,  this_met, iso_electrons.at(0).Eta(), this_weight );
        }
      }
      if(debug()) cout << "[DEBUG] After N-1"<< endl;
@@ -5203,7 +5231,15 @@ bool ana::EventLoop(){
      cout << endl;
    }
    //---------
-
+   fprintf(outfile, "\nList of files that contain selected events:\n\n");
+   for(set<string>::const_iterator it = interestingFiles.begin(); it != interestingFiles.end(); ++it) {
+     //cout << *it << endl;
+     //     printf("%s\n", *it);
+     //     string aname = *it;
+     //fprintf(outfile, "%s\n", aname.c_str());
+     //fprintf(outfile, "%s\n", (*it).c_str());
+     fprintf(outfile, "%s\n", it->c_str());
+   }
    fclose(outfile);
 
    //MC - make bin zero the total bin for data-like print-out of numbers of events
@@ -5419,7 +5455,6 @@ bool ana::EventLoop(){
 
    }//end MC
 
-   cout << endl << " Finished! nEvents is " << nEvents << ", counter is " << counter << endl;
    
    cout.precision(myprec); //reset precision
 
@@ -5439,6 +5474,16 @@ bool ana::EventLoop(){
    if( DoConversionStudies() ) {PrintConversionTable();}
    //end 856
 
+   cout << "\n***********************************************************************";
+   cout << "\n*                                                                     *";
+   cout << "\n*           A N A L Y S I S       C O M P L E T E D                   *";
+   cout << "\n*                                                                     *";
+   cout << "\n***********************************************************************";
+   cout << "\n*   Available events:  " << left << setw(47) << nEvents << "*";
+   cout << "\n*   Processed events:  " << left << setw(47) << counter << "*";
+   cout << "\n*   Passed events:     " << left << setw(47) << counter_pass << "*";
+   cout << "\n***********************************************************************\n";
+
    // (TL) Print current time
    TDatime now;
    cout << endl << "Current local ";
@@ -5446,7 +5491,6 @@ bool ana::EventLoop(){
    cout << endl;
 
    return true;
-
 
 }// end EventLoop()
 
@@ -6522,7 +6566,7 @@ bool ana::EstimateQCD( const string inputFile ) {
 
   // Print result table
   //---------------------
-  fprintf(outfile, "%%- - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
+  fprintf(outfile, "\n%%- - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
   fprintf(outfile, "%%    QCD Estimation Results\n");
   fprintf(outfile, "%%- - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
   fprintf(outfile, "%%\\scriptsize\n"); //small font size
@@ -6820,10 +6864,6 @@ void ana::valid_fillHisto(TH1F* h[][7], const bool cuts[8], int nj, double value
 void ana::addHistoDataAndMC( TH1F* h[], const string name, const string title,
 			     const int nbin, const float xlow, const float xup ) const {
 
-  const string mcname[16]  = { "data", "ttbar", "QCD", "enri1", "enri2" ,"enri3", "bce1","bce2","bce3",
-			      "wj", "zj","vqq", "singleTop","tW","tchan","schan" };
-  const string mclabel[16] = { "data", "signal","QCD","enri1","enri2","enri3","bce1","bce2","bce3",
-			      "W+jets","Z+jets","VQQ", "singleTop","tW","t-chan","s-chan" };
   short nhisto = 1; //1 for real data
   if(!IsData()) nhisto = 16; //MC
 
@@ -6838,8 +6878,28 @@ void ana::addHistoDataAndMC( TH1F* h[], const string name, const string title,
     h[i]->Sumw2();
   }
 }
+//----- my method to add a set of 2D histograms (for each type of MC when running on MC) ------
+void ana::addHistoDataAndMC( TH2F* h[], const string name, const string title,
+			     const int nbin, const float xlow, const float xup,
+			     const int nbiny, const float ylow, const float yup ) const {
 
-//-------- my method to fill 1D histograms (acc to MC type when running on MC) -------------
+  short nhisto = 1; //1 for real data
+  if(!IsData()) nhisto = 16; //MC
+
+  for (short i=0; i<nhisto; ++i) {
+    // only do for mc present in input
+    if( i>0 && is_mc_present(i)==false ) continue;
+    char hname[70];
+    char htitle[100];
+    sprintf( hname,  "%s__%s",  name.c_str(),  mcname[i].c_str() );
+    sprintf( htitle, "%s (%s)", title.c_str(), mclabel[i].c_str() );
+    h[i] = new TH2F(hname, htitle, nbin, xlow, xup, nbiny, ylow, yup);
+    h[i]->Sumw2();
+  }
+}
+
+
+//-------- my method to fill 1D histograms (acc to MC type when running on MC) ---------
 void ana::fillHistoDataAndMC(TH1F* h[], const float value, const double w ) const {
 
   if(debug()) cout << "\nStart of << fillHistoDataAndMC >>: " << h[0]->GetName() << endl;
@@ -6863,6 +6923,32 @@ void ana::fillHistoDataAndMC(TH1F* h[], const float value, const double w ) cons
     }
   }
   if(debug()) cout << "End of << fillHistoDataAndMC >>" << endl;
+}
+//--------------------------------------------------------------------------------------
+//-------- my method to fill 2D histograms (acc to MC type when running on MC) ---------
+void ana::fillHistoDataAndMC(TH2F* h[], const float v1, const float v2, const double w ) const {
+
+  if(debug()) cout << "\nStart of << fillHistoDataAndMC 2D >>: " << h[0]->GetName() << endl;
+  h[0]->Fill(v1,v2, w); //all events (data)
+  if(!IsData()) { //run on MC
+    if      (isTTbar)       h[1]->Fill(v1,v2,w);
+    else if (isQCD) {       h[2]->Fill(v1,v2,w); //all QCD
+      if      (isEnri1)     h[3]->Fill(v1,v2,w);
+      else if (isEnri2)     h[4]->Fill(v1,v2,w);
+      else if (isEnri3)     h[5]->Fill(v1,v2,w);
+      else if (isBce1)      h[6]->Fill(v1,v2,w);
+      else if (isBce2)      h[7]->Fill(v1,v2,w);
+      else if (isBce3)      h[8]->Fill(v1,v2,w);
+    } else if (isWjets)     h[9]->Fill(v1,v2,w);
+    else if (isZjets)       h[10]->Fill(v1,v2,w);
+    else if (isVQQ)         h[11]->Fill(v1,v2,w);
+    else if (isSingleTop) { h[12]->Fill(v1,v2,w); //all single top
+      if      (isTW)        h[13]->Fill(v1,v2,w);
+      else if (isTchan)     h[14]->Fill(v1,v2,w);
+      else if (isSchan)     h[15]->Fill(v1,v2,w);
+    }
+  }
+  if(debug()) cout << "End of << fillHistoDataAndMC 2D >>" << endl;
 }
 //--------------------------------------------------------------------------------------
 
@@ -7049,11 +7135,6 @@ void ana::addHisto_Njet_DataAndMC( TH1F* h[7][16], const string name, const stri
   const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
   const string jetlabel[7] = {"0j","1j","2j","3j","4j", ">=4j","allj"};
 
-  const string mcname[16]  = { "data","ttbar","QCD","enri1","enri2","enri3","bce1","bce2","bce3",
-			       "wj", "zj","vqq", "singleTop","tW","tchan","schan" };
-  const string mclabel[16] = { "data","signal","QCD","enri1","enri2","enri3","bce1","bce2","bce3",
-			       "W+jets","Z+jets","VQQ", "singleTop","tW","t-chan","s-chan" };
-
   short ntype = 1; //1 for real data
   if(!IsData()) ntype = 16; //MC
 
@@ -7118,17 +7199,6 @@ void ana::fillHisto_Njet_DataAndMC( TH1F* h[7][16], const float value, const dou
 //  13    tW
 //  14    tchan
 //  15    schan
-/*
-unsigned int ana::eventBarCode() {
-  
-  if(isTTbar) return 0;
-  }
-    else if(isWjets) { //wj
-      h = (TH2
-    }
-  }
-}
-*/
 
 
 

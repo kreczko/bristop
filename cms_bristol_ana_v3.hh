@@ -1293,7 +1293,7 @@ private:
   float calcDeltaEta(const TLorentzVector& p1,const TLorentzVector& p2) const;
   float calcDeltaPhi(const TLorentzVector& p1,const TLorentzVector& p2) const;
 
-  bool  ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele) ;//const;
+  bool  ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele);
 
 
   // QCD estimation
@@ -1313,12 +1313,14 @@ private:
   void fillHistoNjet_DataAndMC( const string hname, const float value, const double weight );
   void fillHistoNjet_DataAndMC( const string hname, const float v1, const float v2, const double weight );
 
-  //  void fillHistoNjet2D( TH1F* h[][16], const int ec, const float value, const double weight, const int nGoodJet );//NEW
   void fillHistoNjet2D( TH1F* h[][16], const int ec, const float value, const double weight );//NEW
 
   // Helper methods to fill histograms for data and each type of MC
   void addHistoDataAndMC( TH1F* h[], const string, const string, const int, const float, const float ) const;
-  void fillHistoDataAndMC( TH1F* h[], const float value, const double weight) const;
+  void addHistoDataAndMC( TH2F* h[], const string, const string, const int, const float, const float, 
+			  const int, const float, const float ) const;
+  void fillHistoDataAndMC( TH1F* h[], const float value, const double weight ) const;
+  void fillHistoDataAndMC( TH2F* h[], const float v1, const float v2, const double weight ) const;
 
   // New
   void addHisto_Njet_DataAndMC( TH1F* h[7][16], const string, const string, const int, const float, const float);
