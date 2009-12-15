@@ -1,6 +1,20 @@
 //#====================================================#
 //# Last update:
 //
+// 15 Dec 09: a) change nbin of m3 from 100 to 800.
+//            b) added Init() function for setting branch address to protect against running on data, ie do not 
+//               read MC branches. Also do not read extra jet/met collections if not available.
+//
+// 4 Dec 09: ensure control sample (plan B) is exclusive of signal sample (add !e_plus_jet_pass cut). 
+//           Add more trials for control sample.
+// 3 Dec 09: fix bug of plan A/B switch.
+// 2 Dec 09: Revisit Z veto. Cut on M(RL,RL) instead of M(RT,RL)?
+//           QCD planB: add more histo for new control samples (fail RL,cL,cT).
+//           Add options for RunPlanB, SetEleID.
+//
+// 11 Nov 09: Add getRelIso() function.
+// Temporary change 10 Nov 09: replace DIFFZ cut with EETA<1.5 (Plan B). Add trial AES definitions.
+// ---
 // 6 Nob 09: Fix DRjj, add DPhijj, add met:ele_eta scatter plot. Add a fillHisto function.
 //           Add conter_pass.
 // 5 Nov 09: Print out file name of selected events in log, print a list at the end.
@@ -159,6 +173,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <vector>
+#include <time.h>
 
 using namespace std;
 
@@ -193,16 +208,17 @@ using namespace RooFit;
 #include "cms_bristol_ana_v3.hh" // defines ana class, including branches and leaves for tre
 
 
-// Global constants
+// Global variables/constants
 const int ntjet(5);
 const int myprec(1); //no of decimal point for weighted nEvent
+const int nbm3 = 800;
 
 //const bool run_on_octX_SD = 1;//true; // <---- set temporary swith here
 const bool run_on_octX_skim = 0; // <---- set temporary swith here
 //const bool useSimpleZvetoAES = 0;
 //const bool useSimpleZvetoAES_reject_two_RL_electrons = 0;
 
-bool use_old_Z_veto = false; //TEMPORARY
+const bool use_old_Z_veto = false; //TEMPORARY
 
 const string mcname[16]  = { "data", "ttbar", "QCD", "enri1", "enri2" ,"enri3", "bce1","bce2","bce3",
 			     "wj", "zj","vqq", "singleTop","tW","tchan","schan" };
@@ -460,6 +476,7 @@ void ana::PrintCuts() const {
   cout << " JET pt cut = " << JET_PTCUT  << " GeV" << endl;
   cout << " MET cut    = " << METCUT  << " GeV" << endl;
   //  cout << " HT cut     = " << HTCUT  << " GeV" << endl;
+  cout << " ELECTRON ID requirement  =  " << printEleID() << endl;
   cout << "\n***********************************************" << endl;
   cout << "\n  HT cut in AES:  " << AES_HT_cut << " GeV";
   cout << "\n MET cut in AES:  " << AES_MET_cut << " GeV" << endl;
@@ -471,6 +488,11 @@ void ana::PrintCuts() const {
   cout << "\n MET collection:  " << metAlgo() << endl;
   cout << "\n***********************************************" << endl;
   cout << "\n\n use_old_Z_veto : "<<  use_old_Z_veto << endl << endl;
+  cout << "\n***********************************************" << endl;
+  if( RunPlanB() ) {
+    cout << "\n  Run with Plan B:  MET is not used, add Eta(e) <1.442 as last cut" << endl;
+    cout << "\n***********************************************" << endl;
+  }
 
 }//PrintCuts
 
@@ -637,10 +659,8 @@ ana::ana(){
    cout << "\n*        C M S     B R I S T O L     T O P     A N A L Y S I S        *";
    cout << "\n*                                                                     *";
    cout << "\n***********************************************************************";
-   //   cout << "\n\n use_old_Z_veto : "<<  use_old_Z_veto << endl;
    cout << endl << endl; 
 
-   //mytool = 0;
   
    chain = new TChain("configurableAnalysis/eventB");
    chain2 = new TChain("configurableAnalysis/eventV");
@@ -655,14 +675,76 @@ ana::ana(){
    METCUT    = 20.0;
    HTCUT     = 0.0;
    nCutSetInScript = 0;
-   AES_HT_cut = 100.0;
-   AES_MET_cut = 20.0;
-   useSimpleZvetoAES = false;
+   AES_HT_cut = 200.0;
+   AES_MET_cut = 15.0;
+   useSimpleZvetoAES = true;
+   m_runPlanB = false;
+   m_eID = robustTight; //enum
 
    // integrated luminosity
    intlumi = 20.0; //pb-1
    useNewReliso = true;
    ScientificNotation = true;
+
+   // initialize private variables (MC study)
+   mc_sample_has_ttbar = false;
+   mc_sample_has_Wjet  = false;
+   mc_sample_has_Zjet  = false;
+   mc_sample_has_QCD   = false;
+   mc_sample_has_enri1 = false;
+   mc_sample_has_enri2 = false;
+   mc_sample_has_enri3 = false;
+   mc_sample_has_bce1  = false;
+   mc_sample_has_bce2  = false;
+   mc_sample_has_bce3  = false;
+   mc_sample_has_VQQ   = false;
+   mc_sample_has_singleTop = false;
+   mc_sample_has_tW    = false;
+   mc_sample_has_tchan = false;
+   mc_sample_has_schan = false;
+   isTTbar = false;
+   isWjets = false;
+   isZjets = false;
+   isQCD   = false;
+   isEnri1 = false;
+   isEnri2 = false;
+   isEnri3 = false;
+   isBce1  = false;
+   isBce2  = false;
+   isBce3  = false;
+   isVQQ   = false;
+   isSingleTop = false;
+   isTW    = false;
+   isTchan = false;
+   isSchan = false;
+   this_weight = 1.0;
+   m_nGoodJet = 0;
+   m_QCDest_reliso_bin_width = 0.01;
+   m_doValidation = false;
+   m_plotRelisoNES = true;
+   m_debug = false;
+   m_ConversionStudies = false;
+   m_jetAlgo = "Default";
+   m_metAlgo = "Default";
+   m_LHCEnergyInTeV = 10.0; //Default is 10 TeV
+   m_run_on_SD = false;
+
+   //856
+   ConversionCounter = 0;
+   for(int k=0;k<20; ++k){
+     for(int i=0;i<2; ++i){
+       for(int j=0;j<5; ++j){
+         ConversionArray[k][i][j] = 0;
+       }
+     }
+   }
+   // end 856
+
+   mycounter = 0;
+}
+
+void ana::Init(){
+   cout << "\n Initializing tree branches\n"  << endl;
 
    // Set object pointer (v3)
    PFJets_energy = 0;
@@ -1238,32 +1320,37 @@ ana::ana(){
 
    
    // Set branch addresses and branch pointers
-   chain->SetBranchAddress("NPFJets", &NPFJets, &b_NPFJets);
-   chain->SetBranchAddress("PFJets_energy", &PFJets_energy, &b_PFJets_energy);
-   chain->SetBranchAddress("PFJets_et", &PFJets_et, &b_PFJets_et);
-   chain->SetBranchAddress("PFJets_eta", &PFJets_eta, &b_PFJets_eta);
-   chain->SetBranchAddress("PFJets_phi", &PFJets_phi, &b_PFJets_phi);
-   chain->SetBranchAddress("PFJets_pt", &PFJets_pt, &b_PFJets_pt);
-   chain->SetBranchAddress("PFJets_px", &PFJets_px, &b_PFJets_px);
-   chain->SetBranchAddress("PFJets_py", &PFJets_py, &b_PFJets_py);
-   chain->SetBranchAddress("PFJets_pz", &PFJets_pz, &b_PFJets_pz);
-   chain->SetBranchAddress("PFJets_status", &PFJets_status, &b_PFJets_status);
-   chain->SetBranchAddress("PFJets_theta", &PFJets_theta, &b_PFJets_theta);
-   chain->SetBranchAddress("PFJets_chgEmE", &PFJets_chgEmE, &b_PFJets_chgEmE);
-   chain->SetBranchAddress("PFJets_chgHadE", &PFJets_chgHadE, &b_PFJets_chgHadE);
-   chain->SetBranchAddress("PFJets_chgMuE", &PFJets_chgMuE, &b_PFJets_chgMuE);
-   chain->SetBranchAddress("PFJets_chg_Mult", &PFJets_chg_Mult, &b_PFJets_chg_Mult);
-   chain->SetBranchAddress("PFJets_neutralEmE", &PFJets_neutralEmE, &b_PFJets_neutralEmE);
-   chain->SetBranchAddress("PFJets_neutralHadE", &PFJets_neutralHadE, &b_PFJets_neutralHadE);
-   chain->SetBranchAddress("PFJets_neutral_Mult", &PFJets_neutral_Mult, &b_PFJets_neutral_Mult);
-   chain->SetBranchAddress("PFJets_mu_Mult", &PFJets_mu_Mult, &b_PFJets_mu_Mult);
-   chain->SetBranchAddress("PFJets_mass", &PFJets_mass, &b_PFJets_mass);
-   chain->SetBranchAddress("NPFMets", &NPFMets, &b_NPFMets);
-   chain->SetBranchAddress("PFMets_et", &PFMets_et, &b_PFMets_et);
-   chain->SetBranchAddress("PFMets_phi", &PFMets_phi, &b_PFMets_phi);
-   chain->SetBranchAddress("PFMets_ex", &PFMets_ex, &b_PFMets_ex);
-   chain->SetBranchAddress("PFMets_ey", &PFMets_ey, &b_PFMets_ey);
-   chain->SetBranchAddress("PFMets_sumEt", &PFMets_sumEt, &b_PFMets_sumEt);
+   if( NPFJets>0 ){
+     cout << "INFO: There are PF jets in ntuple." << endl;
+     chain->SetBranchAddress("NPFJets", &NPFJets, &b_NPFJets);
+     chain->SetBranchAddress("PFJets_energy", &PFJets_energy, &b_PFJets_energy);
+     chain->SetBranchAddress("PFJets_et", &PFJets_et, &b_PFJets_et);
+     chain->SetBranchAddress("PFJets_eta", &PFJets_eta, &b_PFJets_eta);
+     chain->SetBranchAddress("PFJets_phi", &PFJets_phi, &b_PFJets_phi);
+     chain->SetBranchAddress("PFJets_pt", &PFJets_pt, &b_PFJets_pt);
+     chain->SetBranchAddress("PFJets_px", &PFJets_px, &b_PFJets_px);
+     chain->SetBranchAddress("PFJets_py", &PFJets_py, &b_PFJets_py);
+     chain->SetBranchAddress("PFJets_pz", &PFJets_pz, &b_PFJets_pz);
+     chain->SetBranchAddress("PFJets_status", &PFJets_status, &b_PFJets_status);
+     chain->SetBranchAddress("PFJets_theta", &PFJets_theta, &b_PFJets_theta);
+     chain->SetBranchAddress("PFJets_chgEmE", &PFJets_chgEmE, &b_PFJets_chgEmE);
+     chain->SetBranchAddress("PFJets_chgHadE", &PFJets_chgHadE, &b_PFJets_chgHadE);
+     chain->SetBranchAddress("PFJets_chgMuE", &PFJets_chgMuE, &b_PFJets_chgMuE);
+     chain->SetBranchAddress("PFJets_chg_Mult", &PFJets_chg_Mult, &b_PFJets_chg_Mult);
+     chain->SetBranchAddress("PFJets_neutralEmE", &PFJets_neutralEmE, &b_PFJets_neutralEmE);
+     chain->SetBranchAddress("PFJets_neutralHadE", &PFJets_neutralHadE, &b_PFJets_neutralHadE);
+     chain->SetBranchAddress("PFJets_neutral_Mult", &PFJets_neutral_Mult, &b_PFJets_neutral_Mult);
+     chain->SetBranchAddress("PFJets_mu_Mult", &PFJets_mu_Mult, &b_PFJets_mu_Mult);
+     chain->SetBranchAddress("PFJets_mass", &PFJets_mass, &b_PFJets_mass);
+     chain->SetBranchAddress("NPFMets", &NPFMets, &b_NPFMets);
+     chain->SetBranchAddress("PFMets_et", &PFMets_et, &b_PFMets_et);
+     chain->SetBranchAddress("PFMets_phi", &PFMets_phi, &b_PFMets_phi);
+     chain->SetBranchAddress("PFMets_ex", &PFMets_ex, &b_PFMets_ex);
+     chain->SetBranchAddress("PFMets_ey", &PFMets_ey, &b_PFMets_ey);
+     chain->SetBranchAddress("PFMets_sumEt", &PFMets_sumEt, &b_PFMets_sumEt);
+   } else {
+     cout << "INFO: PF jets/met not available." << endl;
+   } 
    chain->SetBranchAddress("NbeamSpot", &NbeamSpot, &b_NbeamSpot);
    chain->SetBranchAddress("beamSpot_x", &beamSpot_x, &b_beamSpot_x);
    chain->SetBranchAddress("beamSpot_y", &beamSpot_y, &b_beamSpot_y);
@@ -1426,137 +1513,82 @@ ana::ana(){
    chain->SetBranchAddress("jets_area", &jets_area, &b_jets_area);
    chain->SetBranchAddress("jets_mass", &jets_mass, &b_jets_mass);
 
-   chain->SetBranchAddress("NjetsKT4", &NjetsKT4, &b_NjetsKT4);
-   chain->SetBranchAddress("jetsKT4_energy", &jetsKT4_energy, &b_jetsKT4_energy);
-   chain->SetBranchAddress("jetsKT4_et", &jetsKT4_et, &b_jetsKT4_et);
-   chain->SetBranchAddress("jetsKT4_eta", &jetsKT4_eta, &b_jetsKT4_eta);
-   chain->SetBranchAddress("jetsKT4_phi", &jetsKT4_phi, &b_jetsKT4_phi);
-   chain->SetBranchAddress("jetsKT4_pt", &jetsKT4_pt, &b_jetsKT4_pt);
-   chain->SetBranchAddress("jetsKT4_px", &jetsKT4_px, &b_jetsKT4_px);
-   chain->SetBranchAddress("jetsKT4_py", &jetsKT4_py, &b_jetsKT4_py);
-   chain->SetBranchAddress("jetsKT4_pz", &jetsKT4_pz, &b_jetsKT4_pz);
-   chain->SetBranchAddress("jetsKT4_status", &jetsKT4_status, &b_jetsKT4_status);
-   chain->SetBranchAddress("jetsKT4_theta", &jetsKT4_theta, &b_jetsKT4_theta);
-   chain->SetBranchAddress("jetsKT4_btag_TC_highPur", &jetsKT4_btag_TC_highPur, &b_jetsKT4_btag_TC_highPur);
-   chain->SetBranchAddress("jetsKT4_btag_TC_highEff", &jetsKT4_btag_TC_highEff, &b_jetsKT4_btag_TC_highEff);
-   chain->SetBranchAddress("jetsKT4_btag_jetProb", &jetsKT4_btag_jetProb, &b_jetsKT4_btag_jetProb);
-   chain->SetBranchAddress("jetsKT4_btag_jetBProb", &jetsKT4_btag_jetBProb, &b_jetsKT4_btag_jetBProb);
-   chain->SetBranchAddress("jetsKT4_btag_softEle", &jetsKT4_btag_softEle, &b_jetsKT4_btag_softEle);
-   chain->SetBranchAddress("jetsKT4_btag_softMuon", &jetsKT4_btag_softMuon, &b_jetsKT4_btag_softMuon);
-   chain->SetBranchAddress("jetsKT4_btag_softMuonNoIP", &jetsKT4_btag_softMuonNoIP, &b_jetsKT4_btag_softMuonNoIP);
-   chain->SetBranchAddress("jetsKT4_btag_secVertex", &jetsKT4_btag_secVertex, &b_jetsKT4_btag_secVertex);
-   chain->SetBranchAddress("jetsKT4_chgEmE", &jetsKT4_chgEmE, &b_jetsKT4_chgEmE);
-   chain->SetBranchAddress("jetsKT4_chgHadE", &jetsKT4_chgHadE, &b_jetsKT4_chgHadE);
-   chain->SetBranchAddress("jetsKT4_chgMuE", &jetsKT4_chgMuE, &b_jetsKT4_chgMuE);
-   chain->SetBranchAddress("jetsKT4_chg_Mult", &jetsKT4_chg_Mult, &b_jetsKT4_chg_Mult);
-   chain->SetBranchAddress("jetsKT4_neutralEmE", &jetsKT4_neutralEmE, &b_jetsKT4_neutralEmE);
-   chain->SetBranchAddress("jetsKT4_neutralHadE", &jetsKT4_neutralHadE, &b_jetsKT4_neutralHadE);
-   chain->SetBranchAddress("jetsKT4_neutral_Mult", &jetsKT4_neutral_Mult, &b_jetsKT4_neutral_Mult);
-   chain->SetBranchAddress("jetsKT4_mu_Mult", &jetsKT4_mu_Mult, &b_jetsKT4_mu_Mult);
-   chain->SetBranchAddress("jetsKT4_emf", &jetsKT4_emf, &b_jetsKT4_emf);
-   chain->SetBranchAddress("jetsKT4_ehf", &jetsKT4_ehf, &b_jetsKT4_ehf);
-   chain->SetBranchAddress("jetsKT4_n60", &jetsKT4_n60, &b_jetsKT4_n60);
-   chain->SetBranchAddress("jetsKT4_n90", &jetsKT4_n90, &b_jetsKT4_n90);
-   chain->SetBranchAddress("jetsKT4_area", &jetsKT4_area, &b_jetsKT4_area);
-   chain->SetBranchAddress("jetsKT4_mass", &jetsKT4_mass, &b_jetsKT4_mass);
-   chain->SetBranchAddress("NjetsSC5", &NjetsSC5, &b_NjetsSC5);
-   chain->SetBranchAddress("jetsSC5_energy", &jetsSC5_energy, &b_jetsSC5_energy);
-   chain->SetBranchAddress("jetsSC5_et", &jetsSC5_et, &b_jetsSC5_et);
-   chain->SetBranchAddress("jetsSC5_eta", &jetsSC5_eta, &b_jetsSC5_eta);
-   chain->SetBranchAddress("jetsSC5_phi", &jetsSC5_phi, &b_jetsSC5_phi);
-   chain->SetBranchAddress("jetsSC5_pt", &jetsSC5_pt, &b_jetsSC5_pt);
-   chain->SetBranchAddress("jetsSC5_px", &jetsSC5_px, &b_jetsSC5_px);
-   chain->SetBranchAddress("jetsSC5_py", &jetsSC5_py, &b_jetsSC5_py);
-   chain->SetBranchAddress("jetsSC5_pz", &jetsSC5_pz, &b_jetsSC5_pz);
-   chain->SetBranchAddress("jetsSC5_status", &jetsSC5_status, &b_jetsSC5_status);
-   chain->SetBranchAddress("jetsSC5_theta", &jetsSC5_theta, &b_jetsSC5_theta);
-   chain->SetBranchAddress("jetsSC5_btag_TC_highPur", &jetsSC5_btag_TC_highPur, &b_jetsSC5_btag_TC_highPur);
-   chain->SetBranchAddress("jetsSC5_btag_TC_highEff", &jetsSC5_btag_TC_highEff, &b_jetsSC5_btag_TC_highEff);
-   chain->SetBranchAddress("jetsSC5_btag_jetProb", &jetsSC5_btag_jetProb, &b_jetsSC5_btag_jetProb);
-   chain->SetBranchAddress("jetsSC5_btag_jetBProb", &jetsSC5_btag_jetBProb, &b_jetsSC5_btag_jetBProb);
-   chain->SetBranchAddress("jetsSC5_btag_softEle", &jetsSC5_btag_softEle, &b_jetsSC5_btag_softEle);
-   chain->SetBranchAddress("jetsSC5_btag_softMuon", &jetsSC5_btag_softMuon, &b_jetsSC5_btag_softMuon);
-   chain->SetBranchAddress("jetsSC5_btag_softMuonNoIP", &jetsSC5_btag_softMuonNoIP, &b_jetsSC5_btag_softMuonNoIP);
-   chain->SetBranchAddress("jetsSC5_btag_secVertex", &jetsSC5_btag_secVertex, &b_jetsSC5_btag_secVertex);
-   chain->SetBranchAddress("jetsSC5_chgEmE", &jetsSC5_chgEmE, &b_jetsSC5_chgEmE);
-   chain->SetBranchAddress("jetsSC5_chgHadE", &jetsSC5_chgHadE, &b_jetsSC5_chgHadE);
-   chain->SetBranchAddress("jetsSC5_chgMuE", &jetsSC5_chgMuE, &b_jetsSC5_chgMuE);
-   chain->SetBranchAddress("jetsSC5_chg_Mult", &jetsSC5_chg_Mult, &b_jetsSC5_chg_Mult);
-   chain->SetBranchAddress("jetsSC5_neutralEmE", &jetsSC5_neutralEmE, &b_jetsSC5_neutralEmE);
-   chain->SetBranchAddress("jetsSC5_neutralHadE", &jetsSC5_neutralHadE, &b_jetsSC5_neutralHadE);
-   chain->SetBranchAddress("jetsSC5_neutral_Mult", &jetsSC5_neutral_Mult, &b_jetsSC5_neutral_Mult);
-   chain->SetBranchAddress("jetsSC5_mu_Mult", &jetsSC5_mu_Mult, &b_jetsSC5_mu_Mult);
-   chain->SetBranchAddress("jetsSC5_emf", &jetsSC5_emf, &b_jetsSC5_emf);
-   chain->SetBranchAddress("jetsSC5_ehf", &jetsSC5_ehf, &b_jetsSC5_ehf);
-   chain->SetBranchAddress("jetsSC5_n60", &jetsSC5_n60, &b_jetsSC5_n60);
-   chain->SetBranchAddress("jetsSC5_n90", &jetsSC5_n90, &b_jetsSC5_n90);
-   chain->SetBranchAddress("jetsSC5_area", &jetsSC5_area, &b_jetsSC5_area);
-   chain->SetBranchAddress("jetsSC5_mass", &jetsSC5_mass, &b_jetsSC5_mass);
-
-   chain->SetBranchAddress("Nmc_doc", &Nmc_doc, &b_Nmc_doc);
-   chain->SetBranchAddress("mc_doc_id", &mc_doc_id, &b_mc_doc_id);
-   chain->SetBranchAddress("mc_doc_pt", &mc_doc_pt, &b_mc_doc_pt);
-   chain->SetBranchAddress("mc_doc_px", &mc_doc_px, &b_mc_doc_px);
-   chain->SetBranchAddress("mc_doc_py", &mc_doc_py, &b_mc_doc_py);
-   chain->SetBranchAddress("mc_doc_pz", &mc_doc_pz, &b_mc_doc_pz);
-   chain->SetBranchAddress("mc_doc_eta", &mc_doc_eta, &b_mc_doc_eta);
-   chain->SetBranchAddress("mc_doc_phi", &mc_doc_phi, &b_mc_doc_phi);
-   chain->SetBranchAddress("mc_doc_theta", &mc_doc_theta, &b_mc_doc_theta);
-   chain->SetBranchAddress("mc_doc_energy", &mc_doc_energy, &b_mc_doc_energy);
-   chain->SetBranchAddress("mc_doc_status", &mc_doc_status, &b_mc_doc_status);
-   chain->SetBranchAddress("mc_doc_charge", &mc_doc_charge, &b_mc_doc_charge);
-   chain->SetBranchAddress("mc_doc_mother_id", &mc_doc_mother_id, &b_mc_doc_mother_id);
-   chain->SetBranchAddress("mc_doc_grandmother_id", &mc_doc_grandmother_id, &b_mc_doc_grandmother_id);
-   chain->SetBranchAddress("mc_doc_ggrandmother_id", &mc_doc_ggrandmother_id, &b_mc_doc_ggrandmother_id);
-   chain->SetBranchAddress("mc_doc_mother_pt", &mc_doc_mother_pt, &b_mc_doc_mother_pt);
-   chain->SetBranchAddress("mc_doc_vertex_x", &mc_doc_vertex_x, &b_mc_doc_vertex_x);
-   chain->SetBranchAddress("mc_doc_vertex_y", &mc_doc_vertex_y, &b_mc_doc_vertex_y);
-   chain->SetBranchAddress("mc_doc_vertex_z", &mc_doc_vertex_z, &b_mc_doc_vertex_z);
-   chain->SetBranchAddress("mc_doc_mass", &mc_doc_mass, &b_mc_doc_mass);
-   chain->SetBranchAddress("mc_doc_numOfDaughters", &mc_doc_numOfDaughters, &b_mc_doc_numOfDaughters);
-   chain->SetBranchAddress("mc_doc_numOfMothers", &mc_doc_numOfMothers, &b_mc_doc_numOfMothers);
-   chain->SetBranchAddress("Nmc_electrons", &Nmc_electrons, &b_Nmc_electrons);
-   chain->SetBranchAddress("mc_electrons_id", &mc_electrons_id, &b_mc_electrons_id);
-   chain->SetBranchAddress("mc_electrons_pt", &mc_electrons_pt, &b_mc_electrons_pt);
-   chain->SetBranchAddress("mc_electrons_px", &mc_electrons_px, &b_mc_electrons_px);
-   chain->SetBranchAddress("mc_electrons_py", &mc_electrons_py, &b_mc_electrons_py);
-   chain->SetBranchAddress("mc_electrons_pz", &mc_electrons_pz, &b_mc_electrons_pz);
-   chain->SetBranchAddress("mc_electrons_eta", &mc_electrons_eta, &b_mc_electrons_eta);
-   chain->SetBranchAddress("mc_electrons_phi", &mc_electrons_phi, &b_mc_electrons_phi);
-   chain->SetBranchAddress("mc_electrons_theta", &mc_electrons_theta, &b_mc_electrons_theta);
-   chain->SetBranchAddress("mc_electrons_status", &mc_electrons_status, &b_mc_electrons_status);
-   chain->SetBranchAddress("mc_electrons_energy", &mc_electrons_energy, &b_mc_electrons_energy);
-   chain->SetBranchAddress("mc_electrons_charge", &mc_electrons_charge, &b_mc_electrons_charge);
-   chain->SetBranchAddress("mc_electrons_mother_id", &mc_electrons_mother_id, &b_mc_electrons_mother_id);
-   chain->SetBranchAddress("mc_electrons_mother_pt", &mc_electrons_mother_pt, &b_mc_electrons_mother_pt);
-   chain->SetBranchAddress("mc_electrons_grandmother_id", &mc_electrons_grandmother_id, &b_mc_electrons_grandmother_id);
-   chain->SetBranchAddress("mc_electrons_ggrandmother_id", &mc_electrons_ggrandmother_id, &b_mc_electrons_ggrandmother_id);
-   chain->SetBranchAddress("mc_electrons_vertex_x", &mc_electrons_vertex_x, &b_mc_electrons_vertex_x);
-   chain->SetBranchAddress("mc_electrons_vertex_y", &mc_electrons_vertex_y, &b_mc_electrons_vertex_y);
-   chain->SetBranchAddress("mc_electrons_vertex_z", &mc_electrons_vertex_z, &b_mc_electrons_vertex_z);
-   chain->SetBranchAddress("mc_electrons_mass", &mc_electrons_mass, &b_mc_electrons_mass);
-   chain->SetBranchAddress("mc_electrons_numOfDaughters", &mc_electrons_numOfDaughters, &b_mc_electrons_numOfDaughters);
-   chain->SetBranchAddress("Nmc_mus", &Nmc_mus, &b_Nmc_mus);
-   chain->SetBranchAddress("mc_mus_id", &mc_mus_id, &b_mc_mus_id);
-   chain->SetBranchAddress("mc_mus_pt", &mc_mus_pt, &b_mc_mus_pt);
-   chain->SetBranchAddress("mc_mus_px", &mc_mus_px, &b_mc_mus_px);
-   chain->SetBranchAddress("mc_mus_py", &mc_mus_py, &b_mc_mus_py);
-   chain->SetBranchAddress("mc_mus_pz", &mc_mus_pz, &b_mc_mus_pz);
-   chain->SetBranchAddress("mc_mus_eta", &mc_mus_eta, &b_mc_mus_eta);
-   chain->SetBranchAddress("mc_mus_phi", &mc_mus_phi, &b_mc_mus_phi);
-   chain->SetBranchAddress("mc_mus_theta", &mc_mus_theta, &b_mc_mus_theta);
-   chain->SetBranchAddress("mc_mus_status", &mc_mus_status, &b_mc_mus_status);
-   chain->SetBranchAddress("mc_mus_energy", &mc_mus_energy, &b_mc_mus_energy);
-   chain->SetBranchAddress("mc_mus_charge", &mc_mus_charge, &b_mc_mus_charge);
-   chain->SetBranchAddress("mc_mus_mother_id", &mc_mus_mother_id, &b_mc_mus_mother_id);
-   chain->SetBranchAddress("mc_mus_mother_pt", &mc_mus_mother_pt, &b_mc_mus_mother_pt);
-   chain->SetBranchAddress("mc_mus_grandmother_id", &mc_mus_grandmother_id, &b_mc_mus_grandmother_id);
-   chain->SetBranchAddress("mc_mus_ggrandmother_id", &mc_mus_ggrandmother_id, &b_mc_mus_ggrandmother_id);
-   chain->SetBranchAddress("mc_mus_vertex_x", &mc_mus_vertex_x, &b_mc_mus_vertex_x);
-   chain->SetBranchAddress("mc_mus_vertex_y", &mc_mus_vertex_y, &b_mc_mus_vertex_y);
-   chain->SetBranchAddress("mc_mus_vertex_z", &mc_mus_vertex_z, &b_mc_mus_vertex_z);
-   chain->SetBranchAddress("mc_mus_mass", &mc_mus_mass, &b_mc_mus_mass);
-   chain->SetBranchAddress("mc_mus_numOfDaughters", &mc_mus_numOfDaughters, &b_mc_mus_numOfDaughters);
+   if( NjetsKT4>0 ) {
+     cout << "INFO: There are KT4 jets in ntuple." << endl;
+     chain->SetBranchAddress("NjetsKT4", &NjetsKT4, &b_NjetsKT4);
+     chain->SetBranchAddress("jetsKT4_energy", &jetsKT4_energy, &b_jetsKT4_energy);
+     chain->SetBranchAddress("jetsKT4_et", &jetsKT4_et, &b_jetsKT4_et);
+     chain->SetBranchAddress("jetsKT4_eta", &jetsKT4_eta, &b_jetsKT4_eta);
+     chain->SetBranchAddress("jetsKT4_phi", &jetsKT4_phi, &b_jetsKT4_phi);
+     chain->SetBranchAddress("jetsKT4_pt", &jetsKT4_pt, &b_jetsKT4_pt);
+     chain->SetBranchAddress("jetsKT4_px", &jetsKT4_px, &b_jetsKT4_px);
+     chain->SetBranchAddress("jetsKT4_py", &jetsKT4_py, &b_jetsKT4_py);
+     chain->SetBranchAddress("jetsKT4_pz", &jetsKT4_pz, &b_jetsKT4_pz);
+     chain->SetBranchAddress("jetsKT4_status", &jetsKT4_status, &b_jetsKT4_status);
+     chain->SetBranchAddress("jetsKT4_theta", &jetsKT4_theta, &b_jetsKT4_theta);
+     chain->SetBranchAddress("jetsKT4_btag_TC_highPur", &jetsKT4_btag_TC_highPur, &b_jetsKT4_btag_TC_highPur);
+     chain->SetBranchAddress("jetsKT4_btag_TC_highEff", &jetsKT4_btag_TC_highEff, &b_jetsKT4_btag_TC_highEff);
+     chain->SetBranchAddress("jetsKT4_btag_jetProb", &jetsKT4_btag_jetProb, &b_jetsKT4_btag_jetProb);
+     chain->SetBranchAddress("jetsKT4_btag_jetBProb", &jetsKT4_btag_jetBProb, &b_jetsKT4_btag_jetBProb);
+     chain->SetBranchAddress("jetsKT4_btag_softEle", &jetsKT4_btag_softEle, &b_jetsKT4_btag_softEle);
+     chain->SetBranchAddress("jetsKT4_btag_softMuon", &jetsKT4_btag_softMuon, &b_jetsKT4_btag_softMuon);
+     chain->SetBranchAddress("jetsKT4_btag_softMuonNoIP", &jetsKT4_btag_softMuonNoIP, &b_jetsKT4_btag_softMuonNoIP);
+     chain->SetBranchAddress("jetsKT4_btag_secVertex", &jetsKT4_btag_secVertex, &b_jetsKT4_btag_secVertex);
+     chain->SetBranchAddress("jetsKT4_chgEmE", &jetsKT4_chgEmE, &b_jetsKT4_chgEmE);
+     chain->SetBranchAddress("jetsKT4_chgHadE", &jetsKT4_chgHadE, &b_jetsKT4_chgHadE);
+     chain->SetBranchAddress("jetsKT4_chgMuE", &jetsKT4_chgMuE, &b_jetsKT4_chgMuE);
+     chain->SetBranchAddress("jetsKT4_chg_Mult", &jetsKT4_chg_Mult, &b_jetsKT4_chg_Mult);
+     chain->SetBranchAddress("jetsKT4_neutralEmE", &jetsKT4_neutralEmE, &b_jetsKT4_neutralEmE);
+     chain->SetBranchAddress("jetsKT4_neutralHadE", &jetsKT4_neutralHadE, &b_jetsKT4_neutralHadE);
+     chain->SetBranchAddress("jetsKT4_neutral_Mult", &jetsKT4_neutral_Mult, &b_jetsKT4_neutral_Mult);
+     chain->SetBranchAddress("jetsKT4_mu_Mult", &jetsKT4_mu_Mult, &b_jetsKT4_mu_Mult);
+     chain->SetBranchAddress("jetsKT4_emf", &jetsKT4_emf, &b_jetsKT4_emf);
+     chain->SetBranchAddress("jetsKT4_ehf", &jetsKT4_ehf, &b_jetsKT4_ehf);
+     chain->SetBranchAddress("jetsKT4_n60", &jetsKT4_n60, &b_jetsKT4_n60);
+     chain->SetBranchAddress("jetsKT4_n90", &jetsKT4_n90, &b_jetsKT4_n90);
+     chain->SetBranchAddress("jetsKT4_area", &jetsKT4_area, &b_jetsKT4_area);
+     chain->SetBranchAddress("jetsKT4_mass", &jetsKT4_mass, &b_jetsKT4_mass);
+   } else {
+     cout << "INFO: KT4 jets not available." << endl;
+   }
+   if( NjetsSC5>0 ) {
+     cout << "INFO: There are SC5 jets in ntuple." << endl;
+     chain->SetBranchAddress("NjetsSC5", &NjetsSC5, &b_NjetsSC5);
+     chain->SetBranchAddress("jetsSC5_energy", &jetsSC5_energy, &b_jetsSC5_energy);
+     chain->SetBranchAddress("jetsSC5_et", &jetsSC5_et, &b_jetsSC5_et);
+     chain->SetBranchAddress("jetsSC5_eta", &jetsSC5_eta, &b_jetsSC5_eta);
+     chain->SetBranchAddress("jetsSC5_phi", &jetsSC5_phi, &b_jetsSC5_phi);
+     chain->SetBranchAddress("jetsSC5_pt", &jetsSC5_pt, &b_jetsSC5_pt);
+     chain->SetBranchAddress("jetsSC5_px", &jetsSC5_px, &b_jetsSC5_px);
+     chain->SetBranchAddress("jetsSC5_py", &jetsSC5_py, &b_jetsSC5_py);
+     chain->SetBranchAddress("jetsSC5_pz", &jetsSC5_pz, &b_jetsSC5_pz);
+     chain->SetBranchAddress("jetsSC5_status", &jetsSC5_status, &b_jetsSC5_status);
+     chain->SetBranchAddress("jetsSC5_theta", &jetsSC5_theta, &b_jetsSC5_theta);
+     chain->SetBranchAddress("jetsSC5_btag_TC_highPur", &jetsSC5_btag_TC_highPur, &b_jetsSC5_btag_TC_highPur);
+     chain->SetBranchAddress("jetsSC5_btag_TC_highEff", &jetsSC5_btag_TC_highEff, &b_jetsSC5_btag_TC_highEff);
+     chain->SetBranchAddress("jetsSC5_btag_jetProb", &jetsSC5_btag_jetProb, &b_jetsSC5_btag_jetProb);
+     chain->SetBranchAddress("jetsSC5_btag_jetBProb", &jetsSC5_btag_jetBProb, &b_jetsSC5_btag_jetBProb);
+     chain->SetBranchAddress("jetsSC5_btag_softEle", &jetsSC5_btag_softEle, &b_jetsSC5_btag_softEle);
+     chain->SetBranchAddress("jetsSC5_btag_softMuon", &jetsSC5_btag_softMuon, &b_jetsSC5_btag_softMuon);
+     chain->SetBranchAddress("jetsSC5_btag_softMuonNoIP", &jetsSC5_btag_softMuonNoIP, &b_jetsSC5_btag_softMuonNoIP);
+     chain->SetBranchAddress("jetsSC5_btag_secVertex", &jetsSC5_btag_secVertex, &b_jetsSC5_btag_secVertex);
+     chain->SetBranchAddress("jetsSC5_chgEmE", &jetsSC5_chgEmE, &b_jetsSC5_chgEmE);
+     chain->SetBranchAddress("jetsSC5_chgHadE", &jetsSC5_chgHadE, &b_jetsSC5_chgHadE);
+     chain->SetBranchAddress("jetsSC5_chgMuE", &jetsSC5_chgMuE, &b_jetsSC5_chgMuE);
+     chain->SetBranchAddress("jetsSC5_chg_Mult", &jetsSC5_chg_Mult, &b_jetsSC5_chg_Mult);
+     chain->SetBranchAddress("jetsSC5_neutralEmE", &jetsSC5_neutralEmE, &b_jetsSC5_neutralEmE);
+     chain->SetBranchAddress("jetsSC5_neutralHadE", &jetsSC5_neutralHadE, &b_jetsSC5_neutralHadE);
+     chain->SetBranchAddress("jetsSC5_neutral_Mult", &jetsSC5_neutral_Mult, &b_jetsSC5_neutral_Mult);
+     chain->SetBranchAddress("jetsSC5_mu_Mult", &jetsSC5_mu_Mult, &b_jetsSC5_mu_Mult);
+     chain->SetBranchAddress("jetsSC5_emf", &jetsSC5_emf, &b_jetsSC5_emf);
+     chain->SetBranchAddress("jetsSC5_ehf", &jetsSC5_ehf, &b_jetsSC5_ehf);
+     chain->SetBranchAddress("jetsSC5_n60", &jetsSC5_n60, &b_jetsSC5_n60);
+     chain->SetBranchAddress("jetsSC5_n90", &jetsSC5_n90, &b_jetsSC5_n90);
+     chain->SetBranchAddress("jetsSC5_area", &jetsSC5_area, &b_jetsSC5_area);
+     chain->SetBranchAddress("jetsSC5_mass", &jetsSC5_mass, &b_jetsSC5_mass);
+   } else {
+     cout << "INFO: SC5 jets not available." << endl;
+   }
    chain->SetBranchAddress("Nmets", &Nmets, &b_Nmets);
    chain->SetBranchAddress("mets_et", &mets_et, &b_mets_et);
    chain->SetBranchAddress("mets_phi", &mets_phi, &b_mets_phi);
@@ -1572,35 +1604,48 @@ ana::ana(){
    chain->SetBranchAddress("mets_phi_muonCor", &mets_phi_muonCor, &b_mets_phi_muonCor);
    chain->SetBranchAddress("mets_et_JESCor", &mets_et_JESCor, &b_mets_et_JESCor);
    chain->SetBranchAddress("mets_phi_JESCor", &mets_phi_JESCor, &b_mets_phi_JESCor);
-   // New 41109 4 Nov
-   /*
-   chain->SetBranchAddress("NmetsAK5L2", &NmetsAK5L2, &b_NmetsAK5L2);
-   chain->SetBranchAddress("metsAK5L2_et", &metsAK5L2_et, &b_metsAK5L2_et);
-   chain->SetBranchAddress("metsAK5L2_phi", &metsAK5L2_phi, &b_metsAK5L2_phi);
-   chain->SetBranchAddress("metsAK5L2_ex", &metsAK5L2_ex, &b_metsAK5L2_ex);
-   chain->SetBranchAddress("metsAK5L2_ey", &metsAK5L2_ey, &b_metsAK5L2_ey);
-   chain->SetBranchAddress("metsAK5L2_sumEt", &metsAK5L2_sumEt, &b_metsAK5L2_sumEt);
-   chain->SetBranchAddress("metsAK5L2_et_muonCor", &metsAK5L2_et_muonCor, &b_metsAK5L2_et_muonCor);
-   chain->SetBranchAddress("metsAK5L2_phi_muonCor", &metsAK5L2_phi_muonCor, &b_metsAK5L2_phi_muonCor);
-   chain->SetBranchAddress("metsAK5L2_et_JESCor", &metsAK5L2_et_JESCor, &b_metsAK5L2_et_JESCor);
-   chain->SetBranchAddress("metsAK5L2_phi_JESCor", &metsAK5L2_phi_JESCor, &b_metsAK5L2_phi_JESCor);
-   */
-   chain->SetBranchAddress("NmetsKT4", &NmetsKT4, &b_NmetsKT4);
-   chain->SetBranchAddress("metsKT4_et", &metsKT4_et, &b_metsKT4_et);
-   chain->SetBranchAddress("metsKT4_phi", &metsKT4_phi, &b_metsKT4_phi);
-   chain->SetBranchAddress("metsKT4_ex", &metsKT4_ex, &b_metsKT4_ex);
-   chain->SetBranchAddress("metsKT4_ey", &metsKT4_ey, &b_metsKT4_ey);
-   chain->SetBranchAddress("metsKT4_sumEt", &metsKT4_sumEt, &b_metsKT4_sumEt);
-   chain->SetBranchAddress("metsKT4_et_JESCor", &metsKT4_et_JESCor, &b_metsKT4_et_JESCor);
-   chain->SetBranchAddress("metsKT4_phi_JESCor", &metsKT4_phi_JESCor, &b_metsKT4_phi_JESCor);
-   chain->SetBranchAddress("NmetsSC5", &NmetsSC5, &b_NmetsSC5);
-   chain->SetBranchAddress("metsSC5_et", &metsSC5_et, &b_metsSC5_et);
-   chain->SetBranchAddress("metsSC5_phi", &metsSC5_phi, &b_metsSC5_phi);
-   chain->SetBranchAddress("metsSC5_ex", &metsSC5_ex, &b_metsSC5_ex);
-   chain->SetBranchAddress("metsSC5_ey", &metsSC5_ey, &b_metsSC5_ey);
-   chain->SetBranchAddress("metsSC5_sumEt", &metsSC5_sumEt, &b_metsSC5_sumEt);
-   chain->SetBranchAddress("metsSC5_et_JESCor", &metsSC5_et_JESCor, &b_metsSC5_et_JESCor);
-   chain->SetBranchAddress("metsSC5_phi_JESCor", &metsSC5_phi_JESCor, &b_metsSC5_phi_JESCor); 
+   // New 41109 4 Nov   
+   if( NmetsAK5L2 > 0) {
+     cout << "INFO: There is AK5 L2 MET in ntuple." << endl;
+     chain->SetBranchAddress("NmetsAK5L2", &NmetsAK5L2, &b_NmetsAK5L2);
+     chain->SetBranchAddress("metsAK5L2_et", &metsAK5L2_et, &b_metsAK5L2_et);
+     chain->SetBranchAddress("metsAK5L2_phi", &metsAK5L2_phi, &b_metsAK5L2_phi);
+     chain->SetBranchAddress("metsAK5L2_ex", &metsAK5L2_ex, &b_metsAK5L2_ex);
+     chain->SetBranchAddress("metsAK5L2_ey", &metsAK5L2_ey, &b_metsAK5L2_ey);
+     chain->SetBranchAddress("metsAK5L2_sumEt", &metsAK5L2_sumEt, &b_metsAK5L2_sumEt);
+     chain->SetBranchAddress("metsAK5L2_et_muonCor", &metsAK5L2_et_muonCor, &b_metsAK5L2_et_muonCor);
+     chain->SetBranchAddress("metsAK5L2_phi_muonCor", &metsAK5L2_phi_muonCor, &b_metsAK5L2_phi_muonCor);
+     chain->SetBranchAddress("metsAK5L2_et_JESCor", &metsAK5L2_et_JESCor, &b_metsAK5L2_et_JESCor);
+     chain->SetBranchAddress("metsAK5L2_phi_JESCor", &metsAK5L2_phi_JESCor, &b_metsAK5L2_phi_JESCor);
+   } else {
+     cout << "INFO: AK5 L2 MET not available." << endl;
+   }
+   if( NmetsKT4 > 0) {
+     cout << "INFO: There is KT4 MET in ntuple." << endl;
+     chain->SetBranchAddress("NmetsKT4", &NmetsKT4, &b_NmetsKT4);
+     chain->SetBranchAddress("metsKT4_et", &metsKT4_et, &b_metsKT4_et);
+     chain->SetBranchAddress("metsKT4_phi", &metsKT4_phi, &b_metsKT4_phi);
+     chain->SetBranchAddress("metsKT4_ex", &metsKT4_ex, &b_metsKT4_ex);
+     chain->SetBranchAddress("metsKT4_ey", &metsKT4_ey, &b_metsKT4_ey);
+     chain->SetBranchAddress("metsKT4_sumEt", &metsKT4_sumEt, &b_metsKT4_sumEt);
+     chain->SetBranchAddress("metsKT4_et_JESCor", &metsKT4_et_JESCor, &b_metsKT4_et_JESCor);
+     chain->SetBranchAddress("metsKT4_phi_JESCor", &metsKT4_phi_JESCor, &b_metsKT4_phi_JESCor);
+   } else {
+     cout << "INFO: KT4 MET not available." << endl;
+   }
+   if( NmetsSC5 > 0) {
+     cout << "INFO: There is SC5 MET in ntuple." << endl;
+     chain->SetBranchAddress("NmetsSC5", &NmetsSC5, &b_NmetsSC5);
+     chain->SetBranchAddress("metsSC5_et", &metsSC5_et, &b_metsSC5_et);
+     chain->SetBranchAddress("metsSC5_phi", &metsSC5_phi, &b_metsSC5_phi);
+     chain->SetBranchAddress("metsSC5_ex", &metsSC5_ex, &b_metsSC5_ex);
+     chain->SetBranchAddress("metsSC5_ey", &metsSC5_ey, &b_metsSC5_ey);
+     chain->SetBranchAddress("metsSC5_sumEt", &metsSC5_sumEt, &b_metsSC5_sumEt);
+     chain->SetBranchAddress("metsSC5_et_JESCor", &metsSC5_et_JESCor, &b_metsSC5_et_JESCor);
+     chain->SetBranchAddress("metsSC5_phi_JESCor", &metsSC5_phi_JESCor, &b_metsSC5_phi_JESCor); 
+   } else {
+     cout << "INFO: SC5 MET not available." << endl;
+   }
    chain->SetBranchAddress("Nmus", &Nmus, &b_Nmus);
    chain->SetBranchAddress("mus_energy", &mus_energy, &b_mus_energy);
    chain->SetBranchAddress("mus_et", &mus_et, &b_mus_et);
@@ -1791,14 +1836,19 @@ ana::ana(){
    chain->SetBranchAddress("pv_xErr", &pv_xErr, &b_pv_xErr);
    chain->SetBranchAddress("pv_yErr", &pv_yErr, &b_pv_yErr);
    chain->SetBranchAddress("pv_zErr", &pv_zErr, &b_pv_zErr);
-   chain->SetBranchAddress("Ntcmets", &Ntcmets, &b_Ntcmets);
-   chain->SetBranchAddress("tcmets_et", &tcmets_et, &b_tcmets_et);
-   chain->SetBranchAddress("tcmets_phi", &tcmets_phi, &b_tcmets_phi);
-   chain->SetBranchAddress("tcmets_ex", &tcmets_ex, &b_tcmets_ex);
-   chain->SetBranchAddress("tcmets_ey", &tcmets_ey, &b_tcmets_ey);
-   chain->SetBranchAddress("tcmets_sumEt", &tcmets_sumEt, &b_tcmets_sumEt);
-   chain->SetBranchAddress("tcmets_et_muonCor", &tcmets_et_muonCor, &b_tcmets_et_muonCor);
-   chain->SetBranchAddress("tcmets_phi_muonCor", &tcmets_phi_muonCor, &b_tcmets_phi_muonCor);
+   if( Ntcmets>0 ) {
+     cout << "INFO: There is tcmets in ntuple."<< endl;
+     chain->SetBranchAddress("Ntcmets", &Ntcmets, &b_Ntcmets);
+     chain->SetBranchAddress("tcmets_et", &tcmets_et, &b_tcmets_et);
+     chain->SetBranchAddress("tcmets_phi", &tcmets_phi, &b_tcmets_phi);
+     chain->SetBranchAddress("tcmets_ex", &tcmets_ex, &b_tcmets_ex);
+     chain->SetBranchAddress("tcmets_ey", &tcmets_ey, &b_tcmets_ey);
+     chain->SetBranchAddress("tcmets_sumEt", &tcmets_sumEt, &b_tcmets_sumEt);
+     chain->SetBranchAddress("tcmets_et_muonCor", &tcmets_et_muonCor, &b_tcmets_et_muonCor);
+     chain->SetBranchAddress("tcmets_phi_muonCor", &tcmets_phi_muonCor, &b_tcmets_phi_muonCor);
+   } else {
+     cout << "INFO: tcmets not availabele."<< endl;
+   }
    chain->SetBranchAddress("Ntracks", &Ntracks, &b_Ntracks);
    chain->SetBranchAddress("tracks_chi2", &tracks_chi2, &b_tracks_chi2);
    chain->SetBranchAddress("tracks_ndof", &tracks_ndof, &b_tracks_ndof);
@@ -1836,71 +1886,88 @@ ana::ana(){
 
    // HLT tree (nonIso ele trigger)
    //chain2->SetBranchAddress("HLT_Ele10_SW_L1R", &HLT_Ele10_SW_L1R, &b_HLT_Ele10_SW_L1R); //(8E29, startup)
-   chain2->SetBranchAddress("HLT_Ele15_LW_L1R", &HLT_Ele15_LW_L1R, &b_HLT_Ele15_LW_L1R); //v2 (1E31, ideal)
-
-
-   // initialize private variables (MC study)
-   mc_sample_has_ttbar = false;
-   mc_sample_has_Wjet  = false;
-   mc_sample_has_Zjet  = false;
-   mc_sample_has_QCD   = false;
-   mc_sample_has_enri1 = false;
-   mc_sample_has_enri2 = false;
-   mc_sample_has_enri3 = false;
-   mc_sample_has_bce1  = false;
-   mc_sample_has_bce2  = false;
-   mc_sample_has_bce3  = false;
-   mc_sample_has_VQQ   = false;
-   mc_sample_has_singleTop = false;
-   mc_sample_has_tW    = false;
-   mc_sample_has_tchan = false;
-   mc_sample_has_schan = false;
-   isTTbar = false;
-   isWjets = false;
-   isZjets = false;
-   isQCD   = false;
-   isEnri1 = false;
-   isEnri2 = false;
-   isEnri3 = false;
-   isBce1  = false;
-   isBce2  = false;
-   isBce3  = false;
-   isVQQ   = false;
-   isSingleTop = false;
-   isTW    = false;
-   isTchan = false;
-   isSchan = false;
-   this_weight = 1.0;
-   m_nGoodJet = 0;
-   m_QCDest_reliso_bin_width = 0.01;
-   m_doValidation = false;
-   m_plotRelisoNES = true;
-   m_debug = false;
-   m_ConversionStudies = false;
-   m_jetAlgo = "Default";
-   m_metAlgo = "Default";
-   m_LHCEnergyInTeV = 10.0; //Default is 10 TeV
-   m_run_on_SD = false;
-
-   //856
-   ConversionCounter = 0;
-   for(int k=0;k<20; ++k){
-     for(int i=0;i<2; ++i){
-       for(int j=0;j<5; ++j){
-         ConversionArray[k][i][j] = 0;
-       }
-     }
+   if( GetTrigger() ) chain2->SetBranchAddress("HLT_Ele15_LW_L1R", &HLT_Ele15_LW_L1R, &b_HLT_Ele15_LW_L1R); //v2 (1E31, ideal)
+   
+   ///------------------------  MC Truth info  ------------------------------------
+   if( !IsData() ) {
+     //cout << " Set MC branch address" << endl;
+     chain->SetBranchAddress("Nmc_doc", &Nmc_doc, &b_Nmc_doc);
+     chain->SetBranchAddress("mc_doc_id", &mc_doc_id, &b_mc_doc_id);
+     chain->SetBranchAddress("mc_doc_pt", &mc_doc_pt, &b_mc_doc_pt);
+     chain->SetBranchAddress("mc_doc_px", &mc_doc_px, &b_mc_doc_px);
+     chain->SetBranchAddress("mc_doc_py", &mc_doc_py, &b_mc_doc_py);
+     chain->SetBranchAddress("mc_doc_pz", &mc_doc_pz, &b_mc_doc_pz);
+     chain->SetBranchAddress("mc_doc_eta", &mc_doc_eta, &b_mc_doc_eta);
+     chain->SetBranchAddress("mc_doc_phi", &mc_doc_phi, &b_mc_doc_phi);
+     chain->SetBranchAddress("mc_doc_theta", &mc_doc_theta, &b_mc_doc_theta);
+     chain->SetBranchAddress("mc_doc_energy", &mc_doc_energy, &b_mc_doc_energy);
+     chain->SetBranchAddress("mc_doc_status", &mc_doc_status, &b_mc_doc_status);
+     chain->SetBranchAddress("mc_doc_charge", &mc_doc_charge, &b_mc_doc_charge);
+     chain->SetBranchAddress("mc_doc_mother_id", &mc_doc_mother_id, &b_mc_doc_mother_id);
+     chain->SetBranchAddress("mc_doc_grandmother_id", &mc_doc_grandmother_id, &b_mc_doc_grandmother_id);
+     chain->SetBranchAddress("mc_doc_ggrandmother_id", &mc_doc_ggrandmother_id, &b_mc_doc_ggrandmother_id);
+     chain->SetBranchAddress("mc_doc_mother_pt", &mc_doc_mother_pt, &b_mc_doc_mother_pt);
+     chain->SetBranchAddress("mc_doc_vertex_x", &mc_doc_vertex_x, &b_mc_doc_vertex_x);
+     chain->SetBranchAddress("mc_doc_vertex_y", &mc_doc_vertex_y, &b_mc_doc_vertex_y);
+     chain->SetBranchAddress("mc_doc_vertex_z", &mc_doc_vertex_z, &b_mc_doc_vertex_z);
+     chain->SetBranchAddress("mc_doc_mass", &mc_doc_mass, &b_mc_doc_mass);
+     chain->SetBranchAddress("mc_doc_numOfDaughters", &mc_doc_numOfDaughters, &b_mc_doc_numOfDaughters);
+     chain->SetBranchAddress("mc_doc_numOfMothers", &mc_doc_numOfMothers, &b_mc_doc_numOfMothers);
+     chain->SetBranchAddress("Nmc_electrons", &Nmc_electrons, &b_Nmc_electrons);
+     chain->SetBranchAddress("mc_electrons_id", &mc_electrons_id, &b_mc_electrons_id);
+     chain->SetBranchAddress("mc_electrons_pt", &mc_electrons_pt, &b_mc_electrons_pt);
+     chain->SetBranchAddress("mc_electrons_px", &mc_electrons_px, &b_mc_electrons_px);
+     chain->SetBranchAddress("mc_electrons_py", &mc_electrons_py, &b_mc_electrons_py);
+     chain->SetBranchAddress("mc_electrons_pz", &mc_electrons_pz, &b_mc_electrons_pz);
+     chain->SetBranchAddress("mc_electrons_eta", &mc_electrons_eta, &b_mc_electrons_eta);
+     chain->SetBranchAddress("mc_electrons_phi", &mc_electrons_phi, &b_mc_electrons_phi);
+     chain->SetBranchAddress("mc_electrons_theta", &mc_electrons_theta, &b_mc_electrons_theta);
+     chain->SetBranchAddress("mc_electrons_status", &mc_electrons_status, &b_mc_electrons_status);
+     chain->SetBranchAddress("mc_electrons_energy", &mc_electrons_energy, &b_mc_electrons_energy);
+     chain->SetBranchAddress("mc_electrons_charge", &mc_electrons_charge, &b_mc_electrons_charge);
+     chain->SetBranchAddress("mc_electrons_mother_id", &mc_electrons_mother_id, &b_mc_electrons_mother_id);
+     chain->SetBranchAddress("mc_electrons_mother_pt", &mc_electrons_mother_pt, &b_mc_electrons_mother_pt);
+     chain->SetBranchAddress("mc_electrons_grandmother_id", &mc_electrons_grandmother_id, &b_mc_electrons_grandmother_id);
+     chain->SetBranchAddress("mc_electrons_ggrandmother_id", &mc_electrons_ggrandmother_id, &b_mc_electrons_ggrandmother_id);
+     chain->SetBranchAddress("mc_electrons_vertex_x", &mc_electrons_vertex_x, &b_mc_electrons_vertex_x);
+     chain->SetBranchAddress("mc_electrons_vertex_y", &mc_electrons_vertex_y, &b_mc_electrons_vertex_y);
+     chain->SetBranchAddress("mc_electrons_vertex_z", &mc_electrons_vertex_z, &b_mc_electrons_vertex_z);
+     chain->SetBranchAddress("mc_electrons_mass", &mc_electrons_mass, &b_mc_electrons_mass);
+     chain->SetBranchAddress("mc_electrons_numOfDaughters", &mc_electrons_numOfDaughters, &b_mc_electrons_numOfDaughters);
+     chain->SetBranchAddress("Nmc_mus", &Nmc_mus, &b_Nmc_mus);
+     chain->SetBranchAddress("mc_mus_id", &mc_mus_id, &b_mc_mus_id);
+     chain->SetBranchAddress("mc_mus_pt", &mc_mus_pt, &b_mc_mus_pt);
+     chain->SetBranchAddress("mc_mus_px", &mc_mus_px, &b_mc_mus_px);
+     chain->SetBranchAddress("mc_mus_py", &mc_mus_py, &b_mc_mus_py);
+     chain->SetBranchAddress("mc_mus_pz", &mc_mus_pz, &b_mc_mus_pz);
+     chain->SetBranchAddress("mc_mus_eta", &mc_mus_eta, &b_mc_mus_eta);
+     chain->SetBranchAddress("mc_mus_phi", &mc_mus_phi, &b_mc_mus_phi);
+     chain->SetBranchAddress("mc_mus_theta", &mc_mus_theta, &b_mc_mus_theta);
+     chain->SetBranchAddress("mc_mus_status", &mc_mus_status, &b_mc_mus_status);
+     chain->SetBranchAddress("mc_mus_energy", &mc_mus_energy, &b_mc_mus_energy);
+     chain->SetBranchAddress("mc_mus_charge", &mc_mus_charge, &b_mc_mus_charge);
+     chain->SetBranchAddress("mc_mus_mother_id", &mc_mus_mother_id, &b_mc_mus_mother_id);
+     chain->SetBranchAddress("mc_mus_mother_pt", &mc_mus_mother_pt, &b_mc_mus_mother_pt);
+     chain->SetBranchAddress("mc_mus_grandmother_id", &mc_mus_grandmother_id, &b_mc_mus_grandmother_id);
+     chain->SetBranchAddress("mc_mus_ggrandmother_id", &mc_mus_ggrandmother_id, &b_mc_mus_ggrandmother_id);
+     chain->SetBranchAddress("mc_mus_vertex_x", &mc_mus_vertex_x, &b_mc_mus_vertex_x);
+     chain->SetBranchAddress("mc_mus_vertex_y", &mc_mus_vertex_y, &b_mc_mus_vertex_y);
+     chain->SetBranchAddress("mc_mus_vertex_z", &mc_mus_vertex_z, &b_mc_mus_vertex_z);
+     chain->SetBranchAddress("mc_mus_mass", &mc_mus_mass, &b_mc_mus_mass);
+     chain->SetBranchAddress("mc_mus_numOfDaughters", &mc_mus_numOfDaughters, &b_mc_mus_numOfDaughters);
    }
-   // end 856
+   ///------------------------  MC Truth info (END) ------------------------------------
 
-   mycounter = 0;
-}
+}//End Init()
 
 bool ana::EventLoop(){
   
+  
+   Init(); //initialize branch
 
    // Get the number of events/entries in the file chain
    Long64_t nEvents = chain->GetEntries(); 
+   Long64_t nEventsAvail = nEvents;
    if(nEvents==0) { cout << "No input event found, stop." << endl; return false; }
 
 
@@ -2053,18 +2120,6 @@ bool ana::EventLoop(){
    chain->SetBranchStatus("tracks_vy",1);
    chain->SetBranchStatus("tracks_px",1);
    chain->SetBranchStatus("tracks_py",1);
-   chain->SetBranchStatus("Nmc_doc",1);   // generator particles
-   chain->SetBranchStatus("mc_doc_id",1);
-   chain->SetBranchStatus("mc_doc_status",1);
-   chain->SetBranchStatus("mc_doc_mother_id",1);
-   chain->SetBranchStatus("mc_doc_mass",1);
-   chain->SetBranchStatus("mc_doc_px",1);
-   chain->SetBranchStatus("mc_doc_py",1);
-   chain->SetBranchStatus("mc_doc_pz",1);
-   chain->SetBranchStatus("mc_doc_pt",1);
-   chain->SetBranchStatus("mc_doc_eta",1);
-   chain->SetBranchStatus("mc_doc_phi",1); //z study
-   chain->SetBranchStatus("mc_doc_energy",1); //z study
    chain->SetBranchStatus("Nphotons",1); //z study
    chain->SetBranchStatus("photons_eta",1); //z study
    chain->SetBranchStatus("photons_et",1); //z study
@@ -2073,6 +2128,22 @@ bool ana::EventLoop(){
    chain->SetBranchStatus("photons_py",1); //z study
    chain->SetBranchStatus("photons_pz",1); //z study
    chain->SetBranchStatus("photons_energy",1); //z study
+   ///-------------------------- MC Truth info ------------------------------
+   if ( !IsData()) {
+     chain->SetBranchStatus("Nmc_doc",1);   // generator particles
+     chain->SetBranchStatus("mc_doc_id",1);
+     chain->SetBranchStatus("mc_doc_status",1);
+     chain->SetBranchStatus("mc_doc_mother_id",1);
+     chain->SetBranchStatus("mc_doc_mass",1);
+     chain->SetBranchStatus("mc_doc_px",1);
+     chain->SetBranchStatus("mc_doc_py",1);
+     chain->SetBranchStatus("mc_doc_pz",1);
+     chain->SetBranchStatus("mc_doc_pt",1);
+     chain->SetBranchStatus("mc_doc_eta",1);
+     chain->SetBranchStatus("mc_doc_phi",1); //z study
+     chain->SetBranchStatus("mc_doc_energy",1); //z study
+   }
+   ///------------------------  MC Truth info (END)  ---------------------------
    if(GetTrigger()) {
      chain->SetBranchStatus("HLT_Ele15_LW_L1R",1); //trigger (8e29)
      //chain->SetBranchStatus("HLT_Ele10_SW_L1R",1); //trigger (1e30)
@@ -2508,9 +2579,9 @@ bool ana::EventLoop(){
    // Simplify:  replace 100 lines with 4 lines
    //----------------------
    TH1F *h_QCDest_CombRelIso[7][nclass];     //"new" formulation (0-infinity)
-   TH1F *h_QCDest_NormCombRelIso[7][nclass]; //"old" formulation (0-1)
+   //TH1F *h_QCDest_NormCombRelIso[7][nclass]; //"old" formulation (0-1)
    addHisto_Njet_DataAndMC( h_QCDest_CombRelIso,     "QCDest_CombRelIso",     "RelIso",     1000,0,10);
-   addHisto_Njet_DataAndMC( h_QCDest_NormCombRelIso, "QCDest_NormCombRelIso", "NormRelIso", 110,0,1.1);
+   //addHisto_Njet_DataAndMC( h_QCDest_NormCombRelIso, "QCDest_NormCombRelIso", "NormRelIso", 110,0,1.1);
 
    //--------------------------------
    // AES (Anti Event Selection)
@@ -2852,17 +2923,69 @@ bool ana::EventLoop(){
        }//MC
      }//4 levels of cut
    }
+   
+   // 4-12-09: Trial definitions of AES for Plan B
+   TDirectory *dir_QCD_planA = histf->mkdir("QCD_planA");
+   dir_QCD_planA->cd();
+   TH1F *h_QCDest_CombRelIso_AES_planA1_e20[7][nclass];//no !conv cut
+   TH1F *h_QCDest_CombRelIso_AES_planA1_e30[7][nclass];
+   TH1F *h_QCDest_CombRelIso_AES_planA2_e20[7][nclass];//invert !conv cut
+   TH1F *h_QCDest_CombRelIso_AES_planA2_e30[7][nclass];
+   TH1F *h_QCDest_CombRelIso_AES_planA3_e20[7][nclass];//invert d0 cut
+   TH1F *h_QCDest_CombRelIso_AES_planA3_e30[7][nclass];
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA1_e20, "QCDest_CombRelIso_AES_planA1_e20", "RelIso (AES A1, no conv cut, E_{T}>20)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA1_e30, "QCDest_CombRelIso_AES_planA1_e30", "RelIso (AES A1, no conv cut, E_{T}>30)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA2_e20, "QCDest_CombRelIso_AES_planA2_e20", "RelIso (AES A2, conv, E_{T}>20)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA2_e30, "QCDest_CombRelIso_AES_planA2_e30", "RelIso (AES A2, conv, E_{T}>30)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA3_e20, "QCDest_CombRelIso_AES_planA3_e20", "RelIso (AES A3 |d_{0}|>200um, E_{T}>20)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA3_e30, "QCDest_CombRelIso_AES_planA3_e30", "RelIso (AES A3 |d_{0}|>200um, E_{T}>30)", 1000,0,10);
+
+   // 10-11-09: Trial definitions of AES for Plan B
+   TDirectory *dir_QCD_planB = histf->mkdir("QCD_planB");
+   dir_QCD_planB->cd();
+   TH1F *h_QCDest_CombRelIso_AES_planB1_e20[7][nclass];//EleET >x
+   TH1F *h_QCDest_CombRelIso_AES_planB1_e30[7][nclass];
+   TH1F *h_QCDest_CombRelIso_AES_planB2_e20[7][nclass];//EleET < x
+   TH1F *h_QCDest_CombRelIso_AES_planB2_e30[7][nclass];
+   TH1F *h_QCDest_CombRelIso_AES_planB3_e20[7][nclass];//fail RT ID
+   TH1F *h_QCDest_CombRelIso_AES_planB3_e30[7][nclass];
+   TH1F *h_QCDest_CombRelIso_AES_planB4_e20[7][nclass];//fail RL ID
+   TH1F *h_QCDest_CombRelIso_AES_planB4_e30[7][nclass];
+   TH1F *h_QCDest_CombRelIso_AES_planB5_e20[7][nclass];//fail Loose ID
+   TH1F *h_QCDest_CombRelIso_AES_planB5_e30[7][nclass];
+   TH1F *h_QCDest_CombRelIso_AES_planB6_e20[7][nclass];//fail Tight ID
+   TH1F *h_QCDest_CombRelIso_AES_planB6_e30[7][nclass];
+   TH1F *h_QCDest_CombRelIso_AES_planB7_e20[7][nclass];//d0 > 200um, pass RT
+   TH1F *h_QCDest_CombRelIso_AES_planB7_e30[7][nclass];
+   TH1F *h_QCDest_CombRelIso_AES_planB8_e20[7][nclass];//d0 > 200um, fail RT
+   TH1F *h_QCDest_CombRelIso_AES_planB8_e30[7][nclass];
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB1_e20, "QCDest_CombRelIso_AES_planB1_e20", "RelIso (AES B1 E_{T}>20)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB1_e30, "QCDest_CombRelIso_AES_planB1_e30", "RelIso (AES B1 E_{T}>30)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB2_e20, "QCDest_CombRelIso_AES_planB2_e20", "RelIso (AES B2 E_{T}<20)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB2_e30, "QCDest_CombRelIso_AES_planB2_e30", "RelIso (AES B2 E_{T}<30)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e20, "QCDest_CombRelIso_AES_planB3_e20", "RelIso (AES B3 RT=0 E_{T}>20)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e30, "QCDest_CombRelIso_AES_planB3_e30", "RelIso (AES B3 RT=0 E_{T}>30)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB4_e20, "QCDest_CombRelIso_AES_planB4_e20", "RelIso (AES B4 RL=0 E_{T}>20)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB4_e30, "QCDest_CombRelIso_AES_planB4_e30", "RelIso (AES B4 RL=0 E_{T}>30)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB5_e20, "QCDest_CombRelIso_AES_planB5_e20", "RelIso (AES B5 cL=0 E_{T}>20)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB5_e30, "QCDest_CombRelIso_AES_planB5_e30", "RelIso (AES B5 cL=0 E_{T}>30)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB6_e20, "QCDest_CombRelIso_AES_planB6_e20", "RelIso (AES B6 cT=0 E_{T}>20)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB6_e30, "QCDest_CombRelIso_AES_planB6_e30", "RelIso (AES B6 cT=0 E_{T}>30)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB7_e20, "QCDest_CombRelIso_AES_planB7_e20", "RelIso (AES B7 |d_{0}|>200um RT=1 E_{T}>20)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB7_e30, "QCDest_CombRelIso_AES_planB7_e30", "RelIso (AES B7 |d_{0}|>200um RT=1 E_{T}>30)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB8_e20, "QCDest_CombRelIso_AES_planB8_e20", "RelIso (AES B8 |d_{0}|>200um RT=0 E_{T}>20)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB8_e30, "QCDest_CombRelIso_AES_planB8_e30", "RelIso (AES B8 |d_{0}|>200um RT=0 E_{T}>30)", 1000,0,10);
 
 
    //TL: W+jets estimation: m3 plots (12-1-09)
    TDirectory *dir_wjets = histf->mkdir("Wjets_estimation","m3 plots");
    dir_wjets->cd();
    // m3 for signal region (isolated ele) ---> TODO: how many bins to use, and what range for M3 fit
-   h_hadTop_maxPT_mass_4j = new TH1D("hadTop_maxPT_mass_4j", "had top mass (m3) (>=4j)",  500,0,1000); //<----
-   h_hadTop_maxPT_pt_4j   = new TH1D("hadTop_maxPT_pt_4j",   "had top highest PT (>=4j)", 500,0,1000);
+   h_hadTop_maxPT_mass_4j = new TH1D("hadTop_maxPT_mass_4j", "had top mass (m3) (>=4j)",  nbm3,0,1000); //<----
+   h_hadTop_maxPT_pt_4j   = new TH1D("hadTop_maxPT_pt_4j",   "had top highest PT (>=4j)", nbm3,0,1000);
    // m3 for background region (non-isolated ele)
-   h_hadTop_maxPT_mass_nonIso_4j = new TH1D("hadTop_maxPT_mass_nonIso_4j", "had top mass (m3) (>=4j) nonIsoE", 500,0,1000);
-   h_hadTop_maxPT_pt_nonIso_4j   = new TH1D("hadTop_maxPT_pt_nonIso_4j",   "had top highest PT (>=4j) nonIsoE", 500,0,1000);
+   h_hadTop_maxPT_mass_nonIso_4j = new TH1D("hadTop_maxPT_mass_nonIso_4j", "had top mass (m3) (>=4j) nonIsoE", nbm3,0,1000);
+   h_hadTop_maxPT_pt_nonIso_4j   = new TH1D("hadTop_maxPT_pt_nonIso_4j",   "had top highest PT (>=4j) nonIsoE", nbm3,0,1000);
 
    h_hadTop_maxPT_mass_4j->Sumw2();
    h_hadTop_maxPT_pt_4j  ->Sumw2();
@@ -2875,31 +2998,31 @@ bool ana::EventLoop(){
      //
      // TODO: To-be-reviewed: Number of bins used for M3
      //
-     h_m3_tt  = new TH1D("m3_tt", "m3 (ttbar MC)", 100,0,1000);
-     h_m3_wj  = new TH1D("m3_wj", "m3 (W+jets MC)",100,0,1000);
-     h_m3_zj  = new TH1D("m3_zj", "m3 (Z+jets MC)",100,0,1000);
-     h_m3_qcd = new TH1D("m3_qcd","m3 (QCD MC)",   100,0,1000);
-     h_m3_vqq = new TH1D("m3_vqq","m3 (VQQ MC)",   100,0,1000);
-     h_m3_singletop = new TH1D("m3_singletop","m3 (single top MC)",100,0,1000);
-     h_m3_bce[0]  = new TH1D("m3_bce1","m3 (QCD bce1 MC)",   100,0,1000);
-     h_m3_bce[1]  = new TH1D("m3_bce2","m3 (QCD bce2 MC)",   100,0,1000);
-     h_m3_bce[2]  = new TH1D("m3_bce3","m3 (QCD bce3 MC)",   100,0,1000);
-     h_m3_enri[0] = new TH1D("m3_enri1","m3 (QCD enri1 MC)",   100,0,1000);
-     h_m3_enri[1] = new TH1D("m3_enri2","m3 (QCD enri2 MC)",   100,0,1000);
-     h_m3_enri[2] = new TH1D("m3_enri3","m3 (QCD enri3 MC)",   100,0,1000);
+     h_m3_tt  = new TH1D("m3_tt", "m3 (ttbar MC)", nbm3,0,1000);
+     h_m3_wj  = new TH1D("m3_wj", "m3 (W+jets MC)",nbm3,0,1000);
+     h_m3_zj  = new TH1D("m3_zj", "m3 (Z+jets MC)",nbm3,0,1000);
+     h_m3_qcd = new TH1D("m3_qcd","m3 (QCD MC)",   nbm3,0,1000);
+     h_m3_vqq = new TH1D("m3_vqq","m3 (VQQ MC)",   nbm3,0,1000);
+     h_m3_singletop = new TH1D("m3_singletop","m3 (single top MC)",nbm3,0,1000);
+     h_m3_bce[0]  = new TH1D("m3_bce1", "m3 (QCD bce1 MC)",   nbm3,0,1000);
+     h_m3_bce[1]  = new TH1D("m3_bce2", "m3 (QCD bce2 MC)",   nbm3,0,1000);
+     h_m3_bce[2]  = new TH1D("m3_bce3", "m3 (QCD bce3 MC)",   nbm3,0,1000);
+     h_m3_enri[0] = new TH1D("m3_enri1","m3 (QCD enri1 MC)",  nbm3,0,1000);
+     h_m3_enri[1] = new TH1D("m3_enri2","m3 (QCD enri2 MC)",  nbm3,0,1000);
+     h_m3_enri[2] = new TH1D("m3_enri3","m3 (QCD enri3 MC)",  nbm3,0,1000);
      // (ii) control region
-     h_m3_tt_control  = new TH1D("m3_tt_control", "m3 (ttbar MC, control reg) ", 100,0,1000);
-     h_m3_wj_control  = new TH1D("m3_wj_control", "m3 (W+jets MC, control reg)", 100,0,1000);
-     h_m3_zj_control  = new TH1D("m3_zj_control", "m3 (Z+jets MC, control reg)", 100,0,1000);
-     h_m3_qcd_control = new TH1D("m3_qcd_control","m3 (QCD MC, control reg)",    100,0,1000);
-     h_m3_vqq_control = new TH1D("m3_vqq_control","m3 (VQQ MC, control reg)",    100,0,1000);
-     h_m3_singletop_control = new TH1D("m3_singletop_control","m3 (single top MC, control reg)", 100,0,1000);
-     h_m3_bce_control[0] = new TH1D("m3_bce1_control","m3 (QCD bce1 MC, control reg)",    100,0,1000);//new
-     h_m3_bce_control[1] = new TH1D("m3_bce2_control","m3 (QCD bce2 MC, control reg)",    100,0,1000);//new
-     h_m3_bce_control[2] = new TH1D("m3_bce3_control","m3 (QCD bce3 MC, control reg)",    100,0,1000);//new
-     h_m3_enri_control[0] = new TH1D("m3_enri1_control","m3 (QCD enri1 MC, control reg)", 100,0,1000);//new
-     h_m3_enri_control[1] = new TH1D("m3_enri2_control","m3 (QCD enri2 MC, control reg)", 100,0,1000);//new
-     h_m3_enri_control[2] = new TH1D("m3_enri3_control","m3 (QCD enri3 MC, control reg)", 100,0,1000);//new
+     h_m3_tt_control  = new TH1D("m3_tt_control", "m3 (ttbar MC, control reg) ", nbm3,0,1000);
+     h_m3_wj_control  = new TH1D("m3_wj_control", "m3 (W+jets MC, control reg)", nbm3,0,1000);
+     h_m3_zj_control  = new TH1D("m3_zj_control", "m3 (Z+jets MC, control reg)", nbm3,0,1000);
+     h_m3_qcd_control = new TH1D("m3_qcd_control","m3 (QCD MC, control reg)",    nbm3,0,1000);
+     h_m3_vqq_control = new TH1D("m3_vqq_control","m3 (VQQ MC, control reg)",    nbm3,0,1000);
+     h_m3_singletop_control = new TH1D("m3_singletop_control","m3 (single top MC, control reg)", nbm3,0,1000);
+     h_m3_bce_control[0]  = new TH1D("m3_bce1_control","m3 (QCD bce1 MC, control reg)",   nbm3,0,1000);
+     h_m3_bce_control[1]  = new TH1D("m3_bce2_control","m3 (QCD bce2 MC, control reg)",   nbm3,0,1000);
+     h_m3_bce_control[2]  = new TH1D("m3_bce3_control","m3 (QCD bce3 MC, control reg)",   nbm3,0,1000);
+     h_m3_enri_control[0] = new TH1D("m3_enri1_control","m3 (QCD enri1 MC, control reg)", nbm3,0,1000);
+     h_m3_enri_control[1] = new TH1D("m3_enri2_control","m3 (QCD enri2 MC, control reg)", nbm3,0,1000);
+     h_m3_enri_control[2] = new TH1D("m3_enri3_control","m3 (QCD enri3 MC, control reg)", nbm3,0,1000);
 
      h_m3_tt ->Sumw2();
      h_m3_wj ->Sumw2();
@@ -2949,7 +3072,8 @@ bool ana::EventLoop(){
    ve.push_back("MET       ");
    ve.push_back("!Z        ");
    ve.push_back("!CONV     ");
-   ve.push_back("!DIFFZ    ");
+   if(!RunPlanB()) ve.push_back("!DIFFZ    ");
+   else  ve.push_back("EETA<1.442");
    ve.push_back("HT        ");
    ve.push_back("TAGGABLE  ");
    ve.push_back("$\\ge$1+BTAG");
@@ -3005,7 +3129,7 @@ bool ana::EventLoop(){
    int printLevel = 0;
 
 
-   cout << " Starting! nEvents is " << nEvents << " counter is " << counter << endl;
+   cout << endl << " Starting! nEvents is " << nEvents << " counter is " << counter << endl;
    if(GetLimit() > 0) nEvents = GetLimit();
    cout << " Limited nEvents to " << nEvents << endl;
 
@@ -3085,8 +3209,9 @@ bool ana::EventLoop(){
        if(debug()||ev<10) cout << "\nBegin processing event no. " << ev+1;
        else   	 cout << "\nBegin processing event no. " << (ev+1)/1000 << " k";
        cout << ". GoodRun=" << goodrun ;
-       cout << "  << Run "<< run << ", Event "<< event << ", LumiSection " << lumiBlock << " >>\n"
-	    << " entry " << lflag 
+       cout << "  << Run "<< run << ", Event "<< event << ", LumiSection " << lumiBlock << " >>  ";
+       cout << printTimeNow() << endl;
+       cout << " entry " << lflag 
 	    << ", tree # " << chain->GetTreeNumber()  
 	    << ", file " << chain->GetCurrentFile()->GetName() 
 	    << ", EvtSize " << nbytes << endl;
@@ -3392,7 +3517,8 @@ bool ana::EventLoop(){
        //float RelTrkIso = els_tIso->at(i)/els_et->at(i);
 	 
        //Compute Combined RelIso for electrons
-       float CombRelIso = (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i) + els_tIso->at(i))/els_et->at(i);// 10-9-09
+       //       float CombRelIso = (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i) + els_tIso->at(i))/els_et->at(i);// 10-9-09
+       float CombRelIso = getRelIso(i); // 11-11-09
        float CombRelIso2 = els_et->at(i)/(els_et->at(i) + els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i) + els_tIso->at(i) ); //norm
 
        /*
@@ -3530,7 +3656,8 @@ bool ana::EventLoop(){
 	   
 	     //Apply "Robust Tight" Electron ID
 	     
-	     if (els_robustTightId->at(i) == true){
+	     //	     if (els_robustTightId->at(i) == true){
+	     if ( passEleID(i) ) {
 	       
 
 	       //Store 4 vector for "good" electron and increment counters
@@ -3575,10 +3702,10 @@ bool ana::EventLoop(){
 	     h_dEtaIn_endcap->Fill(els_dEtaIn->at(i), this_weight);
 	     h_dPhiIn_endcap->Fill(els_dPhiIn->at(i), this_weight);
 	     
-	     //Apply "Robust Tight" Electron ID
-	       
-	     if (els_robustTightId->at(i) > 0 ) {
-	       
+	     //Apply "Robust Tight" Electron ID	       
+	     // if (els_robustTightId->at(i) > 0 ) {
+	     if ( passEleID(i) ) {
+
 	       TLorentzVector ele(els_px->at(i),els_py->at(i),els_pz->at(i),els_energy->at(i));
 	       nGoodEle_endcap++;	       
 	       nGoodEle++;
@@ -3786,6 +3913,11 @@ bool ana::EventLoop(){
        //OptimiseConversionFinder(iso_electrons.at(0), mctype);
      }
 
+     // Is the fist isolated electron in Barrel?
+     bool isBarrel = false;
+     if( iso_electrons.size()>0 && fabs(iso_electrons.at(0).Eta())<1.442  ) isBarrel = true;
+
+
      //-----------------------------------------------------------------------------------
      //  Z veto (normal selection)
      //-----------------------------------------------------------------------------------
@@ -3928,16 +4060,50 @@ bool ana::EventLoop(){
 
 
 
-     // TEMPORARY
+
+
+     //--------------------------------------
+     // 2-12-09: Revisit Z veto (alternative)
+     // NB: not clear if this is better, need more MC stats to test
+     //--------------------------
+     /*
+     // Loop over all els and find "RL" e
+     bool isZ_mee_2RL = false;
+     vector<TLorentzVector> myRLe;
+
+     for (unsigned int j=0; j<Nels; ++j){ //e loop
+
+       //consider only ele with ET>20 GeV, eta<2.5, d0<200um, RobustLoose       
+       if( els_et->at(j) < 20.0 ) continue;
+       if( fabs( els_eta->at(j) ) > 2.5 ) continue;
+       if( fabs(compute_d0("electron",j)) > 0.02 ) continue;
+       if( els_robustLooseId->at(j) < 1 ) continue;
+	 
+       TLorentzVector loose(els_px->at(j),els_py->at(j),els_pz->at(j),els_energy->at(j));
+       myRLe.push_back(loose);
+     }
+     // find all myRLe pair
+     for (unsigned int i=0; i<myRLe.size(); ++i) {       
+       for (unsigned int j=0; j<myRLe.size(); ++j) {
+	 if(i==j) continue; //skip pair of ele with itself
+	 float mass = ( myRLe.at(i) + myRLe.at(j) ).M();
+	 //cout << "   m(e,e) = " << mass << endl;
+	 //fillHistoDataAndMC( h_mass_diele_new, mass, this_weight );
+	 if ( mass > 76.  &&  mass < 106. ) isZ_mee_2RL = true; //within window, flag	 
+       }
+     }//if more than 2 electron
+     */
+
+
+     // Choose which Z-veto to use
+     //----------------------------
      bool isZ_mee ;
      if( use_old_Z_veto ) isZ_mee = isZ_mee_ORI; //old
      else                 isZ_mee = isZ_mee_NEW; //new     
      
      bool isZ = isZ_twoE || isZ_mee;
-
-
+     //bool isZ = isZ_twoE || isZ_mee_2RL;
     
-     
 
 
 
@@ -4290,7 +4456,9 @@ bool ana::EventLoop(){
 	 
 	 if( (RelCalIso+RelTrkIso) > 0.1 ) { eleBoolcuts[3] = 0; }
 	 if(els_et->at(i) < ELE_ETCUT || d0_corrected > 0.02) { eleBoolcuts[2] = 0; }
-	 if(els_robustTightId->at(i) == false || fabs(els_eta->at(i))>2.5 ) { eleBoolcuts[2] = 0; }
+	 //if(els_robustTightId->at(i) == false || fabs(els_eta->at(i))>2.5 ) { eleBoolcuts[2] = 0; }
+	 if ( passEleID(i)==false || fabs(els_eta->at(i))>2.5 ) { eleBoolcuts[2] = 0; }
+
 	 
 	 valid_fillHisto(valid_eleEt,     eleBoolcuts,  nGoodJet, els_et->at(i));
 	 valid_fillHisto(valid_eleEta,    eleBoolcuts,  nGoodJet, els_eta->at(i));      
@@ -4395,10 +4563,12 @@ bool ana::EventLoop(){
 		       e_plus_jet[9][ntj][mctype]++;		      
 		       e_plus_jet_weighted[9][ntj][mctype] += this_weight;
 
-		       if(!isDifferentInteraction){  // PV check
+		       if( ( RunPlanB()==false && !isDifferentInteraction ) ||  // PV check (DIFFZ)
+			   ( RunPlanB()==true  && isBarrel ) ) {     // plan B			 
+
 			 e_plus_jet[10][ntj][mctype]++;
 			 e_plus_jet_weighted[10][ntj][mctype] += this_weight;
-
+			 
 			 if(ht >= HTCUT){  // HT cut (30-1-09)
 			   e_plus_jet[11][ntj][mctype]++;
 			   e_plus_jet_weighted[11][ntj][mctype] += this_weight;
@@ -4517,7 +4687,7 @@ bool ana::EventLoop(){
      if(debug()) cout << " Starting << Making isolation plot >>" << endl;
 
      float CombRelIso = -1.0;
-     float NormCombRelIso = -1.0;
+     //float NormCombRelIso = -1.0;
      int  ii_GoodEle_mostIso = -1;
    
      //cout << "(B4) ii_GoodEle_mostIso = " << ii_GoodEle_mostIso << endl;
@@ -4528,7 +4698,7 @@ bool ana::EventLoop(){
 	 // can resolve this by creating a companion vector to store the CombRelIso values of the GoodEles
 	 //  <electrons> ++ <electrons_isoval>
 	 CombRelIso = electrons_isoval.at(0);
-	 NormCombRelIso = electrons_isoval2.at(0);
+	 //NormCombRelIso = electrons_isoval2.at(0);
 	 ii_GoodEle_mostIso = ii_electrons.at(0); 
        } else {
 	 // pick the most isolated one, loop over GoodEle, because if we happen to have 2 GoodEle,
@@ -4547,7 +4717,7 @@ bool ana::EventLoop(){
 	   if(thisIso2 > mostIso2) { mostIso2 = thisIso2; } //NormReliso
 	 }
 	 CombRelIso = mostIso;
-	 NormCombRelIso = mostIso2;
+	 //NormCombRelIso = mostIso2;
        }
        //cout << "ii_GoodEle_mostIso = " << ii_GoodEle_mostIso << endl;
        
@@ -4567,7 +4737,8 @@ bool ana::EventLoop(){
 	 printf(" smallest isolation: %12.10f\n" ,CombRelIso);
 	 cout << " Isolation of all electrons: " << endl;	 
 	 for(unsigned int j=0; j<Nels; ++j){
-	   float tmpIso = (els_tIso->at(j) + els_dr04EcalRecHitSumEt->at(j) + els_dr04HcalTowerSumEt->at(j))/els_et->at(j);
+	   //float tmpIso = (els_tIso->at(j) + els_dr04EcalRecHitSumEt->at(j) + els_dr04HcalTowerSumEt->at(j))/els_et->at(j);
+	   float tmpIso = getRelIso(j);
 	   printf("ele %d : %12.10f\n",j, tmpIso);
 	 }
        }
@@ -4578,7 +4749,7 @@ bool ana::EventLoop(){
      //are treated the same wrt conversion algo
      //987
      
-     if(debug()) cout << " Apply << Conversion algo >> on all good electrons" << endl;
+     if(debug()) cout << " Apply << Conversion algo >> on all 'most-iso' good electrons" << endl;
      
      if(CombRelIso>0.1 && nGoodEle>0 ){
        //cout <<"ii_GoodEle_mostIso = "<< ii_GoodEle_mostIso  << endl;
@@ -4603,15 +4774,16 @@ bool ana::EventLoop(){
 
 
        // Apply missing ET cut (Normal Selection)
-       if( this_met > METCUT ) {
+       if( (RunPlanB()==false && this_met > METCUT)  || //plan A
+	   (RunPlanB()==true  && fabs( els_eta->at(ii_GoodEle_mostIso) ) < 1.442) ) { //plan B
 
 	 if(debug()) cout << "QCDest: event pass all cuts (except isol and nj), make isolation plots" << endl;
 
 	 //fill histo (with weight) accord to nGoodJet (16-8-09)
 	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso,      CombRelIso,     this_weight );
-	 fillHisto_Njet_DataAndMC( h_QCDest_NormCombRelIso,  NormCombRelIso, this_weight );
+	 //fillHisto_Njet_DataAndMC( h_QCDest_NormCombRelIso,  NormCombRelIso, this_weight );
        }
-
+     
 
 
 
@@ -4672,8 +4844,9 @@ bool ana::EventLoop(){
 	   if( fabs( els_eta->at(i) ) > 1.442 &&
 	       fabs( els_eta->at(i) ) < 1.56 ) continue; //ignore gap
 	   if( fabs(compute_d0("electron",i)) > 0.02 ) continue;
-	   if( els_robustTightId->at(i) < 1 ) continue;
-	   
+	   //if( els_robustTightId->at(i) < 1 ) continue;
+	   if ( passEleID(i) ==false )  continue;
+
 	   for (unsigned int j=0; j<Nels; ++j){ //2nd e loop
 	     if(j==i) continue;
 	   
@@ -4788,6 +4961,8 @@ bool ana::EventLoop(){
        //===============================
 
 
+
+
        //987
        //----------------------------------------------
        // 8-6-09: fill histo for n-1 AES reliso plots
@@ -4842,9 +5017,174 @@ bool ana::EventLoop(){
 
      }//pass some cuts
      // TL: end ------------------------------
-   
 
+
+     //=====================================================================
+     //
+     //  
+     //    QCD Control Region (AES)        plan A      4-12-09
+     //
+     //--------------------------------------------------------
+     // Trial AES definition for Plan A: MET>20.
+     //
+     // Common: met<15, HT<150,  exactly 1 GoodEle (RT).
+     //
+     // Definitions: A1 : leave out !conv cut
+     //              A2 : invert !conv cut, ie plot only conversion ele.
+     //              A3 : invert d0 cut = d0 > 200um.
+     //--------------------------------------------------------
+     // First make sure selected events do not enter control sample
+     //     if(debug) cout << << endl;
+     if( e_plus_jet_pass == false ) {
+
+       if( goodrun  &&  fired_single_em  &&  nGoodEle==1  &&
+	   !isMuon  &&  !isZ  &&  !isDifferentInteraction  ) {
+ 
+	 // the Good Electron
+	 unsigned int theGE = ii_electrons.at(0);  //first good ele
+
+	 float ht_AES = this_met + els_et->at( theGE );
+	 for (unsigned int i=0; i<jets.size(); ++i) {
+	   ht_AES += jets.at(i).Pt();
+	 }
+
+	 if ( this_met < AES_MET_cut  &&  ht_AES < AES_HT_cut ) {
+	   // satisfy criteria for plan A control sample
+                                                      
+	   const double this_et  = els_et->at( theGE );
+	   const double this_iso = getRelIso( theGE );
+
+
+	   // A1: no conv cuts
+	   //cout << "[DEBUG] A1" << endl;
+	   if ( this_et > 20. ) {  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA1_e20, this_iso, this_weight );
+	     if ( this_et > 30. )  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA1_e30, this_iso, this_weight );	
+	   }
+
+	   // A2: conv only
+	   //cout << "[DEBUG] A2" << endl;
+	   //	   TLorentzVector eles_temp(els_px->at(0),els_py->at(0),els_pz->at(0),els_energy->at(0));
+	   bool this_is_conv = ConversionFinder( electrons.at(0), mctype, 0); //1st good ele
+	   if ( this_is_conv ) {
+	     if ( this_et > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA2_e20, this_iso, this_weight );
+	       if ( this_et > 30. ) fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA2_e30, this_iso, this_weight );
+	     }
+	   }
+	   
+	   // A3: invert d0 (>200 um)
+	   //cout << "[DEBUG] A3" << endl;
+	   if ( fabs(compute_d0("electron",theGE)) > 0.02 ) {
+	     if ( this_et > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA3_e20, this_iso, this_weight );
+	       if ( this_et > 30. ) fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA3_e30, this_iso, this_weight );
+	     }
+	   }
+	 } 
+       }
+     }
+     // END: plan A control sample
+     //=====================================================================
      
+
+
+
+     //=====================================================================
+     //
+     //    QCD Control Region (AES)        plan B      10-11-09
+     //
+     //----------------------------------------------------
+     // Trial AES definition for Plan B: noMET, eta(e)<1.5
+     //
+     // Definitions: B1: - 1 electron with ET>20, |eta|<1.442, d0<200um, RT, not conversion.
+     //                  - 1 jet
+     //                  - simple Z veto: no 2 reco ele     
+     //                  - std cuts: HLT, !mu
+     //
+     // Definitions: B2: - 1 electron with ET<30, |eta|<1.442, d0<200um, RT, not conversion.
+     //                  - 1 jet
+     //                  - simple Z veto: no 2 reco ele     
+     //                  - std cuts: HLT, !mu
+     // Definitions: B3: - 1 electron withh ET>20/30, |eta|<1.442, d0<200um, fail RT, not conversion.
+     //                  - 1 jet
+     //                  - simple Z veto: no 2 reco ele
+     //                  - std cuts: HTL, !mu
+     // Definitions: B4: same as B3 but failing RL ID.
+     // Definitions: B5: same as B3 but failing category-based Loose ID.
+     // Definitions: B6: same as B3 but failing category-based Tight ID.
+     // Definitions: B7: same as B1 but inverting d0 cut, req d0>200um..
+     //-----------------------------------------------------
+     // First make sure selected events do not enter control sample
+     if( e_plus_jet_pass == false ) {
+       if( goodrun  &&  fired_single_em  &&    Nels==1   &&  !isMuon  &&  !isDifferentInteraction ) {//AAAAA
+
+	 // common criteria for B1 & 2
+	 //if(  fabs(els_eta->at(0))           < 1.442  &&
+	 if(  fabs(els_eta->at(0))           < 2.5  &&
+	      fabs(compute_d0("electron",0)) < 0.02     ) {
+	   
+	   //TLorentzVector eles_temp(els_px->at(0),els_py->at(0),els_pz->at(0),els_energy->at(0));
+	   //isConversion = ConversionFinder(eles_temp, mctype, 0);
+	   
+	   //if ( !isConversion ) {
+	   if ( true ) {
+	     
+	     const double this_iso = getRelIso(0);
+	     
+	     if ( els_robustTightId->at(0)  > 0 ) { //pass RT ID
+	       
+	       // Definition B1:  lowered EleET cut
+	       //------------------------------------
+	       if ( els_et->at(0) > 20. )  { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB1_e20, this_iso, this_weight );
+		 if ( els_et->at(0) > 30. )  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB1_e30, this_iso, this_weight );
+	       }
+	       // Definition B2:  inverted EleET cut
+	       //------------------------------------
+	       if( els_et->at(0) < 30. ) {  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB2_e30, this_iso, this_weight );
+		 if( els_et->at(0) < 20. )  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB2_e20, this_iso, this_weight );
+	       }
+	       
+	     } else {
+	       // Definition B3: fail RT ID
+	       //---------------------------
+	       if ( els_et->at(0) > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e20, this_iso, this_weight );
+		 if ( els_et->at(0) > 30. )  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e30, this_iso, this_weight );
+	       }   
+	     }
+	     // 2-12-09
+	     if( els_et->at(0) > 20. ) {
+	       if( els_robustLooseId->at(0) == 0 ) fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB4_e20, this_iso, this_weight );
+	       if( els_looseId->at(0) == 0 )       fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB5_e20, this_iso, this_weight );
+	       if( els_tightId->at(0) == 0 )       fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB6_e20, this_iso, this_weight );
+	       
+	       if( els_et->at(0) > 30. ) {
+		 if( els_robustLooseId->at(0) == 0 ) fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB4_e30, this_iso, this_weight );
+		 if( els_looseId->at(0) == 0 )       fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB5_e30, this_iso, this_weight );
+		 if( els_tightId->at(0) == 0 )       fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB6_e30, this_iso, this_weight );
+	       }
+	     }
+	     
+	   }
+	 }
+	 // B7: invert d0 cut
+	 if(  els_et->at(0) > 20.  && 
+	      fabs(els_eta->at(0)) < 2.5  &&
+	      fabs(compute_d0("electron",0)) > 0.02 ) { //<---
+	   
+	   const double this_iso = getRelIso(0);
+	   
+	   if( els_robustTightId->at(0)  > 0 ) { //pass RT ID
+	     fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB7_e20, this_iso, this_weight );
+	     if( els_et->at(0) > 30. )   fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB7_e30, this_iso, this_weight );
+	   }
+	   else { //fail RT ID
+	     fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB8_e20, this_iso, this_weight );
+	     if( els_et->at(0) > 30. )   fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB8_e30, this_iso, this_weight );
+	   }//RT ID
+	 }
+       }    
+     }// plan B control sample
+     //=====================================================================
+     
+
 
      //---------------------------------------------------------------
      // 9 Jun 09: inspect isolation/met at each key stage of cuts
@@ -4872,8 +5212,8 @@ bool ana::EventLoop(){
 	 // fill for all electrons        
 	 for(unsigned int ie=0; ie<Nels; ie++){
 
-	   double tmpRelIso = (els_tIso->at(ie) + els_dr04EcalRecHitSumEt->at(ie) + els_dr04HcalTowerSumEt->at(ie)) / els_et->at(ie);
-
+	   //double tmpRelIso = (els_tIso->at(ie) + els_dr04EcalRecHitSumEt->at(ie) + els_dr04HcalTowerSumEt->at(ie)) / els_et->at(ie);
+	   float tmpRelIso = getRelIso(ie);
 
 	   // barrel or endcap?
 	   string etaside = "barrel";
@@ -4915,7 +5255,8 @@ bool ana::EventLoop(){
 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1c", tmpRelIso, this_weight ); 
 	     
 	       // eID (barrel)
-	       bool pass_eid_c0 =  els_robustTightId->at(ie) > 0; //out-of-box eID variable
+	       //bool pass_eid_c0 =  els_robustTightId->at(ie) > 0; //out-of-box eID variable
+	       bool pass_eid_c0 =  passEleID(ie); //out-of-box eID variable
 	       bool pass_eid_c1 = false;
 	       bool pass_eid_c2 = false;
 	       bool pass_eid_c3 = false;
@@ -5336,9 +5677,10 @@ bool ana::EventLoop(){
    cout << " JET pt cut = " << JET_PTCUT  << " GeV" << endl;
    cout << " MET cut    = " << METCUT  << " GeV" << endl;
    cout << " HT cut     = " << HTCUT  << " GeV" << endl;
-   cout << " Electron ID = robustTight" << endl;
+   cout << " Electron ID = " << printEleID() << endl;
    cout << " Electron RelIso formula = " ;
    if(useNewReliso) cout << "new"; else cout << "old";
+   if(RunPlanB()) cout << "\n Using plan B, does not use MET, use barrel ele only (eta<1.442)" << endl;
    cout << "\n\\end{verbatim}\n"<< endl;
 
 
@@ -5423,6 +5765,7 @@ bool ana::EventLoop(){
      // (19 Feb 09) print how many QCD events we have after all cuts except reliso nad njet
      if (mc_sample_has_QCD){
        const int QCD_bc = 2;
+       /*
        cout << "\n\nTotal number of QCD events (pass all cuts except isolation)"<< endl;
        cout << "\n Old RelIso  mc" << setw(10) << intlumi <<"/pb" << endl;
        cout << "   1j" 
@@ -5437,7 +5780,7 @@ bool ana::EventLoop(){
        cout << " >=4j" 
 	    << setw(10) << h_QCDest_NormCombRelIso[5][QCD_bc]->GetEntries() 
 	    << setw(10) << h_QCDest_NormCombRelIso[5][QCD_bc]->Integral() << endl;
-
+       */
        cout << "\n New RelIso  mc" << setw(10) << intlumi <<"/pb" << endl;
        cout << "   1j" 
 	    << setw(10) << h_QCDest_CombRelIso[1][QCD_bc]->GetEntries() 
@@ -5479,7 +5822,8 @@ bool ana::EventLoop(){
    cout << "\n*           A N A L Y S I S       C O M P L E T E D                   *";
    cout << "\n*                                                                     *";
    cout << "\n***********************************************************************";
-   cout << "\n*   Available events:  " << left << setw(47) << nEvents << "*";
+   cout << "\n*   Available events:  " << left << setw(47) << nEventsAvail << "*";
+   cout << "\n*   Limit:             " << left << setw(47) << nEvents << "*";
    cout << "\n*   Processed events:  " << left << setw(47) << counter << "*";
    cout << "\n*   Passed events:     " << left << setw(47) << counter_pass << "*";
    cout << "\n***********************************************************************\n";
@@ -7157,6 +7501,8 @@ void ana::fillHisto_Njet_DataAndMC( TH1F* h[7][16], const float value, const dou
 
   if(debug()) cout << "\nStart of << fillHisto_Njet_DataAndMC >>: " << h[0][0]->GetName() << endl;
 
+  if(h[0][0]==0) cout << "[ERROR] histo " << h[0][0]->GetName() << " not found!"<< endl;
+
   // ALL data (2nd dimention = eventClass = 0)  
   fillHistoNjet2D( h, 0, value, w );
 
@@ -7988,10 +8334,13 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 
 
 
-  // 1-2-09: use more appropriate binning (1000/25 bins = 40GeV/bin)
-
-  const int rB = 8;
-  
+  // 1-2-09: use more appropriate binning (1000/12.5 bins = 80GeV/bin)
+  //const int m3_bin_used_in_AN = 80; //GeV
+  int rB = 1;
+  //  const int rB = nbm3 / m3_bin_used_in_AN; //800 bins / 10 = 80GeV/bin
+  if      ( temp_tt->GetNbinsX() == 100 )  rB = 8;
+  else if ( temp_tt->GetNbinsX() == 800 )  rB = 10;
+      
   temp_tt->Rebin(rB); 
   temp_wj->Rebin(rB);
   temp_qcd->Rebin(rB);
@@ -8547,9 +8896,23 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
       //m3frame22 = m3.frame();
       
       
-      rh_tt.plotOn( m3frame1, MarkerSize(1));
-      rh_wj.plotOn( m3frame2, MarkerSize(1));
-      rh_qcd.plotOn( m3frame3, MarkerSize(1));
+      //-----------------
+      // 15-12-09
+      //-----------------
+      // error type (Def=Poission for integer histogram bin content)
+      // ref: http://root.cern.ch/root/html/RooAbsData.html
+      //  RooAbsData::Poission
+      //  RooAbsData::SumW2
+      //  RooAbsData::None
+      //  RooAbsData::Auto      
+      RooAbsData::ErrorType etype = RooAbsData::Poisson;  //Def
+      if ( !IsData() ) etype =  RooAbsData::SumW2;
+      //-----------------
+
+
+      rh_tt.plotOn( m3frame1, MarkerSize(1), DataError(etype) );
+      rh_wj.plotOn( m3frame2, MarkerSize(1), DataError(etype) );
+      rh_qcd.plotOn( m3frame3, MarkerSize(1), DataError(etype) );
       
       pdf_tt.plotOn( m3frame4 );
       pdf_wj.plotOn( m3frame5 );
@@ -9280,7 +9643,7 @@ bool ana::is_mc_present( const int code ) const {
 }//end is_mc_present
 //---------------------------------------------------------------------------------------------
 
-//--------- compute d0 corrected w.r.t Beam Spot ----------------------------------------------
+//--------- compute (signed) d0 corrected w.r.t Beam Spot -------------------------------------
 float ana::compute_d0 ( const string lepton, const int i ) const {
   
   float vx = 0;
@@ -9420,4 +9783,31 @@ string ana::CheckEventTypeFromMcTruth() const {
   if(found_Z) return "zee";
   return "none";
 }
-//---------------------------------------------------------------------------------------------
+
+float ana::getRelIso(int i) const {
+  return (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i) + els_tIso->at(i))/els_et->at(i);
+}
+
+bool ana::passEleID(unsigned int i) const {
+  if ( EleID()==robustTight ) return (els_robustTightId->at(i) > 0);
+  if ( EleID()==robustLoose ) return (els_robustLooseId->at(i) > 0);
+  if ( EleID()==tight )       return (els_tightId->at(i) > 0);
+  if ( EleID()==loose )       return (els_looseId->at(i) > 0);
+  return false;
+}
+
+string ana::printEleID() const {
+  switch ( EleID() ) {
+  case robustTight: return "robustTight";
+  case robustLoose: return "robustLoose";
+  case tight:       return "tight";
+  case loose:       return "loose"; 
+  default:          return "robustTight (Default)";
+  }
+}
+
+string ana::printTimeNow() const {
+  TDatime now;
+  return now.AsSQLString();
+}
+//-- eof ------------------------------------------------------------------------------------------

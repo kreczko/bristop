@@ -1234,6 +1234,7 @@ public:
   ana();
   ~ana(){};
     
+  void Init(); //initialize tree branches
   bool EventLoop();// the main analysis 
 
   //Methods to call from anascript.C
@@ -1257,9 +1258,18 @@ public:
   void    SetMETcut(float);
   void    SetHTcut(float);
 
+  // electron ID
+  enum  eID { robustTight, robustLoose, loose, tight };
+  void    SetEleID(eID val) { m_eID = val;};
+  eID     EleID() const { return m_eID; };
+  string  printEleID() const;
+
   void    SetAESHTcut(float);
   void    SetAESMETcut(float);
   void    SetAESZveto_TwoEle(bool);
+
+  void    SetRunPlanB(bool f) { m_runPlanB = f; };
+  bool    RunPlanB() const { return m_runPlanB; };
 
   void    StudySystematics(const string, const string);
 
@@ -1277,6 +1287,8 @@ public:
   void SetLHCEnergyInTeV(double val) { m_LHCEnergyInTeV = val; };
   void SetRunOnSD(bool val) { m_run_on_SD = val; };
 
+
+
 private:
 
   //Intenal methods
@@ -1284,7 +1296,7 @@ private:
   bool	  IsData() const;
   bool    GetTrigger() const;
   int     GetLimit() const;
-  void    PrintCuts() const;           // print kinematic cuts
+  void    PrintCuts() const;   // print kinematic cuts
 
   //geometry
   float calcDeltaR(const float phi1, const float eta1, const float phi2, const float eta2) const;
@@ -1382,6 +1394,8 @@ private:
   float AES_HT_cut;
   float AES_MET_cut;
   bool  useSimpleZvetoAES;
+  bool  m_runPlanB;
+  eID   m_eID;
 
   float intlumi;   // integrated luminosity assumed
   bool useNewReliso;
@@ -1500,5 +1514,9 @@ private:
   // new (to run on mixed MC) (not currently needed)
   string CheckEventTypeFromMcTruth() const;
 
-
+  float getRelIso(int) const;
+  
+  bool passEleID(unsigned int) const;
+  
+  string printTimeNow() const;
 };
