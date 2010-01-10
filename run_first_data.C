@@ -13,14 +13,14 @@
 	//Switches
 	myana->SetData(  1  ); //1 for data, 0 for MC
 	myana->SetGoodRuns(  0  ); //0 for all runs, 1 for good runs
-	myana->CheckTrigger( 1 ); //0 for no trigger check, 1 for single electron trigger
+	myana->CheckTrigger( 0 ); //0 for no trigger check, 1 for single electron trigger
         myana->SetLHCEnergyInTeV( 7 ); //LHC E_cm
 
 	myana->Validation(0);
-	myana->PlotRelisoNES(1);
+	myana->PlotRelisoNES(0);
 	myana->SetDebug(0);
         myana->ConversionStudySwitch(0);
-
+	myana->UseMissLayers(true);
 
         // jet options: Default (=type1), SC5, KT4, pfjet
         // met options: Default (=muon), calomet_mujes, calomet_muL2, SC5, KT4, tcmet, or pfmet
@@ -31,10 +31,10 @@
         // Set cuts
         myana->SetEleETcut( 30.0 );
         myana->SetMuonPTcut( 20.0 );
-        myana->SetJetETcut( 30.0 );
+        myana->SetJetETcut( 10.0 );
         myana->SetMETcut( 20.0 ); //<-----
 
-	// valid options: robustTight (Def), robustLoose, loose, tight
+	// valid options: robustTight (Def), robustLoose, loose, tight, none
         myana->SetEleID( ana::robustTight );
 
 	myana->SetRunPlanB( false );  //bool
@@ -55,10 +55,9 @@
 	// SD
 	myana->SetInputFile("/storage/top/data/MinimumBias_BeamCommissioning09-SD_AllMinBias-PromptSkimCommissioning_v2_RAW-RECO_V1_L1Bit0and4041not36to39/*.root");
 
-
 	myana->SetOutputFirstName("test");
 
-	myana->SetLimit( 10 );
+	myana->SetLimit( 100000 );
 	myana->EventLoop();
 	
 	//myana->EstimateQCD();
