@@ -1,6 +1,9 @@
 //#====================================================#
 //# Last update:
 //
+// 06 Jan 2010: a) Updated conversion algorithm routine. Separated out conversion study section in a separate function
+//              b) Added in an additional electron ID option of "none" i.e. no ID applied
+// 
 // 15 Dec 09: a) change nbin of m3 from 100 to 800.
 //            b) added Init() function for setting branch address to protect against running on data, ie do not 
 //               read MC branches. Also do not read extra jet/met collections if not available.
@@ -728,10 +731,11 @@ ana::ana(){
    m_metAlgo = "Default";
    m_LHCEnergyInTeV = 10.0; //Default is 10 TeV
    m_run_on_SD = false;
+   m_useMisslayers = false;
 
    //856
    ConversionCounter = 0;
-   for(int k=0;k<20; ++k){
+   for(int k=0;k<23; ++k){
      for(int i=0;i<2; ++i){
        for(int j=0;j<5; ++j){
          ConversionArray[k][i][j] = 0;
@@ -854,6 +858,9 @@ void ana::Init(){
    els_tk_pt = 0;
    els_tk_phi = 0;
    els_tk_eta = 0;
+   els_tk_charge = 0;
+   els_tk_theta = 0;
+   els_shFracInnerHits = 0;
    els_d0dum = 0;
    els_dz = 0;
    els_vx = 0;
@@ -879,6 +886,7 @@ void ana::Init(){
    els_isEB = 0;
    els_isEBGap = 0;
    els_isConvertedPhoton = 0;
+   els_innerLayerMissingHits = 0;
    jets_energy = 0;
    jets_et = 0;
    jets_eta = 0;
@@ -1317,7 +1325,7 @@ void ana::Init(){
    tracks_outerHitY = 0;
    tracks_outerHitZ = 0;
    tracks_highPurity = 0;
-
+   tracks_innerLayerMissingHits = 0;
    
    // Set branch addresses and branch pointers
    if( NPFJets>0 ){
@@ -1436,6 +1444,9 @@ void ana::Init(){
    chain->SetBranchAddress("els_tk_pt", &els_tk_pt, &b_els_tk_pt);
    chain->SetBranchAddress("els_tk_phi", &els_tk_phi, &b_els_tk_phi);
    chain->SetBranchAddress("els_tk_eta", &els_tk_eta, &b_els_tk_eta);
+   chain->SetBranchAddress("els_tk_charge", &els_tk_charge, &b_els_tk_charge);
+   chain->SetBranchAddress("els_tk_theta", &els_tk_theta, &b_els_tk_theta);
+   chain->SetBranchAddress("els_shFracInnerHits", &els_shFracInnerHits, &b_els_shFracInnerHits);
    chain->SetBranchAddress("els_d0dum", &els_d0dum, &b_els_d0dum);
    chain->SetBranchAddress("els_dz", &els_dz, &b_els_dz);
    chain->SetBranchAddress("els_vx", &els_vx, &b_els_vx);
@@ -1461,6 +1472,7 @@ void ana::Init(){
    chain->SetBranchAddress("els_isEB", &els_isEB, &b_els_isEB);
    chain->SetBranchAddress("els_isEBGap", &els_isEBGap, &b_els_isEBGap);
    chain->SetBranchAddress("els_isConvertedPhoton", &els_isConvertedPhoton, &b_els_isConvertedPhoton);
+   if(m_useMisslayers) chain->SetBranchAddress("els_innerLayerMissingHits", &els_innerLayerMissingHits, &b_els_innerLayerMissingHits);
    chain->SetBranchAddress("Njets", &Njets, &b_Njets);
    chain->SetBranchAddress("jets_energy", &jets_energy, &b_jets_energy);
    chain->SetBranchAddress("jets_et", &jets_et, &b_jets_et);
@@ -1880,6 +1892,7 @@ void ana::Init(){
    chain->SetBranchAddress("tracks_outerHitY", &tracks_outerHitY, &b_tracks_outerHitY);
    chain->SetBranchAddress("tracks_outerHitZ", &tracks_outerHitZ, &b_tracks_outerHitZ);
    chain->SetBranchAddress("tracks_highPurity", &tracks_highPurity, &b_tracks_highPurity);
+   if(m_useMisslayers) chain->SetBranchAddress("tracks_innerLayerMissingHits",&tracks_innerLayerMissingHits, &b_tracks_innerLayerMissingHits);
    chain->SetBranchAddress("run", &run, &b_run);
    chain->SetBranchAddress("event", &event, &b_event);
    chain->SetBranchAddress("lumiBlock", &lumiBlock, &b_lumiBlock);
@@ -2008,6 +2021,13 @@ bool ana::EventLoop(){
    chain->SetBranchStatus("els_vpx",1);
    chain->SetBranchStatus("els_vpy",1);
    chain->SetBranchStatus("els_closestCtfTrackRef",1);
+   chain->SetBranchStatus("els_tk_pt",1);
+   chain->SetBranchStatus("els_tk_phi",1);
+   chain->SetBranchStatus("els_tk_eta",1);
+   chain->SetBranchStatus("els_tk_charge",1);
+   chain->SetBranchStatus("els_tk_theta",1);
+   chain->SetBranchStatus("els_shFracInnerHits",1);
+   if(m_useMisslayers) chain->SetBranchStatus("els_innerLayerMissingHits",1);
    chain->SetBranchStatus("Nmus",1); //muons
    chain->SetBranchStatus("mus_cm_px",1); //global muon
    chain->SetBranchStatus("mus_cm_py",1);
@@ -2120,6 +2140,8 @@ bool ana::EventLoop(){
    chain->SetBranchStatus("tracks_vy",1);
    chain->SetBranchStatus("tracks_px",1);
    chain->SetBranchStatus("tracks_py",1);
+   if(m_useMisslayers) chain->SetBranchStatus("tracks_innerLayerMissingHits",1);
+
    chain->SetBranchStatus("Nphotons",1); //z study
    chain->SetBranchStatus("photons_eta",1); //z study
    chain->SetBranchStatus("photons_et",1); //z study
@@ -3910,6 +3932,7 @@ bool ana::EventLoop(){
      bool isConversion = false;
      if (nGoodIsoEle == 1) { // If 1 electron only, check if this electron is a conversion ... if more than one ignore (will be rejected anyawy)
        isConversion = ConversionFinder(iso_electrons.at(0), mctype, index_selected_ele);
+       if( DoConversionStudies() ){ConversionMCMatching(iso_electrons.at(0), mctype, isConversion);}
        //OptimiseConversionFinder(iso_electrons.at(0), mctype);
      }
 
@@ -7551,8 +7574,8 @@ void ana::fillHisto_Njet_DataAndMC( TH1F* h[7][16], const float value, const dou
 //----------------------------------------------------------------------------------------
 //                                  Conversion Finder
 //----------------------------------------------------------------------------------------
-
-bool ana::ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele)  {
+// This was originally ConversionFinder but has been replaced (07-01-10). It is left here until the new routine has been thoroughly tested. 
+bool ana::ConversionFinder2(const TLorentzVector& e1, int mctype, int index_selected_ele)  {
 
   if(debug()) cout << "Starting << ConversionFinder >>" << endl;
   bool isthisConversion = false;
@@ -7562,7 +7585,7 @@ bool ana::ConversionFinder(const TLorentzVector& e1, int mctype, int index_selec
   float phi_ie = e1.Phi();
   float eta_ie = e1.PseudoRapidity();
 
-  int mytrackref  = els_closestCtfTrackRef->at(index_selected_ele);
+  int mytrackref  = static_cast<int>( els_closestCtfTrackRef->at(index_selected_ele) );
   /*
   float tphi1;
   float teta1;
@@ -7578,10 +7601,7 @@ bool ana::ConversionFinder(const TLorentzVector& e1, int mctype, int index_selec
 
 
   //declare track variables
-  float phi1;
-  float eta1;
-  float phi2;
-  float eta2;
+  float phi1,eta1,phi2,eta2;
   float tk1Curvature;
   float tk2Curvature;
   float tk1r;
@@ -7756,6 +7776,175 @@ bool ana::ConversionFinder(const TLorentzVector& e1, int mctype, int index_selec
 
 }
 
+
+bool ana::ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele) {
+
+  //Should do no more than return whether the electron passes the conversion algo or not
+  //This currently (07-01-10) doesn't actually use mctype or e1. For now leave in case they might be useful for 
+  //later alterations 
+
+
+  if(debug()) cout << "Starting << ConversionFinder >>" << endl;
+  bool isthisConversion = false;
+
+  //if the electron has 3 or more missing layers, declare it a conversion
+  if(m_useMisslayers) { if( els_innerLayerMissingHits->at(index_selected_ele) > 2 ) return true; }
+  //else, continue the routine. Note, we may want to apply this separately to the routine. For now, leave it here (07-01-10)
+
+
+  const float bfield=3.8;
+
+  int mytrackref  = static_cast<int>( els_closestCtfTrackRef->at(index_selected_ele) );
+
+  float phi1,eta1,phi2,eta2;
+  float tk1Curvature,tk2Curvature;
+  float tk1r,tk2r;
+  float d0,d02;
+  float tk1x,tk1y,tk2x,tk2y;
+  float distmag,dist,dcot;
+  float EleTrackDelR,theta1,charge1;
+  float NumMissLayers;
+
+  //list of cut values subject to possible optimisation:
+  // 1) EleTrackDelR > 0.3
+  // 2) Dist
+  // 3) Dcot
+  // 4) Bool opposite track charges - required or not.
+  // 5) EleTrackDelR between both tracks < 0.3
+ 
+
+  //  mytrackref = 0;
+  //if track ref is valid, AND the ctf track and gsf track have a minimum required number of matching hits
+  // then use this CTF track (remember to skip in loop over track collection). Otherwise we use the GSF track 
+  if(mytrackref>=0 && els_shFracInnerHits->at(index_selected_ele) > 0.45){//use CTF params
+    phi1 = tracks_phi->at(mytrackref);
+    eta1 = tracks_eta->at(mytrackref);
+    charge1 = tracks_chg->at(mytrackref);
+    d0 = compute_d0("track",mytrackref);
+    tk1Curvature = -0.3*bfield*charge1/( 100*( tracks_pt->at(mytrackref) ) );
+    theta1 = tracks_theta->at(mytrackref);
+    if(m_useMisslayers) NumMissLayers = tracks_innerLayerMissingHits->at(mytrackref); 
+  }
+  else{//use GSF params
+    phi1 = els_tk_phi->at(index_selected_ele);
+    eta1 = els_tk_eta->at(index_selected_ele);
+    charge1 = els_tk_charge->at(index_selected_ele);
+    d0 = compute_d0("electron",index_selected_ele);
+    tk1Curvature = -0.3*bfield*charge1/( 100*( els_tk_pt->at(index_selected_ele) ) );
+    theta1 = els_tk_theta->at(index_selected_ele);
+    if(m_useMisslayers) NumMissLayers = els_innerLayerMissingHits->at(index_selected_ele);
+    }
+   
+  tk1r = fabs(1/tk1Curvature);
+  tk1x = ((1/tk1Curvature) - d0)*cos(phi1);
+  tk1y = ((1/tk1Curvature) - d0)*sin(phi1);
+  
+
+  for (unsigned int j=0; j<Ntracks; ++j){//loop over the track collection 
+    
+    if( abs(mytrackref) ==j) continue;//works if trackref is valid or not (invalid it will be less than zero, which j is not)
+    phi2 = tracks_phi->at(j);
+    eta2 = tracks_eta->at(j);
+ 
+    //require difference in gsf and ctf charges to be different   
+    if(charge1*tracks_chg->at(j) > 0.0) continue;
+
+    EleTrackDelR = calcDeltaR(phi1, eta1, phi2, eta2);
+    if(EleTrackDelR > 0.3) continue;
+    
+    tk2Curvature = -0.3*bfield*tracks_chg->at(j)/( 100*( tracks_pt->at(j) ) );
+    tk2r = fabs(1/tk2Curvature);
+    
+    d02 = compute_d0("track",j);
+    
+    
+    tk2x = ((1/tk2Curvature) - d02)*cos(phi2);
+    tk2y = ((1/tk2Curvature) - d02)*sin(phi2);
+    
+    distmag = (tk2x - tk1x)*(tk2x -tk1x) + (tk2y -tk1y)*(tk2y-tk1y);
+    distmag = sqrt(distmag);
+    dist = distmag-(tk1r+tk2r);
+    dcot = 1/tan(theta1) - 1/tan(tracks_theta->at(j));
+    
+    
+    if( dist > -0.04 && dist < 0.04 && fabs(dcot) < 0.03)
+      {
+	bool mlPass =true;
+	//require similar number of missing layers for each track
+	if(m_useMisslayers) {if( fabs(NumMissLayers - tracks_innerLayerMissingHits->at(j) ) >2  ){mlPass=false;}}
+	if(mlPass){
+	  isthisConversion = true;
+	  break;
+	}
+      }
+    
+    if(isthisConversion) break;
+  }//end of second track loop
+  
+  return isthisConversion;
+}
+
+void ana::ConversionMCMatching(const TLorentzVector& e1, int mctype, bool isthisConversion){
+
+  float phi_ie,eta_ie;
+  phi_ie = e1.Phi();
+  eta_ie = e1.PseudoRapidity();
+
+  int didConv = 0;
+  if(isthisConversion){
+    didConv = 1;
+  }
+
+  //totals the number of electrons flagged or not flagged as conversions
+  ConversionArray[mctype][didConv][0]++;
+
+  float mc_phi,mc_eta,empDelR;
+  int ii=0;
+  float tempDelR = 100;
+
+  if( Nmc_doc>0 ){//only run if there are MC particles in the file 
+
+    for(unsigned int i=0;i<Nmc_doc;++i){
+      mc_phi = mc_doc_phi->at(i);
+      mc_eta = mc_doc_eta->at(i);
+      empDelR = calcDeltaR( mc_phi, mc_eta, phi_ie, eta_ie);
+      if(empDelR > 0.3) continue;
+      
+      if(empDelR < tempDelR){tempDelR = empDelR;ii=i;}
+    }//end mc particle loop   
+    
+    if( fabs( mc_doc_id->at(ii) ) == 11){
+      if(debug())  cout << "It matches closest to a real electron" << endl;
+      ConversionArray[mctype][didConv][1]++;
+    }
+    
+    else if( fabs( mc_doc_id->at(ii) ) == 22){
+      if(debug()) cout << "It matches closest to a photon" << endl;
+      ConversionArray[mctype][didConv][2]++;
+    }
+    
+    else if( fabs( mc_doc_id->at(ii) ) == 111 || fabs( mc_doc_id->at(ii) ) == 221  ){
+      if(debug()) cout << "It matches closest to a pi zero or eta" << endl;
+      ConversionArray[mctype][didConv][3]++;
+    }
+    else{
+      if(debug()) cout << "It matches closest to something else" << endl;
+      ConversionArray[mctype][didConv][4]++;
+    }
+    
+  }
+
+  return;
+
+}
+
+
+
+
+
+
+
+// 06-01-10: Should remove this or at least change it - the algo is obsolete. 
 //856
 void ana::OptimiseConversionFinder(const TLorentzVector& e1, int mctype){
 
@@ -7887,7 +8076,7 @@ void ana::OptimiseConversionFinder(const TLorentzVector& e1, int mctype){
 
 void ana::PrintConversionTable(){
 
-  TString MySamples[9] = {"ttbar","W+jet","Z+Jet","Enri1","Enri2","Enri3","bce1","bce2","bce3"};
+  TString MySamples[14] = {"ttbar","W+jet","Z+Jet","Enri1","Enri2","Enri3","bce1","bce2","bce3","vqq","tW","tchan","schan","data"};
   TString ConvNames[11] = {"&  Iso Ele ", "&  Convers ","& Electron ","&   Photon ","&   PiZero ","&    Other ","& Non Conv ","& Electron ","&   Photon ","&   PiZero ","&    Other "};
 
   std::cout << std::endl << std::endl << "-------------------------------------------------------------------";
@@ -7897,13 +8086,15 @@ void ana::PrintConversionTable(){
   std::cout<<std::endl;
   std::cout<<"Shows Conversions with matching particle, and non conversions with matching particle, for all isolated reco electrons"<<
     std::endl<<std::endl;
-
+  
   cout <<"mctype ";
   for(int i=0;i<10;++i) std::cout<<ConvNames[i];
   std::cout<<ConvNames[10]<<" \\\\"  <<std::endl;
 
   //for(int k=0;k<20;k++){                                                                                                              
-  for(int k=10;k<19;++k){
+  int ff;
+  
+  for(int k=10;k!=1;++k){
     if(k==11||k==12) continue;
     if(k==10){
       for(int kkc=0;kkc<2;++kkc){
@@ -7913,7 +8104,9 @@ void ana::PrintConversionTable(){
 	}
       }
     }
-    std::cout<< setw(7) <<MySamples[k-10] <<"&  "<<std::setw(7)<<(ConversionArray[k][0][0]+ConversionArray[k][1][0]);
+    if(k==0){ff=13;}
+    else{ff = k-10;}
+    std::cout<< setw(7) <<MySamples[ff] <<"&  "<<std::setw(7)<<(ConversionArray[k][0][0]+ConversionArray[k][1][0]);
     
     for(int i=1;i>-1;--i){
       //     std::cout<<ConversionArray[0][i][0]<<std::setw(8);                                                                         
@@ -7922,6 +8115,7 @@ void ana::PrintConversionTable(){
       }
     }
     std::cout<<"  \\\\"<<std::endl;
+    if(k==22) k=-1;
   }
   cout<<endl;
   
@@ -9793,6 +9987,7 @@ bool ana::passEleID(unsigned int i) const {
   if ( EleID()==robustLoose ) return (els_robustLooseId->at(i) > 0);
   if ( EleID()==tight )       return (els_tightId->at(i) > 0);
   if ( EleID()==loose )       return (els_looseId->at(i) > 0);
+  if (EleID()==none )         return true;
   return false;
 }
 
