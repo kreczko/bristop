@@ -125,6 +125,9 @@ public:
    vector<float>   *els_tk_pt;
    vector<float>   *els_tk_phi;
    vector<float>   *els_tk_eta;
+   vector<float>   *els_tk_theta;
+   vector<float>   *els_tk_charge;
+   vector<float>   *els_shFracInnerHits;
    vector<float>   *els_d0dum;
    vector<float>   *els_dz;
    vector<float>   *els_vx;
@@ -145,6 +148,7 @@ public:
    vector<float>   *els_cx;
    vector<float>   *els_cy;
    vector<float>   *els_cz;
+   vector<float>   *els_innerLayerMissingHits;
    vector<float>   *els_isEE;
    vector<float>   *els_isEEGap;
    vector<float>   *els_isEB;
@@ -603,6 +607,7 @@ public:
    vector<float>   *tracks_outerHitY;
    vector<float>   *tracks_outerHitZ;
    vector<float>   *tracks_highPurity;
+   vector<float>    *tracks_innerLayerMissingHits;
    UInt_t          run;
    UInt_t          event;
    UInt_t          lumiBlock;
@@ -719,6 +724,9 @@ public:
    TBranch        *b_els_tk_pt;   //!
    TBranch        *b_els_tk_phi;   //!
    TBranch        *b_els_tk_eta;   //!
+   TBranch        *b_els_tk_charge;   //!
+   TBranch        *b_els_tk_theta;   //!     
+   TBranch        *b_els_shFracInnerHits; //!     
    TBranch        *b_els_d0dum;   //!
    TBranch        *b_els_dz;   //!
    TBranch        *b_els_vx;   //!
@@ -739,6 +747,7 @@ public:
    TBranch        *b_els_cx;   //!
    TBranch        *b_els_cy;   //!
    TBranch        *b_els_cz;   //!
+   TBranch        *b_els_innerLayerMissingHits;  //! 
    TBranch        *b_els_isEE;   //!
    TBranch        *b_els_isEEGap;   //!
    TBranch        *b_els_isEB;   //!
@@ -1203,6 +1212,7 @@ public:
    TBranch        *b_tracks_outerHitY;   //!
    TBranch        *b_tracks_outerHitZ;   //!
    TBranch        *b_tracks_highPurity;   //!
+   TBranch        *b_tracks_innerLayerMissingHits;  //!
    TBranch        *b_run;   //!
    TBranch        *b_event;   //!
    TBranch        *b_lumiBlock;   //!
@@ -1258,8 +1268,10 @@ public:
   void    SetMETcut(float);
   void    SetHTcut(float);
 
+
+
   // electron ID
-  enum  eID { robustTight, robustLoose, loose, tight };
+  enum  eID { robustTight, robustLoose, loose, tight, none };
   void    SetEleID(eID val) { m_eID = val;};
   eID     EleID() const { return m_eID; };
   string  printEleID() const;
@@ -1287,6 +1299,8 @@ public:
   void SetLHCEnergyInTeV(double val) { m_LHCEnergyInTeV = val; };
   void SetRunOnSD(bool val) { m_run_on_SD = val; };
 
+  //switch to preclue missing layers as these are not in 314 data samples
+  void UseMissLayers(bool val){m_useMisslayers = val;};
 
 
 private:
@@ -1306,7 +1320,8 @@ private:
   float calcDeltaPhi(const TLorentzVector& p1,const TLorentzVector& p2) const;
 
   bool  ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele);
-
+  bool  ConversionFinder2(const TLorentzVector& e1, int mctype, int index_selected_ele);
+  void  ConversionMCMatching(const TLorentzVector& e1, int mctype, bool isthisConversion);
 
   // QCD estimation
   pair<double,double> estimateQCD_computeFitResultUncertainty( const double est, TF1* f ) const;
@@ -1383,6 +1398,7 @@ private:
   string m_metAlgo;
   double m_LHCEnergyInTeV;
   bool   m_run_on_SD;
+  bool  m_useMisslayers;
 
   // cuts
   float ELE_ETCUT;
@@ -1501,7 +1517,7 @@ private:
   
   void PrintConversionTable();
   int ConversionCounter;
-  int ConversionArray[20][2][5];
+  int ConversionArray[23][2][5];
   void OptimiseConversionFinder(const TLorentzVector& e1, int mctype);  
 
   TH2D *Conv_Opti[2];
