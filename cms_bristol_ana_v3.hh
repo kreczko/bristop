@@ -1267,6 +1267,7 @@ public:
   bool    EstimateQCD(const string file);  // run QCD estimation
   void    EstimateWjets();       // run W+jets estimation
   bool    EstimateWjets(const string data, const string mc=""); // run W+jets estimation
+  void    SetNtoyForM3Fit( int val ) { m_ntoy = val; } ; //number of toy exp to run for m3
 
   void    SetEleETcut(float);
   void    SetMuonPTcut(float);
@@ -1405,7 +1406,7 @@ private:
   TH1D *h_m3_singletop_control_1000;
   TH1D *h_m3_bce_control_1000[3];
   TH1D *h_m3_enri_control_1000[3];
-
+  int m_ntoy;
 
   // private variables
   bool   datafile;
