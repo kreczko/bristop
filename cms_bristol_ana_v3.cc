@@ -1,6 +1,7 @@
 //#====================================================#
 //# Last update:
 //
+// 18 Jan 2010: fix single top cross sections at 7 TeV.
 // 15 Jan 2010: a) Added single-top xsec at 7 TeV. NB: s-chan NLO value not available.
 //              b) Moved Init() into header.
 //              c) Changed m3 histo to 0-960 & 960 bins; Added a copy of m3 with 0-1000 & 1000-bins.
@@ -590,8 +591,8 @@ void ana::DefineCrossSection(){
     cross_section["bce3"]  =  0.906e6 * 0.0104 ;  //xs 0.906e-3 mb
     
     cross_section["tW"]    =  11.0  ;   //xs  11 pb (NLO MCFM) inclusive t,W decay
-    cross_section["tchan"] =  64.0  ;   //xs  64 pb (NLO MCFM)
-    cross_section["schan"] =   0.99 ;   //? xs  0.99 pb (LO) take from 'ProductionSummer2009at7TeV' Twiki
+    cross_section["tchan"] =  64.0  * 0.324 ;   //xs  64 pb (NLO MCFM) * Br(t->blnu)
+    cross_section["schan"] =   0.99 * 0.324 ;   //? xs  0.99 pb (LO) take from 'ProductionSummer2009at7TeV' Twiki
 
   } else {
     if(!IsData()) cout << "WARNING: Cross section values are not defined!" << endl;
@@ -621,7 +622,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
    if( RunOnSD() ){
      if( LHCEnergyInTeV()==10 ){
        cout << "\nSummer09 10 TeV, OctX SD skim efficiencies x prescale factor:" << endl;
-       cout << "(note: nexp = Ninit * w * skim eff)" << endl;
+       cout << "(note: nexp = Ninit * w / skim eff)" << endl;
        // rescale weight by filter efficiency (N_SD/N_ori), and prescale factor
        //                                  N_SD / N_ori     * pres
        const double skimEff_ttbar  =       3270 /   529750. * 100;
@@ -657,7 +658,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
      }
      else if (LHCEnergyInTeV()==7 ){
        cout << "\nSummer09 7 TeV, OctX SD skim efficiencies x prescale factor:" << endl;
-       cout << "(note: nexp = Ninit * w * skim eff)" << endl;
+       cout << "(note: nexp = Ninit * w / skim eff)" << endl;
        // rescale weight by filter efficiency (N_SD/N_ori), and prescale factor
        //                                 N_SD / N_ori     * pres
        const double skimEff_ttbar  =      3841 /   626610. * 100 ;
@@ -701,7 +702,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
    // for summer09 7TeV madgraph HLTskim
    if( RunOnMyHLTskim() ) {
      cout << "\nSummer09 7 TeV, Madgraph my HLT skim efficiency:" << endl;
-     cout << "(note: nexp = Ninit * w * skim eff)" << endl;
+     cout << "(note: nexp = Ninit * w / skim eff)" << endl;
      ///                         N_skim / N_ori    * pres
      const double skimEff_ttj =  610804 /  983964. ;
      const double skimEff_wj  = 2081537 / 8109289. ;
@@ -809,6 +810,7 @@ ana::ana(){
    m_run_on_SD = false;
    m_run_on_myHLTskim = false;
    m_useMisslayers = false;
+   m_ntoy = 2;
 
    //856
    ConversionCounter = 0;
@@ -7443,9 +7445,9 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   //const int m3_bin_used_in_AN = 80; //GeV
   int rB = 1;
   //  const int rB = nbm3 / m3_bin_used_in_AN; //800 bins / 10 = 80GeV/bin
-  if      ( temp_tt->GetNbinsX() == 100 )  rB = 8;
-  else if ( temp_tt->GetNbinsX() == 960 )  rB = 12;
-  else if ( temp_tt->GetNbinsX() == 1000 )  rB = 80;
+  if      ( temp_tt->GetNbinsX() == 100 )  rB = 8; //12.5 bins
+  else if ( temp_tt->GetNbinsX() == 960 )  rB = 80; //12 bins
+  else if ( temp_tt->GetNbinsX() == 1000 )  rB = 80; //12.5 bins
       
   temp_tt->Rebin(rB); 
   temp_wj->Rebin(rB);
@@ -7473,7 +7475,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   //  If running on data, nfit is set automatically to 1.
   //  If running on MC, can specify how many toy MC to generate and fit
   //
-  int nfit = 2;
+  int nfit = m_ntoy;
   if (IsData()) nfit = 1;
   //----------------------------------------
 
