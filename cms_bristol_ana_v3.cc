@@ -1,7 +1,7 @@
 //#====================================================#
 //# Last update:
 //
-// 18 Jan 2010: fix single top cross sections at 7 TeV.
+// 19 Jan 2010: fix single top cross sections at 7 TeV.
 // 15 Jan 2010: a) Added single-top xsec at 7 TeV. NB: s-chan NLO value not available.
 //              b) Moved Init() into header.
 //              c) Changed m3 histo to 0-960 & 960 bins; Added a copy of m3 with 0-1000 & 1000-bins.
@@ -591,8 +591,8 @@ void ana::DefineCrossSection(){
     cross_section["bce3"]  =  0.906e6 * 0.0104 ;  //xs 0.906e-3 mb
     
     cross_section["tW"]    =  11.0  ;   //xs  11 pb (NLO MCFM) inclusive t,W decay
-    cross_section["tchan"] =  64.0  * 0.324 ;   //xs  64 pb (NLO MCFM) * Br(t->blnu)
-    cross_section["schan"] =   0.99 * 0.324 ;   //? xs  0.99 pb (LO) take from 'ProductionSummer2009at7TeV' Twiki
+    cross_section["tchan"] =  20.7; ;   //xs  64 pb (NLO MCFM) * 0.324 (Br(t->blnu)) ~ 20.7
+    cross_section["schan"] =   0.99 ;   //0.99 pb is Madgraph value incl. BR(B->e,mu,tau), take from 'ProductionSummer2009at7TeV' Twiki
 
   } else {
     if(!IsData()) cout << "WARNING: Cross section values are not defined!" << endl;
