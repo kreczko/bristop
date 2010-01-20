@@ -36,6 +36,9 @@
         // valid options: robustTight (Def), robustLoose, loose, tight, none
         myana->SetEleID( ana::robustTight );
 
+	// switch to preclue missing layers as these are not in 314 data samples
+	myana->UseMissLayers( false );
+
 	// QCD estimation plan B (no met cut)
         myana->SetRunPlanB( false );
 
@@ -43,6 +46,7 @@
         myana->SetAESMETcut(  15.0 );
         myana->SetAESHTcut(  200.0 );
         myana->SetAESZveto_TwoEle( true );
+
 
         // SD
         myana->SetRunOnSD( true );

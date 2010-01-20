@@ -1,6 +1,7 @@
 //#====================================================#
 //# Last update:
 //
+// 20 Jan 2010: minor update.
 // 19 Jan 2010: fix single top cross sections at 7 TeV.
 // 15 Jan 2010: a) Added single-top xsec at 7 TeV. NB: s-chan NLO value not available.
 //              b) Moved Init() into header.
@@ -5311,7 +5312,7 @@ void ana::PrintErrorTables( const double e_plus_jet[][5][23],
     myfile << " & " << setw(10) << right << ScrNum(JustSignal[i])
 	   << setw(10) << left << "$\\pm$"+ScrNum(sqrt(JustSignalUnc[i])) ;
     myfile << " & " << setw(12) << right << ScrNum(JustBG[i])
-	   << setw(24) << left << Form( "$^{+%s}_{%s}$", ScrNum(sqrt(JustBGUncPos[i])).c_str(),ScrNum( sqrt(JustBGUncNeg[i])).c_str() ) << right;
+	   << setw(24) << left << Form( "$^{+%s}_{-%s}$", ScrNum(sqrt(JustBGUncPos[i])).c_str(),ScrNum( sqrt(JustBGUncNeg[i])).c_str() ) << right;
 						
     //Print Signal-to-background ratio (S/B)
     if( JustBG[i] > 0 ) {
@@ -7800,9 +7801,11 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   for ( int n=0; n<nfit; ++n ) {
 
 
-    if (n<20) printText = true;
-    else printText = false;
-    if(n%100 ==99){cout<<"Fits carried out: "<<n<<endl;}
+    if (n>20) printText = false;
+    cout << "Fits carried out: " << n+1 << " of " << nfit << endl;
+    if( (n+1)%100 == 1 || (n+1)==nfit ){
+      printText = true;
+    }
     
     //--------------------------------------
     // 1) Get the m3 distribution 
@@ -7842,7 +7845,8 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
       h_nstop_fluc->Fill( nstop_fluc );
       
       if(printText) {
-	cout << "\n > > >   toy experiment #" << n+1 << " of " << nfit << endl;
+	cout << "\n>>> toy experiment #" << n+1 << " of " << nfit << endl;
+	cout << "-------------------------------------" << endl;
 	cout << "Poisson-fluc n(tt):  " << ntt_fluc << endl;
 	cout << "Poisson-fluc n(wj):  " << nwj_fluc << endl;
 	cout << "Poisson-fluc n(zj):  " << nzj_fluc << endl;
@@ -7857,7 +7861,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
       // TEST 15-Jan-10
       const int nbin = temp_tt->GetNbinsX();
       const float max = temp_tt->GetXaxis()->GetXmax();
-      cout << "\n m3 Pseudo-data: " << nbin << " bins, range 0-" << max << endl << endl;
+      if(printText) cout << "\n m3 Pseudo-data: " << nbin << " bins, range 0-" << max << endl << endl;
       // signal region
       TH1D *h_m3_tt_toy   = new TH1D("h_m3_tt_toy",   "h_m3_tt_toy",   nbin,0,max);
       TH1D *h_m3_wj_toy   = new TH1D("h_m3_wj_toy",   "h_m3_wj_toy",   nbin,0,max);
@@ -7979,7 +7983,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 
     // Create a model with constrained QCD and single top
     //----------------
-    cout << " ---> Create data model" << endl;
+    if(printText) cout << " ---> Create data model" << endl;
     RooAddPdf model2("model2", "sig+wj+qcd+stop",      
 		     RooArgList( pdf_tt, pdf_wj,  pdf_qcd_constraint, pdf_singletop_constraint ),    
 		     RooArgList(    ntt,    nwj,                nqcd,            nstop ) ) ;  
@@ -7989,7 +7993,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 
     // Fit model to data  (with internal constraint on nqcd and nstop)
     //--------------------
-    cout << " ---> Perform RooFit" << endl;
+    if(printText) cout << " ---> Perform RooFit" << endl;
     model2.fitTo(data, Extended(kTRUE), Constrain( RooArgList(nqcd,nstop) ), PrintLevel(-1) );
 
 
@@ -8291,7 +8295,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   cout << "qcd est: " << nqcd_est << ", unc: " << nqcd_est_err << endl;
   cout << "--------------------------------------------------------" << endl;
   cout << "                    W+jets Estimation (end)" << endl;
-  cout << "--------------------------------------------------------" << endl;
+  cout << "--------------------------------------------------------\n" << endl;
  
   return true;
 }
