@@ -1,6 +1,7 @@
 //#====================================================#
 //# Last update:
 //
+// 22 Jan 2010: Added option ApplyMETcut() and RejectEndcapEle(), to replace SetRunPlanB().
 // 20 Jan 2010: minor update.
 // 19 Jan 2010: fix single top cross sections at 7 TeV.
 // 15 Jan 2010: a) Added single-top xsec at 7 TeV. NB: s-chan NLO value not available.
@@ -503,10 +504,15 @@ void ana::PrintCuts() const {
   cout << "\n***********************************************" << endl;
   cout << "\n\n use_old_Z_veto : "<<  use_old_Z_veto << endl << endl;
   cout << "\n***********************************************" << endl;
-  if( RunPlanB() ) {
+  if( !ApplyingMETcut() && RejectingEndcapEle() ) {
     cout << "\n  Run with Plan B:  MET is not used, add Eta(e) <1.442 as last cut" << endl;
     cout << "\n***********************************************" << endl;
   }
+  if( ApplyingMETcut() && RejectingEndcapEle() ) {
+    cout << "\n  Run with Plan C:  Both MET and Eta(e) <1.442 cuts are used" << endl;
+    cout << "\n***********************************************" << endl;
+  }
+
 
 }//PrintCuts
 
@@ -759,7 +765,10 @@ ana::ana(){
    AES_HT_cut = 200.0;
    AES_MET_cut = 15.0;
    useSimpleZvetoAES = true;
-   m_runPlanB = false;
+   //   m_runPlanB = false;
+   //   m_runPlanC = false;
+   m_applyMETcut = true;
+   m_rejectEndcapEle = false;
    m_eID = robustTight; //enum
 
    // integrated luminosity
@@ -1994,7 +2003,7 @@ bool ana::EventLoop(){
    ve.push_back("MET       ");
    ve.push_back("!Z        ");
    ve.push_back("!CONV     ");
-   if(!RunPlanB()) ve.push_back("!DIFFZ    ");
+   if( !RejectingEndcapEle() ) ve.push_back("!DIFFZ    ");
    else  ve.push_back("EETA<1.442");
    ve.push_back("HT        ");
    ve.push_back("TAGGABLE  ");
@@ -3490,8 +3499,8 @@ bool ana::EventLoop(){
 		       e_plus_jet[9][ntj][mctype]++;		      
 		       e_plus_jet_weighted[9][ntj][mctype] += this_weight;
 
-		       if( ( RunPlanB()==false && !isDifferentInteraction ) ||  // PV check (DIFFZ)
-			   ( RunPlanB()==true  && isBarrel ) ) {     // plan B			 
+		       if( ( RejectingEndcapEle()==false && !isDifferentInteraction ) ||  // PV check (DIFFZ)
+			   ( RejectingEndcapEle()==true  && isBarrel ) ) {     // ele eta cut
 
 			 e_plus_jet[10][ntj][mctype]++;
 			 e_plus_jet_weighted[10][ntj][mctype] += this_weight;
@@ -3701,17 +3710,22 @@ bool ana::EventLoop(){
 
 
        // Apply missing ET cut (Normal Selection)
-       if( (RunPlanB()==false && this_met > METCUT)  || //plan A
-	   (RunPlanB()==true  && fabs( els_eta->at(ii_GoodEle_mostIso) ) < 1.442) ) { //plan B
+       bool passALL = true;
+       if ( ApplyingMETcut() && this_met < METCUT ) passALL = false;
 
+       // Apply eta cut if specified (optional)
+       if ( RejectingEndcapEle() && fabs( els_eta->at(ii_GoodEle_mostIso) ) > 1.442 ) passALL = false;
+     
+       //if( (RunPlanB()==false && this_met > METCUT)  || //plan A
+       //    (RunPlanB()==true  && fabs( els_eta->at(ii_GoodEle_mostIso) ) < 1.442) ) { //plan B
+
+       if (passALL) {
 	 if(debug()) cout << "QCDest: event pass all cuts (except isol and nj), make isolation plots" << endl;
-
 	 //fill histo (with weight) accord to nGoodJet (16-8-09)
 	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso,      CombRelIso,     this_weight );
 	 //fillHisto_Njet_DataAndMC( h_QCDest_NormCombRelIso,  NormCombRelIso, this_weight );
        }
-     
-
+   
 
 
        
@@ -4607,7 +4621,10 @@ bool ana::EventLoop(){
    cout << " Electron ID = " << printEleID() << endl;
    cout << " Electron RelIso formula = " ;
    if(useNewReliso) cout << "new"; else cout << "old";
-   if(RunPlanB()) cout << "\n Using plan B, does not use MET, use barrel ele only (eta<1.442)" << endl;
+   if(!ApplyingMETcut() && RejectingEndcapEle()) 
+     cout << "\n Using plan B, does not use MET, use barrel ele only (eta<1.442)" << endl;
+   if(ApplyingMETcut() && RejectingEndcapEle()) 
+     cout << "\n Using plan C, both MET & ele eta cuts are used (eta<1.442)" << endl;
    cout << "\n\\end{verbatim}\n"<< endl;
 
 

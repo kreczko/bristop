@@ -1287,8 +1287,13 @@ public:
   void    SetAESMETcut(float);
   void    SetAESZveto_TwoEle(bool);
 
-  void    SetRunPlanB(bool f) { m_runPlanB = f; };
-  bool    RunPlanB() const { return m_runPlanB; };
+  //void    SetRunPlanB(bool f) { m_runPlanB = f; };
+  //void    SetRunPlanC(bool f) { m_runPlanC = f; };
+  //bool    RunPlanB() const { return m_runPlanB; };
+  //bool    RunPlanC() const { return m_runPlanC; };
+
+  void    ApplyMETcut(bool f) { m_applyMETcut = f; };
+  void    RejectEndcapEle(bool f) { m_rejectEndcapEle = f; };
 
   void    StudySystematics(const string, const string);
 
@@ -1439,7 +1444,10 @@ private:
   float AES_HT_cut;
   float AES_MET_cut;
   bool  useSimpleZvetoAES;
-  bool  m_runPlanB;
+  //bool  m_runPlanB;
+  //bool  m_runPlanC;
+  bool  m_rejectEndcapEle; //new
+  bool  m_applyMETcut;
   eID   m_eID;
 
   float intlumi;   // integrated luminosity assumed
@@ -1499,7 +1507,8 @@ private:
   double GetWeight(const string) const;
   long   GetNinit(const string) const;
 
-
+  bool    ApplyingMETcut() const { return m_applyMETcut; } ;
+  bool    RejectingEndcapEle() const { return m_rejectEndcapEle; } ;
 
   // print event-count tables
   void DrawEventPerNjetTable( const double nevt[][5][23], const vector<string>& ve ) const;
