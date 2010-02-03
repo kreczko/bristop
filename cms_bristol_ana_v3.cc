@@ -1,6 +1,9 @@
 //#====================================================#
 //# Last update:
 //
+// 29 Jan 2010: Added reliso histo for trial control region.
+// 26 Jan 2010: Added met plot for barrel-ele only.
+//
 // 22 Jan 2010: Added option ApplyMETcut() and RejectEndcapEle(), to replace SetRunPlanB().
 // 20 Jan 2010: minor update.
 // 19 Jan 2010: fix single top cross sections at 7 TeV.
@@ -1320,6 +1323,10 @@ bool ana::EventLoop(){
    TH1F *h_met[7][nclass]; //user-chosen MET
    TH1F *h_met_mu[7][nclass]; //muon-MET
    TH1F *h_met_t1[7][nclass]; //type1-MET
+   TH1F *h_met_BA[7][nclass]; //user-chosen MET (Barrel)
+   TH1F *h_met_mu_BA[7][nclass]; //muon-MET (Barrel)
+   TH1F *h_met_t1_BA[7][nclass]; //type1-MET (Barrel)
+
    //   dir_HT->cd();   addHistoDataAndMC( h_ht,  "HT",  "HT (after all but HT cut)", 100, 0, 1000);
    //   dir_MET->cd();  addHistoDataAndMC( h_met, "met", "Missing ET", 200, 0, 200);
    dir_HT->cd();   
@@ -1328,6 +1335,10 @@ bool ana::EventLoop(){
    addHisto_Njet_DataAndMC( h_met,    "met",    "MET (n-1)",      200, 0, 200);
    addHisto_Njet_DataAndMC( h_met_mu, "met_mu", "#muMET (n-1)",   200, 0, 200);
    addHisto_Njet_DataAndMC( h_met_t1, "met_t1", "Type1MET (n-1)", 200, 0, 200);
+   addHisto_Njet_DataAndMC( h_met_BA, "met_BA", "MET (n-1 barrel)",   200, 0, 200);
+   addHisto_Njet_DataAndMC( h_met_mu_BA, "met_mu_BA", "#muMET (n-1 barrel)",   200, 0, 200);
+   addHisto_Njet_DataAndMC( h_met_t1_BA, "met_t1_BA", "Type1MET (n-1 barrel)", 200, 0, 200);
+
    //TH1F *h_metAlone[nclass];
    //addHistoDataAndMC( h_metAlone, "metAlone", "Missing ET (no other cuts)", 200, 0, 200);
    TH1F *h_met_ante_ISO[nclass]; //user-chosen MET
@@ -1825,6 +1836,8 @@ bool ana::EventLoop(){
    TH1F *h_QCDest_CombRelIso_AES_planB2_e30[7][nclass];
    TH1F *h_QCDest_CombRelIso_AES_planB3_e20[7][nclass];//fail RT ID
    TH1F *h_QCDest_CombRelIso_AES_planB3_e30[7][nclass];
+   TH1F *h_QCDest_CombRelIso_AES_planB3b_e20[7][nclass];//fail RT ID (BARREL)
+   TH1F *h_QCDest_CombRelIso_AES_planB3b_e30[7][nclass];
    TH1F *h_QCDest_CombRelIso_AES_planB4_e20[7][nclass];//fail RL ID
    TH1F *h_QCDest_CombRelIso_AES_planB4_e30[7][nclass];
    TH1F *h_QCDest_CombRelIso_AES_planB5_e20[7][nclass];//fail Loose ID
@@ -1835,12 +1848,15 @@ bool ana::EventLoop(){
    TH1F *h_QCDest_CombRelIso_AES_planB7_e30[7][nclass];
    TH1F *h_QCDest_CombRelIso_AES_planB8_e20[7][nclass];//d0 > 200um, fail RT
    TH1F *h_QCDest_CombRelIso_AES_planB8_e30[7][nclass];
+
    addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB1_e20, "QCDest_CombRelIso_AES_planB1_e20", "RelIso (AES B1 E_{T}>20)", 1000,0,10);
    addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB1_e30, "QCDest_CombRelIso_AES_planB1_e30", "RelIso (AES B1 E_{T}>30)", 1000,0,10);
    addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB2_e20, "QCDest_CombRelIso_AES_planB2_e20", "RelIso (AES B2 E_{T}<20)", 1000,0,10);
    addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB2_e30, "QCDest_CombRelIso_AES_planB2_e30", "RelIso (AES B2 E_{T}<30)", 1000,0,10);
    addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e20, "QCDest_CombRelIso_AES_planB3_e20", "RelIso (AES B3 RT=0 E_{T}>20)", 1000,0,10);
    addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e30, "QCDest_CombRelIso_AES_planB3_e30", "RelIso (AES B3 RT=0 E_{T}>30)", 1000,0,10);
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3b_e20, "QCDest_CombRelIso_AES_planB3b_e20", "RelIso (AES B3 RT=0 EB E_{T}>20)", 1000,0,10);//new
+   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3b_e30, "QCDest_CombRelIso_AES_planB3b_e30", "RelIso (AES B3 RT=0 EB E_{T}>30)", 1000,0,10);//new
    addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB4_e20, "QCDest_CombRelIso_AES_planB4_e20", "RelIso (AES B4 RL=0 E_{T}>20)", 1000,0,10);
    addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB4_e30, "QCDest_CombRelIso_AES_planB4_e30", "RelIso (AES B4 RL=0 E_{T}>30)", 1000,0,10);
    addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB5_e20, "QCDest_CombRelIso_AES_planB5_e20", "RelIso (AES B5 cL=0 E_{T}>20)", 1000,0,10);
@@ -3588,6 +3604,11 @@ bool ana::EventLoop(){
 	 fillHisto_Njet_DataAndMC( h_met,    this_met,       this_weight ); //user-chosen MET
 	 fillHisto_Njet_DataAndMC( h_met_mu, met2v_mu.Mod(), this_weight );
 	 fillHisto_Njet_DataAndMC( h_met_t1, met2v_t1.Mod(), this_weight );
+	 if(isBarrel){ //26-1-10
+	   fillHisto_Njet_DataAndMC( h_met_BA,    this_met,       this_weight );
+	   fillHisto_Njet_DataAndMC( h_met_mu_BA, met2v_mu.Mod(), this_weight );
+	   fillHisto_Njet_DataAndMC( h_met_t1_BA, met2v_t1.Mod(), this_weight );
+	 }
        }
        // after all but MET/HT/Njet cuts
        fillHisto_Njet_DataAndMC( h_mtw_mu, this_mu_mtw, this_weight );
@@ -4088,7 +4109,12 @@ bool ana::EventLoop(){
 	       //---------------------------
 	       if ( els_et->at(0) > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e20, this_iso, this_weight );
 		 if ( els_et->at(0) > 30. )  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e30, this_iso, this_weight );
-	       }   
+	       } 
+	       if( fabs(els_eta->at(0))  < 1.442 ){ //BARREL
+		 if ( els_et->at(0) > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3b_e20, this_iso, this_weight );
+		   if ( els_et->at(0) > 30. )  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3b_e30, this_iso, this_weight );
+		 }
+	       }
 	     }
 	     // 2-12-09
 	     if( els_et->at(0) > 20. ) {
