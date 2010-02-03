@@ -1,6 +1,9 @@
 //#====================================================#
 //# Last update:
 //
+// 03 Feb 2010: Add function to check MC truth of reco particle MCTruthMatch(double, double)
+//              and extended conversion study table to include charged pions
+//
 // 29 Jan 2010: Added reliso histo for trial control region.
 // 26 Jan 2010: Added met plot for barrel-ele only.
 //
@@ -829,7 +832,7 @@ ana::ana(){
    ConversionCounter = 0;
    for(int k=0;k<23; ++k){
      for(int i=0;i<2; ++i){
-       for(int j=0;j<5; ++j){
+       for(int j=0;j<6; ++j){
          ConversionArray[k][i][j] = 0;
        }
      }
@@ -2020,7 +2023,7 @@ bool ana::EventLoop(){
    ve.push_back("!Z        ");
    ve.push_back("!CONV     ");
    if( !RejectingEndcapEle() ) ve.push_back("!DIFFZ    ");
-   else  ve.push_back("EETA<1.442");
+   else  ve.push_back("EETA$<$1.442");
    ve.push_back("HT        ");
    ve.push_back("TAGGABLE  ");
    ve.push_back("$\\ge$1+BTAG");
@@ -6724,6 +6727,25 @@ bool ana::ConversionFinder2(const TLorentzVector& e1, int mctype, int index_sele
 }
 
 
+//return generated particle match to reco object based on delR
+float ana::MCTruthMatch(float eta, float phi){
+  float mc_phi,mc_eta,tempDelR,finalDelR=100;
+  int ii;
+  for(unsigned int i=0;i<Nmc_doc;++i){
+    mc_phi = mc_doc_phi->at(i);
+    mc_eta = mc_doc_eta->at(i);
+    tempDelR = calcDeltaR( mc_phi, mc_eta, phi, eta);
+    if(tempDelR > 0.3) continue;
+
+    if(tempDelR < finalDelR){finalDelR = tempDelR;ii=i;}
+  }//end mc particle loop                               
+  return mc_doc_id->at(ii);
+}
+
+
+
+
+
 bool ana::ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele) {
 
   //Should do no more than return whether the electron passes the conversion algo or not
@@ -6874,9 +6896,13 @@ void ana::ConversionMCMatching(const TLorentzVector& e1, int mctype, bool isthis
       if(debug()) cout << "It matches closest to a pi zero or eta" << endl;
       ConversionArray[mctype][didConv][3]++;
     }
+    else if( fabs( mc_doc_id->at(ii) ) == 211 ){
+      if(debug()) cout << "It matches closest to charged pion" << endl;
+      ConversionArray[mctype][didConv][4]++;
+    }
     else{
       if(debug()) cout << "It matches closest to something else" << endl;
-      ConversionArray[mctype][didConv][4]++;
+      ConversionArray[mctype][didConv][5]++;
     }
     
   }
@@ -7024,7 +7050,7 @@ void ana::OptimiseConversionFinder(const TLorentzVector& e1, int mctype){
 void ana::PrintConversionTable(){
 
   TString MySamples[14] = {"ttbar","W+jet","Z+Jet","Enri1","Enri2","Enri3","bce1","bce2","bce3","vqq","tW","tchan","schan","data"};
-  TString ConvNames[11] = {"&  Iso Ele ", "&  Convers ","& Electron ","&   Photon ","&   PiZero ","&    Other ","& Non Conv ","& Electron ","&   Photon ","&   PiZero ","&    Other "};
+  TString ConvNames[13] = {"&  Iso Ele ", "&  Convers ","& Electron ","&   Photon ","&   PiZero ","&  ChrPion ","&    Other ","& Non Conv ","& Electron ","&   Photon ","&   PiZero ","&  ChrPion ","&    Other "};
 
   std::cout << std::endl << std::endl << "-------------------------------------------------------------------";
   std::cout << std::endl << "-------------------------------------------------------------------";
@@ -7035,8 +7061,8 @@ void ana::PrintConversionTable(){
     std::endl<<std::endl;
   
   cout <<"mctype ";
-  for(int i=0;i<10;++i) std::cout<<ConvNames[i];
-  std::cout<<ConvNames[10]<<" \\\\"  <<std::endl;
+  for(int i=0;i<12;++i) std::cout<<ConvNames[i];
+  std::cout<<ConvNames[12]<<" \\\\"  <<std::endl;
 
   //for(int k=0;k<20;k++){                                                                                                              
   int ff;
@@ -7045,7 +7071,7 @@ void ana::PrintConversionTable(){
     if(k==11||k==12) continue;
     if(k==10){
       for(int kkc=0;kkc<2;++kkc){
-	for(int j=0;j<5;++j){
+	for(int j=0;j<6;++j){
 	  for(int kk=1;kk<10;++kk){ConversionArray[10][kkc][j]+=ConversionArray[kk][kkc][j];
 	  }
 	}
@@ -7057,7 +7083,7 @@ void ana::PrintConversionTable(){
     
     for(int i=1;i>-1;--i){
       //     std::cout<<ConversionArray[0][i][0]<<std::setw(8);                                                                         
-      for(int j=0;j<5;++j){
+      for(int j=0;j<6;++j){
 	std::cout<<" & "<<std::setw(8)<<ConversionArray[k][i][j];
       }
     }
