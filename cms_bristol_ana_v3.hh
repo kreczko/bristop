@@ -1335,6 +1335,7 @@ private:
   bool  ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele);
   bool  ConversionFinder2(const TLorentzVector& e1, int mctype, int index_selected_ele);
   void  ConversionMCMatching(const TLorentzVector& e1, int mctype, bool isthisConversion);
+  float MCTruthMatch(float eta, float phi);
 
   // QCD estimation
   pair<double,double> estimateQCD_computeFitResultUncertainty( const double est, TF1* f ) const;
@@ -1556,7 +1557,7 @@ private:
   
   void PrintConversionTable();
   int ConversionCounter;
-  int ConversionArray[23][2][5];
+  int ConversionArray[23][2][6];
   void OptimiseConversionFinder(const TLorentzVector& e1, int mctype);  
 
   TH2D *Conv_Opti[2];
