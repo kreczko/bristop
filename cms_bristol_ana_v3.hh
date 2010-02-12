@@ -1,7 +1,6 @@
 class ana {
-public:
 
-  //TMYtools* mytool;
+public:
     
   // chain = list of root files containing the same tree
   TChain* chain;
@@ -14,9 +13,6 @@ public:
   FILE* outfile;
           
    // Declaration of leaf types
-   //UInt_t          NTEST; //TEST
-   //vector<float>   *TEST_x;
-
    UInt_t          NPFJets;
    vector<float>   *PFJets_energy;
    vector<float>   *PFJets_et;
@@ -298,48 +294,6 @@ public:
    vector<float>   *mc_doc_mass;
    vector<float>   *mc_doc_numOfDaughters;
    vector<float>   *mc_doc_numOfMothers;
-   UInt_t          Nmc_electrons;
-   vector<float>   *mc_electrons_id;
-   vector<float>   *mc_electrons_pt;
-   vector<float>   *mc_electrons_px;
-   vector<float>   *mc_electrons_py;
-   vector<float>   *mc_electrons_pz;
-   vector<float>   *mc_electrons_eta;
-   vector<float>   *mc_electrons_phi;
-   vector<float>   *mc_electrons_theta;
-   vector<float>   *mc_electrons_status;
-   vector<float>   *mc_electrons_energy;
-   vector<float>   *mc_electrons_charge;
-   vector<float>   *mc_electrons_mother_id;
-   vector<float>   *mc_electrons_mother_pt;
-   vector<float>   *mc_electrons_grandmother_id;
-   vector<float>   *mc_electrons_ggrandmother_id;
-   vector<float>   *mc_electrons_vertex_x;
-   vector<float>   *mc_electrons_vertex_y;
-   vector<float>   *mc_electrons_vertex_z;
-   vector<float>   *mc_electrons_mass;
-   vector<float>   *mc_electrons_numOfDaughters;
-   UInt_t          Nmc_mus;
-   vector<float>   *mc_mus_id;
-   vector<float>   *mc_mus_pt;
-   vector<float>   *mc_mus_px;
-   vector<float>   *mc_mus_py;
-   vector<float>   *mc_mus_pz;
-   vector<float>   *mc_mus_eta;
-   vector<float>   *mc_mus_phi;
-   vector<float>   *mc_mus_theta;
-   vector<float>   *mc_mus_status;
-   vector<float>   *mc_mus_energy;
-   vector<float>   *mc_mus_charge;
-   vector<float>   *mc_mus_mother_id;
-   vector<float>   *mc_mus_mother_pt;
-   vector<float>   *mc_mus_grandmother_id;
-   vector<float>   *mc_mus_ggrandmother_id;
-   vector<float>   *mc_mus_vertex_x;
-   vector<float>   *mc_mus_vertex_y;
-   vector<float>   *mc_mus_vertex_z;
-   vector<float>   *mc_mus_mass;
-   vector<float>   *mc_mus_numOfDaughters;
    UInt_t          Nmets;
    vector<float>   *mets_et;
    vector<float>   *mets_phi;
@@ -355,16 +309,6 @@ public:
    vector<float>   *mets_phi_muonCor;
    vector<float>   *mets_et_JESCor;
    vector<float>   *mets_phi_JESCor;
-   UInt_t          NmetsAK5L2;
-   vector<float>   *metsAK5L2_et;
-   vector<float>   *metsAK5L2_phi;
-   vector<float>   *metsAK5L2_ex;
-   vector<float>   *metsAK5L2_ey;
-   vector<float>   *metsAK5L2_sumEt;
-   vector<float>   *metsAK5L2_et_muonCor;
-   vector<float>   *metsAK5L2_phi_muonCor;
-   vector<float>   *metsAK5L2_et_JESCor;
-   vector<float>   *metsAK5L2_phi_JESCor;
    UInt_t          NmetsKT4;
    vector<float>   *metsKT4_et;
    vector<float>   *metsKT4_phi;
@@ -902,48 +846,6 @@ public:
    TBranch        *b_mc_doc_mass;   //!
    TBranch        *b_mc_doc_numOfDaughters;   //!
    TBranch        *b_mc_doc_numOfMothers;   //!
-   TBranch        *b_Nmc_electrons;   //!
-   TBranch        *b_mc_electrons_id;   //!
-   TBranch        *b_mc_electrons_pt;   //!
-   TBranch        *b_mc_electrons_px;   //!
-   TBranch        *b_mc_electrons_py;   //!
-   TBranch        *b_mc_electrons_pz;   //!
-   TBranch        *b_mc_electrons_eta;   //!
-   TBranch        *b_mc_electrons_phi;   //!
-   TBranch        *b_mc_electrons_theta;   //!
-   TBranch        *b_mc_electrons_status;   //!
-   TBranch        *b_mc_electrons_energy;   //!
-   TBranch        *b_mc_electrons_charge;   //!
-   TBranch        *b_mc_electrons_mother_id;   //!
-   TBranch        *b_mc_electrons_mother_pt;   //!
-   TBranch        *b_mc_electrons_grandmother_id;   //!
-   TBranch        *b_mc_electrons_ggrandmother_id;   //!
-   TBranch        *b_mc_electrons_vertex_x;   //!
-   TBranch        *b_mc_electrons_vertex_y;   //!
-   TBranch        *b_mc_electrons_vertex_z;   //!
-   TBranch        *b_mc_electrons_mass;   //!
-   TBranch        *b_mc_electrons_numOfDaughters;   //!
-   TBranch        *b_Nmc_mus;   //!
-   TBranch        *b_mc_mus_id;   //!
-   TBranch        *b_mc_mus_pt;   //!
-   TBranch        *b_mc_mus_px;   //!
-   TBranch        *b_mc_mus_py;   //!
-   TBranch        *b_mc_mus_pz;   //!
-   TBranch        *b_mc_mus_eta;   //!
-   TBranch        *b_mc_mus_phi;   //!
-   TBranch        *b_mc_mus_theta;   //!
-   TBranch        *b_mc_mus_status;   //!
-   TBranch        *b_mc_mus_energy;   //!
-   TBranch        *b_mc_mus_charge;   //!
-   TBranch        *b_mc_mus_mother_id;   //!
-   TBranch        *b_mc_mus_mother_pt;   //!
-   TBranch        *b_mc_mus_grandmother_id;   //!
-   TBranch        *b_mc_mus_ggrandmother_id;   //!
-   TBranch        *b_mc_mus_vertex_x;   //!
-   TBranch        *b_mc_mus_vertex_y;   //!
-   TBranch        *b_mc_mus_vertex_z;   //!
-   TBranch        *b_mc_mus_mass;   //!
-   TBranch        *b_mc_mus_numOfDaughters;   //!
    TBranch        *b_Nmets;   //!
    TBranch        *b_mets_et;   //!
    TBranch        *b_mets_phi;   //!
@@ -959,17 +861,7 @@ public:
    TBranch        *b_mets_phi_muonCor;   //!
    TBranch        *b_mets_et_JESCor;   //!
    TBranch        *b_mets_phi_JESCor;   //!
-   //New 41109
-   TBranch        *b_NmetsAK5L2;   //!
-   TBranch        *b_metsAK5L2_et;   //!
-   TBranch        *b_metsAK5L2_phi;   //!
-   TBranch        *b_metsAK5L2_ex;   //!
-   TBranch        *b_metsAK5L2_ey;   //!
-   TBranch        *b_metsAK5L2_sumEt;   //!
-   TBranch        *b_metsAK5L2_et_muonCor;   //!
-   TBranch        *b_metsAK5L2_phi_muonCor;   //!
-   TBranch        *b_metsAK5L2_et_JESCor;   //!
-   TBranch        *b_metsAK5L2_phi_JESCor;   //!
+
    //3099
    TBranch        *b_NmetsKT4;   //!
    TBranch        *b_metsKT4_et;   //!
@@ -1246,11 +1138,105 @@ public:
   TBranch        *b_HLT_Ele15_SiStrip_L1R;   //!
   TBranch        *b_HLT_Ele20_LW_L1R;   //!
 
+  // PDF Weights
+  //------------
+  Double_t        PDFWcteq66_0;
+  Double_t        PDFWcteq66_1;
+  Double_t        PDFWcteq66_2;
+  Double_t        PDFWcteq66_3;
+  Double_t        PDFWcteq66_4;
+  Double_t        PDFWcteq66_5;
+  Double_t        PDFWcteq66_6;
+  Double_t        PDFWcteq66_7;
+  Double_t        PDFWcteq66_8;
+  Double_t        PDFWcteq66_9;
+  Double_t        PDFWcteq66_10;
+  Double_t        PDFWcteq66_11;
+  Double_t        PDFWcteq66_12;
+  Double_t        PDFWcteq66_13;
+  Double_t        PDFWcteq66_14;
+  Double_t        PDFWcteq66_15;
+  Double_t        PDFWcteq66_16;
+  Double_t        PDFWcteq66_17;
+  Double_t        PDFWcteq66_18;
+  Double_t        PDFWcteq66_19;
+  Double_t        PDFWcteq66_20;
+  Double_t        PDFWcteq66_21;
+  Double_t        PDFWcteq66_22;
+  Double_t        PDFWcteq66_23;
+  Double_t        PDFWcteq66_24;
+  Double_t        PDFWcteq66_25;
+  Double_t        PDFWcteq66_26;
+  Double_t        PDFWcteq66_27;
+  Double_t        PDFWcteq66_28;
+  Double_t        PDFWcteq66_29;
+  Double_t        PDFWcteq66_30;
+  Double_t        PDFWcteq66_31;
+  Double_t        PDFWcteq66_32;
+  Double_t        PDFWcteq66_33;
+  Double_t        PDFWcteq66_34;
+  Double_t        PDFWcteq66_35;
+  Double_t        PDFWcteq66_36;
+  Double_t        PDFWcteq66_37;
+  Double_t        PDFWcteq66_38;
+  Double_t        PDFWcteq66_39;
+  Double_t        PDFWcteq66_40;
+  Double_t        PDFWcteq66_41;
+  Double_t        PDFWcteq66_42;
+  Double_t        PDFWcteq66_43;
+  Double_t        PDFWcteq66_44;
+
+  TBranch        *b_PDFWcteq66_0;   //!
+  TBranch        *b_PDFWcteq66_1;   //!
+  TBranch        *b_PDFWcteq66_2;   //!
+  TBranch        *b_PDFWcteq66_3;   //!
+  TBranch        *b_PDFWcteq66_4;   //!
+  TBranch        *b_PDFWcteq66_5;   //!
+  TBranch        *b_PDFWcteq66_6;   //!
+  TBranch        *b_PDFWcteq66_7;   //!
+  TBranch        *b_PDFWcteq66_8;   //!
+  TBranch        *b_PDFWcteq66_9;   //!
+  TBranch        *b_PDFWcteq66_10;   //!
+  TBranch        *b_PDFWcteq66_11;   //!
+  TBranch        *b_PDFWcteq66_12;   //!
+  TBranch        *b_PDFWcteq66_13;   //!
+  TBranch        *b_PDFWcteq66_14;   //!
+  TBranch        *b_PDFWcteq66_15;   //!
+  TBranch        *b_PDFWcteq66_16;   //!
+  TBranch        *b_PDFWcteq66_17;   //!
+  TBranch        *b_PDFWcteq66_18;   //!
+  TBranch        *b_PDFWcteq66_19;   //!
+  TBranch        *b_PDFWcteq66_20;   //!
+  TBranch        *b_PDFWcteq66_21;   //!
+  TBranch        *b_PDFWcteq66_22;   //!
+  TBranch        *b_PDFWcteq66_23;   //!
+  TBranch        *b_PDFWcteq66_24;   //!
+  TBranch        *b_PDFWcteq66_25;   //!
+  TBranch        *b_PDFWcteq66_26;   //!
+  TBranch        *b_PDFWcteq66_27;   //!
+  TBranch        *b_PDFWcteq66_28;   //!
+  TBranch        *b_PDFWcteq66_29;   //!
+  TBranch        *b_PDFWcteq66_30;   //!
+  TBranch        *b_PDFWcteq66_31;   //!
+  TBranch        *b_PDFWcteq66_32;   //!
+  TBranch        *b_PDFWcteq66_33;   //!
+  TBranch        *b_PDFWcteq66_34;   //!
+  TBranch        *b_PDFWcteq66_35;   //!
+  TBranch        *b_PDFWcteq66_36;   //!
+  TBranch        *b_PDFWcteq66_37;   //!
+  TBranch        *b_PDFWcteq66_38;   //!
+  TBranch        *b_PDFWcteq66_39;   //!
+  TBranch        *b_PDFWcteq66_40;   //!
+  TBranch        *b_PDFWcteq66_41;   //!
+  TBranch        *b_PDFWcteq66_42;   //!
+  TBranch        *b_PDFWcteq66_43;   //!
+  TBranch        *b_PDFWcteq66_44;   //!
+
 
   ana();
   ~ana(){};
     
-  void Init(); //initialize tree branches
+
   bool EventLoop();// the main analysis 
 
   //Methods to call from anascript.C
@@ -1259,10 +1245,11 @@ public:
   void	  SetOutputHistFile(const string name, const string mode="RECREATE");
   void	  SetOutputTextFile(const string name, const string mode="w");
 
-  void	  SetGoodRuns(int val);  // use all runs or just good runs?
-  void	  SetData(int val);      // is this a data file
-  void    CheckTrigger(int val); // check trigger fired?  time-consuming...
-  void    SetLimit(int val);     // testing first few events
+  void	  SetGoodRuns(bool f) { keepgood = f; };   // use all runs or just good runs?
+  void	  SetData(bool f)     { datafile = f; };   // is this a data file
+  void    CheckTrigger(bool);  // check trigger fired?  time-consuming...
+  void    CheckTrigger(bool, const string hlt);
+  void    SetLimit(int n);     // testing first few events
   void    EstimateQCD();         // run QCD estimation
   bool    EstimateQCD(const string file);  // run QCD estimation
   void    EstimateWjets();       // run W+jets estimation
@@ -1275,55 +1262,50 @@ public:
   void    SetMETcut(float);
   void    SetHTcut(float);
 
-
-
   // electron ID
   enum  eID { robustTight, robustLoose, loose, tight, none };
   void    SetEleID(eID val) { m_eID = val;};
-  eID     EleID() const { return m_eID; };
-  string  printEleID() const;
 
-  void    SetAESHTcut(float);
-  void    SetAESMETcut(float);
-  void    SetAESZveto_TwoEle(bool);
+  void    SetAESHTcut(float cut)     { AES_HT_cut        = cut; };
+  void    SetAESMETcut(float cut)    { AES_MET_cut       = cut; };
+  void    SetAESZveto_TwoEle(bool f) { AES_useSimpleZveto = f; };
 
-  //void    SetRunPlanB(bool f) { m_runPlanB = f; };
-  //void    SetRunPlanC(bool f) { m_runPlanC = f; };
-  //bool    RunPlanB() const { return m_runPlanB; };
-  //bool    RunPlanC() const { return m_runPlanC; };
-
-  void    ApplyMETcut(bool f) { m_applyMETcut = f; };
-  void    RejectEndcapEle(bool f) { m_rejectEndcapEle = f; };
+  void    ApplyMETcut(bool f)        { m_applyMETcut     = f; };
+  void    RejectEndcapEle(bool f)    { m_rejectEndcapEle = f; };
 
   void    StudySystematics(const string, const string);
+  void    StudyPDFunc(bool f)        { m_studyPDFunc     = f; };
 
-//   float calcMinimumDeltaRJJ(const jet* const TightJet[], const int nTightJet);
-//   float calcMinimumInvMassJJ(const jet* const TightJet[], const float cTightJet[], const int nTightJet);
-//   const jet* findClosestJet(const TLorentzVector& p1, const jet* const TightJet[], const int nTightJet);
-
-  // Switches to turn on plot-making
-  void Validation(bool val) {  m_doValidation = val; };
-  void ConversionStudySwitch(bool val) {m_ConversionStudies = val;};
-  void PlotRelisoNES(bool val) { m_plotRelisoNES = val; };
-  void SetDebug(bool val) { m_debug = val; };
-  void SetJetAlgo(string val) { m_jetAlgo = val; };
-  void SetMETAlgo(string val) { m_metAlgo = val; };
-  void SetLHCEnergyInTeV(double val) { m_LHCEnergyInTeV = val; };
-  void SetRunOnSD(bool val) { m_run_on_SD = val; };
-  void SetRunOnMyHLTskim(bool val) { m_run_on_myHLTskim = val; };
+  // Switches
+  void Validation(bool val)            { m_doValidation      = val; };
+  void ConversionStudySwitch(bool val) { m_ConversionStudies = val; };
+  void PlotRelisoNES(bool val)         { m_plotRelisoNES     = val; };
+  void SetDebug(bool val)              { m_debug             = val; };
+  void SetJetAlgo(string val)          { m_jetAlgo           = val; };
+  void SetMETAlgo(string val)          { m_metAlgo           = val; };
+  void SetLHCEnergyInTeV(double val)   { m_LHCEnergyInTeV    = val; };
+  void SetRunOnSD(bool val)            { m_runOnSD           = val; };
+  void SetRunOnMyHLTskim(bool val)     { m_runOnMyHLTskim    = val; };
 
   //switch to preclue missing layers as these are not in 314 data samples
-  void UseMissLayers(bool val){m_useMisslayers = val;};
+  void UseMissLayers(bool val)         { m_useMisslayers     = val; };
 
 
 private:
 
-  //Intenal methods
-  bool	  KeepGoodRuns() const;  
-  bool	  IsData() const;
-  bool    GetTrigger() const;
-  int     GetLimit() const;
-  void    PrintCuts() const;   // print kinematic cuts
+  //-----------------
+  // Intenal methods
+  //-----------------
+  bool	 KeepGoodRuns()       const { return keepgood; }
+  bool	 IsData()             const { return datafile; };
+  bool   GetTrigger()         const { return checkTrig; };
+  int    GetLimit()           const { return numlimit; };
+  eID    EleID()              const { return m_eID; };
+  void   PrintCuts() const;   // print kinematic cuts
+  string printEleID() const;
+  void   CheckAvailableJetMET();
+  void   Init(); //initialize tree branches
+  void   ReadSelectedBranches() const;
 
   //geometry
   float calcDeltaR(const float phi1, const float eta1, const float phi2, const float eta2) const;
@@ -1354,7 +1336,7 @@ private:
   void fillHistoNjet_DataAndMC( const string hname, const float value, const double weight );
   void fillHistoNjet_DataAndMC( const string hname, const float v1, const float v2, const double weight );
 
-  void fillHistoNjet2D( TH1F* h[][16], const int ec, const float value, const double weight );//NEW
+  void fillHistoNjet2D( TH1F* h[][16], const int ec, const float value, const double weight );
 
   // Helper methods to fill histograms for data and each type of MC
   void addHistoDataAndMC( TH1F* h[], const string, const string, const int, const float, const float ) const;
@@ -1363,20 +1345,142 @@ private:
   void fillHistoDataAndMC( TH1F* h[], const float value, const double weight ) const;
   void fillHistoDataAndMC( TH2F* h[], const float v1, const float v2, const double weight ) const;
 
-  // New
   void addHisto_Njet_DataAndMC( TH1F* h[7][16], const string, const string, const int, const float, const float);
   void fillHisto_Njet_DataAndMC( TH1F* h[7][16], const float value, const double w );
-  //  void fillHisto_Njet_DataAndMC( TH1F* h[7][16], const float v1, const float v2, const double w ) const;
 
+  void fillHisto_PDF_weights( TH1F* h );
 
   // W+jets estimation
   void reco_hadronicTop_highestTopPT( const std::vector<TLorentzVector>&, const int nGoodIsoEle );
   pair<double,double> compute_M3(const std::vector<TLorentzVector>&) const;
+
+  void SetHistoLabelCutNjet( TH2D *this_njetVcuts, vector<string>& ve ) const;
+  void SetHistoLabelEleID( TH1F *eid[] ) const;
+
+  void   DefineCrossSection();
+  double GetCrossSection(const string) const;
+  void   SetEventWeightMap();
+  double GetWeight(const string) const;
+  long   GetNinit(const string) const;
+
+
+  // print event-count tables
+  void DrawEventPerNjetTable( const double nevt[][5][23], const vector<string>& ve ) const;
+  void DrawSignalBGTable(     const double nevt[][5][23], const vector<string> ve ) const;
+  void DrawMCTypeTable(       const double nevt[][5][23], const string title, vector<string> ve ) const;
+  void DrawQCDTable(          const double nevt[][5][23], const string title, vector<string> ve ) const;
+  void DrawSingleTopTable(    const double nevt[][5][23], const string title, vector<string> ve ) const;
+  void DrawSignalAcceptanceTable(const double nevent[][5][23], vector<string> ve) const;
+  void printCutStage(int,string) const;
+  void printCutStage(ofstream& os,int,string) const;
+
+
+  // print event-count tables (with errors)
+  void PrintErrorTables(const double e_plus_jet[][5][23], const double e_plus_jet_weighted[][5][23], vector<string> ve) const;
+  void PrintError_NjetVcut(ofstream&, const double [][5][23], const double [][5][24], vector<string>&) const;
+  double GetBayesUncertainty(int Ninitial) const;
+  string ScrNum(double num) const;
+  void printLine(ofstream &myfile, const double, const double) const;
+  bool ScientificNotation;
+
+  bool  is_mc_present(const int) const;
+  float compute_d0(const string, const int) const;
+  float compute_mtw(const TVector2&, const TVector2&) const;
+
+  void  PrintGenParticles() const;
+
+  // validation plots
+  void valid_mkHisto_cut_njet(TH1F* h[][7], const string, const string, const int, const float, const float );
+  void valid_fillHisto(TH1F* h[][7], const bool cuts[8], int nj, double value) const;
+
+  int    Njet()                const { return m_nGoodJet; };  //num of cleaned jet in event
+  bool   doValidation()        const { return m_doValidation; };
+  bool   DoConversionStudies()       { return m_ConversionStudies; };
+  //bool   doPlotRelisoNES()     const { return m_plotRelisoNES; };
+  //bool   debug()               const { return m_debug; };
+  //string jetAlgo()             const { return m_jetAlgo; };
+  //string metAlgo()             const { return m_metAlgo; };
+  //double LHCEnergyInTeV()      const { return m_LHCEnergyInTeV; };
+  //bool   RunOnSD()             const { return m_run_on_SD; };
+  //bool   RunOnMyHLTskim()      const { return m_run_on_myHLTskim; };
+  //bool   DoPDFunc()            const { return m_doPDFunc; };
+  
+  // conversion
+  void PrintConversionTable();
+  int ConversionCounter;
+  int ConversionArray[23][2][6];
+  void OptimiseConversionFinder(const TLorentzVector& e1, int mctype);  
+
+  TH2D *Conv_Opti[2];
+  TH2D *Conv_Optis[2];
+  TH2D *Conv_OptiL[2];
+  TH2D *Conv_Opti_extragran[2];
+  TH1D *Conv_CheckDelR_GSFTk_ctfTk;
+  int mycounter;
+
+  // new (to run on mixed MC) (not currently needed)
+  string CheckEventTypeFromMcTruth() const;
+
+  float  getRelIso(int) const; 
+  bool   passEleID(unsigned int) const;
+  bool   passHLT() const;
+  string printTimeNow() const;
+
+
+  //--------------------
+  // private variables
+  //--------------------
+  bool   datafile;
+  bool   keepgood;
+  bool   checkTrig;
+  string HLTBit;
+  int    numlimit;
+  int    nfile;
+  string outputHistFileName;
+  string outputTextFileName;
+  double this_weight;    // current event weight  
+  int    m_nGoodJet; 
+  float  m_QCDest_reliso_bin_width;
+  bool   m_doValidation;
+  bool   m_plotRelisoNES;
+  bool   m_debug;
+  bool   m_ConversionStudies;
+  string m_jetAlgo;
+  string m_metAlgo;
+  double m_LHCEnergyInTeV;
+  bool   m_runOnSD;
+  bool   m_runOnMyHLTskim;
+  bool   m_useMisslayers;
+
+  // cuts
+  float ELE_ETCUT;
+  float MU_PTCUT;
+  float JET_PTCUT;
+  float METCUT;
+  float HTCUT;
+  int   nCutSetInScript;
+  bool  m_applyMETcut;
+  bool  m_rejectEndcapEle;
+  eID   m_eID;
+  float AES_HT_cut;
+  float AES_MET_cut;
+  bool  AES_useSimpleZveto;
+  float intlumi;   // integrated luminosity assumed
+  bool  useNewReliso;
+
+  string doSystematics;
+  string sysSample;
+  bool   m_studyPDFunc;
+
+  map<string,double> cross_section;
+  map<string,long>   nInitialEventMC; //initial number of event, used to compute event weight
+  map<string,double> weightMap;
+
+  // Wjet estimation
   TH1D *h_hadTop_maxPT_mass_4j;   // 960 bins (0-960)
   TH1D *h_hadTop_maxPT_pt_4j;
   TH1D *h_hadTop_maxPT_mass_nonIso_4j;
   TH1D *h_hadTop_maxPT_pt_nonIso_4j;
-  // m3 for each type of MC if running all events in one go
   TH1D *h_m3_tt;
   TH1D *h_m3_wj;
   TH1D *h_m3_zj;
@@ -1412,54 +1516,7 @@ private:
   TH1D *h_m3_singletop_control_1000;
   TH1D *h_m3_bce_control_1000[3];
   TH1D *h_m3_enri_control_1000[3];
-  int m_ntoy;
-
-  // private variables
-  bool   datafile;
-  bool   keepgood;
-  bool   checkTrig;
-  int    numlimit;
-  string outputHistFileName;
-  string outputTextFileName;
-  double this_weight;    // current event weight  
-  int    m_nGoodJet; 
-  float  m_QCDest_reliso_bin_width;
-  bool   m_doValidation;
-  bool   m_plotRelisoNES;
-  bool   m_debug;
-  bool   m_ConversionStudies;
-  string m_jetAlgo;
-  string m_metAlgo;
-  double m_LHCEnergyInTeV;
-  bool   m_run_on_SD;
-  bool   m_run_on_myHLTskim;
-  bool  m_useMisslayers;
-
-  // cuts
-  float ELE_ETCUT;
-  float MU_PTCUT;
-  float JET_PTCUT;
-  float METCUT;
-  float HTCUT;
-  int nCutSetInScript;
-  float AES_HT_cut;
-  float AES_MET_cut;
-  bool  useSimpleZvetoAES;
-  //bool  m_runPlanB;
-  //bool  m_runPlanC;
-  bool  m_rejectEndcapEle; //new
-  bool  m_applyMETcut;
-  eID   m_eID;
-
-  float intlumi;   // integrated luminosity assumed
-  bool useNewReliso;
-
-  string doSystematics;
-  string sysSample;
-
-  map<string,double> cross_section;
-  map<string,long>   nInitialEventMC; //initial number of event, used to compute event weight
-  map<string,double> weightMap;
+  int   m_ntoy;
 
 
   // MC flag
@@ -1498,94 +1555,12 @@ private:
   bool isTchan;
   bool isSchan;
 
-  void SetHistoLabelCutNjet( TH2D *this_njetVcuts, vector<string>& ve ) const;
-  void SetHistoLabelEleID( TH1F *eid[] ) const;
-
-
-  void   DefineCrossSection();
-  double GetCrossSection(const string) const;
-  void   SetEventWeightMap();
-  double GetWeight(const string) const;
-  long   GetNinit(const string) const;
-
-  bool    ApplyingMETcut() const { return m_applyMETcut; } ;
-  bool    RejectingEndcapEle() const { return m_rejectEndcapEle; } ;
-
-  // print event-count tables
-  void DrawEventPerNjetTable( const double nevt[][5][23], const vector<string>& ve ) const;
-  void DrawSignalBGTable(     const double nevt[][5][23], const vector<string> ve ) const;
-  void DrawMCTypeTable(       const double nevt[][5][23], const string title, vector<string> ve ) const;
-  void DrawQCDTable(          const double nevt[][5][23], const string title, vector<string> ve ) const;
-  void DrawSingleTopTable(    const double nevt[][5][23], const string title, vector<string> ve ) const;
-  void DrawSignalAcceptanceTable(const double nevent[][5][23], vector<string> ve) const;
-  void printCutStage(int,string) const;
-  void printCutStage(ofstream& os,int,string) const;
-
-
-  // print event-count tables (with errors)
-  void PrintErrorTables(const double e_plus_jet[][5][23], const double e_plus_jet_weighted[][5][23], vector<string> ve) const;
-  void PrintError_NjetVcut(ofstream&, const double [][5][23], const double [][5][24], vector<string>&) const;
-  double GetBayesUncertainty(int Ninitial) const;
-  string ScrNum(double num) const;
-  void printLine(ofstream &myfile, const double, const double) const;
-  bool ScientificNotation;
-
-
-  //store number of cleaned jet in event
-  int Njet() const { return m_nGoodJet; };
-
-  bool  is_mc_present(const int) const;
-  float compute_d0(const string, const int) const;
-  float compute_mtw(const TVector2&, const TVector2&) const;
-
-  void  PrintGenParticles() const;
-
-
-  // validation plots
-  void valid_mkHisto_cut_njet(TH1F* h[][7], const string, const string, const int, const float, const float );
-  void valid_fillHisto(TH1F* h[][7], const bool cuts[8], int nj, double value) const;
-
-  bool doValidation() const { return m_doValidation; };
-  bool DoConversionStudies() { return m_ConversionStudies; };
-  bool doPlotRelisoNES() const { return m_plotRelisoNES; };
-  bool debug() const { return m_debug; };
-  string jetAlgo() const { return m_jetAlgo; };
-  string metAlgo() const { return m_metAlgo; };
-  double LHCEnergyInTeV() const { return m_LHCEnergyInTeV; };
-  bool RunOnSD() const { return m_run_on_SD; };
-  bool RunOnMyHLTskim() const { return m_run_on_myHLTskim; };
-  
-  void PrintConversionTable();
-  int ConversionCounter;
-  int ConversionArray[23][2][6];
-  void OptimiseConversionFinder(const TLorentzVector& e1, int mctype);  
-
-  TH2D *Conv_Opti[2];
-  TH2D *Conv_Optis[2];
-  TH2D *Conv_OptiL[2];
-  TH2D *Conv_Opti_extragran[2];
-  TH1D *Conv_CheckDelR_GSFTk_ctfTk;
-  int mycounter;
-
-  // new (to run on mixed MC) (not currently needed)
-  string CheckEventTypeFromMcTruth() const;
-
-  float getRelIso(int) const;
-  
-  bool passEleID(unsigned int) const;
-  
-  string printTimeNow() const;
-
-  void ReadSelectedBranches() const;
 };
-
 
 void ana::Init(){
    cout << "\n Initializing tree branches\n"  << endl;
 
    // Set object pointer (v3)
-   //TEST_x = 0;
-
    PFJets_energy = 0;
    PFJets_et = 0;
    PFJets_eta = 0;
@@ -1859,46 +1834,6 @@ void ana::Init(){
    mc_doc_mass = 0;
    mc_doc_numOfDaughters = 0;
    mc_doc_numOfMothers = 0;
-   mc_electrons_id = 0;
-   mc_electrons_pt = 0;
-   mc_electrons_px = 0;
-   mc_electrons_py = 0;
-   mc_electrons_pz = 0;
-   mc_electrons_eta = 0;
-   mc_electrons_phi = 0;
-   mc_electrons_theta = 0;
-   mc_electrons_status = 0;
-   mc_electrons_energy = 0;
-   mc_electrons_charge = 0;
-   mc_electrons_mother_id = 0;
-   mc_electrons_mother_pt = 0;
-   mc_electrons_grandmother_id = 0;
-   mc_electrons_ggrandmother_id = 0;
-   mc_electrons_vertex_x = 0;
-   mc_electrons_vertex_y = 0;
-   mc_electrons_vertex_z = 0;
-   mc_electrons_mass = 0;
-   mc_electrons_numOfDaughters = 0;
-   mc_mus_id = 0;
-   mc_mus_pt = 0;
-   mc_mus_px = 0;
-   mc_mus_py = 0;
-   mc_mus_pz = 0;
-   mc_mus_eta = 0;
-   mc_mus_phi = 0;
-   mc_mus_theta = 0;
-   mc_mus_status = 0;
-   mc_mus_energy = 0;
-   mc_mus_charge = 0;
-   mc_mus_mother_id = 0;
-   mc_mus_mother_pt = 0;
-   mc_mus_grandmother_id = 0;
-   mc_mus_ggrandmother_id = 0;
-   mc_mus_vertex_x = 0;
-   mc_mus_vertex_y = 0;
-   mc_mus_vertex_z = 0;
-   mc_mus_mass = 0;
-   mc_mus_numOfDaughters = 0;
    mets_et = 0;
    mets_phi = 0;
    mets_ex = 0;
@@ -1913,15 +1848,6 @@ void ana::Init(){
    mets_phi_muonCor = 0;
    mets_et_JESCor = 0;
    mets_phi_JESCor = 0;
-   metsAK5L2_et = 0;
-   metsAK5L2_phi = 0;
-   metsAK5L2_ex = 0;
-   metsAK5L2_ey = 0;
-   metsAK5L2_sumEt = 0;
-   metsAK5L2_et_muonCor = 0;
-   metsAK5L2_phi_muonCor = 0;
-   metsAK5L2_et_JESCor = 0;
-   metsAK5L2_phi_JESCor = 0;
    metsKT4_et = 0;
    metsKT4_phi = 0;
    metsKT4_ex = 0;
@@ -2161,11 +2087,11 @@ void ana::Init(){
    tracks_outerHitZ = 0;
    tracks_highPurity = 0;
    tracks_innerLayerMissingHits = 0;
-   
+ 
+
    // Set branch addresses and branch pointers
-   chain->SetBranchAddress("NPFJets", &NPFJets, &b_NPFJets);
-   if( b_NPFJets>0 ){
-     cout << "INFO: Available: PF jets" << endl;
+   if( m_jetAlgo=="pfjet" ){
+     chain->SetBranchAddress("NPFJets", &NPFJets, &b_NPFJets);
      chain->SetBranchAddress("PFJets_energy", &PFJets_energy, &b_PFJets_energy);
      chain->SetBranchAddress("PFJets_et", &PFJets_et, &b_PFJets_et);
      chain->SetBranchAddress("PFJets_eta", &PFJets_eta, &b_PFJets_eta);
@@ -2185,19 +2111,14 @@ void ana::Init(){
      chain->SetBranchAddress("PFJets_neutral_Mult", &PFJets_neutral_Mult, &b_PFJets_neutral_Mult);
      chain->SetBranchAddress("PFJets_mu_Mult", &PFJets_mu_Mult, &b_PFJets_mu_Mult);
      chain->SetBranchAddress("PFJets_mass", &PFJets_mass, &b_PFJets_mass);
-   } else {     
-     cout << "INFO: Not Available: PF jets" << endl;
    }
-   chain->SetBranchAddress("NPFMets", &NPFMets, &b_NPFMets);
-   if( b_NPFMets>0 ){
-     cout << "INFO: Available: PF met" << endl;
+   if( m_metAlgo=="pfmet" ){
+     chain->SetBranchAddress("NPFMets", &NPFMets, &b_NPFMets);
      chain->SetBranchAddress("PFMets_et", &PFMets_et, &b_PFMets_et);
      chain->SetBranchAddress("PFMets_phi", &PFMets_phi, &b_PFMets_phi);
      chain->SetBranchAddress("PFMets_ex", &PFMets_ex, &b_PFMets_ex);
      chain->SetBranchAddress("PFMets_ey", &PFMets_ey, &b_PFMets_ey);
      chain->SetBranchAddress("PFMets_sumEt", &PFMets_sumEt, &b_PFMets_sumEt);
-   } else {
-     cout << "INFO: Not Available: PF met" << endl;
    } 
    chain->SetBranchAddress("NbeamSpot", &NbeamSpot, &b_NbeamSpot);
    chain->SetBranchAddress("beamSpot_x", &beamSpot_x, &b_beamSpot_x);
@@ -2314,21 +2235,7 @@ void ana::Init(){
    chain->SetBranchAddress("els_isConvertedPhoton", &els_isConvertedPhoton, &b_els_isConvertedPhoton);
    if(m_useMisslayers) chain->SetBranchAddress("els_innerLayerMissingHits", &els_innerLayerMissingHits, &b_els_innerLayerMissingHits);
 
-   /*
-   chain->SetBranchAddress("NTEST", &NTEST, &b_NTEST);
-   if(b_NTEST>0) {
-     cout << "INFO: There are TEST in ntuple. b_NTEST: " << b_NTEST << endl;
-     cout << "INFO: set TEST_x" << endl;
-     chain->SetBranchAddress("TEST_x", &TEST_x, &b_TEST_x);
-   }else{
-     cout << "INFO: There are *no* TEST in ntuple. b_NTEST: " << b_NTEST << endl;
-   }
-   */
-
    chain->SetBranchAddress("Njets", &Njets, &b_Njets);
-   // after setbranchaddress, b_Njets contains the address, ie non-zero.
-   //if(b_Njets==0) cout << "jets *not* available. b_Njets:"<< b_Njets << endl;
-   //else           cout << "jets available. b_Njets:"<<  b_Njets << endl;
    chain->SetBranchAddress("jets_energy", &jets_energy, &b_jets_energy);
    chain->SetBranchAddress("jets_et", &jets_et, &b_jets_et);
    chain->SetBranchAddress("jets_eta", &jets_eta, &b_jets_eta);
@@ -2380,9 +2287,8 @@ void ana::Init(){
    chain->SetBranchAddress("jets_area", &jets_area, &b_jets_area);
    chain->SetBranchAddress("jets_mass", &jets_mass, &b_jets_mass);
 
-   chain->SetBranchAddress("NjetsKT4", &NjetsKT4, &b_NjetsKT4);
-   if( b_NjetsKT4>0 ) {
-     cout << "INFO: Available: KT4 jets" << endl;
+
+   if( m_jetAlgo=="KT4" ) {     
      chain->SetBranchAddress("jetsKT4_energy", &jetsKT4_energy, &b_jetsKT4_energy);
      chain->SetBranchAddress("jetsKT4_et", &jetsKT4_et, &b_jetsKT4_et);
      chain->SetBranchAddress("jetsKT4_eta", &jetsKT4_eta, &b_jetsKT4_eta);
@@ -2415,12 +2321,10 @@ void ana::Init(){
      chain->SetBranchAddress("jetsKT4_n90", &jetsKT4_n90, &b_jetsKT4_n90);
      chain->SetBranchAddress("jetsKT4_area", &jetsKT4_area, &b_jetsKT4_area);
      chain->SetBranchAddress("jetsKT4_mass", &jetsKT4_mass, &b_jetsKT4_mass);
-   } else {
-     cout << "INFO: Not Available: KT4 jets" << endl;
    }
-   chain->SetBranchAddress("NjetsSC5", &NjetsSC5, &b_NjetsSC5);
-   if( b_NjetsSC5>0 ) {
-     cout << "INFO: Available: SC5 jets" << endl;
+
+   if( m_jetAlgo=="SC5" ) {     
+     chain->SetBranchAddress("NjetsSC5", &NjetsSC5, &b_NjetsSC5);
      chain->SetBranchAddress("jetsSC5_energy", &jetsSC5_energy, &b_jetsSC5_energy);
      chain->SetBranchAddress("jetsSC5_et", &jetsSC5_et, &b_jetsSC5_et);
      chain->SetBranchAddress("jetsSC5_eta", &jetsSC5_eta, &b_jetsSC5_eta);
@@ -2453,8 +2357,6 @@ void ana::Init(){
      chain->SetBranchAddress("jetsSC5_n90", &jetsSC5_n90, &b_jetsSC5_n90);
      chain->SetBranchAddress("jetsSC5_area", &jetsSC5_area, &b_jetsSC5_area);
      chain->SetBranchAddress("jetsSC5_mass", &jetsSC5_mass, &b_jetsSC5_mass);
-   } else {
-     cout << "INFO: Not Available: SC5 jets" << endl;
    }
    chain->SetBranchAddress("Nmets", &Nmets, &b_Nmets);
    chain->SetBranchAddress("mets_et", &mets_et, &b_mets_et);
@@ -2471,25 +2373,9 @@ void ana::Init(){
    chain->SetBranchAddress("mets_phi_muonCor", &mets_phi_muonCor, &b_mets_phi_muonCor);
    chain->SetBranchAddress("mets_et_JESCor", &mets_et_JESCor, &b_mets_et_JESCor);
    chain->SetBranchAddress("mets_phi_JESCor", &mets_phi_JESCor, &b_mets_phi_JESCor);
-   // New 41109 4 Nov   
-   //chain->SetBranchAddress("NmetsAK5L2", &NmetsAK5L2, &b_NmetsAK5L2);
-   if( b_NmetsAK5L2 > 0) {
-     cout << "INFO: Available: AK5 L2 met" << endl;
-     chain->SetBranchAddress("metsAK5L2_et", &metsAK5L2_et, &b_metsAK5L2_et);
-     chain->SetBranchAddress("metsAK5L2_phi", &metsAK5L2_phi, &b_metsAK5L2_phi);
-     chain->SetBranchAddress("metsAK5L2_ex", &metsAK5L2_ex, &b_metsAK5L2_ex);
-     chain->SetBranchAddress("metsAK5L2_ey", &metsAK5L2_ey, &b_metsAK5L2_ey);
-     chain->SetBranchAddress("metsAK5L2_sumEt", &metsAK5L2_sumEt, &b_metsAK5L2_sumEt);
-     chain->SetBranchAddress("metsAK5L2_et_muonCor", &metsAK5L2_et_muonCor, &b_metsAK5L2_et_muonCor);
-     chain->SetBranchAddress("metsAK5L2_phi_muonCor", &metsAK5L2_phi_muonCor, &b_metsAK5L2_phi_muonCor);
-     chain->SetBranchAddress("metsAK5L2_et_JESCor", &metsAK5L2_et_JESCor, &b_metsAK5L2_et_JESCor);
-     chain->SetBranchAddress("metsAK5L2_phi_JESCor", &metsAK5L2_phi_JESCor, &b_metsAK5L2_phi_JESCor);
-   } else {
-     cout << "INFO: Not Available: AK5 L2 met" << endl;
-   }
-   chain->SetBranchAddress("NmetsKT4", &NmetsKT4, &b_NmetsKT4);
-   if( b_NmetsKT4 > 0) {
-     cout << "INFO: Available: KT4 met" << endl;
+   
+   if( m_metAlgo=="KT4" ) {
+     chain->SetBranchAddress("NmetsKT4", &NmetsKT4, &b_NmetsKT4);
      chain->SetBranchAddress("metsKT4_et", &metsKT4_et, &b_metsKT4_et);
      chain->SetBranchAddress("metsKT4_phi", &metsKT4_phi, &b_metsKT4_phi);
      chain->SetBranchAddress("metsKT4_ex", &metsKT4_ex, &b_metsKT4_ex);
@@ -2497,12 +2383,9 @@ void ana::Init(){
      chain->SetBranchAddress("metsKT4_sumEt", &metsKT4_sumEt, &b_metsKT4_sumEt);
      chain->SetBranchAddress("metsKT4_et_JESCor", &metsKT4_et_JESCor, &b_metsKT4_et_JESCor);
      chain->SetBranchAddress("metsKT4_phi_JESCor", &metsKT4_phi_JESCor, &b_metsKT4_phi_JESCor);
-   } else {
-     cout << "INFO: Not Available: KT4 met" << endl;
    }
-   chain->SetBranchAddress("NmetsSC5", &NmetsSC5, &b_NmetsSC5);
-   if( b_NmetsSC5 > 0) {
-     cout << "INFO: Available: SC5 met" << endl;
+   if( m_metAlgo=="SC5" ) {
+     chain->SetBranchAddress("NmetsSC5", &NmetsSC5, &b_NmetsSC5);
      chain->SetBranchAddress("metsSC5_et", &metsSC5_et, &b_metsSC5_et);
      chain->SetBranchAddress("metsSC5_phi", &metsSC5_phi, &b_metsSC5_phi);
      chain->SetBranchAddress("metsSC5_ex", &metsSC5_ex, &b_metsSC5_ex);
@@ -2510,12 +2393,9 @@ void ana::Init(){
      chain->SetBranchAddress("metsSC5_sumEt", &metsSC5_sumEt, &b_metsSC5_sumEt);
      chain->SetBranchAddress("metsSC5_et_JESCor", &metsSC5_et_JESCor, &b_metsSC5_et_JESCor);
      chain->SetBranchAddress("metsSC5_phi_JESCor", &metsSC5_phi_JESCor, &b_metsSC5_phi_JESCor); 
-   } else {
-     cout << "INFO: Not Available: SC5 met" << endl;
    }
-   chain->SetBranchAddress("Ntcmets", &Ntcmets, &b_Ntcmets);
-   if( b_Ntcmets>0 ) {
-     cout << "INFO: Available: tcmets"<< endl;
+   if( m_metAlgo=="tcmet" ) {
+     chain->SetBranchAddress("Ntcmets", &Ntcmets, &b_Ntcmets);
      chain->SetBranchAddress("tcmets_et", &tcmets_et, &b_tcmets_et);
      chain->SetBranchAddress("tcmets_phi", &tcmets_phi, &b_tcmets_phi);
      chain->SetBranchAddress("tcmets_ex", &tcmets_ex, &b_tcmets_ex);
@@ -2523,9 +2403,8 @@ void ana::Init(){
      chain->SetBranchAddress("tcmets_sumEt", &tcmets_sumEt, &b_tcmets_sumEt);
      chain->SetBranchAddress("tcmets_et_muonCor", &tcmets_et_muonCor, &b_tcmets_et_muonCor);
      chain->SetBranchAddress("tcmets_phi_muonCor", &tcmets_phi_muonCor, &b_tcmets_phi_muonCor);
-   } else {
-     cout << "INFO: Not Available: tcmets"<< endl;
    }
+
    chain->SetBranchAddress("Nmus", &Nmus, &b_Nmus);
    chain->SetBranchAddress("mus_energy", &mus_energy, &b_mus_energy);
    chain->SetBranchAddress("mus_et", &mus_et, &b_mus_et);
@@ -2754,11 +2633,14 @@ void ana::Init(){
 
    // HLT tree (nonIso ele trigger)
    //chain2->SetBranchAddress("HLT_Ele10_SW_L1R", &HLT_Ele10_SW_L1R, &b_HLT_Ele10_SW_L1R); //(8E29, startup)
-   if( GetTrigger() ) chain2->SetBranchAddress("HLT_Ele15_LW_L1R", &HLT_Ele15_LW_L1R, &b_HLT_Ele15_LW_L1R); //v2 (1E31, ideal)
-   
+   //cout << "GetTrigger()" << GetTrigger()<< endl;
+   if( GetTrigger() ) {
+     if(HLTBit=="HLT_Ele15_LW_L1R") chain2->SetBranchAddress("HLT_Ele15_LW_L1R", &HLT_Ele15_LW_L1R, &b_HLT_Ele15_LW_L1R); //v2 (1E31, ideal)
+     if(HLTBit=="HLT_Ele15_SW_L1R") chain2->SetBranchAddress("HLT_Ele15_SW_L1R", &HLT_Ele15_SW_L1R, &b_HLT_Ele15_SW_L1R);
+   }
    ///------------------------  MC Truth info  ------------------------------------
    if( !IsData() ) {
-     //cout << " Set MC branch address" << endl;
+     cout << " Set MC branch address" << endl;
      chain->SetBranchAddress("Nmc_doc", &Nmc_doc, &b_Nmc_doc);
      chain->SetBranchAddress("mc_doc_id", &mc_doc_id, &b_mc_doc_id);
      chain->SetBranchAddress("mc_doc_pt", &mc_doc_pt, &b_mc_doc_pt);
@@ -2781,48 +2663,55 @@ void ana::Init(){
      chain->SetBranchAddress("mc_doc_mass", &mc_doc_mass, &b_mc_doc_mass);
      chain->SetBranchAddress("mc_doc_numOfDaughters", &mc_doc_numOfDaughters, &b_mc_doc_numOfDaughters);
      chain->SetBranchAddress("mc_doc_numOfMothers", &mc_doc_numOfMothers, &b_mc_doc_numOfMothers);
-     chain->SetBranchAddress("Nmc_electrons", &Nmc_electrons, &b_Nmc_electrons);
-     chain->SetBranchAddress("mc_electrons_id", &mc_electrons_id, &b_mc_electrons_id);
-     chain->SetBranchAddress("mc_electrons_pt", &mc_electrons_pt, &b_mc_electrons_pt);
-     chain->SetBranchAddress("mc_electrons_px", &mc_electrons_px, &b_mc_electrons_px);
-     chain->SetBranchAddress("mc_electrons_py", &mc_electrons_py, &b_mc_electrons_py);
-     chain->SetBranchAddress("mc_electrons_pz", &mc_electrons_pz, &b_mc_electrons_pz);
-     chain->SetBranchAddress("mc_electrons_eta", &mc_electrons_eta, &b_mc_electrons_eta);
-     chain->SetBranchAddress("mc_electrons_phi", &mc_electrons_phi, &b_mc_electrons_phi);
-     chain->SetBranchAddress("mc_electrons_theta", &mc_electrons_theta, &b_mc_electrons_theta);
-     chain->SetBranchAddress("mc_electrons_status", &mc_electrons_status, &b_mc_electrons_status);
-     chain->SetBranchAddress("mc_electrons_energy", &mc_electrons_energy, &b_mc_electrons_energy);
-     chain->SetBranchAddress("mc_electrons_charge", &mc_electrons_charge, &b_mc_electrons_charge);
-     chain->SetBranchAddress("mc_electrons_mother_id", &mc_electrons_mother_id, &b_mc_electrons_mother_id);
-     chain->SetBranchAddress("mc_electrons_mother_pt", &mc_electrons_mother_pt, &b_mc_electrons_mother_pt);
-     chain->SetBranchAddress("mc_electrons_grandmother_id", &mc_electrons_grandmother_id, &b_mc_electrons_grandmother_id);
-     chain->SetBranchAddress("mc_electrons_ggrandmother_id", &mc_electrons_ggrandmother_id, &b_mc_electrons_ggrandmother_id);
-     chain->SetBranchAddress("mc_electrons_vertex_x", &mc_electrons_vertex_x, &b_mc_electrons_vertex_x);
-     chain->SetBranchAddress("mc_electrons_vertex_y", &mc_electrons_vertex_y, &b_mc_electrons_vertex_y);
-     chain->SetBranchAddress("mc_electrons_vertex_z", &mc_electrons_vertex_z, &b_mc_electrons_vertex_z);
-     chain->SetBranchAddress("mc_electrons_mass", &mc_electrons_mass, &b_mc_electrons_mass);
-     chain->SetBranchAddress("mc_electrons_numOfDaughters", &mc_electrons_numOfDaughters, &b_mc_electrons_numOfDaughters);
-     chain->SetBranchAddress("Nmc_mus", &Nmc_mus, &b_Nmc_mus);
-     chain->SetBranchAddress("mc_mus_id", &mc_mus_id, &b_mc_mus_id);
-     chain->SetBranchAddress("mc_mus_pt", &mc_mus_pt, &b_mc_mus_pt);
-     chain->SetBranchAddress("mc_mus_px", &mc_mus_px, &b_mc_mus_px);
-     chain->SetBranchAddress("mc_mus_py", &mc_mus_py, &b_mc_mus_py);
-     chain->SetBranchAddress("mc_mus_pz", &mc_mus_pz, &b_mc_mus_pz);
-     chain->SetBranchAddress("mc_mus_eta", &mc_mus_eta, &b_mc_mus_eta);
-     chain->SetBranchAddress("mc_mus_phi", &mc_mus_phi, &b_mc_mus_phi);
-     chain->SetBranchAddress("mc_mus_theta", &mc_mus_theta, &b_mc_mus_theta);
-     chain->SetBranchAddress("mc_mus_status", &mc_mus_status, &b_mc_mus_status);
-     chain->SetBranchAddress("mc_mus_energy", &mc_mus_energy, &b_mc_mus_energy);
-     chain->SetBranchAddress("mc_mus_charge", &mc_mus_charge, &b_mc_mus_charge);
-     chain->SetBranchAddress("mc_mus_mother_id", &mc_mus_mother_id, &b_mc_mus_mother_id);
-     chain->SetBranchAddress("mc_mus_mother_pt", &mc_mus_mother_pt, &b_mc_mus_mother_pt);
-     chain->SetBranchAddress("mc_mus_grandmother_id", &mc_mus_grandmother_id, &b_mc_mus_grandmother_id);
-     chain->SetBranchAddress("mc_mus_ggrandmother_id", &mc_mus_ggrandmother_id, &b_mc_mus_ggrandmother_id);
-     chain->SetBranchAddress("mc_mus_vertex_x", &mc_mus_vertex_x, &b_mc_mus_vertex_x);
-     chain->SetBranchAddress("mc_mus_vertex_y", &mc_mus_vertex_y, &b_mc_mus_vertex_y);
-     chain->SetBranchAddress("mc_mus_vertex_z", &mc_mus_vertex_z, &b_mc_mus_vertex_z);
-     chain->SetBranchAddress("mc_mus_mass", &mc_mus_mass, &b_mc_mus_mass);
-     chain->SetBranchAddress("mc_mus_numOfDaughters", &mc_mus_numOfDaughters, &b_mc_mus_numOfDaughters);
+
+     if( m_studyPDFunc ){
+       cout << "Set PDF branch address" << endl;
+       chain2->SetBranchAddress("PDFWcteq66_0", &PDFWcteq66_0, &b_PDFWcteq66_0);
+       chain2->SetBranchAddress("PDFWcteq66_1", &PDFWcteq66_1, &b_PDFWcteq66_1);
+       chain2->SetBranchAddress("PDFWcteq66_10", &PDFWcteq66_10, &b_PDFWcteq66_10);
+       chain2->SetBranchAddress("PDFWcteq66_11", &PDFWcteq66_11, &b_PDFWcteq66_11);
+       chain2->SetBranchAddress("PDFWcteq66_12", &PDFWcteq66_12, &b_PDFWcteq66_12);
+       chain2->SetBranchAddress("PDFWcteq66_13", &PDFWcteq66_13, &b_PDFWcteq66_13);
+       chain2->SetBranchAddress("PDFWcteq66_14", &PDFWcteq66_14, &b_PDFWcteq66_14);
+       chain2->SetBranchAddress("PDFWcteq66_15", &PDFWcteq66_15, &b_PDFWcteq66_15);
+       chain2->SetBranchAddress("PDFWcteq66_16", &PDFWcteq66_16, &b_PDFWcteq66_16);
+       chain2->SetBranchAddress("PDFWcteq66_17", &PDFWcteq66_17, &b_PDFWcteq66_17);
+       chain2->SetBranchAddress("PDFWcteq66_18", &PDFWcteq66_18, &b_PDFWcteq66_18);
+       chain2->SetBranchAddress("PDFWcteq66_19", &PDFWcteq66_19, &b_PDFWcteq66_19);
+       chain2->SetBranchAddress("PDFWcteq66_2", &PDFWcteq66_2, &b_PDFWcteq66_2);
+       chain2->SetBranchAddress("PDFWcteq66_20", &PDFWcteq66_20, &b_PDFWcteq66_20);
+       chain2->SetBranchAddress("PDFWcteq66_21", &PDFWcteq66_21, &b_PDFWcteq66_21);
+       chain2->SetBranchAddress("PDFWcteq66_22", &PDFWcteq66_22, &b_PDFWcteq66_22);
+       chain2->SetBranchAddress("PDFWcteq66_23", &PDFWcteq66_23, &b_PDFWcteq66_23);
+       chain2->SetBranchAddress("PDFWcteq66_24", &PDFWcteq66_24, &b_PDFWcteq66_24);
+       chain2->SetBranchAddress("PDFWcteq66_25", &PDFWcteq66_25, &b_PDFWcteq66_25);
+       chain2->SetBranchAddress("PDFWcteq66_26", &PDFWcteq66_26, &b_PDFWcteq66_26);
+       chain2->SetBranchAddress("PDFWcteq66_27", &PDFWcteq66_27, &b_PDFWcteq66_27);
+       chain2->SetBranchAddress("PDFWcteq66_28", &PDFWcteq66_28, &b_PDFWcteq66_28);
+       chain2->SetBranchAddress("PDFWcteq66_29", &PDFWcteq66_29, &b_PDFWcteq66_29);
+       chain2->SetBranchAddress("PDFWcteq66_3", &PDFWcteq66_3, &b_PDFWcteq66_3);
+       chain2->SetBranchAddress("PDFWcteq66_30", &PDFWcteq66_30, &b_PDFWcteq66_30);
+       chain2->SetBranchAddress("PDFWcteq66_31", &PDFWcteq66_31, &b_PDFWcteq66_31);
+       chain2->SetBranchAddress("PDFWcteq66_32", &PDFWcteq66_32, &b_PDFWcteq66_32);
+       chain2->SetBranchAddress("PDFWcteq66_33", &PDFWcteq66_33, &b_PDFWcteq66_33);
+       chain2->SetBranchAddress("PDFWcteq66_34", &PDFWcteq66_34, &b_PDFWcteq66_34);
+       chain2->SetBranchAddress("PDFWcteq66_35", &PDFWcteq66_35, &b_PDFWcteq66_35);
+       chain2->SetBranchAddress("PDFWcteq66_36", &PDFWcteq66_36, &b_PDFWcteq66_36);
+       chain2->SetBranchAddress("PDFWcteq66_37", &PDFWcteq66_37, &b_PDFWcteq66_37);
+       chain2->SetBranchAddress("PDFWcteq66_38", &PDFWcteq66_38, &b_PDFWcteq66_38);
+       chain2->SetBranchAddress("PDFWcteq66_39", &PDFWcteq66_39, &b_PDFWcteq66_39);
+       chain2->SetBranchAddress("PDFWcteq66_4", &PDFWcteq66_4, &b_PDFWcteq66_4);
+       chain2->SetBranchAddress("PDFWcteq66_40", &PDFWcteq66_40, &b_PDFWcteq66_40);
+       chain2->SetBranchAddress("PDFWcteq66_41", &PDFWcteq66_41, &b_PDFWcteq66_41);
+       chain2->SetBranchAddress("PDFWcteq66_42", &PDFWcteq66_42, &b_PDFWcteq66_42);
+       chain2->SetBranchAddress("PDFWcteq66_43", &PDFWcteq66_43, &b_PDFWcteq66_43);
+       chain2->SetBranchAddress("PDFWcteq66_44", &PDFWcteq66_44, &b_PDFWcteq66_44);
+       chain2->SetBranchAddress("PDFWcteq66_5", &PDFWcteq66_5, &b_PDFWcteq66_5);
+       chain2->SetBranchAddress("PDFWcteq66_6", &PDFWcteq66_6, &b_PDFWcteq66_6);
+       chain2->SetBranchAddress("PDFWcteq66_7", &PDFWcteq66_7, &b_PDFWcteq66_7);
+       chain2->SetBranchAddress("PDFWcteq66_8", &PDFWcteq66_8, &b_PDFWcteq66_8);
+       chain2->SetBranchAddress("PDFWcteq66_9", &PDFWcteq66_9, &b_PDFWcteq66_9);
+     }
    }
    ///------------------------  MC Truth info (END) ------------------------------------
 
