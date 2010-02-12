@@ -5,6 +5,7 @@
 //              - Remove unused mc_electron and mc_muons from branch list.
 //              - Remove debug(),jetAlgo() etc (replaced with m_debug etc).
 //              - Add method CheckAvailableJetMET().
+//              - Update 7 TeV cross section.
 //        
 // 03 Feb 2010: Add function to check MC truth of reco particle MCTruthMatch(double, double)
 //              and extended conversion study table to include charged pions
@@ -522,6 +523,10 @@ void ana::SetMCFlag(){
 void ana::DefineCrossSection(){
   
   if ( m_LHCEnergyInTeV==10 ) { //10TeV = default
+
+    cout << "\nNOTE: 10 TeV cross section not to date!!!" << endl;
+    cout << "\n check https://twiki.cern.ch/twiki/bin/viewauth/CMS/CrossSections_3XSeries\n" << endl;
+
     cross_section["ttbar"] =          414. ;  //xs 414 (NLO+NLL at 10TeV)   241.7 pb (LO)
     cross_section["ttjet"] =          414. ;
 
@@ -546,11 +551,11 @@ void ana::DefineCrossSection(){
   } 
   else if (m_LHCEnergyInTeV==7) { //7TeV
 
-    cross_section["ttbar"] =          187. ;  //xs 187 pb
-    cross_section["ttjet"] =          187. ;
+    cross_section["ttbar"] =          165. ;  //was 187 pb
+    cross_section["ttjet"] =          165. ;
 
-    cross_section["wjet"]  =   24e3 * 1.14 ;  //xs 24 nb  (K-factor=1.14)
-    cross_section["zjet"]  =  2.3e3 * 1.14 ;  //xs 2.3 nb (K-factor=1.14)
+    cross_section["wjet"]  =  28000.; //was 24e3 * 1.14
+    cross_section["zjet"]  =   2800.; //was 2.3e3 * 1.14
     
     cross_section["wenu"]  =  7899 * 0.779 * 1.14 ; //xs 7899 pb (pythia LO) (eff=0.779) (K-fac=1.14)
     cross_section["zee"]   =  1300 * 1.14 ;        //xs 1300 pb (pythia LO) (K-fac=1.14)
@@ -563,20 +568,25 @@ void ana::DefineCrossSection(){
     cross_section["bce2"]  = 0.0593e9 * 0.00234;  //xs 0.0593 mb
     cross_section["bce3"]  =  0.906e6 * 0.0104 ;  //xs 0.906e-3 mb
     
-    cross_section["tW"]    =  11.0  ;   //xs  11 pb (NLO MCFM) inclusive t,W decay
-    cross_section["tchan"] =  20.7; ;   //xs  64 pb (NLO MCFM) * 0.324 (Br(t->blnu)) ~ 20.7
-    cross_section["schan"] =   0.99 ;   //0.99 pb is Madgraph value incl. BR(B->e,mu,tau), take from 'ProductionSummer2009at7TeV' Twiki
+    //cross_section["tW"]    =  11.0  ;   //xs  11 pb (NLO MCFM) inclusive t,W decay
+    //cross_section["tchan"] =  20.7  ;   //xs  64 pb (NLO MCFM) * 0.324 (Br(t->blnu)) ~ 20.7
+    //cross_section["schan"] =   0.99 ;   //0.99 pb is Madgraph value incl. BR(B->e,mu,tau), take from 'ProductionSummer2009at7TeV' Twiki
+
+    cross_section["tW"]    =  10.6  ;         //xs  11 pb (NLO MCFM) inclusive t,W decay
+    cross_section["tchan"] =   63. * 0.324;   //xs  63 pb (NLO MCFM) * 0.324 (Br(t->blnu)) = 20.412
+    cross_section["schan"] =   4.6 * 0.324 ;  //4.6 pb x 0.324 (4.6pb is NNNLO) = 1.4904
 
   } else {
     if(!IsData()) cout << "WARNING: Cross section values are not defined!" << endl;
   }
 
-}
+}//end DefineCrossSection
+//-------------------------------------------------------------------------------------------
 
 double ana::GetCrossSection( const string mc ) const {
   return cross_section.find(mc)->second;
 }
-
+//-------------------------------------------------------------------------------------------
 // Declare the event weights
 void ana::SetEventWeightMap(){ //only if run on MC
   
@@ -692,11 +702,11 @@ void ana::SetEventWeightMap(){ //only if run on MC
    }
 
 }//End SetEventWeightMap
-
+//-------------------------------------------------------------------------------------------
 double ana::GetWeight(string mc) const {
   return weightMap.find(mc)->second;
 }
-
+//-------------------------------------------------------------------------------------------
 
 ana::ana(){
 
