@@ -1,6 +1,7 @@
 //#====================================================#
 //# Last update:
 //
+// 15 Feb 2010: MCTruthMAtch, change iniital value of ii from -1 to 0.
 // 12 Feb 2010: - Add PDF weights. Add method to set HLT bit from script. Clean up.
 //              - Remove unused mc_electron and mc_muons from branch list.
 //              - Remove debug(),jetAlgo() etc (replaced with m_debug etc).
@@ -6838,7 +6839,7 @@ bool ana::ConversionFinder2(const TLorentzVector& e1, int mctype, int index_sele
 //return generated particle match to reco object based on delR
 float ana::MCTruthMatch(float eta, float phi){
   float mc_phi,mc_eta,tempDelR,finalDelR=100;
-  int ii = -1;
+  int ii = 0;
   for(unsigned int i=0;i<Nmc_doc;++i){
     mc_phi = mc_doc_phi->at(i);
     mc_eta = mc_doc_eta->at(i);
