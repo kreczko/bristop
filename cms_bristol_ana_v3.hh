@@ -239,6 +239,40 @@ public:
   vector<float>   *jetsKT4_area;
   vector<float>   *jetsKT4_mass;
 
+  UInt_t          NjetsKT6;
+  vector<float>   *jetsKT6_energy;
+  vector<float>   *jetsKT6_et;
+  vector<float>   *jetsKT6_eta;
+  vector<float>   *jetsKT6_phi;
+  vector<float>   *jetsKT6_pt;
+  vector<float>   *jetsKT6_px;
+  vector<float>   *jetsKT6_py;
+  vector<float>   *jetsKT6_pz;
+  vector<float>   *jetsKT6_status;
+  vector<float>   *jetsKT6_theta;
+  vector<float>   *jetsKT6_btag_TC_highPur;
+  vector<float>   *jetsKT6_btag_TC_highEff;
+  vector<float>   *jetsKT6_btag_jetProb;
+  vector<float>   *jetsKT6_btag_jetBProb;
+  vector<float>   *jetsKT6_btag_softEle;
+  vector<float>   *jetsKT6_btag_softMuon;
+  vector<float>   *jetsKT6_btag_softMuonNoIP;
+  vector<float>   *jetsKT6_btag_secVertex;
+  vector<float>   *jetsKT6_chgEmE;
+  vector<float>   *jetsKT6_chgHadE;
+  vector<float>   *jetsKT6_chgMuE;
+  vector<float>   *jetsKT6_chg_Mult;
+  vector<float>   *jetsKT6_neutralEmE;
+  vector<float>   *jetsKT6_neutralHadE;
+  vector<float>   *jetsKT6_neutral_Mult;
+  vector<float>   *jetsKT6_mu_Mult;
+  vector<float>   *jetsKT6_emf;
+  vector<float>   *jetsKT6_ehf;
+  vector<float>   *jetsKT6_n60;
+  vector<float>   *jetsKT6_n90;
+  vector<float>   *jetsKT6_area;
+  vector<float>   *jetsKT6_mass;
+
    UInt_t          NjetsSC5;
    vector<float>   *jetsSC5_energy;
    vector<float>   *jetsSC5_et;
@@ -272,6 +306,75 @@ public:
    vector<float>   *jetsSC5_n90;
    vector<float>   *jetsSC5_area;
    vector<float>   *jetsSC5_mass;
+
+   UInt_t          NjetsSC7;
+   vector<float>   *jetsSC7_energy;
+   vector<float>   *jetsSC7_et;
+   vector<float>   *jetsSC7_eta;
+   vector<float>   *jetsSC7_phi;
+   vector<float>   *jetsSC7_pt;
+   vector<float>   *jetsSC7_px;
+   vector<float>   *jetsSC7_py;
+   vector<float>   *jetsSC7_pz;
+   vector<float>   *jetsSC7_status;
+   vector<float>   *jetsSC7_theta;
+   vector<float>   *jetsSC7_btag_TC_highPur;
+   vector<float>   *jetsSC7_btag_TC_highEff;
+   vector<float>   *jetsSC7_btag_jetProb;
+   vector<float>   *jetsSC7_btag_jetBProb;
+   vector<float>   *jetsSC7_btag_softEle;
+   vector<float>   *jetsSC7_btag_softMuon;
+   vector<float>   *jetsSC7_btag_softMuonNoIP;
+   vector<float>   *jetsSC7_btag_secVertex;
+   vector<float>   *jetsSC7_chgEmE;
+   vector<float>   *jetsSC7_chgHadE;
+   vector<float>   *jetsSC7_chgMuE;
+   vector<float>   *jetsSC7_chg_Mult;
+   vector<float>   *jetsSC7_neutralEmE;
+   vector<float>   *jetsSC7_neutralHadE;
+   vector<float>   *jetsSC7_neutral_Mult;
+   vector<float>   *jetsSC7_mu_Mult;
+   vector<float>   *jetsSC7_emf;
+   vector<float>   *jetsSC7_ehf;
+   vector<float>   *jetsSC7_n60;
+   vector<float>   *jetsSC7_n90;
+   vector<float>   *jetsSC7_area;
+   vector<float>   *jetsSC7_mass;
+
+   UInt_t          NjetsJPTAK5;
+   vector<float>   *jetsJPTAK5_energy;
+   vector<float>   *jetsJPTAK5_et;
+   vector<float>   *jetsJPTAK5_eta;
+   vector<float>   *jetsJPTAK5_phi;
+   vector<float>   *jetsJPTAK5_pt;
+   vector<float>   *jetsJPTAK5_px;
+   vector<float>   *jetsJPTAK5_py;
+   vector<float>   *jetsJPTAK5_pz;
+   vector<float>   *jetsJPTAK5_status;
+   vector<float>   *jetsJPTAK5_theta;
+   vector<float>   *jetsJPTAK5_btag_TC_highPur;
+   vector<float>   *jetsJPTAK5_btag_TC_highEff;
+   vector<float>   *jetsJPTAK5_btag_jetProb;
+   vector<float>   *jetsJPTAK5_btag_jetBProb;
+   vector<float>   *jetsJPTAK5_btag_softEle;
+   vector<float>   *jetsJPTAK5_btag_softMuon;
+   vector<float>   *jetsJPTAK5_btag_softMuonNoIP;
+   vector<float>   *jetsJPTAK5_btag_secVertex;
+   vector<float>   *jetsJPTAK5_chgEmE;
+   vector<float>   *jetsJPTAK5_chgHadE;
+   vector<float>   *jetsJPTAK5_chgMuE;
+   vector<float>   *jetsJPTAK5_chg_Mult;
+   vector<float>   *jetsJPTAK5_neutralEmE;
+   vector<float>   *jetsJPTAK5_neutralHadE;
+   vector<float>   *jetsJPTAK5_neutral_Mult;
+   vector<float>   *jetsJPTAK5_mu_Mult;
+   vector<float>   *jetsJPTAK5_emf;
+   vector<float>   *jetsJPTAK5_ehf;
+   vector<float>   *jetsJPTAK5_n60;
+   vector<float>   *jetsJPTAK5_n90;
+   vector<float>   *jetsJPTAK5_area;
+   vector<float>   *jetsJPTAK5_mass;
+
    UInt_t          Nmc_doc;
    vector<float>   *mc_doc_id;
    vector<float>   *mc_doc_pt;
@@ -317,6 +420,14 @@ public:
    vector<float>   *metsKT4_sumEt;
    vector<float>   *metsKT4_et_JESCor;
    vector<float>   *metsKT4_phi_JESCor;
+   UInt_t          NmetsKT6;
+   vector<float>   *metsKT6_et;
+   vector<float>   *metsKT6_phi;
+   vector<float>   *metsKT6_ex;
+   vector<float>   *metsKT6_ey;
+   vector<float>   *metsKT6_sumEt;
+   vector<float>   *metsKT6_et_JESCor;
+   vector<float>   *metsKT6_phi_JESCor;
    UInt_t          NmetsSC5;
    vector<float>   *metsSC5_et;
    vector<float>   *metsSC5_phi;
@@ -325,6 +436,14 @@ public:
    vector<float>   *metsSC5_sumEt;
    vector<float>   *metsSC5_et_JESCor;
    vector<float>   *metsSC5_phi_JESCor;
+   UInt_t          NmetsSC7;
+   vector<float>   *metsSC7_et;
+   vector<float>   *metsSC7_phi;
+   vector<float>   *metsSC7_ex;
+   vector<float>   *metsSC7_ey;
+   vector<float>   *metsSC7_sumEt;
+   vector<float>   *metsSC7_et_JESCor;
+   vector<float>   *metsSC7_phi_JESCor;
    UInt_t          Nmus;
    vector<float>   *mus_energy;
    vector<float>   *mus_et;
@@ -521,6 +640,8 @@ public:
    vector<float>   *tcmets_ex;
    vector<float>   *tcmets_ey;
    vector<float>   *tcmets_sumEt;
+   vector<float>   *tcmets_et_JESCor;
+   vector<float>   *tcmets_phi_JESCor;
    vector<float>   *tcmets_et_muonCor;
    vector<float>   *tcmets_phi_muonCor;
    UInt_t          Ntracks;
@@ -789,6 +910,40 @@ public:
    TBranch        *b_jetsKT4_area;   //!
    TBranch        *b_jetsKT4_mass;   //!
 
+   TBranch        *b_NjetsKT6;   //!
+   TBranch        *b_jetsKT6_energy;   //!
+   TBranch        *b_jetsKT6_et;   //!
+   TBranch        *b_jetsKT6_eta;   //!
+   TBranch        *b_jetsKT6_phi;   //!
+   TBranch        *b_jetsKT6_pt;   //!
+   TBranch        *b_jetsKT6_px;   //!
+   TBranch        *b_jetsKT6_py;   //!
+   TBranch        *b_jetsKT6_pz;   //!
+   TBranch        *b_jetsKT6_status;   //!
+   TBranch        *b_jetsKT6_theta;   //!
+   TBranch        *b_jetsKT6_btag_TC_highPur;   //!
+   TBranch        *b_jetsKT6_btag_TC_highEff;   //!
+   TBranch        *b_jetsKT6_btag_jetProb;   //!
+   TBranch        *b_jetsKT6_btag_jetBProb;   //!
+   TBranch        *b_jetsKT6_btag_softEle;   //!
+   TBranch        *b_jetsKT6_btag_softMuon;   //!
+   TBranch        *b_jetsKT6_btag_softMuonNoIP;   //!
+   TBranch        *b_jetsKT6_btag_secVertex;   //!
+   TBranch        *b_jetsKT6_chgEmE;   //!
+   TBranch        *b_jetsKT6_chgHadE;   //!
+   TBranch        *b_jetsKT6_chgMuE;   //!
+   TBranch        *b_jetsKT6_chg_Mult;   //!
+   TBranch        *b_jetsKT6_neutralEmE;   //!
+   TBranch        *b_jetsKT6_neutralHadE;   //!
+   TBranch        *b_jetsKT6_neutral_Mult;   //!
+   TBranch        *b_jetsKT6_mu_Mult;   //!
+   TBranch        *b_jetsKT6_emf;   //!
+   TBranch        *b_jetsKT6_ehf;   //!
+   TBranch        *b_jetsKT6_n60;   //!
+   TBranch        *b_jetsKT6_n90;   //!
+   TBranch        *b_jetsKT6_area;   //!
+   TBranch        *b_jetsKT6_mass;   //!
+
    ///3099
    TBranch        *b_NjetsSC5;   //!
    TBranch        *b_jetsSC5_energy;   //!
@@ -823,6 +978,74 @@ public:
    TBranch        *b_jetsSC5_n90;   //!
    TBranch        *b_jetsSC5_area;   //!
    TBranch        *b_jetsSC5_mass;   //!
+
+   TBranch        *b_NjetsSC7;   //!
+   TBranch        *b_jetsSC7_energy;   //!
+   TBranch        *b_jetsSC7_et;   //!
+   TBranch        *b_jetsSC7_eta;   //!
+   TBranch        *b_jetsSC7_phi;   //!
+   TBranch        *b_jetsSC7_pt;   //!
+   TBranch        *b_jetsSC7_px;   //!
+   TBranch        *b_jetsSC7_py;   //!
+   TBranch        *b_jetsSC7_pz;   //!
+   TBranch        *b_jetsSC7_status;   //!
+   TBranch        *b_jetsSC7_theta;   //!
+   TBranch        *b_jetsSC7_btag_TC_highPur;   //!
+   TBranch        *b_jetsSC7_btag_TC_highEff;   //!
+   TBranch        *b_jetsSC7_btag_jetProb;   //!
+   TBranch        *b_jetsSC7_btag_jetBProb;   //!
+   TBranch        *b_jetsSC7_btag_softEle;   //!
+   TBranch        *b_jetsSC7_btag_softMuon;   //!
+   TBranch        *b_jetsSC7_btag_softMuonNoIP;   //!
+   TBranch        *b_jetsSC7_btag_secVertex;   //!
+   TBranch        *b_jetsSC7_chgEmE;   //!
+   TBranch        *b_jetsSC7_chgHadE;   //!
+   TBranch        *b_jetsSC7_chgMuE;   //!
+   TBranch        *b_jetsSC7_chg_Mult;   //!
+   TBranch        *b_jetsSC7_neutralEmE;   //!
+   TBranch        *b_jetsSC7_neutralHadE;   //!
+   TBranch        *b_jetsSC7_neutral_Mult;   //!
+   TBranch        *b_jetsSC7_mu_Mult;   //!
+   TBranch        *b_jetsSC7_emf;   //!
+   TBranch        *b_jetsSC7_ehf;   //!
+   TBranch        *b_jetsSC7_n60;   //!
+   TBranch        *b_jetsSC7_n90;   //!
+   TBranch        *b_jetsSC7_area;   //!
+   TBranch        *b_jetsSC7_mass;   //!
+
+   TBranch        *b_NjetsJPTAK5;   //!
+   TBranch        *b_jetsJPTAK5_energy;   //!
+   TBranch        *b_jetsJPTAK5_et;   //!
+   TBranch        *b_jetsJPTAK5_eta;   //!
+   TBranch        *b_jetsJPTAK5_phi;   //!
+   TBranch        *b_jetsJPTAK5_pt;   //!
+   TBranch        *b_jetsJPTAK5_px;   //!
+   TBranch        *b_jetsJPTAK5_py;   //!
+   TBranch        *b_jetsJPTAK5_pz;   //!
+   TBranch        *b_jetsJPTAK5_status;   //!
+   TBranch        *b_jetsJPTAK5_theta;   //!
+   TBranch        *b_jetsJPTAK5_btag_TC_highPur;   //!
+   TBranch        *b_jetsJPTAK5_btag_TC_highEff;   //!
+   TBranch        *b_jetsJPTAK5_btag_jetProb;   //!
+   TBranch        *b_jetsJPTAK5_btag_jetBProb;   //!
+   TBranch        *b_jetsJPTAK5_btag_softEle;   //!
+   TBranch        *b_jetsJPTAK5_btag_softMuon;   //!
+   TBranch        *b_jetsJPTAK5_btag_softMuonNoIP;   //!
+   TBranch        *b_jetsJPTAK5_btag_secVertex;   //!
+   TBranch        *b_jetsJPTAK5_chgEmE;   //!
+   TBranch        *b_jetsJPTAK5_chgHadE;   //!
+   TBranch        *b_jetsJPTAK5_chgMuE;   //!
+   TBranch        *b_jetsJPTAK5_chg_Mult;   //!
+   TBranch        *b_jetsJPTAK5_neutralEmE;   //!
+   TBranch        *b_jetsJPTAK5_neutralHadE;   //!
+   TBranch        *b_jetsJPTAK5_neutral_Mult;   //!
+   TBranch        *b_jetsJPTAK5_mu_Mult;   //!
+   TBranch        *b_jetsJPTAK5_emf;   //!
+   TBranch        *b_jetsJPTAK5_ehf;   //!
+   TBranch        *b_jetsJPTAK5_n60;   //!
+   TBranch        *b_jetsJPTAK5_n90;   //!
+   TBranch        *b_jetsJPTAK5_area;   //!
+   TBranch        *b_jetsJPTAK5_mass;   //!
  
    TBranch        *b_Nmc_doc;   //!
    TBranch        *b_mc_doc_id;   //!
@@ -871,6 +1094,14 @@ public:
    TBranch        *b_metsKT4_sumEt;   //!
    TBranch        *b_metsKT4_et_JESCor;   //!
    TBranch        *b_metsKT4_phi_JESCor;   //!
+   TBranch        *b_NmetsKT6;   //!
+   TBranch        *b_metsKT6_et;   //!
+   TBranch        *b_metsKT6_phi;   //!
+   TBranch        *b_metsKT6_ex;   //!
+   TBranch        *b_metsKT6_ey;   //!
+   TBranch        *b_metsKT6_sumEt;   //!
+   TBranch        *b_metsKT6_et_JESCor;   //!
+   TBranch        *b_metsKT6_phi_JESCor;   //!
    TBranch        *b_NmetsSC5;   //!
    TBranch        *b_metsSC5_et;   //!
    TBranch        *b_metsSC5_phi;   //!
@@ -880,6 +1111,15 @@ public:
    TBranch        *b_metsSC5_sumEt;   //!
    TBranch        *b_metsSC5_et_JESCor;   //!
    TBranch        *b_metsSC5_phi_JESCor;   //!
+   TBranch        *b_NmetsSC7;   //!
+   TBranch        *b_metsSC7_et;   //!
+   TBranch        *b_metsSC7_phi;   //!
+   TBranch        *b_metsSC7_ex;   //!
+   TBranch        *b_metsSC7_ey;   //!
+   TBranch        *b_metsSC7_sign;   //!
+   TBranch        *b_metsSC7_sumEt;   //!
+   TBranch        *b_metsSC7_et_JESCor;   //!
+   TBranch        *b_metsSC7_phi_JESCor;   //!
   
    TBranch        *b_Nmus;   //!
    TBranch        *b_mus_energy;   //!
@@ -1079,6 +1319,8 @@ public:
    TBranch        *b_tcmets_sumEt;   //!
    TBranch        *b_tcmets_et_muonCor;   //!
    TBranch        *b_tcmets_phi_muonCor;   //!
+   TBranch        *b_tcmets_et_JESCor;   //!
+   TBranch        *b_tcmets_phi_JESCor;   //!
    TBranch        *b_Ntracks;   //!
    TBranch        *b_tracks_chi2;   //!
    TBranch        *b_tracks_ndof;   //!
@@ -1393,7 +1635,7 @@ private:
   void valid_mkHisto_cut_njet(TH1F* h[][7], const string, const string, const int, const float, const float );
   void valid_fillHisto(TH1F* h[][7], const bool cuts[8], int nj, double value) const;
 
-  int    Njet()                const { return m_nGoodJet; };  //num of cleaned jet in event
+  //int    Njet()                const { return m_nGoodJet; };  //num of cleaned jet in event
   bool   doValidation()        const { return m_doValidation; };
   bool   DoConversionStudies()       { return m_ConversionStudies; };
   //bool   doPlotRelisoNES()     const { return m_plotRelisoNES; };
@@ -1425,7 +1667,8 @@ private:
   bool   passEleID(unsigned int) const;
   bool   passHLT() const;
   string printTimeNow() const;
-
+  void   DoBTagging(vector<TLorentzVector>&);
+  bool   jetNotNearElectron(TLorentzVector& j, vector<TLorentzVector>& e) const;
 
   //--------------------
   // private variables
@@ -1439,7 +1682,7 @@ private:
   string outputHistFileName;
   string outputTextFileName;
   double this_weight;    // current event weight  
-  int    m_nGoodJet; 
+  int    m_nGoodJet;  //number of cleaned, good jets
   float  m_QCDest_reliso_bin_width;
   bool   m_doValidation;
   bool   m_plotRelisoNES;
@@ -1451,6 +1694,11 @@ private:
   bool   m_runOnSD;
   bool   m_runOnMyHLTskim;
   bool   m_useMisslayers;
+  short  m_muonCutNum;
+  int    m_ntoy;
+  int    m_nbtag_TCHE;
+  int    m_nbtag_TCHP;
+  int    m_nbtag_SSV;
 
   // cuts
   float ELE_ETCUT;
@@ -1516,7 +1764,9 @@ private:
   TH1D *h_m3_singletop_control_1000;
   TH1D *h_m3_bce_control_1000[3];
   TH1D *h_m3_enri_control_1000[3];
-  int   m_ntoy;
+  TH1F *h_nbtag_TCHE[16];//nclass
+  TH1F *h_nbtag_TCHP[16];
+  TH1F *h_nbtag_SSV[16];
 
 
   // MC flag
@@ -1781,6 +2031,39 @@ void ana::Init(){
    jetsKT4_area = 0;
    jetsKT4_mass = 0;
 
+   jetsKT6_energy = 0;
+   jetsKT6_et = 0;
+   jetsKT6_eta = 0;
+   jetsKT6_phi = 0;
+   jetsKT6_pt = 0;
+   jetsKT6_px = 0;
+   jetsKT6_py = 0;
+   jetsKT6_pz = 0;
+   jetsKT6_status = 0;
+   jetsKT6_theta = 0;
+   jetsKT6_btag_TC_highPur = 0;
+   jetsKT6_btag_TC_highEff = 0;
+   jetsKT6_btag_jetProb = 0;
+   jetsKT6_btag_jetBProb = 0;
+   jetsKT6_btag_softEle = 0;
+   jetsKT6_btag_softMuon = 0;
+   jetsKT6_btag_softMuonNoIP = 0;
+   jetsKT6_btag_secVertex = 0;
+   jetsKT6_chgEmE = 0;
+   jetsKT6_chgHadE = 0;
+   jetsKT6_chgMuE = 0;
+   jetsKT6_chg_Mult = 0;
+   jetsKT6_neutralEmE = 0;
+   jetsKT6_neutralHadE = 0;
+   jetsKT6_neutral_Mult = 0;
+   jetsKT6_mu_Mult = 0;
+   jetsKT6_emf = 0;
+   jetsKT6_ehf = 0;
+   jetsKT6_n60 = 0;
+   jetsKT6_n90 = 0;
+   jetsKT6_area = 0;
+   jetsKT6_mass = 0;
+
    jetsSC5_energy = 0;
    jetsSC5_et = 0;
    jetsSC5_eta = 0;
@@ -1813,6 +2096,73 @@ void ana::Init(){
    jetsSC5_n90 = 0;
    jetsSC5_area = 0;
    jetsSC5_mass = 0;
+
+   jetsSC7_energy = 0;
+   jetsSC7_et = 0;
+   jetsSC7_eta = 0;
+   jetsSC7_phi = 0;
+   jetsSC7_pt = 0;
+   jetsSC7_px = 0;
+   jetsSC7_py = 0;
+   jetsSC7_pz = 0;
+   jetsSC7_status = 0;
+   jetsSC7_theta = 0;
+   jetsSC7_btag_TC_highPur = 0;
+   jetsSC7_btag_TC_highEff = 0;
+   jetsSC7_btag_jetProb = 0;
+   jetsSC7_btag_jetBProb = 0;
+   jetsSC7_btag_softEle = 0;
+   jetsSC7_btag_softMuon = 0;
+   jetsSC7_btag_softMuonNoIP = 0;
+   jetsSC7_btag_secVertex = 0;
+   jetsSC7_chgEmE = 0;
+   jetsSC7_chgHadE = 0;
+   jetsSC7_chgMuE = 0;
+   jetsSC7_chg_Mult = 0;
+   jetsSC7_neutralEmE = 0;
+   jetsSC7_neutralHadE = 0;
+   jetsSC7_neutral_Mult = 0;
+   jetsSC7_mu_Mult = 0;
+   jetsSC7_emf = 0;
+   jetsSC7_ehf = 0;
+   jetsSC7_n60 = 0;
+   jetsSC7_n90 = 0;
+   jetsSC7_area = 0;
+   jetsSC7_mass = 0;
+
+   jetsJPTAK5_energy = 0;
+   jetsJPTAK5_et = 0;
+   jetsJPTAK5_eta = 0;
+   jetsJPTAK5_phi = 0;
+   jetsJPTAK5_pt = 0;
+   jetsJPTAK5_px = 0;
+   jetsJPTAK5_py = 0;
+   jetsJPTAK5_pz = 0;
+   jetsJPTAK5_status = 0;
+   jetsJPTAK5_theta = 0;
+   jetsJPTAK5_btag_TC_highPur = 0;
+   jetsJPTAK5_btag_TC_highEff = 0;
+   jetsJPTAK5_btag_jetProb = 0;
+   jetsJPTAK5_btag_jetBProb = 0;
+   jetsJPTAK5_btag_softEle = 0;
+   jetsJPTAK5_btag_softMuon = 0;
+   jetsJPTAK5_btag_softMuonNoIP = 0;
+   jetsJPTAK5_btag_secVertex = 0;
+   jetsJPTAK5_chgEmE = 0;
+   jetsJPTAK5_chgHadE = 0;
+   jetsJPTAK5_chgMuE = 0;
+   jetsJPTAK5_chg_Mult = 0;
+   jetsJPTAK5_neutralEmE = 0;
+   jetsJPTAK5_neutralHadE = 0;
+   jetsJPTAK5_neutral_Mult = 0;
+   jetsJPTAK5_mu_Mult = 0;
+   jetsJPTAK5_emf = 0;
+   jetsJPTAK5_ehf = 0;
+   jetsJPTAK5_n60 = 0;
+   jetsJPTAK5_n90 = 0;
+   jetsJPTAK5_area = 0;
+   jetsJPTAK5_mass = 0;
+
    mc_doc_id = 0;
    mc_doc_pt = 0;
    mc_doc_px = 0;
@@ -1855,6 +2205,13 @@ void ana::Init(){
    metsKT4_sumEt = 0;
    metsKT4_et_JESCor = 0;
    metsKT4_phi_JESCor = 0;
+   metsKT6_et = 0;
+   metsKT6_phi = 0;
+   metsKT6_ex = 0;
+   metsKT6_ey = 0;
+   metsKT6_sumEt = 0;
+   metsKT6_et_JESCor = 0;
+   metsKT6_phi_JESCor = 0;
    metsSC5_et = 0;
    metsSC5_phi = 0;
    metsSC5_ex = 0;
@@ -1862,6 +2219,13 @@ void ana::Init(){
    metsSC5_sumEt = 0;
    metsSC5_et_JESCor = 0;
    metsSC5_phi_JESCor = 0;
+   metsSC7_et = 0;
+   metsSC7_phi = 0;
+   metsSC7_ex = 0;
+   metsSC7_ey = 0;
+   metsSC7_sumEt = 0;
+   metsSC7_et_JESCor = 0;
+   metsSC7_phi_JESCor = 0;
    mus_energy = 0;
    mus_et = 0;
    mus_eta = 0;
@@ -2056,6 +2420,8 @@ void ana::Init(){
    tcmets_sumEt = 0;
    tcmets_et_muonCor = 0;
    tcmets_phi_muonCor = 0;
+   tcmets_et_JESCor = 0;
+   tcmets_phi_JESCor = 0;
    tracks_chi2 = 0;
    tracks_ndof = 0;
    tracks_chg = 0;
@@ -2287,7 +2653,6 @@ void ana::Init(){
    chain->SetBranchAddress("jets_area", &jets_area, &b_jets_area);
    chain->SetBranchAddress("jets_mass", &jets_mass, &b_jets_mass);
 
-
    if( m_jetAlgo=="KT4" ) {     
      chain->SetBranchAddress("jetsKT4_energy", &jetsKT4_energy, &b_jetsKT4_energy);
      chain->SetBranchAddress("jetsKT4_et", &jetsKT4_et, &b_jetsKT4_et);
@@ -2322,8 +2687,41 @@ void ana::Init(){
      chain->SetBranchAddress("jetsKT4_area", &jetsKT4_area, &b_jetsKT4_area);
      chain->SetBranchAddress("jetsKT4_mass", &jetsKT4_mass, &b_jetsKT4_mass);
    }
-
-   if( m_jetAlgo=="SC5" ) {     
+   else if( m_jetAlgo=="KT6" ) {
+     chain->SetBranchAddress("jetsKT6_energy", &jetsKT6_energy, &b_jetsKT6_energy);
+     chain->SetBranchAddress("jetsKT6_et", &jetsKT6_et, &b_jetsKT6_et);
+     chain->SetBranchAddress("jetsKT6_eta", &jetsKT6_eta, &b_jetsKT6_eta);
+     chain->SetBranchAddress("jetsKT6_phi", &jetsKT6_phi, &b_jetsKT6_phi);
+     chain->SetBranchAddress("jetsKT6_pt", &jetsKT6_pt, &b_jetsKT6_pt);
+     chain->SetBranchAddress("jetsKT6_px", &jetsKT6_px, &b_jetsKT6_px);
+     chain->SetBranchAddress("jetsKT6_py", &jetsKT6_py, &b_jetsKT6_py);
+     chain->SetBranchAddress("jetsKT6_pz", &jetsKT6_pz, &b_jetsKT6_pz);
+     chain->SetBranchAddress("jetsKT6_status", &jetsKT6_status, &b_jetsKT6_status);
+     chain->SetBranchAddress("jetsKT6_theta", &jetsKT6_theta, &b_jetsKT6_theta);
+     chain->SetBranchAddress("jetsKT6_btag_TC_highPur", &jetsKT6_btag_TC_highPur, &b_jetsKT6_btag_TC_highPur);
+     chain->SetBranchAddress("jetsKT6_btag_TC_highEff", &jetsKT6_btag_TC_highEff, &b_jetsKT6_btag_TC_highEff);
+     chain->SetBranchAddress("jetsKT6_btag_jetProb", &jetsKT6_btag_jetProb, &b_jetsKT6_btag_jetProb);
+     chain->SetBranchAddress("jetsKT6_btag_jetBProb", &jetsKT6_btag_jetBProb, &b_jetsKT6_btag_jetBProb);
+     chain->SetBranchAddress("jetsKT6_btag_softEle", &jetsKT6_btag_softEle, &b_jetsKT6_btag_softEle);
+     chain->SetBranchAddress("jetsKT6_btag_softMuon", &jetsKT6_btag_softMuon, &b_jetsKT6_btag_softMuon);
+     chain->SetBranchAddress("jetsKT6_btag_softMuonNoIP", &jetsKT6_btag_softMuonNoIP, &b_jetsKT6_btag_softMuonNoIP);
+     chain->SetBranchAddress("jetsKT6_btag_secVertex", &jetsKT6_btag_secVertex, &b_jetsKT6_btag_secVertex);
+     chain->SetBranchAddress("jetsKT6_chgEmE", &jetsKT6_chgEmE, &b_jetsKT6_chgEmE);
+     chain->SetBranchAddress("jetsKT6_chgHadE", &jetsKT6_chgHadE, &b_jetsKT6_chgHadE);
+     chain->SetBranchAddress("jetsKT6_chgMuE", &jetsKT6_chgMuE, &b_jetsKT6_chgMuE);
+     chain->SetBranchAddress("jetsKT6_chg_Mult", &jetsKT6_chg_Mult, &b_jetsKT6_chg_Mult);
+     chain->SetBranchAddress("jetsKT6_neutralEmE", &jetsKT6_neutralEmE, &b_jetsKT6_neutralEmE);
+     chain->SetBranchAddress("jetsKT6_neutralHadE", &jetsKT6_neutralHadE, &b_jetsKT6_neutralHadE);
+     chain->SetBranchAddress("jetsKT6_neutral_Mult", &jetsKT6_neutral_Mult, &b_jetsKT6_neutral_Mult);
+     chain->SetBranchAddress("jetsKT6_mu_Mult", &jetsKT6_mu_Mult, &b_jetsKT6_mu_Mult);
+     chain->SetBranchAddress("jetsKT6_emf", &jetsKT6_emf, &b_jetsKT6_emf);
+     chain->SetBranchAddress("jetsKT6_ehf", &jetsKT6_ehf, &b_jetsKT6_ehf);
+     chain->SetBranchAddress("jetsKT6_n60", &jetsKT6_n60, &b_jetsKT6_n60);
+     chain->SetBranchAddress("jetsKT6_n90", &jetsKT6_n90, &b_jetsKT6_n90);
+     chain->SetBranchAddress("jetsKT6_area", &jetsKT6_area, &b_jetsKT6_area);
+     chain->SetBranchAddress("jetsKT6_mass", &jetsKT6_mass, &b_jetsKT6_mass);
+   }
+   else if( m_jetAlgo=="SC5" ) {     
      chain->SetBranchAddress("NjetsSC5", &NjetsSC5, &b_NjetsSC5);
      chain->SetBranchAddress("jetsSC5_energy", &jetsSC5_energy, &b_jetsSC5_energy);
      chain->SetBranchAddress("jetsSC5_et", &jetsSC5_et, &b_jetsSC5_et);
@@ -2358,6 +2756,77 @@ void ana::Init(){
      chain->SetBranchAddress("jetsSC5_area", &jetsSC5_area, &b_jetsSC5_area);
      chain->SetBranchAddress("jetsSC5_mass", &jetsSC5_mass, &b_jetsSC5_mass);
    }
+   else if( m_jetAlgo=="SC7" ) {     
+     chain->SetBranchAddress("NjetsSC7", &NjetsSC7, &b_NjetsSC7);
+     chain->SetBranchAddress("jetsSC7_energy", &jetsSC7_energy, &b_jetsSC7_energy);
+     chain->SetBranchAddress("jetsSC7_et", &jetsSC7_et, &b_jetsSC7_et);
+     chain->SetBranchAddress("jetsSC7_eta", &jetsSC7_eta, &b_jetsSC7_eta);
+     chain->SetBranchAddress("jetsSC7_phi", &jetsSC7_phi, &b_jetsSC7_phi);
+     chain->SetBranchAddress("jetsSC7_pt", &jetsSC7_pt, &b_jetsSC7_pt);
+     chain->SetBranchAddress("jetsSC7_px", &jetsSC7_px, &b_jetsSC7_px);
+     chain->SetBranchAddress("jetsSC7_py", &jetsSC7_py, &b_jetsSC7_py);
+     chain->SetBranchAddress("jetsSC7_pz", &jetsSC7_pz, &b_jetsSC7_pz);
+     chain->SetBranchAddress("jetsSC7_status", &jetsSC7_status, &b_jetsSC7_status);
+     chain->SetBranchAddress("jetsSC7_theta", &jetsSC7_theta, &b_jetsSC7_theta);
+     chain->SetBranchAddress("jetsSC7_btag_TC_highPur", &jetsSC7_btag_TC_highPur, &b_jetsSC7_btag_TC_highPur);
+     chain->SetBranchAddress("jetsSC7_btag_TC_highEff", &jetsSC7_btag_TC_highEff, &b_jetsSC7_btag_TC_highEff);
+     chain->SetBranchAddress("jetsSC7_btag_jetProb", &jetsSC7_btag_jetProb, &b_jetsSC7_btag_jetProb);
+     chain->SetBranchAddress("jetsSC7_btag_jetBProb", &jetsSC7_btag_jetBProb, &b_jetsSC7_btag_jetBProb);
+     chain->SetBranchAddress("jetsSC7_btag_softEle", &jetsSC7_btag_softEle, &b_jetsSC7_btag_softEle);
+     chain->SetBranchAddress("jetsSC7_btag_softMuon", &jetsSC7_btag_softMuon, &b_jetsSC7_btag_softMuon);
+     chain->SetBranchAddress("jetsSC7_btag_softMuonNoIP", &jetsSC7_btag_softMuonNoIP, &b_jetsSC7_btag_softMuonNoIP);
+     chain->SetBranchAddress("jetsSC7_btag_secVertex", &jetsSC7_btag_secVertex, &b_jetsSC7_btag_secVertex);
+     chain->SetBranchAddress("jetsSC7_chgEmE", &jetsSC7_chgEmE, &b_jetsSC7_chgEmE);
+     chain->SetBranchAddress("jetsSC7_chgHadE", &jetsSC7_chgHadE, &b_jetsSC7_chgHadE);
+     chain->SetBranchAddress("jetsSC7_chgMuE", &jetsSC7_chgMuE, &b_jetsSC7_chgMuE);
+     chain->SetBranchAddress("jetsSC7_chg_Mult", &jetsSC7_chg_Mult, &b_jetsSC7_chg_Mult);
+     chain->SetBranchAddress("jetsSC7_neutralEmE", &jetsSC7_neutralEmE, &b_jetsSC7_neutralEmE);
+     chain->SetBranchAddress("jetsSC7_neutralHadE", &jetsSC7_neutralHadE, &b_jetsSC7_neutralHadE);
+     chain->SetBranchAddress("jetsSC7_neutral_Mult", &jetsSC7_neutral_Mult, &b_jetsSC7_neutral_Mult);
+     chain->SetBranchAddress("jetsSC7_mu_Mult", &jetsSC7_mu_Mult, &b_jetsSC7_mu_Mult);
+     chain->SetBranchAddress("jetsSC7_emf", &jetsSC7_emf, &b_jetsSC7_emf);
+     chain->SetBranchAddress("jetsSC7_ehf", &jetsSC7_ehf, &b_jetsSC7_ehf);
+     chain->SetBranchAddress("jetsSC7_n60", &jetsSC7_n60, &b_jetsSC7_n60);
+     chain->SetBranchAddress("jetsSC7_n90", &jetsSC7_n90, &b_jetsSC7_n90);
+     chain->SetBranchAddress("jetsSC7_area", &jetsSC7_area, &b_jetsSC7_area);
+     chain->SetBranchAddress("jetsSC7_mass", &jetsSC7_mass, &b_jetsSC7_mass);
+   }
+   else if( m_jetAlgo=="JPTAK5" ) {     
+     chain->SetBranchAddress("NjetsJPTAK5", &NjetsJPTAK5, &b_NjetsJPTAK5);
+     chain->SetBranchAddress("jetsJPTAK5_energy", &jetsJPTAK5_energy, &b_jetsJPTAK5_energy);
+     chain->SetBranchAddress("jetsJPTAK5_et", &jetsJPTAK5_et, &b_jetsJPTAK5_et);
+     chain->SetBranchAddress("jetsJPTAK5_eta", &jetsJPTAK5_eta, &b_jetsJPTAK5_eta);
+     chain->SetBranchAddress("jetsJPTAK5_phi", &jetsJPTAK5_phi, &b_jetsJPTAK5_phi);
+     chain->SetBranchAddress("jetsJPTAK5_pt", &jetsJPTAK5_pt, &b_jetsJPTAK5_pt);
+     chain->SetBranchAddress("jetsJPTAK5_px", &jetsJPTAK5_px, &b_jetsJPTAK5_px);
+     chain->SetBranchAddress("jetsJPTAK5_py", &jetsJPTAK5_py, &b_jetsJPTAK5_py);
+     chain->SetBranchAddress("jetsJPTAK5_pz", &jetsJPTAK5_pz, &b_jetsJPTAK5_pz);
+     chain->SetBranchAddress("jetsJPTAK5_status", &jetsJPTAK5_status, &b_jetsJPTAK5_status);
+     chain->SetBranchAddress("jetsJPTAK5_theta", &jetsJPTAK5_theta, &b_jetsJPTAK5_theta);
+     chain->SetBranchAddress("jetsJPTAK5_btag_TC_highPur", &jetsJPTAK5_btag_TC_highPur, &b_jetsJPTAK5_btag_TC_highPur);
+     chain->SetBranchAddress("jetsJPTAK5_btag_TC_highEff", &jetsJPTAK5_btag_TC_highEff, &b_jetsJPTAK5_btag_TC_highEff);
+     chain->SetBranchAddress("jetsJPTAK5_btag_jetProb", &jetsJPTAK5_btag_jetProb, &b_jetsJPTAK5_btag_jetProb);
+     chain->SetBranchAddress("jetsJPTAK5_btag_jetBProb", &jetsJPTAK5_btag_jetBProb, &b_jetsJPTAK5_btag_jetBProb);
+     chain->SetBranchAddress("jetsJPTAK5_btag_softEle", &jetsJPTAK5_btag_softEle, &b_jetsJPTAK5_btag_softEle);
+     chain->SetBranchAddress("jetsJPTAK5_btag_softMuon", &jetsJPTAK5_btag_softMuon, &b_jetsJPTAK5_btag_softMuon);
+     chain->SetBranchAddress("jetsJPTAK5_btag_softMuonNoIP", &jetsJPTAK5_btag_softMuonNoIP, &b_jetsJPTAK5_btag_softMuonNoIP);
+     chain->SetBranchAddress("jetsJPTAK5_btag_secVertex", &jetsJPTAK5_btag_secVertex, &b_jetsJPTAK5_btag_secVertex);
+     chain->SetBranchAddress("jetsJPTAK5_chgEmE", &jetsJPTAK5_chgEmE, &b_jetsJPTAK5_chgEmE);
+     chain->SetBranchAddress("jetsJPTAK5_chgHadE", &jetsJPTAK5_chgHadE, &b_jetsJPTAK5_chgHadE);
+     chain->SetBranchAddress("jetsJPTAK5_chgMuE", &jetsJPTAK5_chgMuE, &b_jetsJPTAK5_chgMuE);
+     chain->SetBranchAddress("jetsJPTAK5_chg_Mult", &jetsJPTAK5_chg_Mult, &b_jetsJPTAK5_chg_Mult);
+     chain->SetBranchAddress("jetsJPTAK5_neutralEmE", &jetsJPTAK5_neutralEmE, &b_jetsJPTAK5_neutralEmE);
+     chain->SetBranchAddress("jetsJPTAK5_neutralHadE", &jetsJPTAK5_neutralHadE, &b_jetsJPTAK5_neutralHadE);
+     chain->SetBranchAddress("jetsJPTAK5_neutral_Mult", &jetsJPTAK5_neutral_Mult, &b_jetsJPTAK5_neutral_Mult);
+     chain->SetBranchAddress("jetsJPTAK5_mu_Mult", &jetsJPTAK5_mu_Mult, &b_jetsJPTAK5_mu_Mult);
+     chain->SetBranchAddress("jetsJPTAK5_emf", &jetsJPTAK5_emf, &b_jetsJPTAK5_emf);
+     chain->SetBranchAddress("jetsJPTAK5_ehf", &jetsJPTAK5_ehf, &b_jetsJPTAK5_ehf);
+     chain->SetBranchAddress("jetsJPTAK5_n60", &jetsJPTAK5_n60, &b_jetsJPTAK5_n60);
+     chain->SetBranchAddress("jetsJPTAK5_n90", &jetsJPTAK5_n90, &b_jetsJPTAK5_n90);
+     chain->SetBranchAddress("jetsJPTAK5_area", &jetsJPTAK5_area, &b_jetsJPTAK5_area);
+     chain->SetBranchAddress("jetsJPTAK5_mass", &jetsJPTAK5_mass, &b_jetsJPTAK5_mass);
+   }
+
    chain->SetBranchAddress("Nmets", &Nmets, &b_Nmets);
    chain->SetBranchAddress("mets_et", &mets_et, &b_mets_et);
    chain->SetBranchAddress("mets_phi", &mets_phi, &b_mets_phi);
@@ -2384,7 +2853,17 @@ void ana::Init(){
      chain->SetBranchAddress("metsKT4_et_JESCor", &metsKT4_et_JESCor, &b_metsKT4_et_JESCor);
      chain->SetBranchAddress("metsKT4_phi_JESCor", &metsKT4_phi_JESCor, &b_metsKT4_phi_JESCor);
    }
-   if( m_metAlgo=="SC5" ) {
+   else if( m_metAlgo=="KT6" ) {
+     chain->SetBranchAddress("NmetsKT6", &NmetsKT6, &b_NmetsKT6);
+     chain->SetBranchAddress("metsKT6_et", &metsKT6_et, &b_metsKT6_et);
+     chain->SetBranchAddress("metsKT6_phi", &metsKT6_phi, &b_metsKT6_phi);
+     chain->SetBranchAddress("metsKT6_ex", &metsKT6_ex, &b_metsKT6_ex);
+     chain->SetBranchAddress("metsKT6_ey", &metsKT6_ey, &b_metsKT6_ey);
+     chain->SetBranchAddress("metsKT6_sumEt", &metsKT6_sumEt, &b_metsKT6_sumEt);
+     chain->SetBranchAddress("metsKT6_et_JESCor", &metsKT6_et_JESCor, &b_metsKT6_et_JESCor);
+     chain->SetBranchAddress("metsKT6_phi_JESCor", &metsKT6_phi_JESCor, &b_metsKT6_phi_JESCor);
+   }
+   else if( m_metAlgo=="SC5" ) {
      chain->SetBranchAddress("NmetsSC5", &NmetsSC5, &b_NmetsSC5);
      chain->SetBranchAddress("metsSC5_et", &metsSC5_et, &b_metsSC5_et);
      chain->SetBranchAddress("metsSC5_phi", &metsSC5_phi, &b_metsSC5_phi);
@@ -2393,6 +2872,16 @@ void ana::Init(){
      chain->SetBranchAddress("metsSC5_sumEt", &metsSC5_sumEt, &b_metsSC5_sumEt);
      chain->SetBranchAddress("metsSC5_et_JESCor", &metsSC5_et_JESCor, &b_metsSC5_et_JESCor);
      chain->SetBranchAddress("metsSC5_phi_JESCor", &metsSC5_phi_JESCor, &b_metsSC5_phi_JESCor); 
+   } 
+   else if( m_metAlgo=="SC7" ) {
+     chain->SetBranchAddress("NmetsSC7", &NmetsSC7, &b_NmetsSC7);
+     chain->SetBranchAddress("metsSC7_et", &metsSC7_et, &b_metsSC7_et);
+     chain->SetBranchAddress("metsSC7_phi", &metsSC7_phi, &b_metsSC7_phi);
+     chain->SetBranchAddress("metsSC7_ex", &metsSC7_ex, &b_metsSC7_ex);
+     chain->SetBranchAddress("metsSC7_ey", &metsSC7_ey, &b_metsSC7_ey);
+     chain->SetBranchAddress("metsSC7_sumEt", &metsSC7_sumEt, &b_metsSC7_sumEt);
+     chain->SetBranchAddress("metsSC7_et_JESCor", &metsSC7_et_JESCor, &b_metsSC7_et_JESCor);
+     chain->SetBranchAddress("metsSC7_phi_JESCor", &metsSC7_phi_JESCor, &b_metsSC7_phi_JESCor); 
    }
    if( m_metAlgo=="tcmet" ) {
      chain->SetBranchAddress("Ntcmets", &Ntcmets, &b_Ntcmets);
@@ -2401,8 +2890,6 @@ void ana::Init(){
      chain->SetBranchAddress("tcmets_ex", &tcmets_ex, &b_tcmets_ex);
      chain->SetBranchAddress("tcmets_ey", &tcmets_ey, &b_tcmets_ey);
      chain->SetBranchAddress("tcmets_sumEt", &tcmets_sumEt, &b_tcmets_sumEt);
-     chain->SetBranchAddress("tcmets_et_muonCor", &tcmets_et_muonCor, &b_tcmets_et_muonCor);
-     chain->SetBranchAddress("tcmets_phi_muonCor", &tcmets_phi_muonCor, &b_tcmets_phi_muonCor);
    }
 
    chain->SetBranchAddress("Nmus", &Nmus, &b_Nmus);
@@ -2638,6 +3125,7 @@ void ana::Init(){
      if(HLTBit=="HLT_Ele15_LW_L1R") chain2->SetBranchAddress("HLT_Ele15_LW_L1R", &HLT_Ele15_LW_L1R, &b_HLT_Ele15_LW_L1R); //v2 (1E31, ideal)
      if(HLTBit=="HLT_Ele15_SW_L1R") chain2->SetBranchAddress("HLT_Ele15_SW_L1R", &HLT_Ele15_SW_L1R, &b_HLT_Ele15_SW_L1R);
    }
+   
    ///------------------------  MC Truth info  ------------------------------------
    if( !IsData() ) {
      cout << " Set MC branch address" << endl;

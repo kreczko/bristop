@@ -1,7 +1,12 @@
 //#====================================================#
 //# Last update:
 //
-// 15 Feb 2010: MCTruthMAtch, change iniital value of ii from -1 to 0.
+// 17 Feb 2010: fix btag plot. Replace nGoodJet & Njet() with m_nGoodJet.
+// 16 Feb 2010: Add SC6 and KT7. Add btag plots. Take out HT cut. Fix ("nfile =" -> "nfile +=").
+//
+// 15 Feb 2010: - MCTruthMAtch, change iniital value of ii from -1 to 0. 
+//              - Small update in DrawSignalBGTable. Add global const ncutshown.
+//
 // 12 Feb 2010: - Add PDF weights. Add method to set HLT bit from script. Clean up.
 //              - Remove unused mc_electron and mc_muons from branch list.
 //              - Remove debug(),jetAlgo() etc (replaced with m_debug etc).
@@ -236,6 +241,7 @@ using namespace RooFit;
 // Global variables/constants
 const int ntjet(5);
 const int myprec(1); //no of decimal point for weighted nEvent
+const int ncutshown(13); //11:BARREL, 12:1BTag, 13:2BTag (incl 4j)
 const int nbm3 = 960;
 const bool m3_use_1000_bins = false;
 
@@ -246,7 +252,7 @@ const string mcname[16]  = { "data", "ttbar", "QCD", "enri1", "enri2" ,"enri3", 
 			     "wj", "zj","vqq", "singleTop","tW","tchan","schan" };
 const string mclabel[16] = { "data", "signal","QCD","enri1","enri2","enri3","bce1","bce2","bce3",
 			     "W+jets","Z+jets","VQQ", "singleTop","tW","t-chan","s-chan" };
-
+const string Fourjets = "$\\ge$4 jets"; //used in table
 
 void ana::SetInputFile(const char* fname) {
   
@@ -256,7 +262,7 @@ void ana::SetInputFile(const char* fname) {
   static bool first_time=true;
   if(first_time) PrintCuts();
 
-  nfile = chain->Add(fname);
+  nfile += chain->Add(fname);
   if( GetTrigger() )  chain2->Add(fname);
   //cout << "end of SetInputFile" << endl;
   first_time = false;
@@ -750,6 +756,7 @@ ana::ana(){
    m_runOnMyHLTskim          = false;
    m_useMisslayers           = false;
    m_ntoy                    = 2;
+   m_muonCutNum              = 0;
 
    // Default values of kinematic cuts
    ELE_ETCUT                = 30.0;
@@ -891,6 +898,9 @@ void ana::ReadSelectedBranches() const {
      chain->SetBranchStatus("jets_eta",1);
      chain->SetBranchStatus("jets_pt",1);
      chain->SetBranchStatus("jets_emf",1);
+     chain->SetBranchStatus("jets_btag_TC_highPur",1);//btag
+     chain->SetBranchStatus("jets_btag_TC_highEff",1);
+     chain->SetBranchStatus("jets_btag_secVertex",1);
 
    } else if (m_jetAlgo=="pfjet") { //PFJet
      chain->SetBranchStatus(Form("NPFJets"),1); //jets
@@ -1045,7 +1055,7 @@ void ana::CheckAvailableJetMET(){
 
 
 bool ana::EventLoop(){ 
-  
+
 
    if(nfile==0) { cout << "No input file found, stop."<< endl; return false; }
 
@@ -2071,6 +2081,21 @@ bool ana::EventLoop(){
    }
 
 
+
+
+
+   //--------------------------------------------------
+   // BTAG (16 Feb 2010)
+   //--------------------------------------------------
+   TDirectory *dir_btag = histf->mkdir("btag","btag multiplicity (after all cuts)");
+   dir_btag->cd();
+   addHistoDataAndMC( h_nbtag_TCHE, "nbtag_TCHE", "nbtag (TCHEm)", 5,0,5);
+   addHistoDataAndMC( h_nbtag_TCHP, "nbtag_TCHP", "nbtag (TCHPm)", 5,0,5);
+   addHistoDataAndMC( h_nbtag_SSV,  "nbtag_SSV",  "nbtag (SSVm)",  5,0,5);
+
+
+
+
    //-----------
    // Cut names
    //-----------
@@ -2087,12 +2112,16 @@ bool ana::EventLoop(){
    ve.push_back("!CONV     ");
    if( !m_rejectEndcapEle ) ve.push_back("!DIFFZ    ");
    else ve.push_back("BARREL    ");
-   ve.push_back("HT        ");
-   ve.push_back("TAGGABLE  ");
+   //ve.push_back("HT        ");
+   //ve.push_back("TAGGABLE  ");
    ve.push_back("$\\ge$1+BTAG");
    ve.push_back("$\\ge$2+BTAG");
-   ve.push_back("$\\ge$1-BTAG");
+   //ve.push_back("$\\ge$1-BTAG");
 
+   // 15 Feb 2010: find muon cut stage number
+   for(short i=0; i<(short)ve.size(); i++) {
+     if(ve.at(i).find("MUON")!=string::npos) m_muonCutNum=i;
+   }
 
 
    //For MC, added index for ttbar event type
@@ -2121,7 +2150,7 @@ bool ana::EventLoop(){
    std::vector<TLorentzVector> iso_muons;
    std::vector<TLorentzVector> jets;
    std::vector<TLorentzVector> met;
-   //std::vector<TLorentzVector> tagged_jets; //not used
+   std::vector<TLorentzVector> tagged_jets; //not used
    std::vector<float>          electrons_isoval;
    std::vector<float>          electrons_isoval2;
 
@@ -3140,8 +3169,10 @@ bool ana::EventLoop(){
 
      // 3E - Find number of jets
      if(m_debug) cout << " Starting JET section"<< endl;
-     int nGoodJet =0;
+     // int nGoodJet =0;
+     m_nGoodJet = 0; //reset
      int ntj = 0;
+
 
      if (m_jetAlgo=="Default") {
        for(unsigned int i = 0; i<Njets; ++i) {
@@ -3149,8 +3180,9 @@ bool ana::EventLoop(){
 	      fabs(jets_eta->at(i)) < 2.4  &&
 	      jets_emf->at(i) > 0.01 )  { //<-- NEW: jets_emf
 	   TLorentzVector jt(jets_px->at(i),jets_py->at(i),jets_pz->at(i),jets_energy->at(i));
-	   nGoodJet++;
+	   m_nGoodJet++;
 	   jets.push_back(jt);
+
 	 }
        } 
      } else if (m_jetAlgo=="SC5") {
@@ -3159,7 +3191,17 @@ bool ana::EventLoop(){
 	     fabs(jetsSC5_eta->at(i)) < 2.4 &&
 	     jetsSC5_emf->at(i) > 0.01 )  {
 	   TLorentzVector jt(jetsSC5_px->at(i),jetsSC5_py->at(i),jetsSC5_pz->at(i),jetsSC5_energy->at(i));
-	   nGoodJet++;
+	   m_nGoodJet++;
+	   jets.push_back(jt);
+	 }
+       }
+     } else if (m_jetAlgo=="SC7") {
+       for(unsigned int i = 0; i<NjetsSC7; ++i) {
+	 if (jetsSC7_pt->at(i) > JET_PTCUT &&
+	     fabs(jetsSC7_eta->at(i)) < 2.4 &&
+	     jetsSC7_emf->at(i) > 0.01 )  {
+	   TLorentzVector jt(jetsSC7_px->at(i),jetsSC7_py->at(i),jetsSC7_pz->at(i),jetsSC7_energy->at(i));
+	   m_nGoodJet++;
 	   jets.push_back(jt);
 	 }
        }
@@ -3169,7 +3211,27 @@ bool ana::EventLoop(){
 	     fabs(jetsKT4_eta->at(i)) < 2.4 &&
 	     jetsKT4_emf->at(i) > 0.01 )  {
 	   TLorentzVector jt(jetsKT4_px->at(i),jetsKT4_py->at(i),jetsKT4_pz->at(i),jetsKT4_energy->at(i));
-	   nGoodJet++;
+	   m_nGoodJet++;
+	   jets.push_back(jt);
+	 }
+       }
+     } else if (m_jetAlgo=="KT6") {
+       for(unsigned int i = 0; i<NjetsKT6; ++i) {
+	 if (jetsKT6_pt->at(i) > JET_PTCUT &&
+	     fabs(jetsKT6_eta->at(i)) < 2.4 &&
+	     jetsKT6_emf->at(i) > 0.01 )  {
+	   TLorentzVector jt(jetsKT6_px->at(i),jetsKT6_py->at(i),jetsKT6_pz->at(i),jetsKT6_energy->at(i));
+	   m_nGoodJet++;
+	   jets.push_back(jt);
+	 }
+       }
+     } else if (m_jetAlgo=="JPTAK5") {
+       for(unsigned int i = 0; i<NjetsJPTAK5; ++i) {
+	 if (jetsJPTAK5_pt->at(i) > JET_PTCUT &&
+	     fabs(jetsJPTAK5_eta->at(i)) < 2.4 &&
+	     jetsJPTAK5_emf->at(i) > 0.01 )  {
+	   TLorentzVector jt(jetsJPTAK5_px->at(i),jetsJPTAK5_py->at(i),jetsJPTAK5_pz->at(i),jetsJPTAK5_energy->at(i));
+	   m_nGoodJet++;
 	   jets.push_back(jt);
 	 }
        }
@@ -3178,11 +3240,10 @@ bool ana::EventLoop(){
 	 if (PFJets_pt->at(i) > JET_PTCUT &&
 	     fabs(PFJets_eta->at(i)) < 2.4 ) {// NB: EMF cannot be calculated for PFJets
 	   TLorentzVector jt(PFJets_px->at(i),PFJets_py->at(i),PFJets_pz->at(i),PFJets_energy->at(i));
-	   nGoodJet++;
+	   m_nGoodJet++;
 	   jets.push_back(jt);
 	 }
        }
-
      } else {
        cout << "ERROR: wrong jet collection." << endl;      
      }
@@ -3207,7 +3268,7 @@ bool ana::EventLoop(){
     
 	 //If delta R is within a cone of 0.3, remove this jet from selected jet list, since it's an electron
 	 if (delR_jet_ele < 0.3) {
-	   nGoodJet--;
+	   m_nGoodJet--;
 	   jets.erase(jets.begin() + i);
 	   i--;
 	   break;
@@ -3218,11 +3279,10 @@ bool ana::EventLoop(){
 
      // (TL) NEW: 14 Aug 09
      // basic plot: jet collection after cleaning
-     fillHistoDataAndMC( h_njet, float(nGoodJet), this_weight );
-     m_nGoodJet = nGoodJet; //set private var for this event
+     fillHistoDataAndMC( h_njet, float(m_nGoodJet), this_weight );
 
-
-     if( Njet()<0 ) { cout << "ERROR!!! negative njet: " << Njet() << endl; }
+     //m_nGoodJet = m_nGoodJet; //set private var for this event
+     // if( Njet()<0 ) { cout << "ERROR!!! negative njet: " << Njet() << endl; }
 
 
      for(unsigned int i=0; i < jets.size(); ++i) {
@@ -3261,14 +3321,15 @@ bool ana::EventLoop(){
 	
      bool isDifferentInteraction = false;
 	
-     // 4 - Find numbers of taggable and tagged jets  
-	
-     // IGNORE FOR NOW - no tagging info in ntuples
 
-     int ntaggable = 0;
-     int nbtagP    = 0;
-     int nbtagN    = 0;
-     
+     // 4 - Find numbers of taggable and tagged jets  
+     if(m_debug) cout << " Starting BTAG section" << endl;
+
+     //int ntaggable = 0;
+     //int nbtagP    = 0;
+     //int nbtagN    = 0;  
+     DoBTagging(electrons); //ele needed for jet-cleaning
+
 
 	
      // 5 Get MET
@@ -3303,9 +3364,17 @@ bool ana::EventLoop(){
        this_met     = metsSC5_et->at(0);
        this_met_phi = metsSC5_phi->at(0);
 
+     } else if (m_metAlgo=="SC7") {
+       this_met     = metsSC7_et->at(0);
+       this_met_phi = metsSC7_phi->at(0);
+
      } else if (m_metAlgo=="KT4") {
        this_met     = metsKT4_et->at(0);
        this_met_phi = metsKT4_phi->at(0);
+
+     } else if (m_metAlgo=="KT6") {
+       this_met     = metsKT6_et->at(0);
+       this_met_phi = metsKT6_phi->at(0);
 
      } else if (m_metAlgo=="tcmet") {
        this_met     = tcmets_et->at(0);
@@ -3392,6 +3461,99 @@ bool ana::EventLoop(){
      }
 
 
+     ntj = m_nGoodJet;
+     if(m_nGoodJet > 4) ntj = 4;
+
+
+
+     //------------------------------------------------------------------------------------
+     //81FB  produce validation plots
+     //-------------------------------
+     if( doValidation() ) {
+       if(m_debug) cout << " Produce validation plots" << endl;
+       const bool Boolcuts[9] = {1,fired_single_em,(nGoodEle>0),(nGoodIsoEle > 0),(nGoodIsoEle == 1),
+				 !isMuon,(this_met > METCUT),!isZ,!isConversion};
+       
+       valid_fillHisto(valid_HT, Boolcuts,  m_nGoodJet, ht);
+       
+       for(unsigned int i = 0 ; i < jets.size(); ++i) {
+	 valid_fillHisto(valid_jetsEt,  Boolcuts,  m_nGoodJet, jets.at(i).Et());	
+	 valid_fillHisto(valid_jetsEta, Boolcuts,  m_nGoodJet, jets.at(i).Phi());
+	 valid_fillHisto(valid_jetsPhi, Boolcuts,  m_nGoodJet, jets.at(i).Eta());
+       }
+              
+       if(ntj>0) valid_fillHisto(valid_jets1stEt, Boolcuts,  m_nGoodJet, jets.at(0).Et());
+       if(ntj>1) valid_fillHisto(valid_jets2ndEt, Boolcuts,  m_nGoodJet, jets.at(1).Et());
+       if(ntj>2) valid_fillHisto(valid_jets3rdEt, Boolcuts,  m_nGoodJet, jets.at(2).Et());
+       if(ntj>3) valid_fillHisto(valid_jets4thEt, Boolcuts,  m_nGoodJet, jets.at(3).Et());
+       
+       vector<TLorentzVector> valid_eles;
+       for (unsigned int i = 0; i<Nels; ++i) {
+	 bool eleBoolcuts[9] = {1,fired_single_em,(nGoodEle>0),(nGoodIsoEle > 0),(nGoodIsoEle == 1),
+				!isMuon,(this_met > METCUT),!isZ,!isConversion};
+	 
+	 float d0_corrected = fabs(compute_d0("electron",i)); //abs
+	 float RelCalIso = (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i))/els_et->at(i);
+	 float RelTrkIso = els_tIso->at(i)/els_et->at(i);
+	 
+	 if( (RelCalIso+RelTrkIso) > 0.1 ) { eleBoolcuts[3] = 0; }
+	 if(els_et->at(i) < ELE_ETCUT || d0_corrected > 0.02) { eleBoolcuts[2] = 0; }
+	 //if(els_robustTightId->at(i) == false || fabs(els_eta->at(i))>2.5 ) { eleBoolcuts[2] = 0; }
+	 if ( passEleID(i)==false || fabs(els_eta->at(i))>2.5 ) { eleBoolcuts[2] = 0; }
+
+	 
+	 valid_fillHisto(valid_eleEt,     eleBoolcuts,  m_nGoodJet, els_et->at(i));
+	 valid_fillHisto(valid_eleEta,    eleBoolcuts,  m_nGoodJet, els_eta->at(i));      
+	 valid_fillHisto(valid_elePhi,    eleBoolcuts,  m_nGoodJet, els_phi->at(i));
+	 valid_fillHisto(valid_eled0,     eleBoolcuts,  m_nGoodJet, d0_corrected);
+	 valid_fillHisto(valid_eleCalIso, eleBoolcuts,  m_nGoodJet, RelCalIso);
+	 valid_fillHisto(valid_eleTrkIso, eleBoolcuts,  m_nGoodJet, RelTrkIso);
+	 valid_fillHisto(valid_eleRelIso, eleBoolcuts,  m_nGoodJet, (RelCalIso+RelTrkIso));
+	 TLorentzVector eles(els_px->at(i),els_py->at(i),els_pz->at(i),els_energy->at(i));
+	 valid_eles.push_back(eles);
+       }//end of Nels loop 
+       
+       if(nGoodEle>0){
+	 for(size_t i=0;i<valid_eles.size();++i){
+	   double mass_mee = ( electrons.at(0)+valid_eles.at(i) ).M();
+	   valid_fillHisto(valid_mass_ee, Boolcuts,  m_nGoodJet, mass_mee);
+	 }
+       }
+       
+       valid_fillHisto(valid_metEt,  Boolcuts,  m_nGoodJet,  this_met );
+       valid_fillHisto(valid_metPhi, Boolcuts,  m_nGoodJet,  this_met_phi );
+
+       valid_fillHisto(valid_numberTracks, Boolcuts,  m_nGoodJet,Ntracks);
+       for(unsigned int i=0; i<Ntracks; ++i){
+	 valid_fillHisto(valid_trackPt, Boolcuts,  m_nGoodJet,tracks_pt->at(i));
+       }
+       
+       if(m_nGoodJet>2){
+	 pair<double,double> res = compute_M3(jets);
+	 valid_fillHisto(valid_recoM3,       Boolcuts,  m_nGoodJet, res.first );
+	 valid_fillHisto(valid_recoM3_PTMax, Boolcuts,  m_nGoodJet, res.second );
+       }
+       
+       if(!IsData() && isTTbar){ //check some gen. quantities for top quark
+	 double genttbarpt = 0;
+	 double genttbarpx = 0;
+	 double genttbarpy = 0;
+	 for(unsigned int g=0; g<Nmc_doc; g++){
+	   if(fabs(mc_doc_id->at(g))==6){
+	     valid_fillHisto(valid_genT_pt, Boolcuts,  m_nGoodJet, mc_doc_pt->at(g) );
+	     genttbarpx+=mc_doc_px->at(g);
+	     genttbarpy+=mc_doc_py->at(g);
+	   }
+	 }
+	 genttbarpt = sqrt(genttbarpx*genttbarpx + genttbarpy*genttbarpy);
+	 valid_fillHisto(valid_genTT_pt, Boolcuts,  m_nGoodJet, genttbarpt);
+       }
+     }//end doValidation
+     //81FB end
+     //------------------------------- End validation ---------------------------   
+
+
+
 
      //*******************************************************************************************
      //*******************************************************************************************
@@ -3410,7 +3572,7 @@ bool ana::EventLoop(){
      //stage 6 - pass MET cut
      //stage 7 - pass Z veto
      //stage 8 - not a conversion
-     //stage 9 - letpton close to PV
+     //stage 9 - letpton close to PV / barrel ele
      //stage 10 - pass HT cut
      //stage 11 - >= 1 taggable jet
      //stage 12 - >= 1+ tagged jet
@@ -3418,8 +3580,6 @@ bool ana::EventLoop(){
      //stage 14 - >= 1- tagged jet
 	
      //Fill counters
-     ntj = nGoodJet;
-     if(nGoodJet > 4) ntj = 4;
 	
      bool e_plus_jet_pass = false;
       
@@ -3430,101 +3590,6 @@ bool ana::EventLoop(){
        //cout << " type: " << mctype << endl;
        cout << endl;
      }
-
-
-
-     //------------------------------------------------------------------------------------
-     //81FB  produce validation plots
-     //-------------------------------
-     if( doValidation() ) {
-       if(m_debug) cout << " Produce validation plots" << endl;
-       const bool Boolcuts[9] = {1,fired_single_em,(nGoodEle>0),(nGoodIsoEle > 0),(nGoodIsoEle == 1),
-				 !isMuon,(this_met > METCUT),!isZ,!isConversion};
-       
-       valid_fillHisto(valid_HT, Boolcuts,  nGoodJet, ht);
-       
-       for(unsigned int i = 0 ; i < jets.size(); ++i) {
-	 valid_fillHisto(valid_jetsEt,  Boolcuts,  nGoodJet, jets.at(i).Et());	
-	 valid_fillHisto(valid_jetsEta, Boolcuts,  nGoodJet, jets.at(i).Phi());
-	 valid_fillHisto(valid_jetsPhi, Boolcuts,  nGoodJet, jets.at(i).Eta());
-       }
-              
-       if(ntj>0) valid_fillHisto(valid_jets1stEt, Boolcuts,  nGoodJet, jets.at(0).Et());
-       if(ntj>1) valid_fillHisto(valid_jets2ndEt, Boolcuts,  nGoodJet, jets.at(1).Et());
-       if(ntj>2) valid_fillHisto(valid_jets3rdEt, Boolcuts,  nGoodJet, jets.at(2).Et());
-       if(ntj>3) valid_fillHisto(valid_jets4thEt, Boolcuts,  nGoodJet, jets.at(3).Et());
-       
-       vector<TLorentzVector> valid_eles;
-       for (unsigned int i = 0; i<Nels; ++i) {
-	 bool eleBoolcuts[9] = {1,fired_single_em,(nGoodEle>0),(nGoodIsoEle > 0),(nGoodIsoEle == 1),
-				!isMuon,(this_met > METCUT),!isZ,!isConversion};
-	 
-	 float d0_corrected = fabs(compute_d0("electron",i)); //abs
-	 float RelCalIso = (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i))/els_et->at(i);
-	 float RelTrkIso = els_tIso->at(i)/els_et->at(i);
-	 
-	 if( (RelCalIso+RelTrkIso) > 0.1 ) { eleBoolcuts[3] = 0; }
-	 if(els_et->at(i) < ELE_ETCUT || d0_corrected > 0.02) { eleBoolcuts[2] = 0; }
-	 //if(els_robustTightId->at(i) == false || fabs(els_eta->at(i))>2.5 ) { eleBoolcuts[2] = 0; }
-	 if ( passEleID(i)==false || fabs(els_eta->at(i))>2.5 ) { eleBoolcuts[2] = 0; }
-
-	 
-	 valid_fillHisto(valid_eleEt,     eleBoolcuts,  nGoodJet, els_et->at(i));
-	 valid_fillHisto(valid_eleEta,    eleBoolcuts,  nGoodJet, els_eta->at(i));      
-	 valid_fillHisto(valid_elePhi,    eleBoolcuts,  nGoodJet, els_phi->at(i));
-	 valid_fillHisto(valid_eled0,     eleBoolcuts,  nGoodJet, d0_corrected);
-	 valid_fillHisto(valid_eleCalIso, eleBoolcuts,  nGoodJet, RelCalIso);
-	 valid_fillHisto(valid_eleTrkIso, eleBoolcuts,  nGoodJet, RelTrkIso);
-	 valid_fillHisto(valid_eleRelIso, eleBoolcuts,  nGoodJet, (RelCalIso+RelTrkIso));
-	 TLorentzVector eles(els_px->at(i),els_py->at(i),els_pz->at(i),els_energy->at(i));
-	 valid_eles.push_back(eles);
-       }//end of Nels loop 
-       
-       if(nGoodEle>0){
-	 for(size_t i=0;i<valid_eles.size();++i){
-	   double mass_mee = ( electrons.at(0)+valid_eles.at(i) ).M();
-	   valid_fillHisto(valid_mass_ee, Boolcuts,  nGoodJet, mass_mee);
-	 }
-       }
-       
-       valid_fillHisto(valid_metEt,  Boolcuts,  nGoodJet,  this_met );
-       valid_fillHisto(valid_metPhi, Boolcuts,  nGoodJet,  this_met_phi );
-
-       valid_fillHisto(valid_numberTracks, Boolcuts,  nGoodJet,Ntracks);
-       for(unsigned int i=0; i<Ntracks; ++i){
-	 valid_fillHisto(valid_trackPt, Boolcuts,  nGoodJet,tracks_pt->at(i));
-       }
-       
-       if(nGoodJet>2){
-	 pair<double,double> res = compute_M3(jets);
-	 valid_fillHisto(valid_recoM3,       Boolcuts,  nGoodJet, res.first );
-	 valid_fillHisto(valid_recoM3_PTMax, Boolcuts,  nGoodJet, res.second );
-       }
-       
-       if(!IsData() && isTTbar){ //check some gen. quantities for top quark
-	 double genttbarpt = 0;
-	 double genttbarpx = 0;
-	 double genttbarpy = 0;
-	 for(unsigned int g=0; g<Nmc_doc; g++){
-	   if(fabs(mc_doc_id->at(g))==6){
-	     valid_fillHisto(valid_genT_pt, Boolcuts,  nGoodJet, mc_doc_pt->at(g) );
-	     genttbarpx+=mc_doc_px->at(g);
-	     genttbarpy+=mc_doc_py->at(g);
-	   }
-	 }
-	 genttbarpt = sqrt(genttbarpx*genttbarpx + genttbarpy*genttbarpy);
-	 valid_fillHisto(valid_genTT_pt, Boolcuts,  nGoodJet, genttbarpt);
-       }
-     }//end doValidation
-     //81FB end
-     //------------------------------- End validation ---------------------------   
-
-
-
-
-
-
-
 
 
      e_plus_jet[0][ntj][mctype]++;
@@ -3578,12 +3643,20 @@ bool ana::EventLoop(){
 			 e_plus_jet[10][ntj][mctype]++;
 			 e_plus_jet_weighted[10][ntj][mctype] += this_weight;
 			 
-			 if(ht >= HTCUT){  // HT cut (30-1-09)
+			 e_plus_jet_pass = true;
+
+			 //if(ht >= HTCUT){  // HT cut (30-1-09)
+			 if(m_nbtag_SSV >= 1){ //at least one +tag
+
 			   e_plus_jet[11][ntj][mctype]++;
 			   e_plus_jet_weighted[11][ntj][mctype] += this_weight;
-			   
-			   e_plus_jet_pass = true;
-			   
+
+			   if(m_nbtag_SSV >= 2){ //at least two +tag
+			     
+			     e_plus_jet[12][ntj][mctype]++;
+			     e_plus_jet_weighted[12][ntj][mctype] += this_weight;
+			   }
+			   /*
 			   if(ntaggable > 0){ // taggable
 			     e_plus_jet[12][ntj][mctype]++;
 			     e_plus_jet_weighted[12][ntj][mctype] += this_weight;
@@ -3602,6 +3675,7 @@ bool ana::EventLoop(){
 			       e_plus_jet_weighted[15][ntj][mctype] += this_weight;
 			     }
 			   }
+			   */
 			 }
 		       }
 		     }
@@ -3631,7 +3705,7 @@ bool ana::EventLoop(){
      }
 
      //E+jets Analysis
-     if(e_plus_jet_pass && nGoodJet >= 4) {
+     if(e_plus_jet_pass && m_nGoodJet >= 4) {
 	  
        ++counter_pass;
 
@@ -3643,7 +3717,7 @@ bool ana::EventLoop(){
        //Print out for each selected event
        fprintf(outfile,"%7d %6d %10d %10d %8d %8lld %5dj %11.2f %8.2f %8.2f %8s   %s\n",
 	       counter_pass, run, event, lumiBlock, chain->GetTreeNumber(), 
-	       lflag, nGoodJet, jets.at(0).Pt(), this_met, ht, this_mc.c_str(),
+	       lflag, m_nGoodJet, jets.at(0).Pt(), this_met, ht, this_mc.c_str(),
 	       chain->GetCurrentFile()->GetName());
        interestingFiles.insert( chain->GetCurrentFile()->GetName() );
      }
@@ -3674,7 +3748,7 @@ bool ana::EventLoop(){
        fillHisto_Njet_DataAndMC( h_DPhiEmet_t1, this_t1_DPhiEmet, this_weight );
 
        // inspect distributions of the selected events
-       if( Njet() >= 4 ) {
+       if( m_nGoodJet >= 4 ) {
 	 fillHistoDataAndMC( h_exp_ele_et,  iso_electrons.at(0).Et(),  this_weight );
 	 fillHistoDataAndMC( h_exp_ele_eta, iso_electrons.at(0).Eta(), this_weight );
 	 fillHistoDataAndMC( h_exp_j0_pt,   jets.at(0).Pt(),           this_weight );
@@ -3799,7 +3873,7 @@ bool ana::EventLoop(){
 
        if (passALL) {
 	 if(m_debug) cout << "QCDest: event pass all cuts (except isol and nj), make isolation plots" << endl;
-	 //fill histo (with weight) accord to nGoodJet (16-8-09)
+	 //fill histo (with weight) accord to m_nGoodJet (16-8-09)
 	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso,      CombRelIso,     this_weight );
 	 //fillHisto_Njet_DataAndMC( h_QCDest_NormCombRelIso,  NormCombRelIso, this_weight );
        }
@@ -3943,7 +4017,7 @@ bool ana::EventLoop(){
      
        // Fill histograms for Z veto (AES), lowMET, 1j (already pass the normal Z veto)
 
-       if( flag_AES_pass_metcut && Njet()==1 ) {
+       if( flag_AES_pass_metcut && m_nGoodJet==1 ) {
 
 	 if(mass_ee>0) fillHistoDataAndMC( h_mass_diele_lowMet_1j, mass_ee, this_weight ); //plot m(ee) before cut
 	 if( flag_AES_pass_tighterZveto_mee ) { //event survive mee cut
@@ -4390,8 +4464,8 @@ bool ana::EventLoop(){
 	   if(CombRelIso<0) {
 	     static short mm = 0;
 	     if(mm==0) cout << "(Printing the first 20 occurances.)"<< endl;
-	     if(mm<20) {
-	       cout << "** attention: negative CombRelIso (" << CombRelIso << ")" << endl;
+	     if(mm<10) {
+	       cout << " info: negative CombRelIso: " << CombRelIso << endl;
 	       ++mm;
 	     }
 	   }
@@ -4469,7 +4543,7 @@ bool ana::EventLoop(){
      // notes: all cuts except ISO
      if ( goodrun  &&  fired_single_em  &&  nGoodEle>0  &&  this_met > METCUT &&
 	  !isMuon  &&  !isZ  &&  !isConversion  &&  !isDifferentInteraction  &&  ht >= HTCUT &&
-	  nGoodJet >=4 ) { 
+	  m_nGoodJet >=4 ) { 
        reco_hadronicTop_highestTopPT( jets, nGoodIsoEle );
      }
 
@@ -4491,7 +4565,7 @@ bool ana::EventLoop(){
 	 float DRemu = (iso_electrons.at(e)).DeltaR( muons.at(m) );
 	 if(ev<100) cout << "ev: " << ev << ", DRemu: " << DRemu << endl;
 	 fillHistoDataAndMC( h_DRemu_selE_GoodMu, DRemu, this_weight);
-	 if ( e_plus_jet_pass && Njet()>=4 ) { // pass ALL cuts
+	 if ( e_plus_jet_pass && m_nGoodJet>=4 ) { // pass ALL cuts
 	   fillHistoDataAndMC( h_DRemu_selE_GoodMu_pass, DRemu, this_weight);
 	   if( DRemu < 0.1 ) nEvent_DR_ele_muo_less_than_01 ++;
 	 }
@@ -4516,7 +4590,7 @@ bool ana::EventLoop(){
      iso_muons.clear();
      jets.clear();
      met.clear();
-     //tagged_jets.clear();
+     tagged_jets.clear();
      electrons_isoval.clear();
      electrons_isoval2.clear();
      
@@ -4546,6 +4620,17 @@ bool ana::EventLoop(){
      //-------------------------     
 
 
+     //--------------
+     //  B-tagging
+     //--------------
+     if(e_plus_jet_pass && m_nGoodJet>=4) { //pass all cuts
+       fillHistoDataAndMC( h_nbtag_TCHE, m_nbtag_TCHE, this_weight );
+       fillHistoDataAndMC( h_nbtag_TCHP, m_nbtag_TCHP, this_weight );
+       fillHistoDataAndMC( h_nbtag_SSV,  m_nbtag_SSV,  this_weight );
+     }
+     //--------------
+
+
 
    }// loop over all the events
 
@@ -4554,7 +4639,7 @@ bool ana::EventLoop(){
    //----------------------------------------------------------------------------
 
 
-
+   
 
 
    if(!IsData()){
@@ -4822,7 +4907,7 @@ bool ana::EventLoop(){
 
    }//end MC
 
-   
+      
    cout.precision(myprec); //reset precision
 
    //Print event tables with errors 
@@ -6167,8 +6252,8 @@ void ana::addHistoNjet( TH2F* h[], const string name, const string ext, const st
 void ana::fillHistoNjet(TH1F* h[], const float value, const double w) {
   
   h[6]->Fill(value, w); //allj
-  if( Njet() < 5 ) h[ Njet() ]->Fill(value, w); //=0,1,2,3,4j
-  if( Njet() > 3 ) h[5]->Fill(value, w); //4 or more jets
+  if( m_nGoodJet < 5 ) h[ m_nGoodJet ]->Fill(value, w); //=0,1,2,3,4j
+  if( m_nGoodJet > 3 ) h[5]->Fill(value, w); //4 or more jets
 }
 
 
@@ -6176,16 +6261,16 @@ void ana::fillHistoNjet(TH1F* h[], const float value, const double w) {
 void ana::fillHistoNjet(TH2F* h[], const float v1, const float v2, const double w) {
   
   h[6]->Fill(v1, v2, w); //allj
-  if( Njet() < 5 ) h[ Njet() ]->Fill(v1, v2, w); //=0,1,2,3,4j
-  if( Njet() > 3 ) h[5]->Fill(v1, v2, w); //4 or more jets
+  if( m_nGoodJet < 5 ) h[ m_nGoodJet ]->Fill(v1, v2, w); //=0,1,2,3,4j
+  if( m_nGoodJet > 3 ) h[5]->Fill(v1, v2, w); //4 or more jets
 }
 
 //-------------- my method to fill 1D histograms acc to njet, GIVEN eventClass ------------------
 void ana::fillHistoNjet2D(TH1F* h[][16], const int ec, const float value, const double w ) {
 
   h[6][ec]->Fill(value, w); //allj  
-  if( Njet() < 5 )  h[ Njet() ][ec]->Fill(value, w); //0-4j
-  if( Njet() > 3 )  h[5][ec]->Fill(value, w); //>=4j
+  if( m_nGoodJet < 5 )  h[ m_nGoodJet ][ec]->Fill(value, w); //0-4j
+  if( m_nGoodJet > 3 )  h[5][ec]->Fill(value, w); //>=4j
 }
 //----------------------------------------------------------------------------------------
 
@@ -6337,10 +6422,10 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float value, const do
     char hname[70];
 
     if(i==1) {
-      if( Njet()>=0 && Njet()<5 )  jetbin = jetname[ Njet() ]; //0j to 4j
+      if( m_nGoodJet>=0 && m_nGoodJet<5 )  jetbin = jetname[ m_nGoodJet ]; //0j to 4j
       else continue;
     }else if(i==2){
-      if( Njet()>=4) jetbin = "4mj"; //4 or more
+      if( m_nGoodJet>=4) jetbin = "4mj"; //4 or more
       else continue;
     }
 
@@ -6423,10 +6508,10 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float v1, const float
     char hname[70];
 
     if(i==1) {
-      if(Njet()>=0 && Njet()<5)  jetbin = jetname[ Njet() ]; //0j to 4j
+      if(m_nGoodJet>=0 && m_nGoodJet<5)  jetbin = jetname[ m_nGoodJet ]; //0j to 4j
       else continue;
     }else if(i==2){
-      if( Njet()>=4) jetbin = "4mj"; //4 or more
+      if( m_nGoodJet>=4) jetbin = "4mj"; //4 or more
       else continue;
     }
 
@@ -8493,7 +8578,6 @@ void ana::StudySystematics(const string name,const string name2){
 //----------------------------------------------------------------------------------------
 void ana::DrawEventPerNjetTable(const double nevent[][5][23], const vector<string>& ve) const {
 
-  //const short ntjet = 5;
   cout << setw(23) 
        << " &" << setw(13) << "0-jet"
        << " &" << setw(13) << "1-jet"
@@ -8504,7 +8588,7 @@ void ana::DrawEventPerNjetTable(const double nevent[][5][23], const vector<strin
   //cout << endl << "% E_PLUS_JET";
   cout << endl;
   
-  for(short i=0; i<11; ++i) { //nstage
+  for(short i=0; i<ncutshown; ++i) { //nstage
     printCutStage(i,ve.at(i));
     double total = 0;
     for(short j=0; j<ntjet; ++j){
@@ -8532,7 +8616,6 @@ void ana::DrawMCTypeTable(const double nevent[14][5][23], const string title, ve
   cout << "\n%------------------------------------------------------------------------\n";
   
   if(first_time) {
-    //cout << "\\\\[1em]\n" << endl;
     cout << "\\begin{tabular}{|l|rrrrrr|r|}"<< endl;
     cout << "\\hline"<< endl;
   }
@@ -8556,11 +8639,18 @@ void ana::DrawMCTypeTable(const double nevent[14][5][23], const string title, ve
   short njbegin = 0;
   //  short ntjet = 5;
 
-  for(short i=0;i<11;++i){//loop over cuts (up to HT)
+  // 16 Feb 2010: insert 4jet cut
+  ve.insert(ve.begin()+m_muonCutNum+1, Fourjets);
+  short p=0;
+
+  for(short i=0; i<ncutshown; ++i){ //loop over cuts
 
     totalA = 0; //reset to zero for each cut
-    printCutStage(i, ve.at(i));
     totalT = 0;
+       
+    printCutStage(p, ve.at(p));
+    if(ve.at(p)==Fourjets)  { njbegin = 4; i--; }
+    p++;
 
     //Signal
     for(short k=1;k<11;++k){ //loop over ttbar mc types
@@ -8606,13 +8696,15 @@ void ana::DrawMCTypeTable(const double nevent[14][5][23], const string title, ve
     //print total column:
     cout << " & " << setw(13) << fixed << totalA << " \\\\" <<endl;
     
+    /*
     //after muon-veto, place nj>=4 cut 
     if(ve.at(i)=="!MUON"){
       njbegin = 4; 
       ve.at(i) = "$\\ge$4 jets";
       i--;
     }
-       
+    */
+ 
   }// end loop over cut (nstage)
   cout << "\\hline" << endl;
   if(!first_time) cout << "\\end{tabular}\\\\[5mm]" << endl;
@@ -8640,10 +8732,16 @@ void ana::DrawSignalBGTable(const double nevent[][5][23], vector<string> ve ) co
   short njbegin = 0;
   //short ntjet = 5;
 
-  for(short i=0; i<11; ++i){ //loop over cuts
+  // 15 Feb 2010: insert 4jet cut
+  ve.insert(ve.begin()+m_muonCutNum+1, Fourjets);
+  short p=0;
+
+  for(short i=0; i<ncutshown; ++i){ //loop over cuts
     
     double total_sig = 0;
     double total_bkg = 0;
+   
+    if(ve.at(p)==Fourjets){ njbegin = 4; i--; }
 
     //Total Signal
     for(short k=1; k<11; ++k){ //loop over ttbar mc types (code 1 to 10)
@@ -8656,7 +8754,8 @@ void ana::DrawSignalBGTable(const double nevent[][5][23], vector<string> ve ) co
     }
 
     //Print cut, S+B, S, B
-    printCutStage(i, ve.at(i));
+    printCutStage(p, ve.at(p));
+    p++;
     cout << " & " << setw(13) << fixed << total_sig + total_bkg;
     cout << " & " << setw(13) << fixed << total_sig;
     cout << " & " << setw(13) << fixed << total_bkg;
@@ -8669,7 +8768,7 @@ void ana::DrawSignalBGTable(const double nevent[][5][23], vector<string> ve ) co
     cout << " \\\\" << endl;
   
     // after mu-veto, place nj>=4 cut
-    if(ve.at(i)=="!MUON"){ njbegin = 4; ve.at(i) = "$\\ge$4 jets"; i--; }
+    //if(ve.at(i)=="!MUON"){ njbegin = 4; ve.at(i) = "$\\ge$4 jets"; i--; }
 
   }// end loop over cut (nstage)
 
@@ -9116,5 +9215,72 @@ bool ana::passHLT() const {
 string ana::printTimeNow() const {
   TDatime now;
   return now.AsSQLString();
+}
+//---------------------------------------------------------------------------------------------
+
+void ana::DoBTagging(vector<TLorentzVector>& electrons){
+  // .. TO DO ...
+  // for each btag algo, find nbjets, fill histo
+  // pick one algo for report in cut table.
+  m_nbtag_TCHE = 0;
+  m_nbtag_TCHP = 0;
+  m_nbtag_SSV  = 0;
+  //int nbtag_softMu = 0;
+
+     
+  // 16 Feb 2010: btag	   
+  //--------------------
+  // jets_btag_TC_highPur
+  // jets_btag_TC_highEff
+  // jets_btag_TC_secVertex = simpleSecondaryVertex
+  // jets_btag_TC_softMuon
+  // https://twiki.cern.ch/twiki/bin/view/CMS/BtagOctober09ExerciseDetails#Working_Point_definition 
+  // Operating points, see Francisco's talk: http://indico.cern.ch/getFile.py/access?contribId=1&resId=0&materialId=slides&confId=69434
+  // TCHE M = 3.3 (7TeV), 3.99 (10TeV)
+  // TCHP M = 1.93 (7TeV), 2.17(10TeV)
+  // SSV M  = 1.74 (710TeV) 2.02 (10TeV)
+  //-------------------------
+  float discut_TCHE = 3.3; //Medium (mistagEff=1%) 7 TeV
+  float discut_TCHP = 1.93; //Medium 
+  float discut_SSV = 1.74;// Medium
+  if(m_LHCEnergyInTeV==10){ 
+    discut_TCHE = 3.99;
+    discut_TCHP = 2.17;
+    discut_SSV  = 2.02;
+  }
+ 
+  // Loop over all jets (Default AK5 Calo Jets)
+  for(unsigned int i=0; i< Njets; ++i){
+ 
+   if ( jets_pt->at(i) > JET_PTCUT   &&
+	 fabs(jets_eta->at(i)) < 2.4  &&
+	 jets_emf->at(i) > 0.01 )  {
+
+      TLorentzVector thisjet(jets_px->at(i),jets_py->at(i),jets_pz->at(i),jets_energy->at(i));
+
+      if( jetNotNearElectron(thisjet, electrons) ) {	 // Require DR(e,j)>0.3
+	if(jets_btag_TC_highEff->at(i) > discut_TCHE) m_nbtag_TCHE++;
+	if(jets_btag_TC_highPur->at(i) > discut_TCHP) m_nbtag_TCHP++;
+	if(jets_btag_secVertex->at(i)  > discut_SSV)  m_nbtag_SSV++;
+      }//DR
+    }//quality cuts
+  }
+  /*
+      fillHistoDataAndMC( h_nbtag_TCHE, nbtag_TCHE, this_weight );
+      fillHistoDataAndMC( h_nbtag_TCHP, nbtag_TCHP, this_weight );
+      fillHistoDataAndMC( h_nbtag_SSV,  nbtag_SSV,  this_weight );
+     
+      h_nbtag_TCHE->Fill(nbtag_TCHE); //track counting
+      h_nbtag_TCHP->Fill(nbtag_TCHP);
+      h_nbtag_SSV->Fill(nbtag_SSW);
+  */
+}
+//---------------------------------------------------------------------------------------------
+
+bool ana::jetNotNearElectron(TLorentzVector& j, vector<TLorentzVector>& e) const {
+  for(unsigned int i=0; i<e.size(); ++i){
+    if( j.DeltaR(e[i]) < 0.3 ) return false; //disregard this jet
+  }
+  return true;
 }
 //-- eof ------------------------------------------------------------------------------------------
