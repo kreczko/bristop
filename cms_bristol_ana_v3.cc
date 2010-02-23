@@ -1,6 +1,7 @@
 //#====================================================#
 //# Last update:
 //
+// 23 Feb 2010: fix nstage (16->13).
 // 22 Feb 2010: add barrel/endcap plots for iso-met scatter plot (in NES).
 // 17 Feb 2010: fix btag plot. Replace nGoodJet & Njet() with m_nGoodJet.
 // 16 Feb 2010: Add SC6 and KT7. Add btag plots. Take out HT cut. Fix ("nfile =" -> "nfile +=").
@@ -2148,7 +2149,7 @@ bool ana::EventLoop(){
    histf->cd();
 
    const int nmctype(23); //extend to include wj, zj, QCD, VQQ, single top
-   const int nstage(16); //add >=1Tele
+   const int nstage(13); //add >=1Tele
    //// const int ntjet(5);    //made as global
  
    // Collect event count after selection
