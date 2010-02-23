@@ -1,6 +1,7 @@
 //#====================================================#
 //# Last update:
 //
+// 22 Feb 2010: add barrel/endcap plots for iso-met scatter plot (in NES).
 // 17 Feb 2010: fix btag plot. Replace nGoodJet & Njet() with m_nGoodJet.
 // 16 Feb 2010: Add SC6 and KT7. Add btag plots. Take out HT cut. Fix ("nfile =" -> "nfile +=").
 //
@@ -1561,6 +1562,31 @@ bool ana::EventLoop(){
    TH2F *h_QCDest_isoVmet_NES_Wjet[nLevel][7];
    TH2F *h_QCDest_isoVmet_NES_Zjet[nLevel][7];
    TH2F *h_QCDest_isoVmet_NES_singleTop[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_barrel[nLevel][7];  //ALL (barrel)
+   TH2F *h_QCDest_isoVmet_NES_barrel_QCD[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_barrel_bce1[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_barrel_bce2[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_barrel_bce3[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_barrel_enri1[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_barrel_enri2[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_barrel_enri3[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_barrel_ttbar[nLevel][7]; 
+   TH2F *h_QCDest_isoVmet_NES_barrel_Wjet[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_barrel_Zjet[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_barrel_singleTop[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_endcap[nLevel][7];  //ALL (endcap)
+   TH2F *h_QCDest_isoVmet_NES_endcap_QCD[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_endcap_bce1[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_endcap_bce2[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_endcap_bce3[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_endcap_enri1[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_endcap_enri2[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_endcap_enri3[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_endcap_ttbar[nLevel][7]; 
+   TH2F *h_QCDest_isoVmet_NES_endcap_Wjet[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_endcap_Zjet[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_endcap_singleTop[nLevel][7];
+
    // scatter plot: unweighted (for each MC)
    TH2F *h_QCDest_isoVmet_NES_uw_QCD[nLevel][7];
    TH2F *h_QCDest_isoVmet_NES_uw_bce1[nLevel][7];
@@ -1573,6 +1599,28 @@ bool ana::EventLoop(){
    TH2F *h_QCDest_isoVmet_NES_uw_Wjet[nLevel][7];
    TH2F *h_QCDest_isoVmet_NES_uw_Zjet[nLevel][7];
    TH2F *h_QCDest_isoVmet_NES_uw_singleTop[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_barrel_QCD[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_barrel_bce1[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_barrel_bce2[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_barrel_bce3[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_barrel_enri1[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_barrel_enri2[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_barrel_enri3[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_barrel_ttbar[nLevel][7]; 
+   TH2F *h_QCDest_isoVmet_NES_uw_barrel_Wjet[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_barrel_Zjet[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_barrel_singleTop[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_endcap_QCD[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_endcap_bce1[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_endcap_bce2[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_endcap_bce3[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_endcap_enri1[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_endcap_enri2[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_endcap_enri3[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_endcap_ttbar[nLevel][7]; 
+   TH2F *h_QCDest_isoVmet_NES_uw_endcap_Wjet[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_endcap_Zjet[nLevel][7];
+   TH2F *h_QCDest_isoVmet_NES_uw_endcap_singleTop[nLevel][7];
 
    // reliso, no met cut
    TH1F *h_QCDest_CombRelIso_NES[nLevel][7];  //ALL
@@ -1702,7 +1750,11 @@ bool ana::EventLoop(){
      for (int iLevel=0; iLevel<nLevel; ++iLevel) {
 
        const string aname_sc   = "QCDest_isoVmet_NES_"                 + levelno[iLevel];
+       const string aname_scBA = "QCDest_isoVmet_NES_barrel_"          + levelno[iLevel];
+       const string aname_scEN = "QCDest_isoVmet_NES_endcap_"          + levelno[iLevel];
        const string aname_sc2  = "QCDest_isoVmet_NES_uw_"              + levelno[iLevel];//unweighted
+       const string aname_sc2BA = "QCDest_isoVmet_NES_uw_barrel_"      + levelno[iLevel];//unweighted
+       const string aname_sc2EN = "QCDest_isoVmet_NES_uw_endcap_"      + levelno[iLevel];//unweighted
        const string aname      = "QCDest_CombRelIso_NES_"              + levelno[iLevel];
        const string anameBA    = "QCDest_CombRelIso_NES_barrel_"       + levelno[iLevel];
        const string anameEN    = "QCDest_CombRelIso_NES_endcap_"       + levelno[iLevel];
@@ -1714,7 +1766,11 @@ bool ana::EventLoop(){
        const string aname_hiEN = "QCDest_CombRelIso_NES_hiMET_endcap_" + levelno[iLevel];
 
        const string info_sc   = Form("RelIso v MET (NES_%s)",        levelinfo[iLevel].c_str() );
+       const string info_scBA = Form("RelIso v MET (NES_%s barrel)", levelinfo[iLevel].c_str() );
+       const string info_scEN = Form("RelIso v MET (NES_%s endcap)", levelinfo[iLevel].c_str() );
        const string info_sc2  = Form("RelIso v MET (NES_%s uw)",     levelinfo[iLevel].c_str() );//unweighted
+       const string info_sc2BA = Form("RelIso v MET (NES_%s uw barrel)",  levelinfo[iLevel].c_str() );//unweighted
+       const string info_sc2EN = Form("RelIso v MET (NES_%s uw endcap)",  levelinfo[iLevel].c_str() );//unweighted
        const string info      = Form("RelIso (NES_%s)",              levelinfo[iLevel].c_str() );
        const string infoBA    = Form("RelIso (NES_%s barrel)",       levelinfo[iLevel].c_str() );
        const string infoEN    = Form("RelIso (NES_%s endcap)",       levelinfo[iLevel].c_str() );
@@ -1729,6 +1785,8 @@ bool ana::EventLoop(){
        const int nBin = 200; //reliso
        const float xUp = 2.0; //max
        addHistoNjet(h_QCDest_isoVmet_NES[iLevel],                 aname_sc,   "", info_sc,   nb,0,2,nb,0,100);
+       addHistoNjet(h_QCDest_isoVmet_NES_barrel[iLevel],          aname_scBA, "", info_scBA, nb,0,2,nb,0,100);
+       addHistoNjet(h_QCDest_isoVmet_NES_endcap[iLevel],          aname_scEN, "", info_scEN, nb,0,2,nb,0,100);
        addHistoNjet(h_QCDest_CombRelIso_NES[iLevel],              aname,      "", info,      nBin,0,xUp);
        addHistoNjet(h_QCDest_CombRelIso_NES_barrel[iLevel],       anameBA,    "", infoBA,    nBin,0,xUp);
        addHistoNjet(h_QCDest_CombRelIso_NES_endcap[iLevel],       anameEN,    "", infoEN,    nBin,0,xUp);
@@ -1752,18 +1810,68 @@ bool ana::EventLoop(){
 	 addHistoNjet(h_QCDest_isoVmet_NES_Wjet[iLevel],  aname_sc, "__Wjet",  info_sc+" (W+jets)", nb,0,2,nb,0,100);
 	 addHistoNjet(h_QCDest_isoVmet_NES_Zjet[iLevel],  aname_sc, "__Zjet",  info_sc+" (Z+jets)", nb,0,2,nb,0,100);
 	 addHistoNjet(h_QCDest_isoVmet_NES_singleTop[iLevel],aname_sc, "__singleTop", info_sc+" (single top)", nb,0,2,nb,0,100);
+
+	 addHistoNjet(h_QCDest_isoVmet_NES_barrel_QCD[iLevel],   aname_scBA, "__QCD",   info_scBA+" (QCD)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_barrel_bce1[iLevel],  aname_scBA, "__bce1",  info_scBA+" (bce1)",nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_barrel_bce2[iLevel],  aname_scBA, "__bce2",  info_scBA+" (bce2)",nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_barrel_bce3[iLevel],  aname_scBA, "__bce3",  info_scBA+" (bce3)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_barrel_enri1[iLevel], aname_scBA, "__enri1", info_scBA+" (enri1)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_barrel_enri2[iLevel], aname_scBA, "__enri2", info_scBA+" (enri2)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_barrel_enri3[iLevel], aname_scBA, "__enri3", info_scBA+" (enri3)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_barrel_ttbar[iLevel], aname_scBA, "__ttbar", info_scBA+" (ttbar)",  nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_barrel_Wjet[iLevel],  aname_scBA, "__Wjet",  info_scBA+" (W+jets)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_barrel_Zjet[iLevel],  aname_scBA, "__Zjet",  info_scBA+" (Z+jets)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_barrel_singleTop[iLevel],aname_scBA, "__singleTop", info_scBA+" (single top)", nb,0,2,nb,0,100);
+
+	 addHistoNjet(h_QCDest_isoVmet_NES_endcap_QCD[iLevel],      aname_scEN, "__QCD",   info_scEN+" (QCD)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_endcap_bce1[iLevel],     aname_scEN, "__bce1",  info_scEN+" (bce1)",nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_endcap_bce2[iLevel],     aname_scEN, "__bce2",  info_scEN+" (bce2)",nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_endcap_bce3[iLevel],     aname_scEN, "__bce3",  info_scEN+" (bce3)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_endcap_enri1[iLevel],    aname_scEN, "__enri1", info_scEN+" (enri1)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_endcap_enri2[iLevel],    aname_scEN, "__enri2", info_scEN+" (enri2)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_endcap_enri3[iLevel],    aname_scEN, "__enri3", info_scEN+" (enri3)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_endcap_ttbar[iLevel],    aname_scEN, "__ttbar", info_scEN+" (ttbar)",  nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_endcap_Wjet[iLevel],     aname_scEN, "__Wjet",  info_scEN+" (W+jets)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_endcap_Zjet[iLevel],     aname_scEN, "__Zjet",  info_scEN+" (Z+jets)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_endcap_singleTop[iLevel],aname_scEN, "__singleTop", info_scEN+" (single top)", nb,0,2,nb,0,100);
+
 	 // scatter plot, iso:met (unweighted, for each MC)
-	 addHistoNjet(h_QCDest_isoVmet_NES_uw_QCD[iLevel],   aname_sc2, "__QCD",   info_sc2+" (QCD)", nb,0,2,nb,0,100);
-	 addHistoNjet(h_QCDest_isoVmet_NES_uw_bce1[iLevel],  aname_sc2, "__bce1",  info_sc2+" (bce1)",nb,0,2,nb,0,100);
-	 addHistoNjet(h_QCDest_isoVmet_NES_uw_bce2[iLevel],  aname_sc2, "__bce2",  info_sc2+" (bce2)",nb,0,2,nb,0,100);
-	 addHistoNjet(h_QCDest_isoVmet_NES_uw_bce3[iLevel],  aname_sc2, "__bce3",  info_sc2+" (bce3)", nb,0,2,nb,0,100);
-	 addHistoNjet(h_QCDest_isoVmet_NES_uw_enri1[iLevel], aname_sc2, "__enri1", info_sc2+" (enri1)", nb,0,2,nb,0,100);
-	 addHistoNjet(h_QCDest_isoVmet_NES_uw_enri2[iLevel], aname_sc2, "__enri2", info_sc2+" (enri2)", nb,0,2,nb,0,100);
-	 addHistoNjet(h_QCDest_isoVmet_NES_uw_enri3[iLevel], aname_sc2, "__enri3", info_sc2+" (enri3)", nb,0,2,nb,0,100);
-	 addHistoNjet(h_QCDest_isoVmet_NES_uw_ttbar[iLevel], aname_sc2, "__ttbar", info_sc2+" (ttbar)",  nb,0,2,nb,0,100);
-	 addHistoNjet(h_QCDest_isoVmet_NES_uw_Wjet[iLevel],  aname_sc2, "__Wjet",  info_sc2+" (W+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet(h_QCDest_isoVmet_NES_uw_Zjet[iLevel],  aname_sc2, "__Zjet",  info_sc2+" (Z+jets)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_QCD[iLevel],      aname_sc2, "__QCD",   info_sc2+" (QCD)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_bce1[iLevel],     aname_sc2, "__bce1",  info_sc2+" (bce1)",nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_bce2[iLevel],     aname_sc2, "__bce2",  info_sc2+" (bce2)",nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_bce3[iLevel],     aname_sc2, "__bce3",  info_sc2+" (bce3)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_enri1[iLevel],    aname_sc2, "__enri1", info_sc2+" (enri1)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_enri2[iLevel],    aname_sc2, "__enri2", info_sc2+" (enri2)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_enri3[iLevel],    aname_sc2, "__enri3", info_sc2+" (enri3)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_ttbar[iLevel],    aname_sc2, "__ttbar", info_sc2+" (ttbar)",  nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_Wjet[iLevel],     aname_sc2, "__Wjet",  info_sc2+" (W+jets)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_Zjet[iLevel],     aname_sc2, "__Zjet",  info_sc2+" (Z+jets)", nb,0,2,nb,0,100);
 	 addHistoNjet(h_QCDest_isoVmet_NES_uw_singleTop[iLevel],aname_sc2, "__singleTop", info_sc2+" (single top)", nb,0,2,nb,0,100);
+
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_barrel_QCD[iLevel],   aname_sc2BA, "__QCD",   info_sc2BA+" (QCD)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_barrel_bce1[iLevel],  aname_sc2BA, "__bce1",  info_sc2BA+" (bce1)",nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_barrel_bce2[iLevel],  aname_sc2BA, "__bce2",  info_sc2BA+" (bce2)",nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_barrel_bce3[iLevel],  aname_sc2BA, "__bce3",  info_sc2BA+" (bce3)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_barrel_enri1[iLevel], aname_sc2BA, "__enri1", info_sc2BA+" (enri1)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_barrel_enri2[iLevel], aname_sc2BA, "__enri2", info_sc2BA+" (enri2)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_barrel_enri3[iLevel], aname_sc2BA, "__enri3", info_sc2BA+" (enri3)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_barrel_ttbar[iLevel], aname_sc2BA, "__ttbar", info_sc2BA+" (ttbar)",  nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_barrel_Wjet[iLevel],  aname_sc2BA, "__Wjet",  info_sc2BA+" (W+jets)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_barrel_Zjet[iLevel],  aname_sc2BA, "__Zjet",  info_sc2BA+" (Z+jets)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_barrel_singleTop[iLevel],aname_sc2BA, "__singleTop", info_sc2BA+" (single top)", nb,0,2,nb,0,100);
+
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_endcap_QCD[iLevel],   aname_sc2EN, "__QCD",   info_sc2EN+" (QCD)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_endcap_bce1[iLevel],  aname_sc2EN, "__bce1",  info_sc2EN+" (bce1)",nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_endcap_bce2[iLevel],  aname_sc2EN, "__bce2",  info_sc2EN+" (bce2)",nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_endcap_bce3[iLevel],  aname_sc2EN, "__bce3",  info_sc2EN+" (bce3)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_endcap_enri1[iLevel], aname_sc2EN, "__enri1", info_sc2EN+" (enri1)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_endcap_enri2[iLevel], aname_sc2EN, "__enri2", info_sc2EN+" (enri2)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_endcap_enri3[iLevel], aname_sc2EN, "__enri3", info_sc2EN+" (enri3)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_endcap_ttbar[iLevel], aname_sc2EN, "__ttbar", info_sc2EN+" (ttbar)",  nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_endcap_Wjet[iLevel],  aname_sc2EN, "__Wjet",  info_sc2EN+" (W+jets)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_endcap_Zjet[iLevel],  aname_sc2EN, "__Zjet",  info_sc2EN+" (Z+jets)", nb,0,2,nb,0,100);
+	 addHistoNjet(h_QCDest_isoVmet_NES_uw_endcap_singleTop[iLevel],aname_sc2EN, "__singleTop", info_sc2EN+" (single top)", nb,0,2,nb,0,100);
+
 
 	 // a) no met cut
 	 addHistoNjet(h_QCDest_CombRelIso_NES_QCD[iLevel],   aname, "__QCD",   info+" (QCD)", nBin,0,xUp);       
@@ -2291,7 +2399,7 @@ bool ana::EventLoop(){
      if ( IsData()==false ) {
 
        if ( RunOnMixedMC ||    //check once per event
-	    !RunOnMixedMC && lflag==0 ) { //check once per input file
+	    (!RunOnMixedMC && lflag==0) ) { //check once per input file
 
 	 // Reset flags
 	 isTTbar = false;
@@ -4318,9 +4426,11 @@ bool ana::EventLoop(){
 	   string etaside = "barrel";
 	   if( fabs(els_eta->at(ie)) > 1.5 ) { etaside = "endcap"; }
 
-	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1", tmpRelIso, this_met, this_weight );
-	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1", tmpRelIso, this_met, 1 );//unweighted
-	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1", tmpRelIso, this_weight ); //no met cut
+	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1",                tmpRelIso, this_met, this_weight );
+	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1",    tmpRelIso, this_met, this_weight );
+	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1",             tmpRelIso, this_met, 1 );//unweighted
+	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1", tmpRelIso, this_met, 1 );//unweighted
+	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1",             tmpRelIso, this_weight ); //no met cut
 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1", tmpRelIso, this_weight );
 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1", tmpRelIso, this_weight );
 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1", tmpRelIso, this_weight );
@@ -4332,9 +4442,11 @@ bool ana::EventLoop(){
 	       ( fabs(els_eta->at(ie)) < 1.442 || fabs(els_eta->at(ie)) > 1.56 ) ) {
 
 	   
-	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1b", tmpRelIso, this_met, this_weight );
-	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1b", tmpRelIso, this_met, 1 );//unweighted
-	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1b", tmpRelIso, this_weight ); //no met cut
+	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1b",                tmpRelIso, this_met, this_weight );
+	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1b",    tmpRelIso, this_met, this_weight );
+	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1b",             tmpRelIso, this_met, 1 );//unweighted
+	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1b", tmpRelIso, this_met, 1 );//unweighted
+	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1b",             tmpRelIso, this_weight ); //no met cut
 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1b", tmpRelIso, this_weight );
 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1b", tmpRelIso, this_weight );
 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1b", tmpRelIso, this_weight );
@@ -4346,9 +4458,11 @@ bool ana::EventLoop(){
 
 	     if( fabs(d0_corrected) < 0.02 ){
 	     
-	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1c", tmpRelIso, this_met, this_weight );
-	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1c", tmpRelIso, this_met, 1 );//unweighted
-	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1c", tmpRelIso, this_weight );
+	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1c",                tmpRelIso, this_met, this_weight );
+	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1c",    tmpRelIso, this_met, this_weight );
+	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1c",             tmpRelIso, this_met, 1 );//unweighted
+	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1c", tmpRelIso, this_met, 1 );//unweighted
+	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1c",             tmpRelIso, this_weight );
 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1c", tmpRelIso, this_weight ); 
 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1c", tmpRelIso, this_weight );
 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1c", tmpRelIso, this_weight ); 
@@ -4394,41 +4508,51 @@ bool ana::EventLoop(){
 	       pass_eid = pass_eid_c0 && pass_eid_c1 &&  pass_eid_c2 && pass_eid_c3 && pass_eid_c4; //all 5
 	     
 	       if(pass_eid_c1) {
-		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d1", tmpRelIso, this_met, this_weight );
-		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d1", tmpRelIso, this_met, 1 );
-		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d1", tmpRelIso, this_weight );
+		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d1",                tmpRelIso, this_met, this_weight );
+		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1d1",    tmpRelIso, this_met, this_weight );
+		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d1",             tmpRelIso, this_met, 1 );
+		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1d1", tmpRelIso, this_met, 1 );
+		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d1",             tmpRelIso, this_weight );
 		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1d1", tmpRelIso, this_weight );
 		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1d1", tmpRelIso, this_weight );
 		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1d1", tmpRelIso, this_weight );
 
 		 if(pass_eid_c2) {
-		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d2", tmpRelIso, this_met, this_weight );
-		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d2", tmpRelIso, this_met, 1 );
-		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d2", tmpRelIso, this_weight );
+		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d2",                tmpRelIso, this_met, this_weight );
+		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1d2",   tmpRelIso, this_met, this_weight );
+		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d2",             tmpRelIso, this_met, 1 );
+		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1d2", tmpRelIso, this_met, 1 );
+		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d2",             tmpRelIso, this_weight );
 		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1d2", tmpRelIso, this_weight );
 		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1d2", tmpRelIso, this_weight );
 		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1d2", tmpRelIso, this_weight );
 
 		   if(pass_eid_c3) {
-		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d3", tmpRelIso, this_met, this_weight );
-		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d3", tmpRelIso, this_met, 1 );
-		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d3", tmpRelIso, this_weight );
+		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d3",                tmpRelIso, this_met, this_weight );
+		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1d3",    tmpRelIso, this_met, this_weight );
+		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d3",             tmpRelIso, this_met, 1 );
+		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1d3", tmpRelIso, this_met, 1 );
+		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d3",             tmpRelIso, this_weight );
 		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1d3", tmpRelIso, this_weight );
 		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1d3", tmpRelIso, this_weight );
 		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1d3", tmpRelIso, this_weight ); 
 
 		     if(pass_eid_c4) {
-		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d4", tmpRelIso, this_met, this_weight );
-		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d4", tmpRelIso, this_met, 1 );
-		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d4", tmpRelIso, this_weight );
+		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d4",                tmpRelIso, this_met, this_weight );
+		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1d4",    tmpRelIso, this_met, this_weight );
+		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d4",             tmpRelIso, this_met, 1 );
+		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1d4", tmpRelIso, this_met, 1 );
+		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d4",             tmpRelIso, this_weight );
 		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1d4", tmpRelIso, this_weight );
 		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1d4", tmpRelIso, this_weight );
 		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1d4", tmpRelIso, this_weight );
 
 		       if(pass_eid_c0) {
-			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d5", tmpRelIso, this_met, this_weight );
-			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d5", tmpRelIso, this_met, 1 );
-			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d5", tmpRelIso, this_weight );
+			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d5",                tmpRelIso, this_met, this_weight );
+			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1d5",    tmpRelIso, this_met, this_weight );
+			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d5",             tmpRelIso, this_met, 1 );
+			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1d5", tmpRelIso, this_met, 1 );
+			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d5",             tmpRelIso, this_weight );
 			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1d5", tmpRelIso, this_weight );
 			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1d5", tmpRelIso, this_weight );
 			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1d5", tmpRelIso, this_weight );
@@ -4472,9 +4596,11 @@ bool ana::EventLoop(){
 	 
 	   if(m_debug) cout << "-> Filling Reliso NES histograms, L2" << endl;
 
-	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L2", CombRelIso, this_met, this_weight );
-	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L2", CombRelIso, this_met, 1 );//unweighted
-	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L2", CombRelIso, this_weight );
+	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L2",                CombRelIso, this_met, this_weight );
+	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L2",    CombRelIso, this_met, this_weight );
+	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L2",             CombRelIso, this_met, 1 );//unweighted
+	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L2", CombRelIso, this_met, 1 );//unweighted
+	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L2",             CombRelIso, this_weight );
 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L2", CombRelIso, this_weight );
 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L2", CombRelIso, this_weight );
 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L2", CombRelIso, this_weight );
@@ -4484,9 +4610,11 @@ bool ana::EventLoop(){
 
 	     if(m_debug) cout << "-> Filling Reliso NES histograms, L3" << endl;
 
-	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L3", CombRelIso, this_met, this_weight );
-	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L3", CombRelIso, this_met, 1 );//unweighted
-	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L3", CombRelIso, this_weight );
+	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L3",                CombRelIso, this_met, this_weight );
+	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L3",    CombRelIso, this_met, this_weight );
+	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L3",             CombRelIso, this_met, 1 );//unweighted
+	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L3", CombRelIso, this_met, 1 );//unweighted
+	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L3",             CombRelIso, this_weight );
 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L3", CombRelIso, this_weight );
 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L3", CombRelIso, this_weight );
 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L3", CombRelIso, this_weight );
@@ -4495,9 +4623,11 @@ bool ana::EventLoop(){
 
 	       if(m_debug) cout << "-> Filling Reliso NES histograms, L4" << endl;
 
-	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L4", CombRelIso, this_met, this_weight );
-	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L4", CombRelIso, this_met, 1 );//unweighted
-	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L4", CombRelIso, this_weight );
+	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L4",                CombRelIso, this_met, this_weight );
+	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L4",    CombRelIso, this_met, this_weight );
+	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L4",             CombRelIso, this_met, 1 );//unweighted
+	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L4", CombRelIso, this_met, 1 );//unweighted
+	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L4",             CombRelIso, this_weight );
 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L4", CombRelIso, this_weight );
 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L4", CombRelIso, this_weight );
 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L4", CombRelIso, this_weight );
