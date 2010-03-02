@@ -1,6 +1,7 @@
 //#====================================================#
 //# Last update:
 //
+// 25 Feb 2010: add Data_njetsVcuts TH2.
 // 23 Feb 2010: fix nstage (16->13).
 // 22 Feb 2010: add barrel/endcap plots for iso-met scatter plot (in NES).
 // 17 Feb 2010: fix btag plot. Replace nGoodJet & Njet() with m_nGoodJet.
@@ -2159,6 +2160,7 @@ bool ana::EventLoop(){
    TH2D *Zjets_njetsVcuts  = new TH2D("Zjets_njetsVcuts", "Events V Cuts (Z+jets)",ntjet+1, 0, ntjet+1, nstage, 0, nstage);
    TH2D *VQQ_njetsVcuts    = new TH2D("VQQ_njetsVcuts",   "Events V Cuts (VQQ)",  ntjet+1, 0, ntjet+1, nstage, 0, nstage);
    TH2D *SingleTop_njetsVcuts = new TH2D("SingleTop_njetsVcuts", "Events V Cuts (Single top)",ntjet+1, 0, ntjet+1, nstage, 0, nstage);
+   TH2D *Data_njetsVcuts = new TH2D("Data_njetsVcuts", "Events V Cuts (Data)", ntjet+1, 0, ntjet+1, nstage, 0, nstage);
 
    // Histogram to store signal eff.acc
    TH1D *SignalVars = new TH1D("SignalVars","Signal acceptance and efficiency",4,0,4);
@@ -4841,10 +4843,17 @@ bool ana::EventLoop(){
      }
    }
 
-   // Fill histograms (event count tables) (for MC only)
-   if(!IsData()) {
-     for(short i=0; i<nstage; ++i) {
-       for(short j=0; j<ntjet; ++j) {
+   // Fill histograms (event count tables)
+
+   for(short i=0; i<nstage; ++i) {
+     for(short j=0; j<ntjet; ++j) {
+
+       // *** All events ***
+       Data_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][0]); //NEW, 3rd dimension is [0] for data.
+       Data_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][0]); //sum for all jets
+
+       // *** MC ***
+       if(!IsData()) {
 	 if ( mc_sample_has_ttbar ) {//MC contains Signal
 	   for(short k=1; k<11; ++k){
 	     Signal_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][k]);
@@ -4875,17 +4884,19 @@ bool ana::EventLoop(){
 	     SingleTop_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][k]);//sum for all jets
 	   }
 	 }
-       }
+       }//end MC
      }
-   }//end MC
+   }
+
 
    // Set labels of the histograms (cuts and Njet)
-   SetHistoLabelCutNjet( Signal_njetsVcuts, ve );
-   SetHistoLabelCutNjet( QCD_njetsVcuts,    ve );
-   SetHistoLabelCutNjet( Wjets_njetsVcuts,  ve );
-   SetHistoLabelCutNjet( Zjets_njetsVcuts,  ve );
-   SetHistoLabelCutNjet( VQQ_njetsVcuts,    ve );
+   SetHistoLabelCutNjet( Signal_njetsVcuts,     ve );
+   SetHistoLabelCutNjet( QCD_njetsVcuts,        ve );
+   SetHistoLabelCutNjet( Wjets_njetsVcuts,      ve );
+   SetHistoLabelCutNjet( Zjets_njetsVcuts,      ve );
+   SetHistoLabelCutNjet( VQQ_njetsVcuts,        ve );
    SetHistoLabelCutNjet( SingleTop_njetsVcuts,  ve );
+   SetHistoLabelCutNjet( Data_njetsVcuts,       ve );
 
 
 
