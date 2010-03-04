@@ -1,6 +1,7 @@
 //#====================================================#
 //# Last update:
 //
+//  3 Mar 2010: add DPhiMetJet, genMET plots.
 // 25 Feb 2010: add Data_njetsVcuts TH2.
 // 23 Feb 2010: fix nstage (16->13).
 // 22 Feb 2010: add barrel/endcap plots for iso-met scatter plot (in NES).
@@ -931,6 +932,8 @@ void ana::ReadSelectedBranches() const {
    chain->SetBranchStatus("mets_phi_muonCor",1);
    chain->SetBranchStatus("mets_et",1);
    chain->SetBranchStatus("mets_phi",1);
+   chain->SetBranchStatus("mets_gen_et",1);
+   chain->SetBranchStatus("mets_gen_phi",1);
    /*
    if(m_metAlgo=="Default") { //muCor caloMET
      chain->SetBranchStatus("Nmets",1);
@@ -1121,7 +1124,6 @@ bool ana::EventLoop(){
    TH1F *h_DRemu_selE_GoodMu_pass[nclass];
    addHistoDataAndMC( h_DRemu_selE_GoodMu,      "DRemu_selE_GoodMu",      "#DeltaR(e,#mu) (selE,GoodMu)", 60,0,6);
    addHistoDataAndMC( h_DRemu_selE_GoodMu_pass, "DRemu_selE_GoodMu_pass", "#DeltaR(e,#mu) (selE,GoodMu) (passAllCut)", 60,0,6);
-
 
 
    //==================================
@@ -1366,7 +1368,7 @@ bool ana::EventLoop(){
    pass_met->Sumw2();
 
    //New directories for kinematics plots
-   TDirectory *dir_HT  = histf->mkdir("HT","HT after all but HT cut");
+   TDirectory *dir_HT  = histf->mkdir("HT", "HT after all but HT cut");
    TDirectory *dir_MET = histf->mkdir("MET","MET after all but MET cut");
    TH1F *h_ht[7][nclass];
    TH1F *h_met[7][nclass]; //user-chosen MET
@@ -1393,28 +1395,54 @@ bool ana::EventLoop(){
    TH1F *h_met_ante_ISO[nclass]; //user-chosen MET
    TH1F *h_met_ante_ISO_mu[nclass];
    TH1F *h_met_ante_ISO_t1[nclass];
-   addHistoDataAndMC( h_met_ante_ISO,    "met_ante_ISO", "Missing ET (1 GooEle, before ISO cut)", 200, 0, 200);
-   addHistoDataAndMC( h_met_ante_ISO_mu, "met_ante_ISO_mu", "muMET (1 GooEle, before ISO cut)", 200, 0, 200);
-   addHistoDataAndMC( h_met_ante_ISO_t1, "met_ante_ISO_t1", "Type1MET (1 GooEle, before ISO cut)", 200, 0, 200);
-   //   histf->cd();
+   addHistoDataAndMC( h_met_ante_ISO,    "met_ante_ISO",    "Missing ET (1 GoodEle, before ISO cut)", 200, 0, 200);
+   addHistoDataAndMC( h_met_ante_ISO_mu, "met_ante_ISO_mu", "muMET (1 GoodEle, before ISO cut)",      200, 0, 200);
+   addHistoDataAndMC( h_met_ante_ISO_t1, "met_ante_ISO_t1", "Type1MET (1 GoodEle, before ISO cut)",   200, 0, 200);
 
+   // NEW: 3-3-10: GenMET
+   TDirectory *dir_genMET = dir_MET->mkdir("gen","gen MET");
+   dir_genMET->cd();
+   TH1F *h_met_gen[7][nclass]; //BA+EN
+   TH1F *h_met_gen_diff_t1[7][nclass]; //delta et (t1-gen)
+   TH1F *h_met_gen_diff_mu[7][nclass]; //delta et (mu-gen)
+   TH1F *h_met_gen_dphi_t1[7][nclass]; //delta phi (t1-gen)
+   TH1F *h_met_gen_dphi_mu[7][nclass]; //delta phi (mu-gen)
+   TH1F *h_met_gen_BA[7][nclass]; //Barrel
+   TH1F *h_met_gen_diff_t1_BA[7][nclass];
+   TH1F *h_met_gen_diff_mu_BA[7][nclass];
+   TH1F *h_met_gen_dphi_t1_BA[7][nclass];
+   TH1F *h_met_gen_dphi_mu_BA[7][nclass];
+   addHisto_Njet_DataAndMC( h_met_gen,            "met_gen",            "genMET (n-1)",                            200,    0, 200);
+   addHisto_Njet_DataAndMC( h_met_gen_diff_t1,    "met_gen_diff_t1",    "MET^{t1}_{reco}-MET_{gen} (n-1)",         100, -100, 100);
+   addHisto_Njet_DataAndMC( h_met_gen_diff_mu,    "met_gen_diff_mu",    "MET^{#mu}_{reco}-MET_{gen} (n-1)",        100, -100, 100);
+   addHisto_Njet_DataAndMC( h_met_gen_dphi_t1,    "met_gen_dphi_t1",    "#phi(t1met)-#phi(genmet) (n-1)",  64, -3.2, 3.2);
+   addHisto_Njet_DataAndMC( h_met_gen_dphi_mu,    "met_gen_dphi_mu",    "#phi(mumet)-#phi(genmet) (n-1)",  64, -3.2, 3.2);
+   addHisto_Njet_DataAndMC( h_met_gen_BA,         "met_gen_BA",         "genMET (n-1 barrel)",                     200,    0, 200);
+   addHisto_Njet_DataAndMC( h_met_gen_diff_t1_BA, "met_gen_diff_t1_BA", "MET^{t1}_{reco}-MET_{gen} (n-1 barrel)",  100, -100, 100);
+   addHisto_Njet_DataAndMC( h_met_gen_diff_mu_BA, "met_gen_diff_mu_BA", "MET^{#mu}_{reco}-MET_{gen} (n-1 barrel)", 100, -100, 100);
+   addHisto_Njet_DataAndMC( h_met_gen_dphi_t1_BA, "met_gen_dphi_t1_BA", "#phi(t1met)-#phi(genmet) (n-1 barrel)",  64, -3.2, 3.2);
+   addHisto_Njet_DataAndMC( h_met_gen_dphi_mu_BA, "met_gen_dphi_mu_BA", "#phi(mumet)-#phi(genmet) (n-1 barrel)",  64, -3.2, 3.2);
+
+
+
+   //----------------------
    // NEW: 30-10-09, mTW
+   //----------------------
    TDirectory *dir_mtw = histf->mkdir("mtw","mT(W) W transverse mass");
    dir_mtw->cd();
    TH1F *h_mtw_mu_incl[nclass]; //inclusive
    TH1F *h_mtw_t1_incl[nclass]; //type 1 calomet
-   // after all but MET cut
-   TH1F *h_mtw_mu[7][nclass];
+   TH1F *h_mtw_mu[7][nclass];   // after all but MET cut
    TH1F *h_mtw_t1[7][nclass];
-   //   TDirectory *dir_mtw_1 = dir_mtw->mkdir("muonCorCaloMET","muon-corrected caloMET");
-   //   TDirectory *dir_mtw_2 = dir_mtw->mkdir("type1CaloMET","type1 (mu+jes) caloMET");
    addHistoDataAndMC( h_mtw_mu_incl, "mtw_mu_incl", "mT(W) #mu-cor caloMet (incl, leading isolated ele)",  100, 0, 200);
    addHistoDataAndMC( h_mtw_t1_incl, "mtw_t1_incl", "mT(W) type1 caloMet (incl, leading isolated ele)",   100, 0, 200);
    addHisto_Njet_DataAndMC( h_mtw_mu, "mtw_mu", "mT(W) #mu-cor caloMet (after all but MET cut)",100, 0, 200);
    addHisto_Njet_DataAndMC( h_mtw_t1, "mtw_t1", "mT(W) type1 caloMet (after all but MET cut)", 100, 0, 200);
 
 
-   // NEW: 30-10-09
+   //-----------------------------------------
+   // NEW: 30-10-09: Delta phi (iso ele, met)
+   //-----------------------------------------
    TDirectory *dir_DPhiEmet = histf->mkdir("DPhi_ele_met","Delta phi(isoele,met)");
    dir_DPhiEmet->cd();
    TH1F *h_DPhiEmet_mu_incl[nclass];
@@ -1427,6 +1455,28 @@ bool ana::EventLoop(){
    addHisto_Njet_DataAndMC( h_DPhiEmet_t1, "DPhiEmet_t1", "#Delta#Phi(e,met) type 1 caloMet (after all but MET cut)", 64, -3.2, 3.2);
 
 
+   //---------------------------------------
+   // 2-3-10: Delta phi (met, nearest jet) 
+   //---------------------------------------
+   TDirectory *dir_DPhimj = histf->mkdir("DPhi_met_jet","Delta phi(met,nearest jet)");
+   dir_DPhimj->cd();
+   TH1F *h_DPhiMetJet_mu_goodE[7][nclass]; //pass HLT, e30, eta<2.5
+   TH1F *h_DPhiMetJet_t1_goodE[7][nclass];
+   TH1F *h_DPhiMetJet_gen_goodE[7][nclass]; //gen
+   TH1F *h_DPhiMetJet_mu[7][nclass]; //pass all cut except met
+   TH1F *h_DPhiMetJet_t1[7][nclass];
+   TH1F *h_DPhiMetJet_gen[7][nclass];
+   addHisto_Njet_DataAndMC( h_DPhiMetJet_mu_goodE,  "DPhiMetJet_mu_goodE",  "#Delta#phi(mumet,nearest jet) pass HLT,goodEle",   64,0,3.2);
+   addHisto_Njet_DataAndMC( h_DPhiMetJet_t1_goodE,  "DPhiMetJet_t1_goodE",  "#Delta#phi(t1met,nearest jet) pass HLT,goodEle",   64,0,3.2);
+   addHisto_Njet_DataAndMC( h_DPhiMetJet_gen_goodE, "DPhiMetJet_gen_goodE", "#Delta#phi(genmet,nearest jet) pass HLT,goodEle",  64,0,3.2);
+   addHisto_Njet_DataAndMC( h_DPhiMetJet_mu,        "DPhiMetJet_mu",     "#Delta#phi(mumet,nearest jet) pass all but MET cut",  64,0,3.2);
+   addHisto_Njet_DataAndMC( h_DPhiMetJet_t1,        "DPhiMetJet_t1",     "#Delta#phi(t1met,nearest jet) pass all but MET cut",  64,0,3.2);
+   addHisto_Njet_DataAndMC( h_DPhiMetJet_gen,       "DPhiMetJet_gen",    "#Delta#phi(genmet,nearest jet) pass all but MET cut", 64,0,3.2);
+
+
+   //--------------
+   //  Conversion
+   //--------------
    TDirectory *dir_conv = histf->mkdir("conversion","conversion");
    dir_conv->cd();
    //81FB
@@ -3463,9 +3513,11 @@ bool ana::EventLoop(){
      float this_met     = 0;
      float this_met_phi = 0;
 
+
      if (m_metAlgo=="Default") {
        this_met     = mets_et_muonCor->at(0);
        this_met_phi = mets_phi_muonCor->at(0);
+
 
      } else if (m_metAlgo=="calomet_mujes") {
        this_met     = mets_et->at(0);
@@ -3498,11 +3550,17 @@ bool ana::EventLoop(){
 
      TVector2 met2v_mu;
      TVector2 met2v_t1;
+
      met2v_mu.SetMagPhi( mets_et_muonCor->at(0), mets_phi_muonCor->at(0) );
      met2v_t1.SetMagPhi( mets_et->at(0),         mets_phi->at(0) );
      
-
-
+     // genMET
+     float this_genmet = 0;
+     TVector2 met2v_gen;
+     if(!IsData()) { 
+       this_genmet = mets_gen_et->at(0); 
+       met2v_gen.SetMagPhi( mets_gen_et->at(0), mets_gen_phi->at(0) );
+     }
      // MET eta? Not meaningful.
      //TLorentzVector met4p(this_met*cos(this_met_phi),this_met*sin(this_met_phi),0,this_met);     
      //float this_met_eta = met4p.Eta();
@@ -3835,7 +3893,7 @@ bool ana::EventLoop(){
 
 
      // (21 Feb 09) make some kinematics plots for events passing N-1 cuts (HT,MET)
-     if(m_debug) cout << "[M_DEBUG] Filling N-1 histograms"<< endl;
+     if(m_debug) cout << "[DEBUG] Filling N-1 histograms"<< endl;
      if( goodrun  &&  fired_single_em  &&  nGoodIsoEle==1  &&
      	 !isMuon  &&  !isZ  &&  !isConversion  &&  !isDifferentInteraction ) {
 
@@ -3846,10 +3904,24 @@ bool ana::EventLoop(){
 	 fillHisto_Njet_DataAndMC( h_met,    this_met,       this_weight ); //user-chosen MET
 	 fillHisto_Njet_DataAndMC( h_met_mu, met2v_mu.Mod(), this_weight );
 	 fillHisto_Njet_DataAndMC( h_met_t1, met2v_t1.Mod(), this_weight );
+	 if(!IsData()){//MC
+	   fillHisto_Njet_DataAndMC( h_met_gen,                        this_genmet,   this_weight );//NEW 3-3-10
+	   fillHisto_Njet_DataAndMC( h_met_gen_diff_mu, met2v_mu.Mod()-this_genmet,   this_weight );//NEW 3-3-10
+	   fillHisto_Njet_DataAndMC( h_met_gen_diff_t1, met2v_t1.Mod()-this_genmet,   this_weight );//NEW 3-3-10
+	   fillHisto_Njet_DataAndMC( h_met_gen_dphi_mu, met2v_mu.DeltaPhi(met2v_gen), this_weight );//NEW 3-3-10
+	   fillHisto_Njet_DataAndMC( h_met_gen_dphi_t1, met2v_t1.DeltaPhi(met2v_gen), this_weight );//NEW 3-3-10
+	 }
 	 if(isBarrel){ //26-1-10
 	   fillHisto_Njet_DataAndMC( h_met_BA,    this_met,       this_weight );
 	   fillHisto_Njet_DataAndMC( h_met_mu_BA, met2v_mu.Mod(), this_weight );
 	   fillHisto_Njet_DataAndMC( h_met_t1_BA, met2v_t1.Mod(), this_weight );
+	   if(!IsData()){//MC
+	     fillHisto_Njet_DataAndMC( h_met_gen_BA,                        this_genmet,   this_weight );//NEW 3-3-10
+	     fillHisto_Njet_DataAndMC( h_met_gen_diff_mu_BA, met2v_mu.Mod()-this_genmet,   this_weight );//NEW 3-3-10
+	     fillHisto_Njet_DataAndMC( h_met_gen_diff_t1_BA, met2v_t1.Mod()-this_genmet,   this_weight );//NEW 3-3-10
+	     fillHisto_Njet_DataAndMC( h_met_gen_dphi_mu_BA, met2v_mu.DeltaPhi(met2v_gen), this_weight );//NEW 3-3-10
+	     fillHisto_Njet_DataAndMC( h_met_gen_dphi_t1_BA, met2v_t1.DeltaPhi(met2v_gen), this_weight );//NEW 3-3-10
+	   }
 	 }
        }
        // after all but MET/HT/Njet cuts
@@ -3871,7 +3943,7 @@ bool ana::EventLoop(){
 	 fillHistoDataAndMC( h_exp_met_v_eeta,  this_met, iso_electrons.at(0).Eta(), this_weight );
        }
      }
-     if(m_debug) cout << "[M_DEBUG] After N-1"<< endl;
+     if(m_debug) cout << "[DEBUG] After N-1"<< endl;
 
 
 
@@ -4260,13 +4332,13 @@ bool ana::EventLoop(){
 
 
 	   // A1: no conv cuts
-	   //cout << "[M_DEBUG] A1" << endl;
+	   //cout << "[DEBUG] A1" << endl;
 	   if ( this_et > 20. ) {  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA1_e20, this_iso, this_weight );
 	     if ( this_et > 30. )  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA1_e30, this_iso, this_weight );	
 	   }
 
 	   // A2: conv only
-	   //cout << "[M_DEBUG] A2" << endl;
+	   //cout << "[DEBUG] A2" << endl;
 	   //	   TLorentzVector eles_temp(els_px->at(0),els_py->at(0),els_pz->at(0),els_energy->at(0));
 	   bool this_is_conv = ConversionFinder( electrons.at(0), mctype, 0); //1st good ele
 	   if ( this_is_conv ) {
@@ -4276,7 +4348,7 @@ bool ana::EventLoop(){
 	   }
 	   
 	   // A3: invert d0 (>200 um)
-	   //cout << "[M_DEBUG] A3" << endl;
+	   //cout << "[DEBUG] A3" << endl;
 	   if ( fabs(compute_d0("electron",theGE)) > 0.02 ) {
 	     if ( this_et > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA3_e20, this_iso, this_weight );
 	       if ( this_et > 30. ) fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA3_e30, this_iso, this_weight );
@@ -4682,6 +4754,7 @@ bool ana::EventLoop(){
 
 
 
+     //-------------------
      // Add Delta R(e,mu)
      //-------------------
      // Get isolated electrons     
@@ -4704,6 +4777,44 @@ bool ana::EventLoop(){
 	 }
        }//mu
      }//e
+
+
+
+
+     //------------------------------------
+     // Delta phi (met,nearest jet) 2-3-10
+     //------------------------------------
+     if( m_nGoodJet > 0 ) {
+       if ( goodrun && fired_single_em && nGoodEle>0 ) {
+	 Double_t min_dphi_mu = 10;
+	 Double_t min_dphi_t1 = 10;
+	 Double_t min_dphi_gen = 10;
+	 for(size_t j=0; j<jets.size(); j++){
+	   // compute dphi(m,j)
+	   TVector2 j2v( jets.at(j).Px(), jets.at(j).Py() );
+	   min_dphi_mu = TMath::Min( min_dphi_mu, TMath::Abs(met2v_mu.DeltaPhi(j2v)) );
+	   min_dphi_t1 = TMath::Min( min_dphi_t1, TMath::Abs(met2v_t1.DeltaPhi(j2v)) );
+	   if(!IsData()) { min_dphi_gen = TMath::Min( min_dphi_gen, TMath::Abs(met2v_gen.DeltaPhi(j2v)) ); }
+	   if(min_dphi_mu>3.2) cout << "INFO: min_dphi_mu > 3.2!" << endl;
+	   if(min_dphi_t1>3.2) cout << "INFO: min_dphi_t1 > 3.2!" << endl;
+	 }
+	 fillHisto_Njet_DataAndMC( h_DPhiMetJet_mu_goodE, min_dphi_mu, this_weight );
+	 fillHisto_Njet_DataAndMC( h_DPhiMetJet_t1_goodE, min_dphi_t1, this_weight );
+	 if(!IsData()) { fillHisto_Njet_DataAndMC( h_DPhiMetJet_gen_goodE, min_dphi_gen, this_weight ); }
+
+	 // apply all but MET cut (N-1)
+	 if(  nGoodIsoEle==1  &&  !isMuon  &&  !isZ  &&  !isConversion 
+	      && ( ( m_rejectEndcapEle==false && !isDifferentInteraction ) ||  // PV check (DIFFZ)                        
+		   ( m_rejectEndcapEle==true  && isBarrel) )                   // or ele eta cut  
+	      ) {
+	   fillHisto_Njet_DataAndMC( h_DPhiMetJet_mu,  min_dphi_mu,  this_weight );
+	   fillHisto_Njet_DataAndMC( h_DPhiMetJet_t1,  min_dphi_t1,  this_weight );
+	   if(!IsData()) { fillHisto_Njet_DataAndMC( h_DPhiMetJet_gen, min_dphi_gen, this_weight ); }
+	 }//met N-1
+
+       }//one good ele
+     }//one good jet
+     //------------------------------------
      
 
 
