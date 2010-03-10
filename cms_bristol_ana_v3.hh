@@ -1532,6 +1532,8 @@ public:
   //switch to preclue missing layers as these are not in 314 data samples
   void UseMissLayers(bool val)         { m_useMisslayers     = val; };
 
+  void SignalIsAlpgen(bool val)        { signal_is_Alpgen    = val; };
+  void SignalAlpgenThreshold(unsigned int val) { signal_Alpgen_matching_threshold = val; };
 
 private:
 
@@ -1600,6 +1602,7 @@ private:
   void SetHistoLabelEleID( TH1F *eid[] ) const;
 
   void   DefineCrossSection();
+  void   DefineCrossSectionAlpgen7TeV();
   double GetCrossSection(const string) const;
   void   SetEventWeightMap();
   double GetWeight(const string) const;
@@ -1607,19 +1610,20 @@ private:
 
 
   // print event-count tables
-  void DrawEventPerNjetTable( const double nevt[][5][23], const vector<string>& ve ) const;
-  void DrawSignalBGTable(     const double nevt[][5][23], const vector<string> ve ) const;
-  void DrawMCTypeTable(       const double nevt[][5][23], const string title, vector<string> ve ) const;
-  void DrawQCDTable(          const double nevt[][5][23], const string title, vector<string> ve ) const;
-  void DrawSingleTopTable(    const double nevt[][5][23], const string title, vector<string> ve ) const;
-  void DrawSignalAcceptanceTable(const double nevent[][5][23], vector<string> ve) const;
+  void DrawEventPerNjetTable( const double nevt[][5][23+5], const vector<string>& ve ) const;
+  void DrawSignalBGTable(     const double nevt[][5][23+5], const vector<string> ve ) const;
+  void DrawMCTypeTable(       const double nevt[][5][23+5], const string title, vector<string> ve ) const;
+  void DrawQCDTable(          const double nevt[][5][23+5], const string title, vector<string> ve ) const;
+  void DrawSingleTopTable(    const double nevt[][5][23+5], const string title, vector<string> ve ) const;
+  void DrawTTnjetTable(       const double nevt[][5][23+5], const string title, vector<string> ve ) const;
+  void DrawSignalAcceptanceTable(const double nevent[][5][23+5], vector<string> ve) const;
   void printCutStage(int,string) const;
   void printCutStage(ofstream& os,int,string) const;
 
 
   // print event-count tables (with errors)
-  void PrintErrorTables(const double e_plus_jet[][5][23], const double e_plus_jet_weighted[][5][23], vector<string> ve) const;
-  void PrintError_NjetVcut(ofstream&, const double [][5][23], const double [][5][24], vector<string>&) const;
+  void PrintErrorTables(const double e_plus_jet[][5][23+5], const double e_plus_jet_weighted[][5][23+5], vector<string> ve) const;
+  void PrintError_NjetVcut(ofstream&, const double [][5][23+5], const double [][5][24], vector<string>&) const;
   double GetBayesUncertainty(int Ninitial) const;
   string ScrNum(double num) const;
   void printLine(ofstream &myfile, const double, const double) const;
@@ -1699,6 +1703,9 @@ private:
   int    m_nbtag_TCHE;
   int    m_nbtag_TCHP;
   int    m_nbtag_SSV;
+
+  // event counts
+  //  double e_plus_jet[nstage][ntjet][nmctype];
 
   // cuts
   float ELE_ETCUT;
@@ -1804,6 +1811,9 @@ private:
   bool isTW; 
   bool isTchan;
   bool isSchan;
+
+  bool signal_is_Alpgen;
+  unsigned int signal_Alpgen_matching_threshold;
 
 };
 

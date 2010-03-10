@@ -1,6 +1,11 @@
 //#====================================================#
 //# Last update:
 //
+//  9 Mar 2010: - Adapt to accommodate tt0j-tt4j alpgen signal samples. 
+//              - Add methods: DefineCrossSectionAlpgen7TeV, DrawTTnjetTable.
+//              - Consistent use of GetNinit() & GetCrossSection().
+//              - Remove old logs, keep only this year's.
+//
 //  3 Mar 2010: add DPhiMetJet, genMET plots.
 // 25 Feb 2010: add Data_njetsVcuts TH2.
 // 23 Feb 2010: fix nstage (16->13).
@@ -34,173 +39,6 @@
 // 06 Jan 2010: a) Updated conversion algorithm routine. Separated out conversion study section in a separate function
 //              b) Added in an additional electron ID option of "none" i.e. no ID applied
 // 
-// 15 Dec 09: a) change nbin of m3 from 100 to 800.
-//            b) added Init() function for setting branch address to protect against running on data, ie do not 
-//               read MC branches. Also do not read extra jet/met collections if not available.
-//
-// 4 Dec 09: ensure control sample (plan B) is exclusive of signal sample (add !e_plus_jet_pass cut). 
-//           Add more trials for control sample.
-// 3 Dec 09: fix bug of plan A/B switch.
-// 2 Dec 09: Revisit Z veto. Cut on M(RL,RL) instead of M(RT,RL)?
-//           QCD planB: add more histo for new control samples (fail RL,cL,cT).
-//           Add options for RunPlanB, SetEleID.
-//
-// 11 Nov 09: Add getRelIso() function.
-// Temporary change 10 Nov 09: replace DIFFZ cut with EETA<1.5 (Plan B). Add trial AES definitions.
-// ---
-// 6 Nob 09: Fix DRjj, add DPhijj, add met:ele_eta scatter plot. Add a fillHisto function.
-//           Add conter_pass.
-// 5 Nov 09: Print out file name of selected events in log, print a list at the end.
-//           Add jets_emf>0.01 minimal cut as recommended by jetMET (for caloJets only).
-// 4 Nov 09: add met option "calomet_muL2" for L2RelJet + muon MET.
-//           add new variables after all but met cuts: ele_eta, ele_et, j0_pt, j1_pt
-//           DR(e,j), DPhi(e,j), DR(j,j).
-// 3 Nov 09: expand MET histo for diff njet bins.
-// 2 Nov 09: correct for histo-filling.
-// 30 Oct 09: Added mtw plot (transverse mass of W->lnu) & Delta Phi(e,met).
-// 29 Oct 09: minor update.
-// 28 Oct 09: Added luminosity block info.
-//
-// 24 Oct 09: Adapted to run correctly for 7TeV SD.
-//
-// 20 Oct 09: Added ability to use caloMET mu+JES corrected.
-//
-// 16 Oct 09: Added ability to use PFjet and PFmet.
-//
-// 15 OCt 09: Added options: SetAESHTcut(), SetAESMETcut(), RunOnSD().
-//            Added option to use tcMET: SetMETAlgo().
-//
-// 14 Oct 09: added option SetLHCEnergyInTeV() and cross sections for 7 TeV.
-//
-// 12 Oct 09: corrected prescale for Zee (100).
-//
-// 9 Oct 09: Small change: in compute_d0() for muon, use values from tracker fit, not global fit.
-//
-// 7 OCt 09: Fix problem: signal column empty when there is no MC info in ntuple.
-//
-// 6 Oct 09: Added check on Nmc_doc when doing conversion studies. Some slight changes/clean-up.
-//
-// 5 Oct 09: Adapted nInitialEventMC calculattion to run on Secondary Datasts for October exercise.
-//
-// 2 Oct 09: a) small bug fix in fillHistoNjet_DataAndMC().
-//           b) replace els_cIso with the recommended els_dr04EcalRecHitSumEt + els_dr04HcalTowerSumEt.
-//
-// 30 Sep 09: Preparation for OctoberX. Adapt code to run on "soup", ie mixture of signal and bg events.
-//            Added "wenu" and "zee" cross sections. Fill histos as "Wjets", "Zjets" respectively.
-//            Added SetJetAlgo switch to use different jet collection (for SC5 only so far).
-//
-// 28 Sep 09: Add vector to keep track of index of GoodEle. To avoid the need of matching the most 
-//            isolated GoodEle later.
-//
-// xx Sep 09: <Frankie, please write something about the update on conversion algo here, thanks. :)>
-//
-// 17,18 Sep 09: Added plot DR(e,mu), and counter for events with DR(e,mu) < 0.1.
-//
-// 16 Sep 09: Added reference to CTF track in conversion algorithm, and corrected muon d0 bug
-//
-// 14,15 Sep 09: Update branch list for /summer09_2/ ntuple (siscone)
-//
-// 10 Sep 09: bug fix: use consistent CombRelIso calculation: (tk+cal)/et. Changed 1e-4 back to 1-e6.
-//
-//  9 Sep 09: bug fix: change matching of ii_GoodEle_mostIso criterium from 1e-6 to 1e-4.
-//
-//  8 Sep 09: bug fix: AES histo, default flag_AES_pass_tighterZveto_mee/mep is false, should be true.
-//            Added optimization of conversion.
-//
-//  4 Sep 09: Added code to print conversion matches.
-//
-// 28 Aug 09: small bug fix for label on error table. 
-// 27 Aug 09: Adapt to latest ntuple format.
-//            Changed mets to use only-muon-corrected MET.
-//
-// 26 Aug 09: Insert ">=1T ele" validation plots.
-//
-// 25-26 Aug 09: Insert ">=1T ele" (at least 1 GoodEle) in cut-flow table before ">=1TISO".
-//
-// 24 Aug 09: Added switch for "Valid" and "QCD_estimation/NES" plots.
-//            Added "Setdebug()" switch.
-//
-// 24 Aug 09: Added "validation" plots, plotting various quantites as a function of 
-//            njets and cutflow. Search for 81FB  
-//
-// 21 Aug 09: Change JET_ETCUT to JET_PTCUT.
-//
-// 19-20 Aug 09: clean-up and revise z veto code. Add function PrintGenParticles().
-// 18 Aug 09: Revise /electron_count/, study of z veto. Remove m_ephoton.
-//
-// 17 Aug 09: a) Take beam spot from ntuple branch.
-//            b) consider only global muon:  add "mus_id_AllGlobalMuons->at(i)" before pt,eta cut.
-//
-// 15-17 Aug 09: clean up, consolidate code. 
-// 14 Aug 09: first adaptation for v3 ntuple (312).
-//            a) add start/finsih date/time.
-//            b) add /basic/ dir: basic plots:
-//               - et,eta,phi,reliso of electrons
-//               - pt,eta,phi of jets
-//               - met-phi
-//            c) move "metAlone" histo to /basic/
-//----------
-//
-//# 15 Jun 09: adapt to do ttjet scale/threshold systematics.
-//#            add more histo: reliso-met corrlation: separate barrel and endcap.
-//# 10 Jun 09: add levels L1b and L2 to study reliso-met correlation in QCD events (TL)
-//#  9 Jun 09: add more histo to study reliso-met correlation in QCD events (TL)
-//#  8 Jun 09: add n-1 AES histograms (TL)
-//#  6 May 09: - Correcting beam spot to 0.0332,
-//#            - adding MET plots, lines 1389, 2740, 2885 
-//#            - adding PrintErrors function
-//#            - Adding JES lines - lines 4847
-//#  Apr 09: - adapt code to do systematic uncertainty for M3 shape
-//#          - add "ttjet" to mc_names 
-//#  17 Apr 09: Get working version from Frankie (0 pull)  
-//#  18 Mar 09: Bug found: t-chan and s-chan sample is only t->blnu (e,mu,tau). This
-//#             is why the m3 plot for single top is diffent than last time.  
-//#             Correct this by multiplying the cross section with Br(t->blnu) = 3 x 10.8% (from PDG)
-//#              = 32.4%.
-//#  18 Mar 09: changes to m3 fit: for QCD shape, current code gets it from the MC histogram,
-//#             no fluctuation. Should be generating pseudo-data in control region like 
-//#             signal region.
-//#  17 Mar 09: Add M(ee) window (76-106) into baseline selection, but not M(e,photon).
-//#  13 Mar 09: Modify Z veto to try to reject more Z events. Add M(ee) cut window 76-106
-//#  11 Mar 09: add more plots: iso with low MET for individual QCD MC samples.
-//#  6 Mar 09: - include other backgrounds (z+jets, single top, vqq) in m3 fit.
-//#            - change d0 cut on electron from 500 to 200 micron (recommended by V+j)..
-//#  5 Mar 09: make kinematic cut configurable in driver scripts. There are defaults
-//#            values. Warning messages are printed out if one does not set the cuts
-//#            in scripts.
-//#            - small bug fix (when filling VQQ_njetsVcuts histogram).                           
-//#  4 Mar 09: add histogram: new reliso for low MET, allEvents and QCD only.
-//#  4 Mar 09: correct d0 in the conversion finder.
-//#  3 Mar 09: correction: t-channel single top cross section is 130 pb, not 110 pb.
-//# <-- New release v1.7: 2 Mar09 -->
-//#  2 Mar 09: - correct d0 of electrons and muons using beam spot position.
-//#  27 Feb 09: - tweak QCD estimation code, instead of fixing MPV, fit 1,2 jet bins
-//#               and use the 2 fitted MPV values to set limit on the range of MPV in 
-//#               the fit for 3, >=4 jet bins. Fit landau in range of 0.2 to 1.0.
-//#  26 Feb 09: - improve QCD estimate by fixing MPV parameter to 0.28.
-//#             - formatting of plot for QCD fit.
-//#             - use 2nd Loose isolated ele veto (can also use Tight, doesn't matter).
-//#  24/25 Feb0 9: - add S/B table.
-//#                - add latex formatting on tables so that we can quickly produce tables
-//#                  in pdf without much manual formatting.
-//#  23 Feb 09: - adapt code to calculate error on QCD estimate for landau function.
-//#  21 Feb 09: - add more plots: HT and met for each MC type.
-//#             - add d0 cut on electron: |d0| < 0.05cm (=500 micron).
-//#  20 Feb 09: - add more plots for electron d0 and ID.
-//#             - add new helper functions to add and fill histograms.
-//#  19,20 Feb 09: add switch to use old or new reliso.
-//#  19 Feb 09: extend code to include VQQ and single top backgrounds.
-//#  18 Feb 09: read in only selected branches to save running time 
-//#  17 Feb 09: small bug fix in making reliso plots for the case 
-//#             where there are  more than 1 good electrons.
-//#  13 Feb 09: 
-//#  - update cuts in conversion code
-//#  - update QCD code (best fit: gaus with different ranges)
-//#  - apply k-factor of 1.14 to W/Z+jets cross sections
-//#  - in m3 fit, if QCD estimate error is larger than the estimate, assume error is 100% 
-//# Prev update: 11 Feb 09 
-//# - Fix small bug: muon chi2 -> should be normalized chi2 = chi2/ndof
-//# 
 //#====================================================#
 #include <iostream>
 #include <iomanip>
@@ -237,12 +75,14 @@ using namespace std;
 #include "RooConstVar.h"
 using namespace RooFit;
 
-//#include "LHAPDF/LHAPDF.h"
 
 #include "cms_bristol_ana_v3.hh" // defines ana class, including branches and leaves for tree
 
 
 // Global variables/constants
+//const int nmctype(23); //extend to include wj, zj, QCD, VQQ, single top
+const int nmctype(23+5); //extend to include tt0j-tt4j
+
 const int ntjet(5);
 const int myprec(1); //no of decimal point for weighted nEvent
 const int ncutshown(13); //11:BARREL, 12:1BTag, 13:2BTag (incl 4j)
@@ -257,6 +97,7 @@ const string mcname[16]  = { "data", "ttbar", "QCD", "enri1", "enri2" ,"enri3", 
 const string mclabel[16] = { "data", "signal","QCD","enri1","enri2","enri3","bce1","bce2","bce3",
 			     "W+jets","Z+jets","VQQ", "singleTop","tW","t-chan","s-chan" };
 const string Fourjets = "$\\ge$4 jets"; //used in table
+
 
 void ana::SetInputFile(const char* fname) {
   
@@ -291,7 +132,13 @@ void ana::SetOutputFirstName(const string name) {
 
   } else {
 
-    // TL 22-1-09
+    // ttnj, Alpgen (9-Mar-2010)
+    mc_names.push_back("tt0j");
+    mc_names.push_back("tt1j");
+    mc_names.push_back("tt2j");
+    mc_names.push_back("tt3j");
+    mc_names.push_back("tt4j");
+
     mc_names.push_back("ttbar");
     mc_names.push_back("ttjet");
     mc_names.push_back("wjet");
@@ -308,6 +155,7 @@ void ana::SetOutputFirstName(const string name) {
     mc_names.push_back("tW");
     mc_names.push_back("tchan");
     mc_names.push_back("schan");
+
 
     vector<int> nfiles(mc_names.size());
     vector<long> nevents(mc_names.size());
@@ -374,8 +222,8 @@ void ana::SetOutputFirstName(const string name) {
       else cout << setprecision(4) << GetWeight(mc_names.at(i));
 
       // print out cross-sections
-      cout << setw(14) << cross_section[mc_names.at(i)] << " pb";
-      cout << setw(14) << cross_section[mc_names.at(i)]*intlumi << endl;      
+      cout << setw(14) << GetCrossSection(mc_names.at(i)) << " pb";
+      cout << setw(14) << GetCrossSection(mc_names.at(i))*intlumi << endl;      
       cout << setprecision(6);
     }
     cout << "--------------------------------------------------------------------------------------------\n";
@@ -461,6 +309,7 @@ void ana::PrintCuts() const {
   cout << "\n***********************************************" << endl;
   if(nCutSetInScript<4) {
     cout << "\n  WARNING! WARNING! YOU HAVE NOT SET ALL 4 CUTS!!!" << endl;
+    cout << "\n  USING DEFAULT CUTS!!!" << endl;
   } else {
     cout << "\n Okay, all 4 cuts are set." << endl;
   }
@@ -493,43 +342,46 @@ void ana::PrintCuts() const {
   }
 
 }//PrintCuts
+//-------------------------------------------------------------------------------------------
 
 long ana::GetNinit(const string mc) const {
-
-  //if (nInitialEventMC.count(mc)==0) return 1;
-  //else  return nInitialEventMC.find(mc)->second;
 
   // if found this MC
   map<string,long>::const_iterator iter = nInitialEventMC.find( mc );
   if( iter != nInitialEventMC.end() )  // this MC found in input
     return iter->second;
   else
-    //return 1;
     return 0;
 }
+//-------------------------------------------------------------------------------------------
 
 void ana::SetMCFlag(){
   
-  if(nInitialEventMC["ttbar"]>0 || nInitialEventMC["ttjet"]>0) mc_sample_has_ttbar = true;
-  if(nInitialEventMC["wjet"]>0 || nInitialEventMC["wenu"]>0)  mc_sample_has_Wjet  = true; //updated 30-9-09
-  if(nInitialEventMC["zjet"]>0 || nInitialEventMC["zee"]>0)   mc_sample_has_Zjet  = true; //updated 30-9-09
-  if((nInitialEventMC["bce1"]+ nInitialEventMC["bce2"]+ nInitialEventMC["bce3"]+
-      nInitialEventMC["enri1"]+nInitialEventMC["enri2"]+nInitialEventMC["enri3"])>0) 
-    mc_sample_has_QCD = true;
-  if(nInitialEventMC["enri1"]>0)  mc_sample_has_enri1 = true;
-  if(nInitialEventMC["enri2"]>0)  mc_sample_has_enri2 = true;
-  if(nInitialEventMC["enri3"]>0)  mc_sample_has_enri3 = true;
-  if(nInitialEventMC["bce1"]>0)   mc_sample_has_bce1  = true;
-  if(nInitialEventMC["bce2"]>0)   mc_sample_has_bce2  = true;
-  if(nInitialEventMC["bce3"]>0)   mc_sample_has_bce3  = true;
-  if(nInitialEventMC["vqq"]>0)    mc_sample_has_VQQ   = true;
-  if( (nInitialEventMC["tW"] + nInitialEventMC["tchan"] + nInitialEventMC["schan"]) > 0 )
-    mc_sample_has_singleTop = true;
-  if(nInitialEventMC["tW"]>0)     mc_sample_has_tW    = true;
-  if(nInitialEventMC["tchan"]>0)  mc_sample_has_tchan = true;
-  if(nInitialEventMC["schan"]>0)  mc_sample_has_schan = true;
-}
+  //  if(nInitialEventMC["ttbar"]>0 || nInitialEventMC["ttjet"]>0) mc_sample_has_ttbar = true;
+  if((GetNinit("ttbar")+GetNinit("ttjet"))>0) mc_sample_has_ttbar = true;
 
+  // ttnj alpgen
+  if( (GetNinit("tt0j")+GetNinit("tt1j")+GetNinit("tt2j")+GetNinit("tt3j")+GetNinit("tt4j")) >0 )
+    mc_sample_has_ttbar = true;
+
+  if( (GetNinit("wjet") + GetNinit("wenu")) > 0 )  mc_sample_has_Wjet  = true;
+  if( (GetNinit("zjet") + GetNinit("zee"))  > 0 )  mc_sample_has_Zjet  = true;
+  if((GetNinit("bce1")+ GetNinit("bce2")+ GetNinit("bce3")+
+      GetNinit("enri1")+GetNinit("enri2")+GetNinit("enri3"))>0) mc_sample_has_QCD = true;
+  if(GetNinit("enri1")>0)  mc_sample_has_enri1 = true;
+  if(GetNinit("enri2")>0)  mc_sample_has_enri2 = true;
+  if(GetNinit("enri3")>0)  mc_sample_has_enri3 = true;
+  if(GetNinit("bce1")>0)   mc_sample_has_bce1  = true;
+  if(GetNinit("bce2")>0)   mc_sample_has_bce2  = true;
+  if(GetNinit("bce3")>0)   mc_sample_has_bce3  = true;
+  if(GetNinit("vqq")>0)    mc_sample_has_VQQ   = true;
+  if( (GetNinit("tW") + GetNinit("tchan") + GetNinit("schan")) > 0 )
+    mc_sample_has_singleTop = true;
+  if(GetNinit("tW")>0)     mc_sample_has_tW    = true;
+  if(GetNinit("tchan")>0)  mc_sample_has_tchan = true;
+  if(GetNinit("schan")>0)  mc_sample_has_schan = true;
+}
+//-------------------------------------------------------------------------------------------
 
 void ana::DefineCrossSection(){
   
@@ -587,6 +439,8 @@ void ana::DefineCrossSection(){
     cross_section["tchan"] =   63. * 0.324;   //xs  63 pb (NLO MCFM) * 0.324 (Br(t->blnu)) = 20.412
     cross_section["schan"] =   4.6 * 0.324 ;  //4.6 pb x 0.324 (4.6pb is NNNLO) = 1.4904
 
+    DefineCrossSectionAlpgen7TeV();
+
   } else {
     if(!IsData()) cout << "WARNING: Cross section values are not defined!" << endl;
   }
@@ -594,20 +448,79 @@ void ana::DefineCrossSection(){
 }//end DefineCrossSection
 //-------------------------------------------------------------------------------------------
 
+void ana::DefineCrossSectionAlpgen7TeV(){
+
+  //--------------------
+  // ttnj alpgen (7TeV)
+  //--------------------
+
+  if(signal_is_Alpgen) {
+
+    cout << "\n Running on Alpgen signal"<< endl;
+    cout << "NOTE: at the moment the ttbar decay table is disabled when running on Alpgen signal," << endl;
+    cout << "      because mctype of 23-27 is used to identify Alpgen tt0j-tt4j, and it clashes" << endl;
+    cout << "      with mctype of 1-10 corresponding to the ttbar decay modes." << endl;
+    cout << "      Also, the ttbar column in S/B and MC tables is not filled." <<endl;
+    cout << "\n\n  **  Alpgen Et " << signal_Alpgen_matching_threshold << "  **\n\n";
+      
+    vector<double> Alpgen_xsec;
+  
+    if (signal_Alpgen_matching_threshold==30) {     // Alpgen, Et30
+      Alpgen_xsec.push_back(  79.5  ); //tt0j
+      Alpgen_xsec.push_back(  58.5  ); //tt1j
+      Alpgen_xsec.push_back(  27.0  ); //tt2j
+      Alpgen_xsec.push_back(   9.17 ); //tt3j
+      Alpgen_xsec.push_back(   2.52 ); //tt4j
+    }
+    else if (signal_Alpgen_matching_threshold==40) {   // Alpgen, Et40
+      Alpgen_xsec.push_back(  79.6   );  //tt0j
+      Alpgen_xsec.push_back(  42.6   );  //tt1j
+      Alpgen_xsec.push_back(  14.8   );  //tt2j
+      Alpgen_xsec.push_back(   3.87  );  //tt3j
+      Alpgen_xsec.push_back(   0.828 );  //tt4j
+    }
+    else if (signal_Alpgen_matching_threshold==50) {    // Alpgen, Et50
+      Alpgen_xsec.push_back(  79.5   );  //tt0j
+      Alpgen_xsec.push_back(  32.5   );  //tt1j
+      Alpgen_xsec.push_back(   8.92  );  //tt2j
+      Alpgen_xsec.push_back(   1.88  );  //tt3j
+      Alpgen_xsec.push_back(   0.327 );  //tt4j
+    }
+
+    // compute the total LO cross section
+    double total_alpgen_signal_xsec = 0;
+    for(size_t i=0; i<Alpgen_xsec.size(); i++){
+      cout << "LO xsec( tt" << i << "j ):  " << Alpgen_xsec.at(i) << " pb" << endl;
+      total_alpgen_signal_xsec += Alpgen_xsec.at(i);
+    }
+    cout << endl;
+    // normalize cross section to NLO
+    const double k_factor_alpgen = 165.0 / total_alpgen_signal_xsec;
+      
+    cross_section["tt0j"] = Alpgen_xsec.at(0) * k_factor_alpgen;
+    cross_section["tt1j"] = Alpgen_xsec.at(1) * k_factor_alpgen;
+    cross_section["tt2j"] = Alpgen_xsec.at(2) * k_factor_alpgen;
+    cross_section["tt3j"] = Alpgen_xsec.at(3) * k_factor_alpgen;
+    cross_section["tt4j"] = Alpgen_xsec.at(4) * k_factor_alpgen;
+  }//ttnj alpgen
+
+}// DefineCrossSectionAlpgen7TeV
+//-------------------------------------------------------------------------------------------
+
 double ana::GetCrossSection( const string mc ) const {
   return cross_section.find(mc)->second;
 }
 //-------------------------------------------------------------------------------------------
+
 // Declare the event weights
 void ana::SetEventWeightMap(){ //only if run on MC
   
    weightMap["data"]  = 1.0;
 
    for(size_t i=0 ; i<mc_names.size(); ++i){
-     //     weightMap["ttbar"] = cross_section["ttbar"] * intlumi / GetNinit("ttbar");
      long n = GetNinit( mc_names.at(i) ) ;
      if( n>0 )
-       weightMap[ mc_names.at(i) ] = cross_section[ mc_names.at(i) ] * intlumi / n;
+       weightMap[ mc_names.at(i) ] = GetCrossSection( mc_names.at(i) ) * intlumi / n;
      else
        weightMap[ mc_names.at(i) ] = 0;
    }
@@ -815,7 +728,8 @@ ana::ana(){
    isTW    = false;
    isTchan = false;
    isSchan = false;
-   
+   signal_is_Alpgen = false;
+   signal_Alpgen_matching_threshold = 40;
 
    //856
    ConversionCounter = 0;
@@ -2199,9 +2113,9 @@ bool ana::EventLoop(){
 
    histf->cd();
 
-   const int nmctype(23); //extend to include wj, zj, QCD, VQQ, single top
+   //const int nmctype(23); //extend to include wj, zj, QCD, VQQ, single top (made global)
+
    const int nstage(13); //add >=1Tele
-   //// const int ntjet(5);    //made as global
  
    // Collect event count after selection
    TH2D *Signal_njetsVcuts = new TH2D("Signal_njetsVcuts","Events V Cuts (signal)",ntjet+1, 0, ntjet+1, nstage, 0, nstage);
@@ -2503,13 +2417,23 @@ bool ana::EventLoop(){
 
 	 
 	 // set event weight of current event
-	 //  this_weight = weightMap[this_mc];
 	 this_weight = GetWeight(this_mc);
 	 
 	 
 	 // set mctype code
 	 if      (this_mc=="ttbar"||
-		  this_mc=="ttjet") {  isTTbar = true;  }  //mctype 1-10
+		  this_mc=="ttjet"||
+		  // ttnj Alpgen
+		  this_mc=="tt0j"|| this_mc=="tt1j" || this_mc=="tt2j" ||
+		  this_mc=="tt3j"|| this_mc=="tt4j")  {  isTTbar = true;  }  //mctype 1-10
+
+	 // tt+j Alpgen 
+	 if      (this_mc=="tt0j") mctype=23;
+	 else if (this_mc=="tt1j") mctype=24;
+	 else if (this_mc=="tt2j") mctype=25;
+	 else if (this_mc=="tt3j") mctype=26;
+	 else if (this_mc=="tt4j") mctype=27;
+
 	 else if (this_mc=="wjet"||
 		  this_mc=="wenu")  {  isWjets = true;                   mctype = 11;  }
 	 else if (this_mc=="zjet"||
@@ -2539,7 +2463,8 @@ bool ana::EventLoop(){
      //--------------------
      //  For TTbar MC
      //--------------------
-     if(!IsData() && isTTbar){ //If it isn't data figure out what kind of MC (for ttbar)
+     // FIXME (9 Mar 10): if signal is alpgen, do not check ttbar decays.
+     if(!IsData() && isTTbar && !signal_is_Alpgen){ //If it isn't data figure out what kind of MC (for ttbar)
        
        if(m_debug) cout << " [MC] signal, checking type of ttbar decay." <<endl;
 	 
@@ -2579,7 +2504,7 @@ bool ana::EventLoop(){
 	 }
 	 
 	 //some reassignment for easy print-out in table form
-	 if(nlep==1)       mctype = 1; //evqq
+	 if     (nlep==1)  mctype = 1; //evqq
 	 else if(nlep==3)  mctype = 2; //mvqq
 	 else if(nlep==7)  mctype = 3; //tvqq
 	 else if(nlep==2)  mctype = 4; //evev
@@ -2590,12 +2515,12 @@ bool ana::EventLoop(){
 	 else if(nlep==10) mctype = 9; //mvtv
 	 else if(nlep==0)  mctype = 10; //qqqq
 	 else std::cout << " ERROR:  nlep not defined " << nlep << std::endl;
-	 
-	 if(mctype >10) {
-	   mctype=10;
-	   std::cout << " ERROR: mctype is greater than 10! " << std::endl;
-	 }
-	 
+	 	 
+// 	 if(mctype >10) {
+// 	   mctype=10;
+// 	   std::cout << " ERROR: mctype is greater than 10! " << std::endl;
+// 	 }	 
+
 	 all_mctype->Fill(mctype); //TL note: unweighted. fill with weight?
 	 if(printLevel>0) std::cout << " ttbar code " << nlep << " " << mctype << std::endl;
        }//if Nmc_doc>0
@@ -3753,10 +3678,10 @@ bool ana::EventLoop(){
      bool e_plus_jet_pass = false;
       
      if(m_debug) { 
-       cout << "this: weight: "<< this_weight ;
+       cout << "this event:  weight: " << this_weight ;
        //cout << "wmap[this_mc]: "<< weightMap[this_mc] 
-       cout << " mc: " << this_mc ;
-       //cout << " type: " << mctype << endl;
+       cout << "  mc: " << this_mc;
+       cout << "  type: " << mctype;
        cout << endl;
      }
 
@@ -4969,7 +4894,14 @@ bool ana::EventLoop(){
 	   for(short k=1; k<11; ++k){
 	     Signal_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][k]);
 	     Signal_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][k]);//sum for all jets
-	   }
+	   }	   
+	   if(signal_is_Alpgen) {
+	     for(int k=23; k<=27; ++k) {//mctype 23-27
+               Signal_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][k]);
+               Signal_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][k]);//sum for all jets
+	     }
+	   }//ttnj alpgen
+	   
 	 }
 	 if ( mc_sample_has_QCD ) {//MC contains QCD
 	   for(short k=13; k<19; ++k){ // mctype is 13 to 18 for QCD
@@ -5051,7 +4983,7 @@ bool ana::EventLoop(){
    cout << "     Muon PT cut =  " << MU_PTCUT  << "  GeV" << endl;
    cout << "      Jet PT cut =  " << JET_PTCUT << "  GeV" << endl;
    cout << "      MET    cut =  " << METCUT    << "  GeV" << endl;
-   cout << "       HT    cut =  " << HTCUT     << "  GeV" << endl;
+   //cout << "       HT    cut =  " << HTCUT     << "  GeV" << endl;
    cout << " Electron ID = " << printEleID() << endl;
    cout << " Electron RelIso formula = " ;
    if(useNewReliso) cout << "new"; else cout << "old";
@@ -5102,6 +5034,12 @@ bool ana::EventLoop(){
      DrawMCTypeTable( e_plus_jet,          "Events Table (per MC type; unweighted)", ve ); //unweighted table
      DrawMCTypeTable( e_plus_jet_weighted, "Events Table (per MC type; weighted)  ", ve ); //weighted table
 
+     // Break down table for tt+j Alpgen
+     if( mc_sample_has_ttbar && signal_is_Alpgen ) {
+       DrawTTnjetTable( e_plus_jet,          "TT+j Table (unweighted)", ve );
+       DrawTTnjetTable( e_plus_jet_weighted, "TT+j Table (weighted)  ", ve );
+     }
+
      // Break down table for QCD
      if( mc_sample_has_QCD ) {
        DrawQCDTable( e_plus_jet,          "QCD Table (unweighted)", ve );
@@ -5121,7 +5059,7 @@ bool ana::EventLoop(){
      //cout.precision(0); //reset precision
 
      // TL (21-1-09):  only run this if we've ran over some ttbar MC in input
-     if( mc_sample_has_ttbar ) {
+     if( mc_sample_has_ttbar && !signal_is_Alpgen ) { //FIXME
 
        DrawSignalAcceptanceTable(e_plus_jet, ve);
 
@@ -5202,8 +5140,11 @@ bool ana::EventLoop(){
 
 
 
-void ana::PrintErrorTables( const double e_plus_jet[][5][23], 
- 			    const double e_plus_jet_weighted[][5][23], vector<string> ve ) const {
+//void ana::PrintErrorTables( const double e_plus_jet[][5][23+5], 
+// 			    const double e_plus_jet_weighted[][5][23+5], vector<string> ve ) const {
+void ana::PrintErrorTables( const double e_plus_jet[][5][nmctype], 
+ 			    const double e_plus_jet_weighted[][5][nmctype], vector<string> ve ) const {
+
 
   const int mynstage = 11; //up to !DIFFZ
 
@@ -5223,10 +5164,6 @@ void ana::PrintErrorTables( const double e_plus_jet[][5][23],
 
 
   string ttsample = "ttbar";
-//   if(nInitialEventMC["ttjet"]>0) ttsample = "ttjet";
-//   if(nInitialEventMC["TTJet"]>0) ttsample = "TTJet";
-//   if(nInitialEventMC.count("ttjet")>0) ttsample = "ttjet";
-//   if(nInitialEventMC.count("TTJet")>0) ttsample = "TTJet";
   if(GetNinit("ttjet")>0) ttsample = "ttjet";
   if(GetNinit("TTJet")>0) ttsample = "TTJet";
 
@@ -5821,8 +5758,11 @@ double ana::GetBayesUncertainty(int Ninitial) const{
 
 
 //----------------------------------------------------------------------------------
+//void ana::PrintError_NjetVcut(ofstream& myfile, 
+//			      const double e_plus_jet_weighted[][5][23+5], 
+//			      const double e_plus_jet_errors[][5][24], vector<string>& ve) const {
 void ana::PrintError_NjetVcut(ofstream& myfile, 
-			      const double e_plus_jet_weighted[][5][23], 
+			      const double e_plus_jet_weighted[][5][nmctype], 
 			      const double e_plus_jet_errors[][5][24], vector<string>& ve) const {
 
   myfile<<"\\begin{tabular}{|c|ccccc|c|}"<<endl;
@@ -8829,7 +8769,8 @@ void ana::StudySystematics(const string name,const string name2){
 }
 
 //----------------------------------------------------------------------------------------
-void ana::DrawEventPerNjetTable(const double nevent[][5][23], const vector<string>& ve) const {
+//void ana::DrawEventPerNjetTable(const double nevent[][5][23+5], const vector<string>& ve) const {
+void ana::DrawEventPerNjetTable(const double nevent[][5][nmctype], const vector<string>& ve) const {
 
   cout << setw(23) 
        << " &" << setw(13) << "0-jet"
@@ -8856,7 +8797,8 @@ void ana::DrawEventPerNjetTable(const double nevent[][5][23], const vector<strin
 
 
 //----------------------------------------------------------------------------------------
-void ana::DrawMCTypeTable(const double nevent[14][5][23], const string title, vector<string> ve) const {
+//void ana::DrawMCTypeTable(const double nevent[][5][23+5], const string title, vector<string> ve) const {
+void ana::DrawMCTypeTable(const double nevent[][5][nmctype], const string title, vector<string> ve) const {
 
   static bool first_time=true;
   if(first_time) cout.precision(0); //unweighted table
@@ -8969,7 +8911,8 @@ void ana::DrawMCTypeTable(const double nevent[14][5][23], const string title, ve
 
 
 //----------------------------------------------------------------------------------------
-void ana::DrawSignalBGTable(const double nevent[][5][23], vector<string> ve ) const {
+//void ana::DrawSignalBGTable(const double nevent[][5][23+5], vector<string> ve ) const {
+void ana::DrawSignalBGTable(const double nevent[][5][nmctype], vector<string> ve ) const {
 
   cout << "\n%---------------------------------------------------------------------\n";
   cout << "       Expected Signal and Background for " << intlumi << "/pb";
@@ -9034,7 +8977,8 @@ void ana::DrawSignalBGTable(const double nevent[][5][23], vector<string> ve ) co
 
 //---------------------------------------------------------------------------------------------
 // Draw event count table for break down of QCD
-void ana::DrawQCDTable(const double nevent[14][5][23], const string QCDtitle, vector<string> ve) const {
+//void ana::DrawQCDTable(const double nevent[][5][23+5], const string QCDtitle, vector<string> ve) const {
+void ana::DrawQCDTable(const double nevent[][5][nmctype], const string QCDtitle, vector<string> ve) const {
 
   static bool first_time=true;
   if(first_time) cout.precision(0); //unweighted table
@@ -9092,7 +9036,8 @@ void ana::DrawQCDTable(const double nevent[14][5][23], const string QCDtitle, ve
 
 //---------------------------------------------------------------------------------------------
 // Draw event count table for break down of Single Top
-void ana::DrawSingleTopTable(const double nevent[14][5][23], const string title, vector<string> ve) const {
+//void ana::DrawSingleTopTable(const double nevent[][5][23+5], const string title, vector<string> ve) const {
+void ana::DrawSingleTopTable(const double nevent[][5][nmctype], const string title, vector<string> ve) const {
     
   static bool first_time=true;
   if(first_time) cout.precision(0); //unweighted table
@@ -9146,9 +9091,69 @@ void ana::DrawSingleTopTable(const double nevent[14][5][23], const string title,
 }//end DrawSingleTopTable
 //---------------------------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------------------------
+// Draw event count table for break down of TT + n jet
+//void ana::DrawTTnjetTable(const double nevent[][5][23+5], const string title, vector<string> ve) const {
+void ana::DrawTTnjetTable(const double nevent[][5][nmctype], const string title, vector<string> ve) const {
+  
+  static bool first_time=true;
+  if(first_time) cout.precision(0);      //unweighted table
+  else           cout.precision(myprec); //weighted table
+
+  if(first_time) cout << "\\newpage\n" << endl;
+  cout << "%------------------------------------------------------------------------" << endl;
+  cout << "%                         " << title << "                                " << endl;
+  cout << "%------------------------------------------------------------------------" << endl;
+
+  if(first_time){
+    cout << "\\begin{tabular}{|l|rrr|r|}" << endl;
+    cout << "\\hline" << endl;
+  }
+  cout << "\\multicolumn{7}{|l|}";
+  if(first_time) cout << "{Break down of actual number of tt+j events passing selection}";
+  else           cout << "{Break down of expected tt+j events for " << intlumi << "/pb}";
+  cout << "\\\\\n\\hline" << endl;
+  cout << "          Cut        ";
+  cout << " &" << setw(13) << "tt0j";
+  cout << " &" << setw(13) << "tt1j";
+  cout << " &" << setw(13) << "tt2j";
+  cout << " &" << setw(13) << "tt3j";
+  cout << " &" << setw(13) << "tt4j";
+  cout << " &" << setw(20) << "Total \\\\\\hline" << endl;
+
+  short njbegin = 0;
+
+  // insert 4jet cut
+  ve.insert(ve.begin()+m_muonCutNum+1, Fourjets);
+  short p=0;
+
+  for(short i=0; i<ncutshown; i++){ //loop over cuts
+    double sum = 0;
+    printCutStage(p, ve.at(p));
+    if(ve.at(p)==Fourjets)  { njbegin = 4; i--; }
+    p++;
+
+    for(short k=23; k<=27; k++) { //mctype (tt+j): 23-27
+
+      double totalT = 0;
+      for(short j=njbegin; j<ntjet; ++j) { //njet
+        totalT += nevent[i][j][k]; 
+      }
+      sum += totalT;
+      cout << " & " << setw(12) << totalT;
+    }
+    cout << " & " << setw(13) << sum << " \\\\"<< endl;   
+  }
+  cout << "\\hline" << endl;
+  if(!first_time) cout << "\\end{tabular}\\\\[5mm]" << endl;
+  first_time = false;
+
+}//end DrawTTnjetTable
+//---------------------------------------------------------------------------------------------
 
 
-void ana::DrawSignalAcceptanceTable(const double nevent[][5][23], vector<string> ve) const {
+//void ana::DrawSignalAcceptanceTable(const double nevent[][5][23+5], vector<string> ve) const {
+void ana::DrawSignalAcceptanceTable(const double nevent[][5][nmctype], vector<string> ve) const {
 
   cout.precision(0); //reset precision
 
@@ -9479,7 +9484,6 @@ void ana::DoBTagging(vector<TLorentzVector>& electrons){
   m_nbtag_TCHP = 0;
   m_nbtag_SSV  = 0;
   //int nbtag_softMu = 0;
-
      
   // 16 Feb 2010: btag	   
   //--------------------
