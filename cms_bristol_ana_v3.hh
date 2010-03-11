@@ -11,6 +11,27 @@
 #include <iostream>
 #include <map>
 using namespace std;
+
+
+// Global variables/constants
+const int ntjet(5);
+const int myprec(1); //no of decimal point for weighted nEvent
+const int nbm3 = 960;
+const bool m3_use_1000_bins = false;
+
+const bool run_on_octX_skim = 0; // <---- set temporary swith here
+const bool use_old_Z_veto = false; //TEMPORARY
+//TODO: remove one of the two. Reason: they have the same information
+const string mcname[] = { "data", "ttbar", "QCD", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3", "wj", "zj", "vqq",
+		"singleTop", "tW", "tchan", "schan", "Zprime" };
+const string mclabel[] = { "data", "signal", "QCD", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3", "W+jets", "Z+jets",
+		"VQQ", "singleTop", "tW", "t-chan", "s-chan", "Zprime_M500GeV_W5GeV" };
+
+const short int mcsize = sizeof(mcname) / sizeof(mcname[0]);
+const int nmctype(mcsize + 7); //extend to include wj, zj, QCD, VQQ, single top
+const int nstage(mcsize + 8); //add >=1Tele
+
+
 class ana {
 
 public:
@@ -1349,9 +1370,7 @@ private:
   void fillHistoNjet_DataAndMC( const string hname, const float value, const double weight );
   void fillHistoNjet_DataAndMC( const string hname, const float v1, const float v2, const double weight );
 
-  //FIXME: changed from 16 to 17
-  //FIXME: changed from 17 to [] to 30
-  void fillHistoNjet2D( TH1F* h[][17], const int ec, const float value, const double weight );
+  void fillHistoNjet2D( TH1F* h[][mcsize], const int ec, const float value, const double weight );
 
   // Helper methods to fill histograms for data and each type of MC
   void addHistoDataAndMC( TH1F* h[], const string, const string, const int, const float, const float ) const;
@@ -1361,8 +1380,8 @@ private:
   void fillHistoDataAndMC( TH2F* h[], const float v1, const float v2, const double weight ) const;
 
   //FIXME: changed from 16 to 17 to [] tp 30
-  void addHisto_Njet_DataAndMC( TH1F* h[7][17], const string, const string, const int, const float, const float);
-  void fillHisto_Njet_DataAndMC( TH1F* h[7][17], const float value, const double w );
+  void addHisto_Njet_DataAndMC( TH1F* h[7][mcsize], const string, const string, const int, const float, const float);
+  void fillHisto_Njet_DataAndMC( TH1F* h[7][mcsize], const float value, const double w );
 
   void fillHisto_PDF_weights( TH1F* h );
 
@@ -1385,22 +1404,19 @@ private:
 
 
   // print event-count tables
-  //FIXME: changed nevt[][5][23] to nevt[][5][24]
-  void DrawEventPerNjetTable( const double nevt[][5][24], const vector<string>& ve ) const;
-  void DrawSignalBGTable(     const double nevt[][5][24], const vector<string> ve ) const;
-  void DrawMCTypeTable(       const double nevt[][5][24], const string title, vector<string> ve ) const;
-  void DrawQCDTable(          const double nevt[][5][24], const string title, vector<string> ve ) const;
-  void DrawSingleTopTable(    const double nevt[][5][24], const string title, vector<string> ve ) const;
-  void DrawSignalAcceptanceTable(const double nevent[][5][24], vector<string> ve) const;
+  void DrawEventPerNjetTable( const double nevt[][5][nmctype], const vector<string>& ve ) const;
+  void DrawSignalBGTable(     const double nevt[][5][nmctype], const vector<string> ve ) const;
+  void DrawMCTypeTable(       const double nevt[][5][nmctype], const string title, vector<string> ve ) const;
+  void DrawQCDTable(          const double nevt[][5][nmctype], const string title, vector<string> ve ) const;
+  void DrawSingleTopTable(    const double nevt[][5][nmctype], const string title, vector<string> ve ) const;
+  void DrawSignalAcceptanceTable(const double nevent[][5][nmctype], vector<string> ve) const;
   void printCutStage(int,string) const;
   void printCutStage(ofstream& os,int,string) const;
 
 
   // print event-count tables (with errors)
-  //FIXME: changed e_plus_jet[][5][23] to e_plus_jet[][5][24]
-  // and [][5][24] to [][5][25]
-  void PrintErrorTables(const double e_plus_jet[][5][24], const double e_plus_jet_weighted[][5][24], vector<string> ve) const;
-  void PrintError_NjetVcut(ofstream&, const double [][5][24], const double [][5][25], vector<string>&) const;
+  void PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e_plus_jet_weighted[][5][nmctype], vector<string> ve) const;
+  void PrintError_NjetVcut(ofstream&, const double [][5][nmctype], const double [][5][nstage], vector<string>&) const;
   double GetBayesUncertainty(int Ninitial) const;
   string ScrNum(double num) const;
   void printLine(ofstream &myfile, const double, const double) const;
@@ -1433,7 +1449,7 @@ private:
   // conversion
   void PrintConversionTable();
   int ConversionCounter;
-  int ConversionArray[24][2][6];//FIXME: changed from 23 to 24
+  int ConversionArray[nmctype][2][6];
   void OptimiseConversionFinder(const TLorentzVector& e1, int mctype);  
 
   TH2D *Conv_Opti[2];
@@ -1566,7 +1582,7 @@ private:
   bool mc_sample_has_tchan;
   bool mc_sample_has_schan;
   //FIXME: added
-  bool mc_sample_has_zprime;
+  bool mc_sample_has_Zprime_M500GeV_W5GeV;
 
   // MC type of this event
   bool isTTbar;
@@ -1585,7 +1601,7 @@ private:
   bool isTchan;
   bool isSchan;
   //FIXME: added
-  bool isZprime;
+  bool isZprime_M500GeV_W5GeV;
 
 };
 

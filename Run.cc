@@ -7,15 +7,19 @@
 #include "cms_bristol_ana_v3.hh"
 #include "TSystem.h"
 #include "TStopwatch.h"
+#include "TROOT.h"
+
+using namespace ROOT;
 
 int main(int argc, char **argv) {
+	gROOT->ProcessLine("gErrorIgnoreLevel = 2001;");
 	   TStopwatch watch;
 		watch.Start();
 
 		//gSystem->SetIncludePath(" -I/software/cms/slc4_ia32_gcc345/lcg/roofit/5.25.02-cms/include");
 	//	gROOT->ProcessLine(".exception");
-		//FIXME: this needs to be in
-//		gSystem->CompileMacro("./cms_bristol_ana_v3.cc","k");
+		//FIXME: this needs to be in. Works without but produces error messages.
+		gSystem->CompileMacro("./cms_bristol_ana_v3.cc","g");
 	   	ana *myana  = new ana();
 
 
