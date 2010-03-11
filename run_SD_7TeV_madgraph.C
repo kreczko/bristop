@@ -4,7 +4,7 @@
 {
         TStopwatch watch;
 	watch.Start();
-
+	gROOT->ProcessLine(".exception");
 	gSystem->CompileMacro("./cms_bristol_ana_v3.cc","k");
    	ana* myana  = new ana();
 
