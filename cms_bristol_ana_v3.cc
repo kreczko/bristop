@@ -98,9 +98,15 @@ void ana::SetOutputFirstName(const string name) {
 		mc_names.push_back("tW");
 		mc_names.push_back("tchan");
 		mc_names.push_back("schan");
-		//FIXME: 04th step to new sample
-		mc_names.push_back("Zprime_M500GeV_W5GeV");
-		mc_names.push_back("Zprime_M500GeV_W50GeV");
+		//FIXME: 04th step to new sample - add to vector
+		mc_names.push_back("Zprime_M500GeV_W5GeV");mc_names.push_back("Zprime_M500GeV_W50GeV");
+		mc_names.push_back("Zprime_M750GeV_W7500MeV");
+		mc_names.push_back("Zprime_M1TeV_W10GeV");mc_names.push_back("Zprime_M1TeV_W100GeV");
+		mc_names.push_back("Zprime_M1250GeV_W12500MeV");
+		mc_names.push_back("Zprime_M1500GeV_W15GeV"); mc_names.push_back("Zprime_M1500GeV_W150GeV");
+		mc_names.push_back("Zprime_M2TeV_W20GeV"); mc_names.push_back("Zprime_M2TeV_W200GeV");
+		mc_names.push_back("Zprime_M3TeV_W30GeV"); mc_names.push_back("Zprime_M3TeV_W300GeV");
+		mc_names.push_back("Zprime_M4TeV_W40GeV"); mc_names.push_back("Zprime_M4TeV_W400GeV");
 
 		vector<int> nfiles(mc_names.size());
 		vector<long> nevents(mc_names.size());
@@ -305,42 +311,74 @@ long ana::GetNinit(const string mc) const {
 
 void ana::SetMCFlag() {
 
-	if (nInitialEventMC["ttbar"] > 0 || nInitialEventMC["ttjet"] > 0)
+	if (GetNinit("ttbar") > 0 || GetNinit("ttjet") > 0)
 		mc_sample_has_ttbar = true;
-	if (nInitialEventMC["wjet"] > 0 || nInitialEventMC["wenu"] > 0)
+	if (GetNinit("wjet") > 0 || GetNinit("wenu") > 0)
 		mc_sample_has_Wjet = true; //updated 30-9-09
-	if (nInitialEventMC["zjet"] > 0 || nInitialEventMC["zee"] > 0)
+	if (GetNinit("zjet") > 0 || GetNinit("zee") > 0)
 		mc_sample_has_Zjet = true; //updated 30-9-09
-	if ((nInitialEventMC["bce1"] + nInitialEventMC["bce2"] + nInitialEventMC["bce3"] + nInitialEventMC["enri1"]
-			+ nInitialEventMC["enri2"] + nInitialEventMC["enri3"]) > 0)
+	if ((GetNinit("bce1") + GetNinit("bce2") + GetNinit("bce3") + GetNinit("enri1")
+			+ GetNinit("enri2") + GetNinit("enri3")) > 0)
 		mc_sample_has_QCD = true;
-	if (nInitialEventMC["enri1"] > 0)
+	if (GetNinit("enri1") > 0)
 		mc_sample_has_enri1 = true;
-	if (nInitialEventMC["enri2"] > 0)
+	if (GetNinit("enri2") > 0)
 		mc_sample_has_enri2 = true;
-	if (nInitialEventMC["enri3"] > 0)
+	if (GetNinit("enri3") > 0)
 		mc_sample_has_enri3 = true;
-	if (nInitialEventMC["bce1"] > 0)
+	if (GetNinit("bce1") > 0)
 		mc_sample_has_bce1 = true;
-	if (nInitialEventMC["bce2"] > 0)
+	if (GetNinit("bce2") > 0)
 		mc_sample_has_bce2 = true;
-	if (nInitialEventMC["bce3"] > 0)
+	if (GetNinit("bce3") > 0)
 		mc_sample_has_bce3 = true;
-	if (nInitialEventMC["vqq"] > 0)
+	if (GetNinit("vqq") > 0)
 		mc_sample_has_VQQ = true;
-	if ((nInitialEventMC["tW"] + nInitialEventMC["tchan"] + nInitialEventMC["schan"]) > 0)
+	if ((GetNinit("tW") + GetNinit("tchan") + GetNinit("schan")) > 0)
 		mc_sample_has_singleTop = true;
-	if (nInitialEventMC["tW"] > 0)
+	if (GetNinit("tW") > 0)
 		mc_sample_has_tW = true;
-	if (nInitialEventMC["tchan"] > 0)
+	if (GetNinit("tchan") > 0)
 		mc_sample_has_tchan = true;
-	if (nInitialEventMC["schan"] > 0)
+	if (GetNinit("schan") > 0)
 		mc_sample_has_schan = true;
-	//FIXME: 05th step to new sample
-	if (nInitialEventMC["Zprime_M500GeV_W5GeV"] > 0)
+	//FIXME: 05th step to new sample - add to checking for Init values
+	if (GetNinit("Zprime_M500GeV_W5GeV") > 0)
 		mc_sample_has_Zprime_M500GeV_W5GeV = true;
-	if (nInitialEventMC["Zprime_M500GeV_W50GeV"] > 0)
+	if (GetNinit("Zprime_M500GeV_W50GeV") > 0)
 			mc_sample_has_Zprime_M500GeV_W50GeV = true;
+
+	if (GetNinit("Zprime_M750GeV_W7500MeV") > 0)
+				mc_sample_has_Zprime_M750GeV_W7500MeV = true;
+
+	if (GetNinit("Zprime_M1TeV_W10GeV") > 0)
+				mc_sample_has_Zprime_M1TeV_W10GeV = true;
+	if (GetNinit("Zprime_M1TeV_W100GeV") > 0)
+				mc_sample_has_Zprime_M1TeV_W100GeV = true;
+
+	if (GetNinit("Zprime_M1250GeV_W12500MeV") > 0)
+				mc_sample_has_Zprime_M1250GeV_W12500MeV = true;
+
+	if (GetNinit("Zprime_M1500GeV_W15GeV") > 0)
+				mc_sample_has_Zprime_M1500GeV_W15GeV = true;
+	if (GetNinit("Zprime_M1500GeV_W150GeV") > 0)
+				mc_sample_has_Zprime_M1500GeV_W150GeV = true;
+
+	if (GetNinit("Zprime_M2TeV_W20GeV") > 0)
+				mc_sample_has_Zprime_M2TeV_W20GeV = true;
+	if (GetNinit("Zprime_M2TeV_W200GeV") > 0)
+				mc_sample_has_Zprime_M2TeV_W200GeV = true;
+
+	if (GetNinit("Zprime_M3TeV_W30GeV") > 0)
+				mc_sample_has_Zprime_M3TeV_W30GeV = true;
+	if (GetNinit("Zprime_M3TeV_W300GeV") > 0)
+				mc_sample_has_Zprime_M3TeV_W300GeV = true;
+
+	if (GetNinit("Zprime_M4TeV_W40GeV") > 0)
+				mc_sample_has_Zprime_M4TeV_W40GeV = true;
+	if (GetNinit("Zprime_M4TeV_W400GeV") > 0)
+				mc_sample_has_Zprime_M4TeV_W400GeV = true;
+
 }
 
 void ana::DefineCrossSection() {
@@ -397,9 +435,15 @@ void ana::DefineCrossSection() {
 		cross_section["tW"] = 10.6; //xs  11 pb (NLO MCFM) inclusive t,W decay
 		cross_section["tchan"] = 63. * 0.324; //xs  63 pb (NLO MCFM) * 0.324 (Br(t->blnu)) = 20.412
 		cross_section["schan"] = 4.6 * 0.324; //4.6 pb x 0.324 (4.6pb is NNNLO) = 1.4904
-		//FIXME: 06th step to new sample
-		cross_section["Zprime_M500GeV_W5GeV"] = 165; //FIXME: change to Z x-section
-		cross_section["Zprime_M500GeV_W50GeV"] = 165; //FIXME: change to Z x-section
+		//FIXME: 06th step to new sample - set cross section
+		//FIXME: change to Z x-section
+		cross_section["Zprime_M500GeV_W5GeV"] = 165;cross_section["Zprime_M500GeV_W50GeV"] = 165;
+		cross_section["Zprime_M750GeV_W7500MeV"] = 165; cross_section["Zprime_M1TeV_W10GeV"] = 165;
+		cross_section["Zprime_M1TeV_W100GeV"] = 165;cross_section["Zprime_M1250GeV_W12500MeV"] = 165;
+		cross_section["Zprime_M1500GeV_W15GeV"] = 165; cross_section["Zprime_M1500GeV_W150GeV"] = 165;
+		cross_section["Zprime_M2TeV_W20GeV"] = 165; cross_section["Zprime_M2TeV_W200GeV"] = 165;
+		cross_section["Zprime_M3TeV_W30GeV"] = 165; cross_section["Zprime_M3TeV_W300GeV"] = 165;
+		cross_section["Zprime_M4TeV_W40GeV"] = 165; cross_section["Zprime_M4TeV_W400GeV"] = 165;
 
 	} else {
 		if (!IsData())
@@ -611,9 +655,16 @@ ana::ana() {
 	mc_sample_has_tW = false;
 	mc_sample_has_tchan = false;
 	mc_sample_has_schan = false;
-	//FIXME: 07th step to new samples
-	mc_sample_has_Zprime_M500GeV_W5GeV = false;
-	mc_sample_has_Zprime_M500GeV_W50GeV = false;
+	//FIXME: 07th step to new samples - set mc_sample_has*
+	mc_sample_has_Zprime_M500GeV_W5GeV = false;mc_sample_has_Zprime_M500GeV_W50GeV = false;
+	mc_sample_has_Zprime_M750GeV_W7500MeV = false;
+	mc_sample_has_Zprime_M1TeV_W10GeV = false;mc_sample_has_Zprime_M1TeV_W100GeV = false;
+	mc_sample_has_Zprime_M1250GeV_W12500MeV = false;
+	mc_sample_has_Zprime_M1500GeV_W15GeV = false; mc_sample_has_Zprime_M1500GeV_W150GeV = false;
+	mc_sample_has_Zprime_M2TeV_W20GeV = false; mc_sample_has_Zprime_M2TeV_W200GeV = false;
+	mc_sample_has_Zprime_M3TeV_W30GeV = false; mc_sample_has_Zprime_M3TeV_W300GeV = false;
+	mc_sample_has_Zprime_M4TeV_W40GeV = false; mc_sample_has_Zprime_M4TeV_W400GeV = false;
+
 	isTTbar = false;
 	isWjets = false;
 	isZjets = false;
@@ -629,10 +680,15 @@ ana::ana() {
 	isTW = false;
 	isTchan = false;
 	isSchan = false;
-	//FIXME: 08th step to new samples
-	isZprime_M500GeV_W5GeV = false;
-	isZprime_M500GeV_W50GeV = false;
-
+	//FIXME: 08th step to new samples - set is*
+	isZprime_M500GeV_W5GeV = false;isZprime_M500GeV_W50GeV = false;
+	isZprime_M750GeV_W7500MeV = false;
+	isZprime_M1TeV_W10GeV = false;isZprime_M1TeV_W100GeV = false;
+	isZprime_M1250GeV_W12500MeV = false;
+	isZprime_M1500GeV_W15GeV = false; isZprime_M1500GeV_W150GeV = false;
+	isZprime_M2TeV_W20GeV = false; isZprime_M2TeV_W200GeV = false;
+	isZprime_M3TeV_W30GeV = false; isZprime_M3TeV_W300GeV = false;
+	isZprime_M4TeV_W40GeV = false; isZprime_M4TeV_W400GeV = false;
 
 	//856
 	ConversionCounter = 0;
@@ -2154,9 +2210,15 @@ bool ana::EventLoop() {
 				isTW = false;
 				isTchan = false;
 				isSchan = false;
-				//FIXME: 09th step to new sample
-				isZprime_M500GeV_W5GeV = false;
-				isZprime_M500GeV_W50GeV = false;
+				//FIXME: 09th step to new sample - reset flags
+				isZprime_M500GeV_W5GeV = false;isZprime_M500GeV_W50GeV = false;
+					isZprime_M750GeV_W7500MeV = false;
+					isZprime_M1TeV_W10GeV = false;isZprime_M1TeV_W100GeV = false;
+					isZprime_M1250GeV_W12500MeV = false;
+					isZprime_M1500GeV_W15GeV = false; isZprime_M1500GeV_W150GeV = false;
+					isZprime_M2TeV_W20GeV = false; isZprime_M2TeV_W200GeV = false;
+					isZprime_M3TeV_W30GeV = false; isZprime_M3TeV_W300GeV = false;
+					isZprime_M4TeV_W40GeV = false; isZprime_M4TeV_W400GeV = false;
 
 				if (!RunOnMixedMC) {
 					if (m_debug)
@@ -2245,7 +2307,7 @@ bool ana::EventLoop() {
 					isSchan = true;
 					mctype = 22;
 				}
-				//FIXME: 10th step to new sample
+				//FIXME: 10th step to new sample - set mctype and is*
 				else if (this_mc == "Zprime_M500GeV_W5GeV") {
 					isZprime_M500GeV_W5GeV = true;
 					mctype = 23;
@@ -2254,6 +2316,60 @@ bool ana::EventLoop() {
 					isZprime_M500GeV_W50GeV = true;
 					mctype = 24;
 				}
+
+				else if (this_mc == "Zprime_M750GeV_W7500MeV") {
+									isZprime_M750GeV_W7500MeV = true;
+									mctype = 25;
+								}
+
+				else if (this_mc == "Zprime_M1TeV_W10GeV") {
+									isZprime_M1TeV_W10GeV = true;
+									mctype = 26;
+								}
+				else if (this_mc == "Zprime_M1TeV_W100GeV") {
+									isZprime_M1TeV_W100GeV = true;
+									mctype = 27;
+								}
+
+				else if (this_mc == "Zprime_M1250GeV_W12500MeV") {
+									isZprime_M1250GeV_W12500MeV = true;
+									mctype = 28;
+								}
+
+				else if (this_mc == "Zprime_M1500GeV_W15GeV") {
+									isZprime_M1500GeV_W15GeV = true;
+									mctype = 29;
+								}
+				else if (this_mc == "Zprime_M1500GeV_W150GeV") {
+									isZprime_M1500GeV_W150GeV = true;
+									mctype = 30;
+								}
+				else if (this_mc == "Zprime_M2TeV_W20GeV") {
+									isZprime_M2TeV_W20GeV = true;
+									mctype = 31;
+								}
+				else if (this_mc == "Zprime_M2TeV_W200GeV") {
+									isZprime_M2TeV_W200GeV = true;
+									mctype = 32;
+								}
+				else if (this_mc == "Zprime_M3TeV_W30GeV") {
+									isZprime_M3TeV_W30GeV = true;
+									mctype = 33;
+								}
+				else if (this_mc == "Zprime_M3TeV_W300GeV") {
+									isZprime_M3TeV_W300GeV = true;
+									mctype = 34;
+								}
+				else if (this_mc == "Zprime_M4TeV_W40GeV") {
+									isZprime_M4TeV_W40GeV = true;
+									mctype = 35;
+								}
+				else if (this_mc == "Zprime_M4TeV_W400GeV") {
+									isZprime_M4TeV_W400GeV = true;
+									mctype = 36;
+								}
+
+
 				if (m_debug) {
 					cout << "+++> Now starts running on  " << this_mc << "  events" << endl;
 					cout << " current entry: num " << lflag << ", tree # " << chain->GetTreeNumber() << "\n filename: "
@@ -4918,10 +5034,13 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 
 
 	//TODO: is this needed?
-	//FIXME: 11th step to new sample
+	//FIXME: 11th step to new sample - set kindexmcNames
 	string kIndexmcNames[] = { "", ttsample, ttsample, ttsample, ttsample, ttsample, ttsample, ttsample, ttsample, ttsample,
 			ttsample, wjetSample, "zjet", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3", "vqq", "tW", "tchan", "schan",
-			"Zprime_M500GeV_W5GeV", "Zprime_M500GeV_W50GeV" };
+			"Zprime_M500GeV_W5GeV","Zprime_M500GeV_W50GeV",
+			"Zprime_M750GeV_W7500MeV", "Zprime_M1TeV_W10GeV", "Zprime_M1TeV_W100GeV","Zprime_M1250GeV_W12500MeV",
+			"Zprime_M1500GeV_W15GeV", "Zprime_M1500GeV_W150GeV", "Zprime_M2TeV_W20GeV", "Zprime_M2TeV_W200GeV",
+			"Zprime_M3TeV_W30GeV", "Zprime_M3TeV_W300GeV","Zprime_M4TeV_W40GeV", "Zprime_M4TeV_W400GeV" };
 
 	for (short i = 0; i < mynstage; ++i) {
 		for (short j = 0; j < 5; ++j) {
@@ -6329,11 +6448,45 @@ void ana::fillHistoDataAndMC(TH1F* h[], const float value, const double w) const
 			else if (isSchan)
 				h[15]->Fill(value, w);
 		}
-		//FIXME: 12th step to new sample
+		//TODO: replace with enum
+		//FIXME: 12th step to new sample - fill 1D histograms
 		else if (isZprime_M500GeV_W5GeV)
 			h[16]->Fill(value, w);
 		else if (isZprime_M500GeV_W50GeV)
 			h[17]->Fill(value, w);
+
+		else if (isZprime_M750GeV_W7500MeV)
+					h[18]->Fill(value, w);
+
+		else if (isZprime_M1TeV_W10GeV)
+					h[19]->Fill(value, w);
+		else if (isZprime_M1TeV_W100GeV)
+					h[20]->Fill(value, w);
+
+		else if (isZprime_M1250GeV_W12500MeV)
+					h[21]->Fill(value, w);
+
+		else if (isZprime_M1500GeV_W15GeV)
+					h[22]->Fill(value, w);
+		else if (isZprime_M1500GeV_W150GeV)
+					h[23]->Fill(value, w);
+
+		else if (isZprime_M2TeV_W20GeV)
+					h[24]->Fill(value, w);
+		else if (isZprime_M2TeV_W200GeV)
+					h[25]->Fill(value, w);
+
+		else if (isZprime_M3TeV_W30GeV)
+					h[26]->Fill(value, w);
+		else if (isZprime_M3TeV_W300GeV)
+					h[27]->Fill(value, w);
+
+		else if (isZprime_M4TeV_W40GeV)
+					h[28]->Fill(value, w);
+		else if (isZprime_M4TeV_W400GeV)
+					h[29]->Fill(value, w);
+
+
 	}
 	if (m_debug)
 		cout << "End of << fillHistoDataAndMC >>" << endl;
@@ -6377,11 +6530,41 @@ void ana::fillHistoDataAndMC(TH2F* h[], const float v1, const float v2, const do
 			else if (isSchan)
 				h[15]->Fill(v1, v2, w);
 		}
-		//FIXME: 13th step to new sample
+		//FIXME: 13th step to new sample - fill 2D histograms
 		else if (isZprime_M500GeV_W5GeV)
 			h[16]->Fill(v1, v2, w);
 		else if (isZprime_M500GeV_W50GeV)
 			h[17]->Fill(v1, v2, w);
+		else if (isZprime_M750GeV_W7500MeV)
+							h[18]->Fill(v1, v2, w);
+
+				else if (isZprime_M1TeV_W10GeV)
+							h[19]->Fill(v1, v2, w);
+				else if (isZprime_M1TeV_W100GeV)
+							h[20]->Fill(v1, v2, w);
+
+				else if (isZprime_M1250GeV_W12500MeV)
+							h[21]->Fill(v1, v2, w);
+
+				else if (isZprime_M1500GeV_W15GeV)
+							h[22]->Fill(v1, v2, w);
+				else if (isZprime_M1500GeV_W150GeV)
+							h[23]->Fill(v1, v2, w);
+
+				else if (isZprime_M2TeV_W20GeV)
+							h[24]->Fill(v1, v2, w);
+				else if (isZprime_M2TeV_W200GeV)
+							h[25]->Fill(v1, v2, w);
+
+				else if (isZprime_M3TeV_W30GeV)
+							h[26]->Fill(v1, v2, w);
+				else if (isZprime_M3TeV_W300GeV)
+							h[27]->Fill(v1, v2, w);
+
+				else if (isZprime_M4TeV_W40GeV)
+							h[28]->Fill(v1, v2, w);
+				else if (isZprime_M4TeV_W400GeV)
+							h[29]->Fill(v1, v2, w);
 	}
 	if (m_debug)
 		cout << "End of << fillHistoDataAndMC 2D >>" << endl;
@@ -6491,7 +6674,7 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float value, const do
 						h->Fill(value, w);
 				}
 			}
-			//FIXME: 14th step to new sample
+			//FIXME: 14th step to new sample - fill more 1D histograms from a file
 			else if (isZprime_M500GeV_W5GeV) {
 				h = (TH1F*) histf->Get(Form("%s__Zprime_M500GeV_W5GeV", hname));
 				if (h > 0)
@@ -6502,6 +6685,73 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float value, const do
 				if (h > 0)
 					h->Fill(value, w);
 			}
+
+			else if (isZprime_M750GeV_W7500MeV) {
+							h = (TH1F*) histf->Get(Form("%s__Zprime_M750GeV_W7500MeV", hname));
+							if (h > 0)
+								h->Fill(value, w);
+						}
+
+			else if (isZprime_M1TeV_W10GeV) {
+							h = (TH1F*) histf->Get(Form("%s__Zprime_M1TeV_W10GeV", hname));
+							if (h > 0)
+								h->Fill(value, w);
+						}
+			else if (isZprime_M1TeV_W100GeV) {
+							h = (TH1F*) histf->Get(Form("%s__Zprime_M1TeV_W100GeV", hname));
+							if (h > 0)
+								h->Fill(value, w);
+						}
+
+			else if (isZprime_M1250GeV_W12500MeV) {
+							h = (TH1F*) histf->Get(Form("%s__Zprime_M1250GeV_W12500MeV", hname));
+							if (h > 0)
+								h->Fill(value, w);
+						}
+
+			else if (isZprime_M1500GeV_W15GeV) {
+							h = (TH1F*) histf->Get(Form("%s__Zprime_M1500GeV_W15GeV", hname));
+							if (h > 0)
+								h->Fill(value, w);
+						}
+			else if (isZprime_M1500GeV_W150GeV) {
+							h = (TH1F*) histf->Get(Form("%s__Zprime_M1500GeV_W150GeV", hname));
+							if (h > 0)
+								h->Fill(value, w);
+						}
+
+			else if (isZprime_M2TeV_W20GeV) {
+							h = (TH1F*) histf->Get(Form("%s__Zprime_M2TeV_W20GeV", hname));
+							if (h > 0)
+								h->Fill(value, w);
+						}
+			else if (isZprime_M2TeV_W200GeV) {
+							h = (TH1F*) histf->Get(Form("%s__Zprime_M2TeV_W200GeV", hname));
+							if (h > 0)
+								h->Fill(value, w);
+						}
+
+			else if (isZprime_M3TeV_W30GeV) {
+							h = (TH1F*) histf->Get(Form("%s__Zprime_M3TeV_W30GeV", hname));
+							if (h > 0)
+								h->Fill(value, w);
+						}
+			else if (isZprime_M3TeV_W300GeV) {
+							h = (TH1F*) histf->Get(Form("%s__Zprime_M3TeV_W300GeV", hname));
+							if (h > 0)
+								h->Fill(value, w);
+						}
+
+			else if (isZprime_M4TeV_W40GeV) {
+							h = (TH1F*) histf->Get(Form("%s__Zprime_M4TeV_W40GeV", hname));
+							if (h > 0)
+								h->Fill(value, w);
+						}
+			else if (isZprime_M4TeV_W400GeV) {
+							h = (TH1F*) histf->Get(Form("%s__Zprime_M4TeV_W400GeV", hname));
+							if (h > 0)
+								h->Fill(value, w);
+						}
 		}//if run on MC
 	}// loop: "allj", "0-4j",">=4j"
 
@@ -6611,17 +6861,84 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float v1, const float
 						h->Fill(v1, v2, w);
 				}
 			}
-			//FIXME: 15th step to new sample
+			//FIXME: 15th step to new sample - fill more 2D histograms from file
 			else if (isZprime_M500GeV_W5GeV) {
-				h = (TH2F*) histf->Get(Form("%s__Zprime_M500GeV_W5GeV", hname));
-				if (h > 0)
-					h->Fill(v1, v2, w);
-			}
-			else if (isZprime_M500GeV_W50GeV) {
-				h = (TH2F*) histf->Get(Form("%s__Zprime_M500GeV_W50GeV", hname));
+							h = (TH2F*) histf->Get(Form("%s__Zprime_M500GeV_W5GeV", hname));
 							if (h > 0)
 								h->Fill(v1, v2, w);
 						}
+						else if (isZprime_M500GeV_W50GeV) {
+							h = (TH2F*) histf->Get(Form("%s__Zprime_M500GeV_W50GeV", hname));
+							if (h > 0)
+								h->Fill(v1, v2, w);
+						}
+
+						else if (isZprime_M750GeV_W7500MeV) {
+										h = (TH2F*) histf->Get(Form("%s__Zprime_M750GeV_W7500MeV", hname));
+										if (h > 0)
+											h->Fill(v1, v2, w);
+									}
+
+						else if (isZprime_M1TeV_W10GeV) {
+										h = (TH2F*) histf->Get(Form("%s__Zprime_M1TeV_W10GeV", hname));
+										if (h > 0)
+											h->Fill(v1, v2, w);
+									}
+						else if (isZprime_M1TeV_W100GeV) {
+										h = (TH2F*) histf->Get(Form("%s__Zprime_M1TeV_W100GeV", hname));
+										if (h > 0)
+											h->Fill(v1, v2, w);
+									}
+
+						else if (isZprime_M1250GeV_W12500MeV) {
+										h = (TH2F*) histf->Get(Form("%s__Zprime_M1250GeV_W12500MeV", hname));
+										if (h > 0)
+											h->Fill(v1, v2, w);
+									}
+
+						else if (isZprime_M1500GeV_W15GeV) {
+										h = (TH2F*) histf->Get(Form("%s__Zprime_M1500GeV_W15GeV", hname));
+										if (h > 0)
+											h->Fill(v1, v2, w);
+									}
+						else if (isZprime_M1500GeV_W150GeV) {
+										h = (TH2F*) histf->Get(Form("%s__Zprime_M1500GeV_W150GeV", hname));
+										if (h > 0)
+											h->Fill(v1, v2, w);
+									}
+
+						else if (isZprime_M2TeV_W20GeV) {
+										h = (TH2F*) histf->Get(Form("%s__Zprime_M2TeV_W20GeV", hname));
+										if (h > 0)
+											h->Fill(v1, v2, w);
+									}
+						else if (isZprime_M2TeV_W200GeV) {
+										h = (TH2F*) histf->Get(Form("%s__Zprime_M2TeV_W200GeV", hname));
+										if (h > 0)
+											h->Fill(v1, v2, w);
+									}
+
+						else if (isZprime_M3TeV_W30GeV) {
+										h = (TH2F*) histf->Get(Form("%s__Zprime_M3TeV_W30GeV", hname));
+										if (h > 0)
+											h->Fill(v1, v2, w);
+									}
+						else if (isZprime_M3TeV_W300GeV) {
+										h = (TH2F*) histf->Get(Form("%s__Zprime_M3TeV_W300GeV", hname));
+										if (h > 0)
+											h->Fill(v1, v2, w);
+									}
+
+						else if (isZprime_M4TeV_W40GeV) {
+										h = (TH2F*) histf->Get(Form("%s__Zprime_M4TeV_W40GeV", hname));
+										if (h > 0)
+											h->Fill(v1, v2, w);
+									}
+						else if (isZprime_M4TeV_W400GeV) {
+										h = (TH2F*) histf->Get(Form("%s__Zprime_M4TeV_W400GeV", hname));
+										if (h > 0)
+											h->Fill(v1, v2, w);
+									}
 		}//if run on MC
 	}// loop: "allj", "0-4j",">=4j"
 
@@ -6708,6 +7025,49 @@ void ana::fillHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const float value, const 
 		else if (isZprime_M500GeV_W50GeV) {
 					fillHistoNjet2D(h, 17, value, w);
 				}
+
+		else if (isZprime_M750GeV_W7500MeV) {
+							fillHistoNjet2D(h, 18, value, w);
+						}
+
+		else if (isZprime_M1TeV_W10GeV) {
+							fillHistoNjet2D(h, 19, value, w);
+						}
+		else if (isZprime_M1TeV_W100GeV) {
+							fillHistoNjet2D(h, 20, value, w);
+						}
+
+		else if (isZprime_M1250GeV_W12500MeV) {
+							fillHistoNjet2D(h, 21, value, w);
+						}
+
+		else if (isZprime_M1500GeV_W15GeV) {
+							fillHistoNjet2D(h, 22, value, w);
+						}
+		else if (isZprime_M1500GeV_W150GeV) {
+							fillHistoNjet2D(h, 23, value, w);
+						}
+
+		else if (isZprime_M2TeV_W20GeV) {
+							fillHistoNjet2D(h, 24, value, w);
+						}
+		else if (isZprime_M2TeV_W200GeV) {
+							fillHistoNjet2D(h, 25, value, w);
+						}
+
+		else if (isZprime_M3TeV_W30GeV) {
+							fillHistoNjet2D(h, 26, value, w);
+						}
+		else if (isZprime_M3TeV_W300GeV) {
+							fillHistoNjet2D(h, 27, value, w);
+						}
+
+		else if (isZprime_M4TeV_W40GeV) {
+							fillHistoNjet2D(h, 28, value, w);
+						}
+		else if (isZprime_M4TeV_W400GeV) {
+							fillHistoNjet2D(h, 29, value, w);
+						}
 	}
 	if (m_debug)
 		cout << "End of << fillHisto_Njet_DataAndMC >>" << endl;
@@ -8838,68 +9198,64 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 
 		totalA = 0; //reset to zero for each cut
 		printCutStage(i, ve.at(i));
-		totalT = 0;
+
+		totalT = getTotalEvents(nevent, i, 1, 11, njbegin);;
 
 		//Signal
-		for (short k = 1; k < 11; ++k) { //loop over ttbar mc types
-			for (short j = njbegin; j < ntjet; ++j) {
-				totalT += nevent[i][j][k];
-			} //sum up jet bins
-		}
+//		for (short k = 1; k < 11; ++k) { //loop over ttbar mc types
+//			for (short j = njbegin; j < ntjet; ++j) {
+//				totalT += nevent[i][j][k];
+//			} //sum up jet bins
+//		}
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add signal to total
 
 		//Wjets
-		totalT = 0;
-		for (short j = njbegin; j < ntjet; ++j) {
-			totalT += nevent[i][j][11];
-		} //sum up jet bins
+		totalT = getTotalEvents(nevent, i, 11, 12, njbegin);;
+//		for (short j = njbegin; j < ntjet; ++j) {
+//			totalT += nevent[i][j][11];
+//		} //sum up jet bins
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add wjets to total
 
 		//Zjets
-		totalT = 0;
-		for (short j = njbegin; j < ntjet; ++j) {
-			totalT += nevent[i][j][12];
-		} //sum up jet bins
+		totalT = getTotalEvents(nevent, i, 12, 13, njbegin);
+//		for (short j = njbegin; j < ntjet; ++j) {
+//			totalT += nevent[i][j][12];
+//		} //sum up jet bins
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add zjets to total
 
 		//QCD
-		totalT = 0;
-		for (short k = 13; k < 19; ++k) { //loop over QCD mc types
-			for (short j = njbegin; j < ntjet; ++j) {
-				totalT += nevent[i][j][k];
-			}
-		}
+		totalT = getTotalEvents(nevent, i, 13, 19, njbegin);//loop over QCD mc types
+//		for (short k = 13; k < 19; ++k) {
+//			for (short j = njbegin; j < ntjet; ++j) {
+//				totalT += nevent[i][j][k];
+//			}
+//		}
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add QCD to total
 
 		//VQQ
-		totalT = 0;
-		for (short j = njbegin; j < ntjet; ++j) {
-			totalT += nevent[i][j][19];
-		} //sum up jet bins
+		totalT = getTotalEvents(nevent, i, 19, 20, njbegin);;
+//		for (short j = njbegin; j < ntjet; ++j) {
+//			totalT += nevent[i][j][19];
+//		} //sum up jet bins
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add VQQ to total
 
 		//single top
-		totalT = 0;
-		for (short k = 20; k < 23; ++k) { //loop over single top mc types (20-22)
-			for (short j = njbegin; j < ntjet; ++j) {
-				totalT += nevent[i][j][k];
-			}
-		}
+		totalT = getTotalEvents(nevent, i, 20, 23, njbegin);//loop over single top mc types (20-22)
+//		for (short k = 20; k < 23; ++k) {
+//			for (short j = njbegin; j < ntjet; ++j) {
+//				totalT += nevent[i][j][k];
+//			}
+//		}
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT; //add single top to total
 
 		//FIXME 17th step to new sample (optional)
-		totalT = 0;
-		for (short k = 23; k < 24; ++k) { //loop over Zprime_M500GeV_W5GeV mc types (23)
-			for (short j = njbegin; j < ntjet; ++j) {
-				totalT += nevent[i][j][k];
-			}
-		}
+		totalT = getTotalEvents(nevent, i, 23, 24, njbegin);
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT; //add Zprime_M500GeV_W5GeV to total
 
@@ -8915,8 +9271,107 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 
 	}// end loop over cut (nstage)
 	cout << "\\hline" << endl;
-	if (!first_time)
+	if (!first_time){
 		cout << "\\end{tabular}\\\\[5mm]" << endl;
+	}
+
+
+	//Zprime table. TODO: make an own function for this
+//	if (first_time) {
+//			//cout << "\\\\[1em]\n" << endl;
+//			cout << "\\begin{tabular}{|l|rrrrrrr|r|}" << endl;//FIXME: added 1 'r'
+//			cout << "\\hline" << endl;
+//		}
+//		cout << "\\multicolumn{9}{|l|}";
+//		if (first_time)
+//			cout << "{Actual number of MC events passing selection}";
+//		else
+//			cout << "{Expected number of events for " << intlumi << "/pb}";
+//		cout << "\\\\\\hline" << endl;
+//
+//		cout << "           Cut       " << " &" << setw(13) << "Zprime_M500GeV_W5GeV " << " &" << setw(13) << "Zprime_M500GeV_W50GeV " << " &" << setw(13)
+//				<< "Z+jets " << " &" << setw(13) << "QCD " << " &" << setw(13) << "VQQ " << " &" << setw(13) << "Single Top " << " &"
+//				<< setw(13) << "Zprime_M500GeV_W5GeV " << " &" << setw(25) << "Total  \\\\\n\\hline" << endl;
+//	for (short i = 0; i < 11; ++i) {//loop over cuts (up to HT)
+//
+//			totalA = 0; //reset to zero for each cut
+//			printCutStage(i, ve.at(i));
+//			totalT = 0;
+//
+//			//Signal
+//			for (short k = 1; k < 11; ++k) { //loop over ttbar mc types
+//				for (short j = njbegin; j < ntjet; ++j) {
+//					totalT += nevent[i][j][k];
+//				} //sum up jet bins
+//			}
+//			cout << " & " << setw(12) << fixed << totalT;
+//			totalA += totalT;//add signal to total
+//
+//			//Wjets
+//			totalT = 0;
+//			for (short j = njbegin; j < ntjet; ++j) {
+//				totalT += nevent[i][j][11];
+//			} //sum up jet bins
+//			cout << " & " << setw(12) << fixed << totalT;
+//			totalA += totalT;//add wjets to total
+//
+//			//Zjets
+//			totalT = 0;
+//			for (short j = njbegin; j < ntjet; ++j) {
+//				totalT += nevent[i][j][12];
+//			} //sum up jet bins
+//			cout << " & " << setw(12) << fixed << totalT;
+//			totalA += totalT;//add zjets to total
+//
+//			//QCD
+//			totalT = 0;
+//			for (short k = 13; k < 19; ++k) { //loop over QCD mc types
+//				for (short j = njbegin; j < ntjet; ++j) {
+//					totalT += nevent[i][j][k];
+//				}
+//			}
+//			cout << " & " << setw(12) << fixed << totalT;
+//			totalA += totalT;//add QCD to total
+//
+//			//VQQ
+//			totalT = 0;
+//			for (short j = njbegin; j < ntjet; ++j) {
+//				totalT += nevent[i][j][19];
+//			} //sum up jet bins
+//			cout << " & " << setw(12) << fixed << totalT;
+//			totalA += totalT;//add VQQ to total
+//
+//			//single top
+//			totalT = 0;
+//			for (short k = 20; k < 23; ++k) { //loop over single top mc types (20-22)
+//				for (short j = njbegin; j < ntjet; ++j) {
+//					totalT += nevent[i][j][k];
+//				}
+//			}
+//			cout << " & " << setw(12) << fixed << totalT;
+//			totalA += totalT; //add single top to total
+//
+//			//FIXME 17th step to new sample (optional)
+//			totalT = 0;
+//			for (short k = 23; k < 24; ++k) { //loop over Zprime_M500GeV_W5GeV mc types (23)
+//				for (short j = njbegin; j < ntjet; ++j) {
+//					totalT += nevent[i][j][k];
+//				}
+//			}
+//			cout << " & " << setw(12) << fixed << totalT;
+//			totalA += totalT; //add Zprime_M500GeV_W5GeV to total
+//
+//			//print total column:
+//			cout << " & " << setw(13) << fixed << totalA << " \\\\" << endl;
+//
+//			//after muon-veto, place nj>=4 cut
+//			if (ve.at(i) == "!MUON") {
+//				njbegin = 4;
+//				ve.at(i) = "$\\ge$4 jets";
+//				i--;
+//			}
+//
+//		}// end loop over cut (nstage)
 	first_time = false;
 }
 //end DrawMCTypeTable
@@ -9293,8 +9748,45 @@ bool ana::is_mc_present(const int code) const {
 		return mc_sample_has_Zprime_M500GeV_W5GeV;
 		break;
 	case 17:
-			return mc_sample_has_Zprime_M500GeV_W50GeV;
+		return mc_sample_has_Zprime_M500GeV_W50GeV;
+		break;
+	case 18:
+			return mc_sample_has_Zprime_M750GeV_W7500MeV;
 			break;
+	case 19:
+			return mc_sample_has_Zprime_M1TeV_W10GeV;
+			break;
+	case 20:
+			return mc_sample_has_Zprime_M1TeV_W100GeV;
+			break;
+	case 21:
+			return mc_sample_has_Zprime_M1250GeV_W12500MeV;
+			break;
+	case 22:
+			return mc_sample_has_Zprime_M1500GeV_W15GeV;
+			break;
+	case 23:
+			return mc_sample_has_Zprime_M1500GeV_W150GeV;
+			break;
+	case 24:
+			return mc_sample_has_Zprime_M2TeV_W20GeV;
+			break;
+	case 25:
+			return mc_sample_has_Zprime_M2TeV_W200GeV;
+			break;
+	case 26:
+			return mc_sample_has_Zprime_M3TeV_W30GeV;
+			break;
+	case 27:
+			return mc_sample_has_Zprime_M3TeV_W300GeV;
+			break;
+	case 28:
+			return mc_sample_has_Zprime_M4TeV_W40GeV;
+			break;
+	case 29:
+			return mc_sample_has_Zprime_M4TeV_W400GeV;
+			break;
+
 	default:
 		return false;
 		break;
@@ -10853,4 +11345,15 @@ void ana::Init(){
    ///------------------------  MC Truth info (END) ------------------------------------
 
 }//End Init()
+
+double ana::getTotalEvents(const double nevent[][5][nmctype], short cut, short k_start, short k_end, short njbegin) const{
+	double totalT = 0; //total for a particular mc type
+
+	for (short k = k_start; k < k_end; ++k) { //loop over mc types
+		for (short j = njbegin; j < ntjet; ++j) {
+			totalT += nevent[cut][j][k];
+		} //sum up jet bins
+	}
+	return totalT;
+}
 //-- eof ------------------------------------------------------------------------------------------

@@ -22,11 +22,17 @@ const bool m3_use_1000_bins = false;
 const bool run_on_octX_skim = 0; // <---- set temporary swith here
 const bool use_old_Z_veto = false; //TEMPORARY
 //TODO: remove one of the two. Reason: they have the same information
-//FIXME: 01st step to new sample
+//FIXME: 01st step to new sample - add mcname and mclabel
 const string mcname[] = { "data", "ttbar", "QCD", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3", "wj", "zj", "vqq",
-		"singleTop", "tW", "tchan", "schan", "Zprime","Zprime_M500GeV_W50GeV" };
+		"singleTop", "tW", "tchan", "schan", "Zprime_M500GeV_W5GeV","Zprime_M500GeV_W50GeV",
+"Zprime_M750GeV_W7500MeV", "Zprime_M1TeV_W10GeV", "Zprime_M1TeV_W100GeV","Zprime_M1250GeV_W12500MeV",
+"Zprime_M1500GeV_W15GeV", "Zprime_M1500GeV_W150GeV", "Zprime_M2TeV_W20GeV", "Zprime_M2TeV_W200GeV",
+"Zprime_M3TeV_W30GeV", "Zprime_M3TeV_W300GeV","Zprime_M4TeV_W40GeV", "Zprime_M4TeV_W400GeV"};
 const string mclabel[] = { "data", "signal", "QCD", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3", "W+jets", "Z+jets",
-		"VQQ", "singleTop", "tW", "t-chan", "s-chan", "Zprime_M500GeV_W5GeV", "Zprime_M500GeV_W50GeV" };
+		"VQQ", "singleTop", "tW", "t-chan", "s-chan", "Zprime_M500GeV_W5GeV","Zprime_M500GeV_W50GeV",
+		"Zprime_M750GeV_W7500MeV", "Zprime_M1TeV_W10GeV", "Zprime_M1TeV_W100GeV","Zprime_M1250GeV_W12500MeV",
+		"Zprime_M1500GeV_W15GeV", "Zprime_M1500GeV_W150GeV", "Zprime_M2TeV_W20GeV", "Zprime_M2TeV_W200GeV",
+		"Zprime_M3TeV_W30GeV", "Zprime_M3TeV_W300GeV","Zprime_M4TeV_W40GeV", "Zprime_M4TeV_W400GeV" };
 
 const short int mcsize = sizeof(mcname) / sizeof(mcname[0]);
 const int nmctype(mcsize + 7); //extend to include wj, zj, QCD, VQQ, single top
@@ -1413,6 +1419,7 @@ private:
   void DrawSignalAcceptanceTable(const double nevent[][5][nmctype], vector<string> ve) const;
   void printCutStage(int,string) const;
   void printCutStage(ofstream& os,int,string) const;
+  double getTotalEvents(const double nevt[][5][nmctype], short cut, short k_start, short k_end, short njbegin) const;
 
 
   // print event-count tables (with errors)
@@ -1582,8 +1589,14 @@ private:
   bool mc_sample_has_tW;
   bool mc_sample_has_tchan;
   bool mc_sample_has_schan;
-  //FIXME: 02nd step to new sample
-  bool mc_sample_has_Zprime_M500GeV_W5GeV,mc_sample_has_Zprime_M500GeV_W50GeV;
+  //FIXME: 02nd step to new sample - declare mc_sample_has*
+  bool mc_sample_has_Zprime_M500GeV_W5GeV,mc_sample_has_Zprime_M500GeV_W50GeV,
+  mc_sample_has_Zprime_M750GeV_W7500MeV, mc_sample_has_Zprime_M1TeV_W10GeV,
+  mc_sample_has_Zprime_M1TeV_W100GeV,mc_sample_has_Zprime_M1250GeV_W12500MeV,
+  mc_sample_has_Zprime_M1500GeV_W15GeV, mc_sample_has_Zprime_M1500GeV_W150GeV,
+  mc_sample_has_Zprime_M2TeV_W20GeV, mc_sample_has_Zprime_M2TeV_W200GeV,
+  mc_sample_has_Zprime_M3TeV_W30GeV, mc_sample_has_Zprime_M3TeV_W300GeV,
+  mc_sample_has_Zprime_M4TeV_W40GeV, mc_sample_has_Zprime_M4TeV_W400GeV;
 
   // MC type of this event
   bool isTTbar;
@@ -1601,9 +1614,14 @@ private:
   bool isTW; 
   bool isTchan;
   bool isSchan;
-  //FIXME: 03rd step to new sample
-  bool isZprime_M500GeV_W5GeV;
-  bool isZprime_M500GeV_W50GeV;
+  //FIXME: 03rd step to new sample - declare isMCtype
+  bool isZprime_M500GeV_W5GeV,isZprime_M500GeV_W50GeV,
+    isZprime_M750GeV_W7500MeV, isZprime_M1TeV_W10GeV,
+    isZprime_M1TeV_W100GeV,isZprime_M1250GeV_W12500MeV,
+    isZprime_M1500GeV_W15GeV, isZprime_M1500GeV_W150GeV,
+    isZprime_M2TeV_W20GeV, isZprime_M2TeV_W200GeV,
+    isZprime_M3TeV_W30GeV, isZprime_M3TeV_W300GeV,
+    isZprime_M4TeV_W40GeV, isZprime_M4TeV_W400GeV;
 
 };
 
