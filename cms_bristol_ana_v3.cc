@@ -98,7 +98,9 @@ void ana::SetOutputFirstName(const string name) {
 		mc_names.push_back("tW");
 		mc_names.push_back("tchan");
 		mc_names.push_back("schan");
+		//FIXME: 04th step to new sample
 		mc_names.push_back("Zprime_M500GeV_W5GeV");
+		mc_names.push_back("Zprime_M500GeV_W50GeV");
 
 		vector<int> nfiles(mc_names.size());
 		vector<long> nevents(mc_names.size());
@@ -334,8 +336,11 @@ void ana::SetMCFlag() {
 		mc_sample_has_tchan = true;
 	if (nInitialEventMC["schan"] > 0)
 		mc_sample_has_schan = true;
+	//FIXME: 05th step to new sample
 	if (nInitialEventMC["Zprime_M500GeV_W5GeV"] > 0)
-		mc_sample_has_Zprime_M500GeV_W5GeV = true;//FIXME: added
+		mc_sample_has_Zprime_M500GeV_W5GeV = true;
+	if (nInitialEventMC["Zprime_M500GeV_W50GeV"] > 0)
+			mc_sample_has_Zprime_M500GeV_W50GeV = true;
 }
 
 void ana::DefineCrossSection() {
@@ -392,7 +397,9 @@ void ana::DefineCrossSection() {
 		cross_section["tW"] = 10.6; //xs  11 pb (NLO MCFM) inclusive t,W decay
 		cross_section["tchan"] = 63. * 0.324; //xs  63 pb (NLO MCFM) * 0.324 (Br(t->blnu)) = 20.412
 		cross_section["schan"] = 4.6 * 0.324; //4.6 pb x 0.324 (4.6pb is NNNLO) = 1.4904
+		//FIXME: 06th step to new sample
 		cross_section["Zprime_M500GeV_W5GeV"] = 165; //FIXME: change to Z x-section
+		cross_section["Zprime_M500GeV_W50GeV"] = 165; //FIXME: change to Z x-section
 
 	} else {
 		if (!IsData())
@@ -604,7 +611,9 @@ ana::ana() {
 	mc_sample_has_tW = false;
 	mc_sample_has_tchan = false;
 	mc_sample_has_schan = false;
-	mc_sample_has_Zprime_M500GeV_W5GeV = false;//FIXME: added
+	//FIXME: 07th step to new samples
+	mc_sample_has_Zprime_M500GeV_W5GeV = false;
+	mc_sample_has_Zprime_M500GeV_W50GeV = false;
 	isTTbar = false;
 	isWjets = false;
 	isZjets = false;
@@ -620,7 +629,9 @@ ana::ana() {
 	isTW = false;
 	isTchan = false;
 	isSchan = false;
-	isZprime_M500GeV_W5GeV = false;//FIXME: added
+	//FIXME: 08th step to new samples
+	isZprime_M500GeV_W5GeV = false;
+	isZprime_M500GeV_W50GeV = false;
 
 
 	//856
@@ -2143,7 +2154,9 @@ bool ana::EventLoop() {
 				isTW = false;
 				isTchan = false;
 				isSchan = false;
+				//FIXME: 09th step to new sample
 				isZprime_M500GeV_W5GeV = false;
+				isZprime_M500GeV_W50GeV = false;
 
 				if (!RunOnMixedMC) {
 					if (m_debug)
@@ -2231,11 +2244,16 @@ bool ana::EventLoop() {
 					isSingleTop = true;
 					isSchan = true;
 					mctype = 22;
-				} else if (this_mc == "Zprime_M500GeV_W5GeV") {
+				}
+				//FIXME: 10th step to new sample
+				else if (this_mc == "Zprime_M500GeV_W5GeV") {
 					isZprime_M500GeV_W5GeV = true;
 					mctype = 23;
 				}
-
+				else if (this_mc == "Zprime_M500GeV_W50GeV") {
+					isZprime_M500GeV_W50GeV = true;
+					mctype = 24;
+				}
 				if (m_debug) {
 					cout << "+++> Now starts running on  " << this_mc << "  events" << endl;
 					cout << " current entry: num " << lflag << ", tree # " << chain->GetTreeNumber() << "\n filename: "
@@ -4899,9 +4917,11 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 	//  if(nInitialEventMC["WJET"]>0) wjetSample = "WJET";//or whatever the other wjet sample is
 
 
+	//TODO: is this needed?
+	//FIXME: 11th step to new sample
 	string kIndexmcNames[] = { "", ttsample, ttsample, ttsample, ttsample, ttsample, ttsample, ttsample, ttsample, ttsample,
 			ttsample, wjetSample, "zjet", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3", "vqq", "tW", "tchan", "schan",
-			"Zprime_M500GeV_W5GeV" };
+			"Zprime_M500GeV_W5GeV", "Zprime_M500GeV_W50GeV" };
 
 	for (short i = 0; i < mynstage; ++i) {
 		for (short j = 0; j < 5; ++j) {
@@ -6308,8 +6328,12 @@ void ana::fillHistoDataAndMC(TH1F* h[], const float value, const double w) const
 				h[14]->Fill(value, w);
 			else if (isSchan)
 				h[15]->Fill(value, w);
-		} else if (isZprime_M500GeV_W5GeV)
+		}
+		//FIXME: 12th step to new sample
+		else if (isZprime_M500GeV_W5GeV)
 			h[16]->Fill(value, w);
+		else if (isZprime_M500GeV_W50GeV)
+			h[17]->Fill(value, w);
 	}
 	if (m_debug)
 		cout << "End of << fillHistoDataAndMC >>" << endl;
@@ -6352,8 +6376,12 @@ void ana::fillHistoDataAndMC(TH2F* h[], const float v1, const float v2, const do
 				h[14]->Fill(v1, v2, w);
 			else if (isSchan)
 				h[15]->Fill(v1, v2, w);
-		} else if (isZprime_M500GeV_W5GeV)
+		}
+		//FIXME: 13th step to new sample
+		else if (isZprime_M500GeV_W5GeV)
 			h[16]->Fill(v1, v2, w);
+		else if (isZprime_M500GeV_W50GeV)
+			h[17]->Fill(v1, v2, w);
 	}
 	if (m_debug)
 		cout << "End of << fillHistoDataAndMC 2D >>" << endl;
@@ -6462,8 +6490,15 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float value, const do
 					if (h > 0)
 						h->Fill(value, w);
 				}
-			} else if (isZprime_M500GeV_W5GeV) {
+			}
+			//FIXME: 14th step to new sample
+			else if (isZprime_M500GeV_W5GeV) {
 				h = (TH1F*) histf->Get(Form("%s__Zprime_M500GeV_W5GeV", hname));
+				if (h > 0)
+					h->Fill(value, w);
+			}
+			else if (isZprime_M500GeV_W50GeV) {
+				h = (TH1F*) histf->Get(Form("%s__Zprime_M500GeV_W50GeV", hname));
 				if (h > 0)
 					h->Fill(value, w);
 			}
@@ -6575,11 +6610,18 @@ void ana::fillHistoNjet_DataAndMC(const string name, const float v1, const float
 					if (h > 0)
 						h->Fill(v1, v2, w);
 				}
-			} else if (isZprime_M500GeV_W5GeV) {
+			}
+			//FIXME: 15th step to new sample
+			else if (isZprime_M500GeV_W5GeV) {
 				h = (TH2F*) histf->Get(Form("%s__Zprime_M500GeV_W5GeV", hname));
 				if (h > 0)
 					h->Fill(v1, v2, w);
 			}
+			else if (isZprime_M500GeV_W50GeV) {
+				h = (TH2F*) histf->Get(Form("%s__Zprime_M500GeV_W50GeV", hname));
+							if (h > 0)
+								h->Fill(v1, v2, w);
+						}
 		}//if run on MC
 	}// loop: "allj", "0-4j",">=4j"
 
@@ -6598,7 +6640,7 @@ void ana::addHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const string name, const s
 
 	short ntype = 1; //1 for real data
 	if (!IsData())
-		ntype = 17; //MC//FIXME: changed from  16 to 17
+		ntype = mcsize;
 
 	char hname[70];
 	char htitle[100];
@@ -6658,10 +6700,14 @@ void ana::fillHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const float value, const 
 				fillHistoNjet2D(h, 14, value, w);
 			else if (isSchan)
 				fillHistoNjet2D(h, 15, value, w);
-		} else if (isZprime_M500GeV_W5GeV) {
-			fillHistoNjet2D(h, 16, value, w);
-			//FIXME TODO: added histo
 		}
+		//FIXME: 16th step to new sample
+		else if (isZprime_M500GeV_W5GeV) {
+			fillHistoNjet2D(h, 16, value, w);
+		}
+		else if (isZprime_M500GeV_W50GeV) {
+					fillHistoNjet2D(h, 17, value, w);
+				}
 	}
 	if (m_debug)
 		cout << "End of << fillHisto_Njet_DataAndMC >>" << endl;
@@ -7420,10 +7466,7 @@ void ana::reco_hadronicTop_highestTopPT(const vector<TLorentzVector>& jetColl, c
 					h_m3_vqq_1000->Fill(m3, this_weight);
 				}
 			}//MC
-			//TODO: make one for Zprime_M500GeV_W5GeV
 		}
-		//printf("selected combination = %d %d %d\n", which_3jet[0], which_3jet[1], which_3jet[2] ) ;
-		//cout << "selected combination (idx) = " << which_3jet[0] << " "<< which_3jet[1] << " " << which_3jet[2] << endl;
 	}// end pass_iso_ele (signal region)
 	else { // fail pass_iso_ele, this is bg region
 		if (jetColl.size() >= 4) {
@@ -8850,7 +8893,7 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT; //add single top to total
 
-		//Zprime_M500GeV_W5GeV
+		//FIXME 17th step to new sample (optional)
 		totalT = 0;
 		for (short k = 23; k < 24; ++k) { //loop over Zprime_M500GeV_W5GeV mc types (23)
 			for (short j = njbegin; j < ntjet; ++j) {
@@ -9245,9 +9288,13 @@ bool ana::is_mc_present(const int code) const {
 	case 15:
 		return mc_sample_has_schan;
 		break;
+	//FIXME: 18th step to new sample
 	case 16:
 		return mc_sample_has_Zprime_M500GeV_W5GeV;
 		break;
+	case 17:
+			return mc_sample_has_Zprime_M500GeV_W50GeV;
+			break;
 	default:
 		return false;
 		break;

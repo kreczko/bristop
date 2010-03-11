@@ -22,10 +22,11 @@ const bool m3_use_1000_bins = false;
 const bool run_on_octX_skim = 0; // <---- set temporary swith here
 const bool use_old_Z_veto = false; //TEMPORARY
 //TODO: remove one of the two. Reason: they have the same information
+//FIXME: 01st step to new sample
 const string mcname[] = { "data", "ttbar", "QCD", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3", "wj", "zj", "vqq",
-		"singleTop", "tW", "tchan", "schan", "Zprime" };
+		"singleTop", "tW", "tchan", "schan", "Zprime","Zprime_M500GeV_W50GeV" };
 const string mclabel[] = { "data", "signal", "QCD", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3", "W+jets", "Z+jets",
-		"VQQ", "singleTop", "tW", "t-chan", "s-chan", "Zprime_M500GeV_W5GeV" };
+		"VQQ", "singleTop", "tW", "t-chan", "s-chan", "Zprime_M500GeV_W5GeV", "Zprime_M500GeV_W50GeV" };
 
 const short int mcsize = sizeof(mcname) / sizeof(mcname[0]);
 const int nmctype(mcsize + 7); //extend to include wj, zj, QCD, VQQ, single top
@@ -1581,8 +1582,8 @@ private:
   bool mc_sample_has_tW;
   bool mc_sample_has_tchan;
   bool mc_sample_has_schan;
-  //FIXME: added
-  bool mc_sample_has_Zprime_M500GeV_W5GeV;
+  //FIXME: 02nd step to new sample
+  bool mc_sample_has_Zprime_M500GeV_W5GeV,mc_sample_has_Zprime_M500GeV_W50GeV;
 
   // MC type of this event
   bool isTTbar;
@@ -1600,8 +1601,9 @@ private:
   bool isTW; 
   bool isTchan;
   bool isSchan;
-  //FIXME: added
+  //FIXME: 03rd step to new sample
   bool isZprime_M500GeV_W5GeV;
+  bool isZprime_M500GeV_W50GeV;
 
 };
 
