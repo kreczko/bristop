@@ -4,13 +4,21 @@
 //  NOTE: This is tested on soolin using ROOT from CMSSW_3_3_6,
 //        and on laptop using ROOT 5.26.00 (comment out SetIncludPath line).
 //------------------------------------------------------------------
-{
+#include "TSystem.h"
+#include "TStopwatch.h"
+//comment this line to launch it in ROOT
+#include "cms_bristol_ana_v3.hh"
+//#include "TROOT.h"
+//using namespace ROOT;
+
+void run_SD_7TeV_madgraph_new_basline(){
         TStopwatch watch;
 	watch.Start();
 
 	//gSystem->SetIncludePath(" -I/software/cms/slc4_ia32_gcc345/lcg/roofit/5.25.02-cms/include");
 //	gROOT->ProcessLine(".exception");
-	gSystem->CompileMacro("./cms_bristol_ana_v3.cc","k");
+//	uncomment this line to launch in ROOT
+//	gSystem->CompileMacro("./cms_bristol_ana_v3.cc","k");
    	ana *myana  = new ana();
 
 
@@ -71,8 +79,9 @@
 
         if(test_run) {
 //	    myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/HLTskim_ttjet_mg_7TeV_aod_INVALID/*.root");
-	    myana->SetInputFile("/storage/top/mc/Zprime_M4TeV_W400GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
+//	    myana->SetInputFile("/storage/top/mc/Zprime_M4TeV_W400GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
 //	    myana->SetInputFile("/storage/top/mc/Zprime_M500GeV_W50GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
+	    myana->SetInputFile("/storage/top/mc/Zprime_M500GeV_W5GeV-madgraph_Summer09-MC_31X_V3_7TeV-v3_GEN-SIM-RECO_nTuple/*.root");
         }
         else{
 
