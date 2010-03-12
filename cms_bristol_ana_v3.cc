@@ -1,6 +1,10 @@
 //#====================================================#
 //# Last update:
 //
+// 12 Mar 2010: fix small bug.
+// 11 Mar 2010: replace 3D arrays (e_plus_jet & e_plus_jets_weighted) with 
+//              private vectors. Simplify and imporve codes.
+//
 //  9 Mar 2010: - Adapt to accommodate tt0j-tt4j alpgen signal samples. 
 //              - Add methods: DefineCrossSectionAlpgen7TeV, DrawTTnjetTable.
 //              - Consistent use of GetNinit() & GetCrossSection().
@@ -75,15 +79,18 @@ using namespace std;
 #include "RooConstVar.h"
 using namespace RooFit;
 
-
 #include "cms_bristol_ana_v3.hh" // defines ana class, including branches and leaves for tree
+
+//typedef vector<vector<vector<double> > >  v3D;
 
 
 // Global variables/constants
+//-----------------------------
+const int nstage(13);
+const int ntjet(5);
 //const int nmctype(23); //extend to include wj, zj, QCD, VQQ, single top
 const int nmctype(23+5); //extend to include tt0j-tt4j
 
-const int ntjet(5);
 const int myprec(1); //no of decimal point for weighted nEvent
 const int ncutshown(13); //11:BARREL, 12:1BTag, 13:2BTag (incl 4j)
 const int nbm3 = 960;
@@ -96,7 +103,7 @@ const string mcname[16]  = { "data", "ttbar", "QCD", "enri1", "enri2" ,"enri3", 
 			     "wj", "zj","vqq", "singleTop","tW","tchan","schan" };
 const string mclabel[16] = { "data", "signal","QCD","enri1","enri2","enri3","bce1","bce2","bce3",
 			     "W+jets","Z+jets","VQQ", "singleTop","tW","t-chan","s-chan" };
-const string Fourjets = "$\\ge$4 jets"; //used in table
+const string Fourjets = "$\\ge$4JETS"; //used in table
 
 
 void ana::SetInputFile(const char* fname) {
@@ -375,8 +382,7 @@ void ana::SetMCFlag(){
   if(GetNinit("bce2")>0)   mc_sample_has_bce2  = true;
   if(GetNinit("bce3")>0)   mc_sample_has_bce3  = true;
   if(GetNinit("vqq")>0)    mc_sample_has_VQQ   = true;
-  if( (GetNinit("tW") + GetNinit("tchan") + GetNinit("schan")) > 0 )
-    mc_sample_has_singleTop = true;
+  if( (GetNinit("tW") + GetNinit("tchan") + GetNinit("schan")) > 0 )  mc_sample_has_singleTop = true;
   if(GetNinit("tW")>0)     mc_sample_has_tW    = true;
   if(GetNinit("tchan")>0)  mc_sample_has_tchan = true;
   if(GetNinit("schan")>0)  mc_sample_has_schan = true;
@@ -2114,17 +2120,16 @@ bool ana::EventLoop(){
    histf->cd();
 
    //const int nmctype(23); //extend to include wj, zj, QCD, VQQ, single top (made global)
-
-   const int nstage(13); //add >=1Tele
+   //const int nstage(13); //add >=1Tele
  
    // Collect event count after selection
-   TH2D *Signal_njetsVcuts = new TH2D("Signal_njetsVcuts","Events V Cuts (signal)",ntjet+1, 0, ntjet+1, nstage, 0, nstage);
-   TH2D *QCD_njetsVcuts    = new TH2D("QCD_njetsVcuts",   "Events V Cuts (QCD)",   ntjet+1, 0, ntjet+1, nstage, 0, nstage);
-   TH2D *Wjets_njetsVcuts  = new TH2D("Wjets_njetsVcuts", "Events V Cuts (W+jets)",ntjet+1, 0, ntjet+1, nstage, 0, nstage);
-   TH2D *Zjets_njetsVcuts  = new TH2D("Zjets_njetsVcuts", "Events V Cuts (Z+jets)",ntjet+1, 0, ntjet+1, nstage, 0, nstage);
-   TH2D *VQQ_njetsVcuts    = new TH2D("VQQ_njetsVcuts",   "Events V Cuts (VQQ)",  ntjet+1, 0, ntjet+1, nstage, 0, nstage);
-   TH2D *SingleTop_njetsVcuts = new TH2D("SingleTop_njetsVcuts", "Events V Cuts (Single top)",ntjet+1, 0, ntjet+1, nstage, 0, nstage);
-   TH2D *Data_njetsVcuts = new TH2D("Data_njetsVcuts", "Events V Cuts (Data)", ntjet+1, 0, ntjet+1, nstage, 0, nstage);
+   Signal_njetsVcuts    = new TH2D("Signal_njetsVcuts",    "Events V Cuts (signal)",    ntjet+1, 0, ntjet+1, nstage, 0, nstage);
+   QCD_njetsVcuts       = new TH2D("QCD_njetsVcuts",       "Events V Cuts (QCD)",       ntjet+1, 0, ntjet+1, nstage, 0, nstage);
+   Wjets_njetsVcuts     = new TH2D("Wjets_njetsVcuts",     "Events V Cuts (W+jets)",    ntjet+1, 0, ntjet+1, nstage, 0, nstage);
+   Zjets_njetsVcuts     = new TH2D("Zjets_njetsVcuts",     "Events V Cuts (Z+jets)",    ntjet+1, 0, ntjet+1, nstage, 0, nstage);
+   VQQ_njetsVcuts       = new TH2D("VQQ_njetsVcuts",       "Events V Cuts (VQQ)",       ntjet+1, 0, ntjet+1, nstage, 0, nstage);
+   SingleTop_njetsVcuts = new TH2D("SingleTop_njetsVcuts", "Events V Cuts (Single top)",ntjet+1, 0, ntjet+1, nstage, 0, nstage);
+   Data_njetsVcuts      = new TH2D("Data_njetsVcuts",      "Events V Cuts (Data)",      ntjet+1, 0, ntjet+1, nstage, 0, nstage);
 
    // Histogram to store signal eff.acc
    TH1D *SignalVars = new TH1D("SignalVars","Signal acceptance and efficiency",4,0,4);
@@ -2174,7 +2179,7 @@ bool ana::EventLoop(){
    //-----------
    // Cut names
    //-----------
-   vector<string> ve;
+   //vector<string> ve;
    ve.push_back("INITIAL   ");
    ve.push_back("GOODRUN   ");
    ve.push_back("TRIGGER   ");
@@ -2198,12 +2203,44 @@ bool ana::EventLoop(){
      if(ve.at(i).find("MUON")!=string::npos) m_muonCutNum=i;
    }
 
+   // ve2 is list of cuts including njet
+   ve2 = ve; //copy then insert njet cut
+   ve2.insert( ve2.begin()+m_muonCutNum+1, Fourjets );
 
-   //For MC, added index for ttbar event type
-   double e_plus_jet[nstage][ntjet][nmctype]; //, mu_plus_jet[nstage][ntjet][nmctype];
-   double e_plus_jet_weighted[nstage][ntjet][nmctype]; //TL 15-1-09: create a new array for weighted-sum?
 
-   //Ignore mu_plus_jet, for a mu_plus_jet analysis only  
+   // create a vector of nmctype elements with initial value of 0
+   vector<int>               v1Dint(nmctype,0);
+   vector<double>            v1Ddou(nmctype,0);
+   // create a vector of ntjet elements, each elemet is a copy of v1D
+   vector<vector<int> >      v2Dint(ntjet, v1Dint);
+   vector<vector<double> >   v2Ddou(ntjet, v1Ddou);
+   //vector<vector<vector<double> > >  e_plus_jet2;
+   // resize to have nstage elements, each element is a copy of v2D
+   e_plus_jet.resize(          nstage, v2Dint );
+   e_plus_jet_weighted.resize( nstage, v2Ddou );
+   v1Dint.clear();
+   v1Ddou.clear();
+   v2Dint.clear();
+   v2Ddou.clear();
+   /*
+   cout << "size of v1Dint: " << v1Dint.size() << endl;
+   cout << "size of v2Dint: " << v2Dint.size() << endl;
+   cout << "size of epj:    " << e_plus_jet2.size() << endl;   
+   for(unsigned short i=0; i < e_plus_jet2.size(); i++){
+     for(unsigned short j=0; j < e_plus_jet2[i].size(); j++){
+      for(unsigned short k=0; k < e_plus_jet2[i][j].size(); k++){
+        cout << "epj  " << i << ", "<< j << ", "<< k << ":  " 
+             << e_plus_jet2[i][j][k] << endl;
+      }
+     }
+   }
+   */
+
+
+   // PREVIOUS before 10-3-2010
+   //   double e_plus_jet[nstage][ntjet][nmctype];
+   //   double e_plus_jet_weighted[nstage][ntjet][nmctype];
+   /*
    for(short i=0; i<nstage; ++i) {
      for(short j=0; j<ntjet; ++j){
        for(short k=0; k<nmctype; ++k){
@@ -2212,10 +2249,11 @@ bool ana::EventLoop(){
        }
      }
    }
-   
+   */
+
    //Vectors to store 4-vectors for selected objects
    std::vector<TLorentzVector> electrons;
-   std::vector<unsigned int>   ii_electrons; //Added 28-9-09 (index of GoodEle)
+   std::vector<unsigned int>   ii_electrons; //index of GoodEle
    std::vector<TLorentzVector> electrons_barrel;
    std::vector<TLorentzVector> electrons_endcap;
    std::vector<TLorentzVector> iso_electrons;
@@ -2225,7 +2263,7 @@ bool ana::EventLoop(){
    std::vector<TLorentzVector> iso_muons;
    std::vector<TLorentzVector> jets;
    std::vector<TLorentzVector> met;
-   std::vector<TLorentzVector> tagged_jets; //not used
+   //std::vector<TLorentzVector> tagged_jets; //not used
    std::vector<float>          electrons_isoval;
    std::vector<float>          electrons_isoval2;
 
@@ -3685,70 +3723,81 @@ bool ana::EventLoop(){
        cout << endl;
      }
 
-
-     e_plus_jet[0][ntj][mctype]++;
-     e_plus_jet_weighted[0][ntj][mctype] += this_weight; //1 event x weight
-	
+     // INITIAL BEFORE ANY CUT
+     //e_plus_jet[0][ntj][mctype]++;
+     //e_plus_jet_weighted[0][ntj][mctype] += this_weight; //1 event x weight
+     FillEventCounter(0, ntj, mctype); //TEST
 
      if(m_debug) cout << " Applying event selection" << endl;
 
      if(goodrun) { //Event in GOOD run list
 	  
-       e_plus_jet[1][ntj][mctype]++;
-       e_plus_jet_weighted[1][ntj][mctype] += this_weight;
+       //e_plus_jet[1][ntj][mctype]++;
+       //e_plus_jet_weighted[1][ntj][mctype] += this_weight;
+       FillEventCounter(1, ntj, mctype); //TEST
 
        if(fired_single_em) {  //Trigger
-	 e_plus_jet[2][ntj][mctype]++;	  
-	 e_plus_jet_weighted[2][ntj][mctype] += this_weight;	
+	 //e_plus_jet[2][ntj][mctype]++;	  
+	 //e_plus_jet_weighted[2][ntj][mctype] += this_weight;	
+	 FillEventCounter(2, ntj, mctype); //TEST
 
 	 // Electron checks
 	 if(nGoodEle > 0){
-	   e_plus_jet[3][ntj][mctype]++;
-	   e_plus_jet_weighted[3][ntj][mctype] += this_weight;
+	   //e_plus_jet[3][ntj][mctype]++;
+	   //e_plus_jet_weighted[3][ntj][mctype] += this_weight;
+	   FillEventCounter(3, ntj, mctype); //TEST
 	   
 	   // Isolated electron
 	   if(nGoodIsoEle > 0){
-	     e_plus_jet[4][ntj][mctype]++;
-	     e_plus_jet_weighted[4][ntj][mctype] += this_weight;
+	     //e_plus_jet[4][ntj][mctype]++;
+	     //e_plus_jet_weighted[4][ntj][mctype] += this_weight;
+	     FillEventCounter(4, ntj, mctype); //TEST
 	     
 	     if(nGoodIsoEle == 1){
-	       e_plus_jet[5][ntj][mctype]++;
-	       e_plus_jet_weighted[5][ntj][mctype] += this_weight;
-	       
+	       //e_plus_jet[5][ntj][mctype]++;
+	       //e_plus_jet_weighted[5][ntj][mctype] += this_weight;
+	       FillEventCounter(5, ntj, mctype); //TEST	     
+  
 	       if(!isMuon){ // Muon Veto 
-		 e_plus_jet[6][ntj][mctype]++;
-		 e_plus_jet_weighted[6][ntj][mctype] += this_weight;
-		 
+		 //e_plus_jet[6][ntj][mctype]++;
+		 //e_plus_jet_weighted[6][ntj][mctype] += this_weight;
+		 FillEventCounter(6, ntj, mctype); //TEST
+
 		 if( this_met > METCUT ){  // MET
-		   e_plus_jet[7][ntj][mctype]++;
-		   e_plus_jet_weighted[7][ntj][mctype] += this_weight;
+		   //e_plus_jet[7][ntj][mctype]++;
+		   //e_plus_jet_weighted[7][ntj][mctype] += this_weight;
+		   FillEventCounter(7, ntj, mctype); //TEST
 
 		   if(!isZ){ // Z Veto
-		     e_plus_jet[8][ntj][mctype]++;
-		     e_plus_jet_weighted[8][ntj][mctype] += this_weight;
+		     //e_plus_jet[8][ntj][mctype]++;
+		     //e_plus_jet_weighted[8][ntj][mctype] += this_weight;
+		     FillEventCounter(8, ntj, mctype); //TEST
 
 		     if(!isConversion){  //Conversion Veto
-		       e_plus_jet[9][ntj][mctype]++;		      
-		       e_plus_jet_weighted[9][ntj][mctype] += this_weight;
+		       //e_plus_jet[9][ntj][mctype]++;		      
+		       //e_plus_jet_weighted[9][ntj][mctype] += this_weight;
+		       FillEventCounter(9, ntj, mctype); //TEST
 
 		       if( ( m_rejectEndcapEle==false && !isDifferentInteraction ) ||  // PV check (DIFFZ)
 			   ( m_rejectEndcapEle==true  && isBarrel ) ) {     // ele eta cut
 
-			 e_plus_jet[10][ntj][mctype]++;
-			 e_plus_jet_weighted[10][ntj][mctype] += this_weight;
-			 
+			 //e_plus_jet[10][ntj][mctype]++;
+			 //e_plus_jet_weighted[10][ntj][mctype] += this_weight;
+			 FillEventCounter(10, ntj, mctype); //TEST		 
+
 			 e_plus_jet_pass = true;
 
-			 //if(ht >= HTCUT){  // HT cut (30-1-09)
 			 if(m_nbtag_SSV >= 1){ //at least one +tag
 
-			   e_plus_jet[11][ntj][mctype]++;
-			   e_plus_jet_weighted[11][ntj][mctype] += this_weight;
+			   //e_plus_jet[11][ntj][mctype]++;
+			   //e_plus_jet_weighted[11][ntj][mctype] += this_weight;
+			   FillEventCounter(11, ntj, mctype); //TEST
 
 			   if(m_nbtag_SSV >= 2){ //at least two +tag
 			     
-			     e_plus_jet[12][ntj][mctype]++;
-			     e_plus_jet_weighted[12][ntj][mctype] += this_weight;
+			     //e_plus_jet[12][ntj][mctype]++;
+			     //e_plus_jet_weighted[12][ntj][mctype] += this_weight;
+			     FillEventCounter(12, ntj, mctype); //TEST
 			   }
 			   /*
 			   if(ntaggable > 0){ // taggable
@@ -4759,7 +4808,7 @@ bool ana::EventLoop(){
      iso_muons.clear();
      jets.clear();
      met.clear();
-     tagged_jets.clear();
+     //tagged_jets.clear();
      electrons_isoval.clear();
      electrons_isoval2.clear();
      
@@ -4869,18 +4918,21 @@ bool ana::EventLoop(){
    }
    fclose(outfile);
 
-   //MC - make bin zero the total bin for data-like print-out of numbers of events
-   for(int i=0; i<nstage; ++i) {
-     for(int j=0; j<ntjet; ++j){
-       for(int k=1; k<nmctype; ++k){
-	 e_plus_jet[i][j][0]  +=  e_plus_jet[i][j][k];
-	 e_plus_jet_weighted[i][j][0]  +=  e_plus_jet_weighted[i][j][k];
+   // MC - make bin zero the total bin for data-like print-out of numbers of events
+   if(!IsData()){
+     for(int i=0; i<nstage; ++i) {
+       for(int j=0; j<ntjet; ++j){
+	 for(int k=1; k<nmctype; ++k){
+	   e_plus_jet[i][j][0]          += e_plus_jet[i][j][k];
+	   e_plus_jet_weighted[i][j][0] += e_plus_jet_weighted[i][j][k];
+	 }
        }
      }
    }
 
    // Fill histograms (event count tables)
-
+   fillHisto_event_tables();
+/*
    for(short i=0; i<nstage; ++i) {
      for(short j=0; j<ntjet; ++j) {
 
@@ -4940,7 +4992,7 @@ bool ana::EventLoop(){
    SetHistoLabelCutNjet( VQQ_njetsVcuts,        ve );
    SetHistoLabelCutNjet( SingleTop_njetsVcuts,  ve );
    SetHistoLabelCutNjet( Data_njetsVcuts,       ve );
-
+*/
 
 
    // Fill Signal accpetance and efficiency histograms
@@ -5000,79 +5052,64 @@ bool ana::EventLoop(){
    cout << " mu: all GoodMuon\n" << endl;     
 
 
-   cout << endl << "%------------------------------------------------------------------";
-   cout << endl << "%------------------------------------------------------------------";
-   cout << endl << "           Event counts per jet multiplicity";
-   cout << endl << "%------------------------------------------------------------------";
-   cout << endl << "%------------------------------------------------------------------";
-   cout << endl << "\\\\\n";
-   cout << endl << "\\begin{tabular}{|l|rrrrr|r|}\n\\hline";
 
-   cout << endl << "Unweighted numbers" << endl;
-   cout.precision(0);
-   DrawEventPerNjetTable( e_plus_jet, ve );  //unweighted number
-
+   DrawEventPerNjetTable();  //unweighted number
    if(IsData()==false) {
-     cout << "Normalized for " << intlumi << " pb$^{-1}$" << endl;
-     cout.precision(myprec);
-     //cout.fixed;
-     DrawEventPerNjetTable( e_plus_jet_weighted, ve );  //weighted number
+     DrawEventPerNjetTable();  //weighted number
    }
-   cout << "\\end{tabular}\n" << endl;
-
-
 
 
    // FB+TL (21-1-09)
    // When running on MC, produce tables of event count according to type of MC
-
    if(IsData()==false) {
 
      cout << endl;
-     DrawSignalBGTable( e_plus_jet_weighted, ve ); //weighted table
+     DrawSignalBGTable(); //weighted table
 
-     DrawMCTypeTable( e_plus_jet,          "Events Table (per MC type; unweighted)", ve ); //unweighted table
-     DrawMCTypeTable( e_plus_jet_weighted, "Events Table (per MC type; weighted)  ", ve ); //weighted table
+     DrawMCTypeTable( "Events Table (per MC type; unweighted)" ); //unweighted table
+     DrawMCTypeTable( "Events Table (per MC type; weighted)  " ); //weighted table
+
 
      // Break down table for tt+j Alpgen
      if( mc_sample_has_ttbar && signal_is_Alpgen ) {
-       DrawTTnjetTable( e_plus_jet,          "TT+j Table (unweighted)", ve );
-       DrawTTnjetTable( e_plus_jet_weighted, "TT+j Table (weighted)  ", ve );
+       DrawTTnjetTable( "TT+j Table (unweighted)" );
+       DrawTTnjetTable( "TT+j Table (weighted)  " );
      }
 
      // Break down table for QCD
      if( mc_sample_has_QCD ) {
-       DrawQCDTable( e_plus_jet,          "QCD Table (unweighted)", ve );
-       DrawQCDTable( e_plus_jet_weighted, "QCD Table (weighted)  ", ve );
+       //       DrawQCDTable( "QCD Table (weighted)  ", ve );
+       //       DrawQCDTable( "QCD Table (unweighted)", ve );
+       DrawQCDTable( "QCD Table (unweighted)" );
+       DrawQCDTable( "QCD Table (weighted)  " );
+
      }
 
      // Break down table for single top
      if( mc_sample_has_singleTop ) {
-       DrawSingleTopTable( e_plus_jet,          "Single Top Table (unweighted)", ve );
-       DrawSingleTopTable( e_plus_jet_weighted, "Single Top Table (weighted)  ", ve );
+       DrawSingleTopTable( "Single Top Table (unweighted)" );
+       DrawSingleTopTable( "Single Top Table (weighted)  " );
      }
 
 
      // Acceptance note printout (ttbar)
      // >= 3 tight jets, >= 4 tight jets
 
-     //cout.precision(0); //reset precision
-
      // TL (21-1-09):  only run this if we've ran over some ttbar MC in input
      if( mc_sample_has_ttbar && !signal_is_Alpgen ) { //FIXME
 
-       DrawSignalAcceptanceTable(e_plus_jet, ve);
+       DrawSignalAcceptanceTable(ve);
 
        // Set labels for all_mctype histogram (ttbar decay modes)
-       all_mctype->GetXaxis()->SetBinLabel(1,"evqq"); //semilep
-       all_mctype->GetXaxis()->SetBinLabel(2,"mvqq");
-       all_mctype->GetXaxis()->SetBinLabel(3,"tvqq");
-       all_mctype->GetXaxis()->SetBinLabel(4,"evev"); //dilepton
-       all_mctype->GetXaxis()->SetBinLabel(5,"mvmv");
-       all_mctype->GetXaxis()->SetBinLabel(6,"tvtv");
-       all_mctype->GetXaxis()->SetBinLabel(7,"evmu");
-       all_mctype->GetXaxis()->SetBinLabel(8,"evtv");
-       all_mctype->GetXaxis()->SetBinLabel(9,"mvtv");
+       all_mctype->GetXaxis()->SetBinLabel(1, "evqq"); //semilep
+       all_mctype->GetXaxis()->SetBinLabel(2, "mvqq");
+       all_mctype->GetXaxis()->SetBinLabel(3, "tvqq");
+       all_mctype->GetXaxis()->SetBinLabel(4, "evev"); //dilepton
+       all_mctype->GetXaxis()->SetBinLabel(5, "mvmv");
+       all_mctype->GetXaxis()->SetBinLabel(6, "tvtv");
+       all_mctype->GetXaxis()->SetBinLabel(7, "evmu");
+       all_mctype->GetXaxis()->SetBinLabel(8, "evtv");
+       all_mctype->GetXaxis()->SetBinLabel(9, "mvtv");
        all_mctype->GetXaxis()->SetBinLabel(10,"qqqq"); //fully hadronic
 
      }//end mc_sample_has_ttbar
@@ -5080,7 +5117,7 @@ bool ana::EventLoop(){
 
      // (19 Feb 09) print how many QCD events we have after all cuts except reliso nad njet
      if (mc_sample_has_QCD){
-       const int QCD_bc = 2;
+       const short QCD_bc = 2;
        cout << "\n New RelIso  mc" << setw(10) << intlumi <<"/pb" << endl;
        cout << "   1j" 
 	    << setw(10) << h_QCDest_CombRelIso[1][QCD_bc]->GetEntries() 
@@ -5102,11 +5139,11 @@ bool ana::EventLoop(){
    cout.precision(myprec); //reset precision
 
    //Print event tables with errors 
-   PrintErrorTables( e_plus_jet,e_plus_jet_weighted, ve );   //TEMPORARY Turn off
+   PrintErrorTables( ve );
  
    //Print event tables with errors, but without applying scientific notation
    ScientificNotation = false;
-   PrintErrorTables( e_plus_jet,e_plus_jet_weighted, ve ); //TEMPORARY Turn off
+   PrintErrorTables( ve );
 
 
    // Close the histogram file
@@ -5123,12 +5160,12 @@ bool ana::EventLoop(){
    cout << "\n*                                                                     *";
    cout << "\n***********************************************************************";
    cout << "\n*   Available events:  " << left << setw(47) << nEventsAvail << "*";
-   cout << "\n*   Limit:             " << left << setw(47) << nEvents << "*";
-   cout << "\n*   Processed events:  " << left << setw(47) << counter << "*";
+   cout << "\n*   Limit:             " << left << setw(47) << nEvents      << "*";
+   cout << "\n*   Processed events:  " << left << setw(47) << counter      << "*";
    cout << "\n*   Passed events:     " << left << setw(47) << counter_pass << "*";
    cout << "\n***********************************************************************\n";
 
-   // (TL) Print current time
+   // Print current time
    TDatime now;
    cout << endl << "Current local ";
    now.Print();
@@ -5137,673 +5174,14 @@ bool ana::EventLoop(){
    return true;
 
 }// end EventLoop()
+//---------------------------------------------------------------------------------------------
 
+//=============================================================================================
+//
+//                                END   of   Event  Loop
+//
+//=============================================================================================
 
-
-//void ana::PrintErrorTables( const double e_plus_jet[][5][23+5], 
-// 			    const double e_plus_jet_weighted[][5][23+5], vector<string> ve ) const {
-void ana::PrintErrorTables( const double e_plus_jet[][5][nmctype], 
- 			    const double e_plus_jet_weighted[][5][nmctype], vector<string> ve ) const {
-
-
-  const int mynstage = 11; //up to !DIFFZ
-
-  double e_plus_jet_errors[mynstage][5][24];
-  double e_plus_jet_effic[mynstage][5][24];
-  double e_plus_jet_effic_unc[mynstage][5][24];
-
-  for(short i=0; i<mynstage; ++i){
-    for(short j=0; j<5; ++j){
-      for(short k=0; k<24; ++k){
-	e_plus_jet_errors[i][j][k]    = 0;
-	e_plus_jet_effic[i][j][k]     = 0;
-	e_plus_jet_effic_unc[i][j][k] = 0;
-      }      
-    }
-  }
-
-
-  string ttsample = "ttbar";
-  if(GetNinit("ttjet")>0) ttsample = "ttjet";
-  if(GetNinit("TTJet")>0) ttsample = "TTJet";
-
-
-  string wjetSample = "wjet"; //changed from char*
-  //  if(nInitialEventMC["WJET"]>0) wjetSample = "WJET";//or whatever the other wjet sample is
-
-
-  string kIndexmcNames[24] = {"",ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,
-			      wjetSample,"zjet","enri1","enri2","enri3","bce1","bce2","bce3","vqq","tW","tchan","schan",ttsample};
-
-
-
-
-  for(short i=0; i<mynstage; ++i){
-    for(short j=0; j<5; ++j){
-      for(short k=1; k<23; ++k){
-	
-	const long ni = GetNinit( kIndexmcNames[k] );
-
-	//e_plus_jet_effic[i][j][k] = e_plus_jet[i][j][k]/GetNinit(kIndexmcNames[k]);
-		
-	//e_plus_jet_effic_unc[i][j][k] = sqrt(  e_plus_jet_effic[i][j][k]*(1 - e_plus_jet_effic[i][j][k])/GetNinit(kIndexmcNames[k]) );
-
-	//if(e_plus_jet_effic[i][j][k]==0){e_plus_jet_effic_unc[i][j][k] = GetBayesUncertainty(GetNinit(kIndexmcNames[k]));}
-
-	//----------------------
-	// Ask FB to check....
-	if ( ni==0 ) continue;
-
-	if( e_plus_jet[i][j][k] > 0 ) {
-	  e_plus_jet_effic[i][j][k] = e_plus_jet[i][j][k]/ni  ;
-	  e_plus_jet_effic_unc[i][j][k] = sqrt(  e_plus_jet_effic[i][j][k]*(1 - e_plus_jet_effic[i][j][k]) / ni );
-	} else {
-	  // 0 event pass
-	  //	  e_plus_jet_effic[i][j][k] = 0;
-	  e_plus_jet_effic_unc[i][j][k] = GetBayesUncertainty( ni );
-	}
-
-	//e_plus_jet_errors[i][j][k] = e_plus_jet_effic_unc[i][j][k]*weightMap[kIndexmcNames[k]]*GetNinit(kIndexmcNames[k]);
-	e_plus_jet_errors[i][j][k] = e_plus_jet_effic_unc[i][j][k]*GetCrossSection(kIndexmcNames[k])*intlumi; //TL 21-8-09 (ask FB to check)
-	//----------------------
-
-      }//end of k loop
-
-      e_plus_jet_effic[i][j][23] = 0;
-      for(int k=1;k<11;++k){
-	e_plus_jet_effic[i][j][23] += e_plus_jet_effic[i][j][k];
-      }
-      e_plus_jet_effic_unc[i][j][23] = sqrt(e_plus_jet_effic[i][j][23]*(1-e_plus_jet_effic[i][j][23])/GetNinit(ttsample));
-      //e_plus_jet_errors[i][j][23] =  e_plus_jet_effic_unc[i][j][23]*weightMap[ttsample]*GetNinit(ttsample);
-      e_plus_jet_errors[i][j][23] =  e_plus_jet_effic_unc[i][j][23]*GetCrossSection(ttsample)*intlumi; //TL 21-8-09 (ask FB to check)
-
-    }
-  }
-
-
-  // QCD sum
-  double Sum_Effic2[mynstage][ntjet];
-  double Sum_Effic_unc_pos[mynstage][ntjet];
-  double Sum_Effic_unc_neg[mynstage][ntjet];
-  double Sum_pass_weighted2[mynstage][ntjet];
-  // single top sum
-  double STopSum_Effic2[mynstage][ntjet];
-  double STopSum_Effic_unc_pos[mynstage][ntjet];
-  double STopSum_Effic_unc_neg[mynstage][ntjet];
-  double STopSum_pass_weighted2[mynstage][ntjet];
-
-  for(short i=0; i<mynstage; ++i){
-    for(short j=0; j<5; ++j){
-      Sum_Effic2[i][j] = 0.0;
-      Sum_Effic_unc_pos[i][j] = 0.0;
-      Sum_Effic_unc_neg[i][j] = 0.0;
-      Sum_pass_weighted2[i][j] = 0.0;
-
-      STopSum_Effic2[i][j] = 0.0;
-      STopSum_Effic_unc_pos[i][j] = 0.0;
-      STopSum_Effic_unc_neg[i][j] = 0.0;
-      STopSum_pass_weighted2[i][j] = 0.0;
-    }
-  }
-
-
-  // QCD
-  for(short i=0; i<mynstage; ++i){
-    for(short j=0; j<5; ++j){
-      for(short k=13; k<19; ++k){
-	Sum_pass_weighted2[i][j] +=e_plus_jet_weighted[i][j][k];
-	double cer = e_plus_jet_errors[i][j][k];
-	Sum_Effic_unc_pos[i][j] += (cer*cer);
-	if(e_plus_jet_effic[i][j][k] !=0){Sum_Effic_unc_neg[i][j] += (cer*cer);}
-      }
-      Sum_Effic_unc_pos[i][j] = sqrt(Sum_Effic_unc_pos[i][j]);
-      Sum_Effic_unc_neg[i][j] = sqrt(Sum_Effic_unc_neg[i][j]);
-    }
-  }
-
-  // Single top
-  for(int i=0; i<mynstage; ++i){
-    for(int j=0; j<5; ++j){
-      for(int k=20; k<23; ++k){
-        STopSum_pass_weighted2[i][j] +=e_plus_jet_weighted[i][j][k];
-        double cer = e_plus_jet_errors[i][j][k];
-        STopSum_Effic_unc_pos[i][j] += (cer*cer);
-        if(e_plus_jet_effic[i][j][k] !=0){STopSum_Effic_unc_neg[i][j] += (cer*cer);}
-      }
-      STopSum_Effic_unc_pos[i][j] = sqrt(STopSum_Effic_unc_pos[i][j]);
-      STopSum_Effic_unc_neg[i][j] = sqrt(STopSum_Effic_unc_neg[i][j]);
-    }
-  }
-
-
-
-  ofstream myfile;
-  myfile.open("Analyzeroutput.txt",ios::app);
-
-  myfile.setf(ios::fixed,ios::floatfield);
-
-
-  myfile <<endl;
-  myfile <<endl;
-  myfile <<endl;
-  myfile <<endl;
-  myfile <<endl;
-
-  double Allevents[12]; //mynstage
-  double AlleventsUncPos[12];
-  double AlleventsUncNeg[12];
-  double JustSignal[12];
-  double JustSignalUnc[12];
-  double JustBG[12];
-  double JustBGUncPos[12];
-  double JustBGUncNeg[12];
-
-  for(short i=0; i<12; ++i){
-    Allevents[i] = 0;
-    AlleventsUncPos[i] = 0;
-    AlleventsUncNeg[i] = 0;
-    JustBG[i] = 0;
-    JustBGUncPos[i] = 0;
-    JustBGUncNeg[i] = 0;
-    JustSignal[i] = 0;
-    JustSignalUnc[i] = 0;
-  }
-
-  myfile.precision(1);
-
-  myfile <<"\\begin{tabular}{|l|cccccc|c|}"<<endl<<"\\hline"<<endl;
-
-  myfile << setw(23) << " Cuts  &"
-	 << setw(23) << " \\ttbar{}  &"
-	 << setw(23) << " W+jets   &"
-	 << setw(23) << " Z+jets   &"
-	 << setw(23) << " QCD   &"
-	 << setw(23) << " VQQ   &"
-	 << setw(23) << " Single Top   &"
-	 << setw(20) << " Total" << " \\\\ \n\\hline" << endl;
-  //    &   W+jets  &  Z+jets  &   QCD   &   VQQ    &  Single Top & Total \\\\ \\hline"<<endl;
-  
-
-  // First 7 cuts (up to mu-veto)
-  for(short i=0; i<7; ++i){
-    double TotalEvents = 0;
-    double TotalErrorPos = 0;
-    double TotalErrorNeg = 0;
-
-    //myfile << setw(11) << left << ve.at(i) << " "<< right;
-    printCutStage(myfile,i,ve.at(i));
-
-    double total = 0;
-    double totalerr = 0;
-
-    // signal
-    for(short j=0; j<5; ++j){
-      for(short k=1; k<11; ++k){total += e_plus_jet_weighted[i][j][k];}
-      totalerr += e_plus_jet_errors[i][j][23]*e_plus_jet_errors[i][j][23];
-    }
-    //myfile << "&" << setw(6) << ScrNum(total) << "$\\pm$" <<setw(6) << left << ScrNum(sqrt(totalerr));
-    //myfile << "&" << setw(6) << ScrNum(total) << "$\\pm$" <<setw(6) << left << ScrNum(sqrt(totalerr)) << right;
-    printLine(myfile, total, sqrt(totalerr));
-    TotalEvents      += total;
-    TotalErrorPos    += totalerr;
-    TotalErrorNeg    += totalerr;
-    JustSignal[i]    += total;
-    JustSignalUnc[i] += totalerr;
-
-
-    // Backgrounds
-    // W+jets
-    total = 0;
-    totalerr = 0;
-    for(short j=0; j<5; ++j){
-      total    += e_plus_jet_weighted[i][j][11];
-      totalerr += e_plus_jet_errors[i][j][11]*e_plus_jet_errors[i][j][11];
-    }
-    //myfile << "&" << setw(6) << ScrNum(total) << "$\\pm$" << setw(6) << ScrNum( sqrt(totalerr));
-    printLine(myfile, total, sqrt(totalerr));
-    TotalEvents     += total;
-    TotalErrorPos   += totalerr;
-    TotalErrorNeg   += totalerr;
-    JustBG[i]       += total;
-    JustBGUncPos[i] += totalerr;
-    JustBGUncNeg[i] += totalerr;
-
-    // Z+jets
-    total = 0;
-    totalerr = 0;
-    for(short j=0; j<5; ++j){
-      total += e_plus_jet_weighted[i][j][12];
-      totalerr += e_plus_jet_errors[i][j][12]*e_plus_jet_errors[i][j][12];
-    }
-    //myfile<<"&"<<setw(6) <<ScrNum(total) << "$\\pm$" <<setw(6) << ScrNum( sqrt(totalerr));
-    printLine(myfile, total, sqrt(totalerr));
-    TotalEvents     += total;
-    TotalErrorPos   += totalerr;
-    TotalErrorNeg   += totalerr;
-    JustBG[i]       += total;
-    JustBGUncPos[i] += totalerr;
-    JustBGUncNeg[i] += totalerr;
-
-    
-    total = 0;
-    totalerr = 0;
-    double totalNerr = 0;
-    for(short j=0; j<5; ++j){
-      total += Sum_pass_weighted2[i][j];
-      totalerr += Sum_Effic_unc_pos[i][j]*Sum_Effic_unc_pos[i][j];
-      totalNerr += Sum_Effic_unc_neg[i][j]*Sum_Effic_unc_neg[i][j];
-    }
-    //myfile<<"&"<<setw(6) <<ScrNum(total)  << "$\\pm$"<< ScrNum( sqrt(totalerr));
-    printLine(myfile, total, sqrt(totalerr));
-    TotalEvents     += total;
-    TotalErrorPos   += totalerr;
-    TotalErrorNeg   += totalNerr;
-    JustBG[i]       += total;
-    JustBGUncPos[i] += totalerr;
-    JustBGUncNeg[i] += totalNerr;
-
-
-    // VQQ    
-    total = 0;
-    totalerr = 0;
-    for(short j=0; j<5; ++j){
-      total    += e_plus_jet_weighted[i][j][19];
-      totalerr += e_plus_jet_errors[i][j][19]*e_plus_jet_errors[i][j][19];
-    }
-    //myfile<<"&"<<setw(6) <<ScrNum(total) << "$\\pm$" <<setw(6) << ScrNum( sqrt(totalerr));
-    printLine(myfile, total, sqrt(totalerr));
-    /*
-      TotalEvents     += total;
-      TotalErrorPos   += totalerr;
-      TotalErrorNeg   += totalerr;
-      JustBG[i]       += total;
-      JustBGUncPos[i] += totalerr;
-      JustBGUncNeg[i] += totalerr;
-    */
-
-    // Single top
-    total = 0;
-    totalerr = 0;
-    for(short j=0; j<5; ++j){
-      total += STopSum_pass_weighted2[i][j];
-      totalerr += STopSum_Effic_unc_pos[i][j]*STopSum_Effic_unc_pos[i][j];
-    }
-    //myfile<<"&"<<setw(6) <<ScrNum(total) << "$\\pm$" <<setw(6) << ScrNum( sqrt(totalerr));
-    printLine(myfile, total, sqrt(totalerr));
-    TotalEvents     += total;
-    TotalErrorPos   += totalerr;
-    TotalErrorNeg   += totalerr;
-    JustBG[i]       += total;
-    JustBGUncPos[i] += totalerr;
-    JustBGUncNeg[i] += totalerr;
-
-    // ALL
-    //    myfile << "& $"<<ScrNum(TotalEvents)<<"^{+" <<ScrNum( sqrt(TotalErrorPos))<<"}_{-"<<ScrNum(sqrt(TotalErrorNeg)) <<"}$ \\\\"<<endl;
-    //myfile << "& "<<ScrNum(TotalEvents)<<"$\\pm$" <<ScrNum( sqrt(TotalErrorPos))<<" \\\\"<<endl;
-    printLine(myfile, TotalEvents, sqrt(TotalErrorPos));
-    myfile << " \\\\" << endl;
-    Allevents[i]       = TotalEvents;
-    AlleventsUncPos[i] = TotalErrorPos;
-    AlleventsUncNeg[i] = TotalErrorNeg;
-  }
-
-
-  
-
-  // For cut 4mj to DIFFZ
-  for(short i=6; i<mynstage; ++i){ //cut (up to !DIFFZ)
-
-    double TotalEvents = 0;
-    double TotalErrorPos = 0;
-    double TotalErrorNeg = 0;
-
-//    if(i==6) { myfile << setw(11) << "$\\ge$4 jets"; }
-//    else {     myfile << setw(11) << ve.at(i) << " "; }
-    if(i==6) { printCutStage(myfile, i, "$\\ge$4 jets"); }
-    else {     printCutStage(myfile, i, ve.at(i)); }
-
-
-    double total = 0;
-    for(short k=1; k<11; ++k){total += e_plus_jet_weighted[i][4][k];}
-
-    //myfile << "&" << setw(6) << ScrNum(total) << "$\\pm$" << setw(6) << ScrNum( e_plus_jet_errors[i][4][23]);
-    printLine(myfile, total, e_plus_jet_errors[i][4][23]);
-    TotalErrorPos      += e_plus_jet_errors[i][4][23]*e_plus_jet_errors[i][4][23];
-    TotalErrorNeg      += e_plus_jet_errors[i][4][23]*e_plus_jet_errors[i][4][23];
-    TotalEvents        += total;
-    JustSignal[i+1]    += total;
-    JustSignalUnc[i+1] += e_plus_jet_errors[i][4][23]*e_plus_jet_errors[i][4][23];
-
-    
-    // W+jets
-    //myfile << "&" << setw(6) <<ScrNum(e_plus_jet_weighted[i][4][11]) << "$\\pm$" << setw(6) << ScrNum( e_plus_jet_errors[i][4][11]);
-    printLine(myfile, e_plus_jet_weighted[i][4][11], e_plus_jet_errors[i][4][11]);
-    TotalErrorPos     += e_plus_jet_errors[i][4][11]*e_plus_jet_errors[i][4][11];
-    TotalErrorNeg     += e_plus_jet_errors[i][4][11]*e_plus_jet_errors[i][4][11];
-    TotalEvents       += e_plus_jet_weighted[i][4][11];
-    JustBG[i+1]       += e_plus_jet_weighted[i][4][11];
-    JustBGUncPos[i+1] += e_plus_jet_errors[i][4][11]*e_plus_jet_errors[i][4][11];
-    JustBGUncNeg[i+1] += e_plus_jet_errors[i][4][11]*e_plus_jet_errors[i][4][11];
-    
-    // Z+jets
-    //myfile<<"&" << setw(6) << ScrNum(e_plus_jet_weighted[i][4][12]) << "$\\pm$" << setw(6) << ScrNum( e_plus_jet_errors[i][4][12]);
-    printLine(myfile, e_plus_jet_weighted[i][4][12], e_plus_jet_errors[i][4][12]);
-    TotalErrorPos     += e_plus_jet_errors[i][4][12]*e_plus_jet_errors[i][4][12];
-    TotalErrorNeg     += e_plus_jet_errors[i][4][12]*e_plus_jet_errors[i][4][12];
-    TotalEvents       += e_plus_jet_weighted[i][4][12];
-    JustBG[i+1]       += e_plus_jet_weighted[i][4][12];
-    JustBGUncPos[i+1] += e_plus_jet_errors[i][4][12]*e_plus_jet_errors[i][4][12];
-    JustBGUncNeg[i+1] += e_plus_jet_errors[i][4][12]*e_plus_jet_errors[i][4][12];
-
-
-    // QCD
-    //myfile << " &  " << setw(6) <<ScrNum(Sum_pass_weighted2[i][4]) <<"$\\pm$" << setw(6) <<ScrNum( Sum_Effic_unc_pos[i][4]);
-    printLine(myfile, Sum_pass_weighted2[i][4], Sum_Effic_unc_pos[i][4]);
-    TotalErrorPos     += Sum_Effic_unc_pos[i][4]*Sum_Effic_unc_pos[i][4];
-    TotalErrorNeg     += Sum_Effic_unc_neg[i][4]*Sum_Effic_unc_neg[i][4];
-    TotalEvents       += Sum_pass_weighted2[i][4];
-    JustBG[i+1]       += Sum_pass_weighted2[i][4];
-    JustBGUncPos[i+1] += Sum_Effic_unc_pos[i][4]*Sum_Effic_unc_pos[i][4];
-    JustBGUncNeg[i+1] += Sum_Effic_unc_neg[i][4]*Sum_Effic_unc_neg[i][4];
-
-    // VQQ
-    //myfile<<"&"<< setw(6) <<ScrNum(e_plus_jet_weighted[i][4][19]) << "$\\pm$" << setw(6) << ScrNum( e_plus_jet_errors[i][4][19]);
-    printLine(myfile, e_plus_jet_weighted[i][4][19], e_plus_jet_errors[i][4][19]);
-    /*
-      TotalErrorPos     += e_plus_jet_errors[i][4][19]*e_plus_jet_errors[i][4][19];
-      TotalErrorNeg     += e_plus_jet_errors[i][4][19]*e_plus_jet_errors[i][4][19];
-      TotalEvents       += e_plus_jet_weighted[i][4][19];
-      JustBG[i+1]       += e_plus_jet_weighted[i][4][19];
-      JustBGUncPos[i+1] += e_plus_jet_errors[i][4][19]*e_plus_jet_errors[i][4][19];
-      JustBGUncNeg[i+1] += e_plus_jet_errors[i][4][19]*e_plus_jet_errors[i][4][19];
-    */
-
-    // Single top
-    //myfile << " &  " <<ScrNum(STopSum_pass_weighted2[i][4]) << "$\\pm$" << ScrNum(STopSum_Effic_unc_pos[i][4]);
-    printLine(myfile, STopSum_pass_weighted2[i][4], STopSum_Effic_unc_pos[i][4]);
-    TotalErrorPos     += STopSum_Effic_unc_pos[i][4];
-    TotalErrorNeg     += STopSum_Effic_unc_pos[i][4];
-    TotalEvents       += STopSum_pass_weighted2[i][4];
-    JustBG[i+1]       += STopSum_pass_weighted2[i][4];
-    JustBGUncPos[i+1] += STopSum_Effic_unc_pos[i][4];
-    JustBGUncNeg[i+1] += STopSum_Effic_unc_neg[i][4];
-
-    // All
-    Allevents[i+1]       += TotalEvents;
-    AlleventsUncPos[i+1] += TotalErrorPos;
-    AlleventsUncNeg[i+1] += TotalErrorNeg;
-    //    myfile << "& "<<ScrNum(TotalEvents)<<"$\\pm$" <<ScrNum( sqrt(TotalErrorPos))<<" \\\\"<<endl;
-    printLine(myfile, TotalEvents, sqrt(TotalErrorPos) );
-    myfile << " \\\\" << endl;
-  }
-  myfile <<"  \\hline"<<endl<<"\\end{tabular}"<<endl;
-  myfile<<endl<<endl<<endl;
-
-
-
-  // Break Down of Single Top (with errors)
-  //----------------------------------------
-  myfile << "\\begin{tabular}{|l|rrr|r|}" << endl;
-  myfile << "\\hline" << endl;
-  myfile << "\\multicolumn{5}{|l|}";
-  myfile << "{Break down of expected single top events for " << (int)intlumi << "/pb}";
-  myfile << "\\\\\n\\hline" << endl;
-
-  myfile << "            Cut      ";
-  myfile << " &" << setw(21) << "tW-chan  ";
-  myfile << " &" << setw(21) << "t-chan  ";
-  myfile << " &" << setw(21) << "s-chan  ";
-  myfile << " &" << setw(29) << "AllSingleTop \\\\\\hline" << endl;
-
-
-  short njbegin = 0;
-
-  for(short i=0; i<11; ++i){ //cut stage (up to HT)
-    double allSingleTop = 0;
-    double allSingleTopEr = 0;
-    printCutStage(myfile, i, ve.at(i));
-    //   myfile << " Stage " << setw(2) << i << " " << setw(11) << left << ve.at(i) << right;
-    for(short k=20; k<23; ++k) { //mctype (single top): 20-22
-      double totalT = 0;
-      double totalEr = 0;
-      for(short j=njbegin; j<ntjet; ++j) { //njet
-        totalT += e_plus_jet_weighted[i][j][k];
-	totalEr += e_plus_jet_errors[i][j][k]*e_plus_jet_errors[i][j][k];
-      }
-      totalEr = sqrt(totalEr);
-      allSingleTop += totalT;
-     
-      //myfile << " & " << setw(12) << ScrNum(totalT) <<"$\\pm$"<< ScrNum(totalEr);
-      printLine(myfile, totalT, totalEr);
-    }
-    for(short j=njbegin; j<ntjet; ++j) {allSingleTopEr +=STopSum_Effic_unc_pos[i][j]*STopSum_Effic_unc_pos[i][j];}
-    allSingleTopEr = sqrt(allSingleTopEr);
-
-    myfile << " & " << setw(10) << ScrNum(allSingleTop) << "$\\pm$" << setw(4) << left << ScrNum(allSingleTopEr) 
-	   << right << " \\\\"<< endl;
-
-    // insert >=4j cut
-    if(ve.at(i)=="!MUON"){ 
-      njbegin = 4; ve.at(i) = "$\\ge$4 jets"; i--;
-    }
-  }
-
-  myfile << "\\hline" << endl;
-  myfile << "\\end{tabular}\\\\[5mm]" << endl;
-  myfile << endl << endl;
-  ve.at(6) = "!MUON"; //restore
-
-
-  //BEGIN QCD BREAKDOWN TABLE
-  //-------------------------
-  myfile << "\\begin{tabular}{|l|cccccc|c|}" << endl;
-  myfile << "\\hline" << endl;
-  myfile << "\\multicolumn{8}{|l|}";
-  myfile << "{Break down of expected QCD events for " << intlumi << "/pb}";
-  myfile << "\\\\\n\\hline" << endl;
-  
-  myfile << "            Cut      ";
-  myfile << " &" << setw(24) << "enri1 ";
-  myfile << " &" << setw(24) << "enri2 ";
-  myfile << " &" << setw(24) << "enri3 ";
-  myfile << " &" << setw(24) << "bce1 ";
-  myfile << " &" << setw(24) << "bce2 ";
-  myfile << " &" << setw(24) << "bce3 ";
-  myfile << " &" << setw(27) << "AllQCD \\\\\\hline" << endl;
-
-  //ntjet = 5;
-  njbegin = 0;
-
-  for(short i=0; i<11; ++i){ //cut stage (up to HT)
-    double totalAllQCD = 0;
-    double totalAllQCDErPos = 0;
-    double totalAllQCDErNeg = 0;
-    //myfile << "" << setw(2) << i << " " << setw(11) << left << ve.at(i) << right;
-    printCutStage(myfile,i,ve.at(i));
-
-    for(short k=13; k<19; ++k) { //mctype (QCD): 13-18
-      double totalT = 0;
-      double totalEr = 0;
-      for(short j=njbegin; j<ntjet; ++j) { //njet
-        totalT  += e_plus_jet_weighted[i][j][k];
-        totalEr += e_plus_jet_errors[i][j][k]*e_plus_jet_errors[i][j][k];
-      }
-      totalEr = sqrt(totalEr);
-      totalAllQCD += totalT;
-
-      myfile << " &" << setw(12) << ScrNum(totalT);
-      if(totalT !=0) myfile <<"$\\pm$"<< setw(7) << left << ScrNum(totalEr) << right;
-      else{myfile <<"$<$"<< setw(9) << left << ScrNum(totalEr) << right;}
-    }
-    for(short j=njbegin; j<ntjet; ++j) {
-      totalAllQCDErPos +=Sum_Effic_unc_pos[i][j]*Sum_Effic_unc_pos[i][j];
-      totalAllQCDErNeg +=Sum_Effic_unc_neg[i][j]*Sum_Effic_unc_neg[i][j];
-    }
-    
-    totalAllQCDErPos = sqrt(totalAllQCDErPos);
-    totalAllQCDErNeg = sqrt(totalAllQCDErNeg);
-    //    myfile << " & " << setw(13) << "$"<<ScrNum(totalAllQCD) <<"^{+"<<ScrNum(totalAllQCDErPos)<<"}_{-"<<ScrNum(totalAllQCDErNeg) <<"}$ \\\\"<< endl;
-    myfile << " & " << setw(13) <<ScrNum(totalAllQCD) <<"$\\pm$"<< setw(8) << left<< ScrNum(totalAllQCDErPos) << right << " \\\\"<< endl;
-    
-    if(ve.at(i)=="!MUON"){
-      njbegin = 4;  ve.at(i) = "$\\ge$4 jets";  i--;
-    }
-  }
-  myfile << "\\hline" << endl;
-  myfile << "\\end{tabular}\\\\[5mm]\n" << endl<<endl;
-
-  ve.at(6)="!MUON";//restore
-
-
-
-  myfile << "\n%---------------------------------------------------------------------\n";
-  myfile << "       Expected Signal and Background for " << intlumi << "/pb";
-  myfile << "\n%---------------------------------------------------------------------\n\n";
-  myfile << "\\begin{tabular}{|l|r|rr|r|}\\hline" << endl;
-  myfile << "          Cut        "
-	 << " &  " << setw(30) << "Total Events "
-	 << " &  " << setw(24) << "Total Signal (S) "
-	 << " &  " << setw(26) << "Total Background (B) "
-	 << " &  " << setw(20) << "S/B   \\\\\n\\hline" << endl;
-
-  
-  // Insert >=4j cut after muon-veto
-  const short muVeto_pos = 7;
-  ve.insert( ve.begin()+muVeto_pos, "$\\ge$4 jets");
-
-  for(short i=0; i <= 11; ++i){ //loop over cuts (up to DIFFZ)
-
-    printCutStage(myfile, i, ve.at(i));
-    
-    //myfile << " & " << setw(12) << ScrNum(Allevents[i]) << "$^{+"<<ScrNum(sqrt(AlleventsUncPos[i])) << "}_{-"<< ScrNum(sqrt(AlleventsUncNeg[i]))<
-    //myfile << " & " << setw(12) << ScrNum(JustSignal[i])<<"$\\pm$"<<ScrNum(sqrt(JustSignalUnc[i]));
-    //myfile << " & " << setw(12) << ScrNum(JustBG[i])<< "$^{+"<<ScrNum(sqrt(JustBGUncPos[i]))  << "}_{-"<<ScrNum( sqrt(JustBGUncNeg[i]))<<"}$";
-
-    myfile << " & " << setw(12) << right << ScrNum(Allevents[i]) 
-	   << setw(24) << left << Form( "$^{+%s}_{-%s}$",ScrNum(sqrt(AlleventsUncPos[i])).c_str(), ScrNum(sqrt(AlleventsUncNeg[i])).c_str() ) << left;
-    myfile << " & " << setw(10) << right << ScrNum(JustSignal[i])
-	   << setw(10) << left << "$\\pm$"+ScrNum(sqrt(JustSignalUnc[i])) ;
-    myfile << " & " << setw(12) << right << ScrNum(JustBG[i])
-	   << setw(24) << left << Form( "$^{+%s}_{-%s}$", ScrNum(sqrt(JustBGUncPos[i])).c_str(),ScrNum( sqrt(JustBGUncNeg[i])).c_str() ) << right;
-						
-    //Print Signal-to-background ratio (S/B)
-    if( JustBG[i] > 0 ) {
-      double errSBGPos = sqrt(JustSignalUnc[i]/(JustSignal[i]*JustSignal[i]) + JustBGUncPos[i]/(JustBG[i]*JustBG[i]) );
-      myfile << " & " << setw(11) << ScrNum(JustSignal[i]/JustBG[i])<< "$\\pm$" <<ScrNum(errSBGPos*JustSignal[i]/JustBG[i]);
-    } else {
-      myfile << " & " << setw(12) << "-" ;
-    }
-    myfile << " \\\\" << endl;
-  
-  }// end loop over cut (nstage)
-  myfile << "\\hline\n\\end{tabular}\n" << endl<<endl<<endl;
-
-  // restore (take out 4mj)
-  ve.erase( ve.begin()+muVeto_pos);
-
-
-
-  myfile << "%---------------------------------------"<< endl;
-  myfile << "            NjetVcut table "<< endl;
-  myfile << "%---------------------------------------\n"<< endl;
-  PrintError_NjetVcut(myfile, e_plus_jet_weighted, e_plus_jet_errors, ve);
-
-  myfile.close();
-
-}//end PrintErrorTables
-
-void ana::printLine(ofstream &myfile, double num, double err) const {
-  myfile << " &" << setw(9) << ScrNum(num) << "$\\pm$" << setw(7) << left << ScrNum(err) << right;
-}
-
-string ana::ScrNum(double num) const{
-
-  string Number = "";
-  if(ScientificNotation){
-    if(num/10000.0 > 1){
-      Number = Form("%.1E",num);
-    }
-    else{Number = Form("%.1f",num);}
-  }
-  else{
-    Number = Form("%.1f",num);
-  }
-  return Number;
-}
-
-
-//---------------------------------------------------------------------
-double ana::GetBayesUncertainty(int Ninitial) const{
-
-  if(Ninitial==0) return 0; //NEW, added by TL (Ask FB to check)
-  
-  TH1D *h_total = new TH1D("total","events that are incident",1,0,1);
-  h_total->SetBinContent( 1, Ninitial );
-  TH1D *h_pass = new TH1D("pass","events that pass",1,0,1);
-  h_pass->SetBinContent( 1, 0 );
-
-  TGraphAsymmErrors *tge = new TGraphAsymmErrors();
-  tge->BayesDivide(h_pass,h_total);
-  delete h_total; delete h_pass;
-  double error1 = tge->GetErrorYhigh(0);
-  delete tge;
-  return error1;
-
-}
-//---------------------------------------------------------------------
-
-
-
-
-
-
-//----------------------------------------------------------------------------------
-//void ana::PrintError_NjetVcut(ofstream& myfile, 
-//			      const double e_plus_jet_weighted[][5][23+5], 
-//			      const double e_plus_jet_errors[][5][24], vector<string>& ve) const {
-void ana::PrintError_NjetVcut(ofstream& myfile, 
-			      const double e_plus_jet_weighted[][5][nmctype], 
-			      const double e_plus_jet_errors[][5][24], vector<string>& ve) const {
-
-  myfile<<"\\begin{tabular}{|c|ccccc|c|}"<<endl;
-  myfile<<"\\hline"<<endl;
-    
-  myfile << setw(21) << "Cut  "
-	 << " &" << setw(26) << "0-jet "
-	 << " &" << setw(26) << "1-jet "
-	 << " &" << setw(26) << "2-jets "
-	 << " &" << setw(26) << "3-jets "
-	 << " &" << setw(26) << "$\\ge$4-jets "
-	 << " &" << setw(36) << "Total   \\\\\n\\hline\n";
-
-  for(short i=0; i<11; ++i) { //nstage
-
-    printCutStage(myfile,i,ve.at(i));
-
-    double total = 0;
-    double PosError = 0;
-    double NegError = 0;
-    for(short j=0; j<ntjet; ++j){
-      double myTotal = 0;
-      double myPosErr = 0;
-      double myNegError = 0;
-      for(short k=1;k<23;++k){
-	if(k==19) continue;//skip vqq
-	myTotal += e_plus_jet_weighted[i][j][k];
-	myPosErr += e_plus_jet_errors[i][j][k]*e_plus_jet_errors[i][j][k];
-	if(e_plus_jet_weighted[i][j][k] != 0){ myNegError += e_plus_jet_errors[i][j][k]*e_plus_jet_errors[i][j][k];}
-      }
-      myfile << " & " << setw(12) << ScrNum(myTotal) << "$\\pm$"<< setw(8) << left << ScrNum(sqrt(myPosErr)) << right;
-      total    += myTotal;
-      PosError += myPosErr;
-      NegError += myNegError;
-    }//loop jets
-    myfile << " & " << setw(13) << fixed << ScrNum(total) << "$\\pm$"<< setw(8) << left << ScrNum(sqrt(PosError)) <<" \\\\ \n" << right;
-  }//loop cuts
-  myfile << "\n\\hline\n\\end{tabular}" << endl;         
-
-}//end PrintError_NjetVcut
-//----------------------------------------------------------------------------------
 
 
 
@@ -5853,11 +5231,12 @@ float ana::calcDeltaR(const float phi1, const float eta1, const float phi2, cons
   return delR;      
 }
 
-//---------------------------------------------------------------------------------------------
-//                                   QCD Estimation
-//---------------------------------------------------------------------------------------------
-// global var
-//const float QCDest_reliso_bin_width = 0.1;
+
+//========================================================================================
+//
+//                                QCD Estimation (start)
+//
+//========================================================================================
 
 void ana::EstimateQCD() {
   EstimateQCD( outputHistFileName );
@@ -6403,9 +5782,14 @@ pair<double,double> ana::estimateQCD_assign_pos_neg_estimate( const double est, 
   pair<double,double> retval(pos,neg);
   return retval;
 }
-//----------------------------------------------------------------------------------------
+//========================================================================================
+//
 //                                  QCD Estimation (end)
-//----------------------------------------------------------------------------------------
+//
+//========================================================================================
+
+
+
 
 
 // ------------ my method to add a set of 1D histograms acc to njet ----------------------
@@ -6885,26 +6269,73 @@ void ana::fillHisto_PDF_weights( TH1F* h ){
   h->Fill(43., PDFWcteq66_43);
   h->Fill(44., PDFWcteq66_44);
 
-}
-
+}//end fillHisto_PDF_weights
 //----------------------------------------------------------------------------------------
-// Return code of current event
-//   0   data
-//   1   ttbar
-//   2   QCD
-//   3     enri1
-//   4     enri2
-//   5     enri3
-//   6     bce1
-//   7     bce2
-//   8     bce3
-//   9   wj
-//  10   zj
-//  11   vqq
-//  12   singleTop
-//  13    tW
-//  14    tchan
-//  15    schan
+
+void ana::fillHisto_event_tables() {
+
+   for(short i=0; i<nstage; ++i) {
+     for(short j=0; j<ntjet; ++j) {
+
+       // *** All events ***
+       Data_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][0]); //NEW, 3rd dimension is [0] for data.
+       Data_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][0]); //sum for all jets
+
+       // *** MC ***
+       if(!IsData()) {
+	 if ( mc_sample_has_ttbar ) {//MC contains Signal
+	   for(short k=1; k<11; ++k){
+	     Signal_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][k]);
+	     Signal_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][k]);//sum for all jets
+	   }	   
+	   if(signal_is_Alpgen) {
+	     for(int k=23; k<=27; ++k) {//mctype 23-27
+               Signal_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][k]);
+               Signal_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][k]);//sum for all jets
+	     }
+	   }//ttnj alpgen
+	   
+	 }
+	 if ( mc_sample_has_QCD ) {//MC contains QCD
+	   for(short k=13; k<19; ++k){ // mctype is 13 to 18 for QCD
+	     QCD_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][k]);
+	     QCD_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][k]);//sum for all jets
+	   }
+	 }
+	 if ( mc_sample_has_Wjet ) {//MC contains Wjets (mctype=11)
+	   Wjets_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][11]);
+	   Wjets_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][11]);//sum for all jets
+	 }
+	 if ( mc_sample_has_Zjet ) {//MC contains Zjets (mctype=12)
+	   Zjets_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][12]);
+	   Zjets_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][12]);//sum for all jets
+	 }
+	 if ( mc_sample_has_VQQ ) {//MC contains VQQ (mctype=19)
+	   VQQ_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][19]);
+	   VQQ_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][19]);//sum for all jets
+	 }
+	 if ( mc_sample_has_singleTop ) {//MC contains single top (mctypes are 20-22)
+	   for(int k=20; k<23; ++k){
+	     SingleTop_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][k]);
+	     SingleTop_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][k]);//sum for all jets
+	   }
+	 }
+       }//end MC
+     }
+   }
+
+   // Set labels of the histograms (cuts and Njet)
+   SetHistoLabelCutNjet( Signal_njetsVcuts,     ve );
+   SetHistoLabelCutNjet( QCD_njetsVcuts,        ve );
+   SetHistoLabelCutNjet( Wjets_njetsVcuts,      ve );
+   SetHistoLabelCutNjet( Zjets_njetsVcuts,      ve );
+   SetHistoLabelCutNjet( VQQ_njetsVcuts,        ve );
+   SetHistoLabelCutNjet( SingleTop_njetsVcuts,  ve );
+   SetHistoLabelCutNjet( Data_njetsVcuts,       ve );
+
+}//end fillHisto_event_tables
+
+
 
 
 
@@ -8759,8 +8190,10 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 //                                 W+jets Estimation (end)
 //----------------------------------------------------------------------------------------
 
-// Add 19-5-09
-void ana::StudySystematics(const string name,const string name2){
+
+
+void ana::StudySystematics(const string& name,const string& name2){ //TEST
+//void ana::StudySystematics(const string name,const string name2){
   doSystematics = name;
   sysSample = name2;
   cout << "Study Systematics"<< endl;
@@ -8769,9 +8202,38 @@ void ana::StudySystematics(const string name,const string name2){
 }
 
 //----------------------------------------------------------------------------------------
-//void ana::DrawEventPerNjetTable(const double nevent[][5][23+5], const vector<string>& ve) const {
-void ana::DrawEventPerNjetTable(const double nevent[][5][nmctype], const vector<string>& ve) const {
+void ana::FillEventCounter(const int istage, const int& ntj, const int& mctype){
+  //cout << "istage: " << istage << "   ";
+  //cout << "ntj:    " << ntj << "   ";
+  //cout << "mctype: " << mctype << endl;
+  e_plus_jet[istage][ntj][mctype]++;
+  e_plus_jet_weighted[istage][ntj][mctype] += this_weight;
+}
 
+//----------------------------------------------------------------------------------------
+// Table: Event count as a function of Njet
+// 1st call: unweighted
+// 2nd call: weighted
+void ana::DrawEventPerNjetTable() const {
+
+  static bool first_time(true);
+  if(first_time) cout.precision(0);      //unweighted table
+  else           cout.precision(myprec); //weighted table
+
+  if(first_time){    
+    cout << endl << "%------------------------------------------------------------------";
+    cout << endl << "%------------------------------------------------------------------";
+    cout << endl << "           Event counts per jet multiplicity";
+    cout << endl << "%------------------------------------------------------------------";
+    cout << endl << "%------------------------------------------------------------------";
+    cout << endl << "\\\\\n";
+    cout << endl << "\\begin{tabular}{|l|rrrrr|r|}\n\\hline"; 
+    cout << endl << "Unweighted numbers" << endl;
+  }
+  else {
+    //  cout << "\n TEST: uses e_plus_jet (vector)\n" << endl;
+    cout << "Normalized for " << intlumi << " pb$^{-1}$" << endl;
+  }
   cout << setw(23) 
        << " &" << setw(13) << "0-jet"
        << " &" << setw(13) << "1-jet"
@@ -8779,31 +8241,34 @@ void ana::DrawEventPerNjetTable(const double nevent[][5][nmctype], const vector<
        << " &" << setw(13) << "3-jets"
        << " &" << setw(13) << "$\\ge$4-jets" 
        << " &" << setw(23) << "Total \\\\\n\\hline";
-  //cout << endl << "% E_PLUS_JET";
   cout << endl;
   
   for(short i=0; i<ncutshown; ++i) { //nstage
     printCutStage(i,ve.at(i));
     double total = 0;
+
     for(short j=0; j<ntjet; ++j){
-      cout << " & " << setw(12) << fixed << nevent[i][j][0] ;
-      total += nevent[i][j][0];
+      double nevent;
+           
+      if(first_time)  nevent = (double)e_plus_jet[i][j][0];
+      else 	      nevent = e_plus_jet_weighted[i][j][0];
+
+      cout << " & " << setw(12) << fixed << nevent;
+      total += nevent;
     }
     cout << " & " << setw(13) << fixed << total << " \\\\" << endl;
   }
-  cout << "\n\\hline" << endl;
-
-}//end DrawEventPerNjetTable
-
-
+  cout << "\\hline" << endl;
+  if(IsData() || !first_time) cout << "\\end{tabular}\n" << endl;
+  first_time = false;
+}
 //----------------------------------------------------------------------------------------
-//void ana::DrawMCTypeTable(const double nevent[][5][23+5], const string title, vector<string> ve) const {
-void ana::DrawMCTypeTable(const double nevent[][5][nmctype], const string title, vector<string> ve) const {
 
-  static bool first_time=true;
-  if(first_time) cout.precision(0); //unweighted table
-  else cout.precision(myprec); //weighted table
+void ana::DrawMCTypeTable( const string title ) const {
 
+  static bool first_time(true);
+  if(first_time) cout.precision(0);      //unweighted table
+  else           cout.precision(myprec); //weighted table
 
   if(first_time) cout << "\\newpage\n"<< endl;
   cout << "\n%------------------------------------------------------------------------\n";
@@ -8814,7 +8279,7 @@ void ana::DrawMCTypeTable(const double nevent[][5][nmctype], const string title,
     cout << "\\begin{tabular}{|l|rrrrrr|r|}"<< endl;
     cout << "\\hline"<< endl;
   }
-  cout << "\\multicolumn{8}{|l|}";
+  cout << "\\multicolumn{7}{|l|}";
   if(first_time) cout << "{Actual number of MC events passing selection}";
   else           cout << "{Expected number of events for " << intlumi << "/pb}";
   cout << "\\\\\\hline" << endl;
@@ -8824,81 +8289,52 @@ void ana::DrawMCTypeTable(const double nevent[][5][nmctype], const string title,
        << " &" << setw(13) << "W+jets "
        << " &" << setw(13) << "Z+jets "
        << " &" << setw(13) << "QCD "
-       << " &" << setw(13) << "VQQ "
+    // << " &" << setw(13) << "VQQ "
        << " &" << setw(13) << "Single Top "
-       << " &" << setw(25) << "Total  \\\\\n\\hline" << endl;
-
-  double totalT; //total for a particular mc type
-  double totalA; //total for all event types at each cut stage
+       << " &" << setw(25) << "Total \\\\\n\\hline" << endl;
 
   short njbegin = 0;
-  //  short ntjet = 5;
-
-  // 16 Feb 2010: insert 4jet cut
-  ve.insert(ve.begin()+m_muonCutNum+1, Fourjets);
   short p=0;
 
   for(short i=0; i<ncutshown; ++i){ //loop over cuts
 
-    totalA = 0; //reset to zero for each cut
-    totalT = 0;
-       
-    printCutStage(p, ve.at(p));
-    if(ve.at(p)==Fourjets)  { njbegin = 4; i--; }
+    printCutStage(p, ve2.at(p));
+    if(ve2.at(p)==Fourjets)  { njbegin = 4; i--; }
     p++;
 
-    //Signal
-    for(short k=1;k<11;++k){ //loop over ttbar mc types
-      for(short j=njbegin;j<ntjet;++j){ totalT += nevent[i][j][k]; }  //sum up jet bins
+    double ntt   = 0;
+    double nwj   = 0;
+    double nzj   = 0;
+    double nqcd  = 0;
+    //double nvqq  = 0;
+    double nstop = 0;
+
+    for(short j=njbegin; j<ntjet; ++j) {   //sum up jet bins
+      for(short k=1;  k<nmctype; ++k) {    //nmc
+	double nevent = 0;
+	if(first_time) nevent = e_plus_jet[i][j][k];
+	else           nevent = e_plus_jet_weighted[i][j][k];
+
+	if( (k>= 1 && k<=10) ||
+	    (k>=23 && k<=27) ) ntt += nevent; //sig: 1-10; 23-27(alpgen)
+	else if(k==11)         nwj += nevent; //11
+	else if(k==12)         nzj += nevent; //12
+	else if(k<=18)        nqcd += nevent; //13-18
+	//else if(k==19)     nvqq  += nevent; //19
+	else if(k<=22)       nstop += nevent; //20-22
+      }
     }
-    cout << " & " << setw(12) << fixed << totalT;
-    totalA += totalT;//add signal to total
+    double total_obs = ntt + nwj + nzj + nqcd + nstop; //vqq
 
-    //Wjets
-    totalT = 0;
-    for(short j=njbegin;j<ntjet;++j) {  totalT += nevent[i][j][11]; }  //sum up jet bins
-    cout << " & " << setw(12) << fixed << totalT;
-    totalA += totalT;//add wjets to total
-
-    //Zjets
-    totalT = 0;
-    for(short j=njbegin;j<ntjet;++j){	 totalT += nevent[i][j][12]; }  //sum up jet bins
-    cout << " & " << setw(12) << fixed << totalT;
-    totalA += totalT;//add zjets to total
-
-    //QCD
-    totalT = 0;
-    for(short k=13;k<19;++k){ //loop over QCD mc types
-      for(short j=njbegin;j<ntjet;++j){ totalT += nevent[i][j][k]; }
-    }
-    cout << " & " << setw(12) << fixed << totalT;
-    totalA += totalT;//add QCD to total
-
-    //VQQ
-    totalT = 0;
-    for(short j=njbegin;j<ntjet;++j){	 totalT += nevent[i][j][19]; }  //sum up jet bins
-    cout << " & " << setw(12) << fixed << totalT;
-    totalA += totalT;//add VQQ to total
-
-    //single top
-    totalT = 0;
-    for(short k=20;k<23;++k){ //loop over single top mc types (20-22)
-      for(short j=njbegin;j<ntjet;++j){ totalT += nevent[i][j][k]; }
-    }
-    cout << " & " << setw(12) << fixed << totalT;
-    totalA += totalT; //add single top to total
-       
-    //print total column:
-    cout << " & " << setw(13) << fixed << totalA << " \\\\" <<endl;
+    cout << " & " << setw(12) << fixed << ntt;
+    cout << " & " << setw(12) << fixed << nwj;
+    cout << " & " << setw(12) << fixed << nzj;
+    cout << " & " << setw(12) << fixed << nqcd;
+    // cout << " & " << setw(12) << fixed << nvqq;
+    cout << " & " << setw(12) << fixed << nstop;
     
-    /*
-    //after muon-veto, place nj>=4 cut 
-    if(ve.at(i)=="!MUON"){
-      njbegin = 4; 
-      ve.at(i) = "$\\ge$4 jets";
-      i--;
-    }
-    */
+    //print total column for this cut
+    cout << " & " << setw(13) << fixed << total_obs << " \\\\" <<endl;
  
   }// end loop over cut (nstage)
   cout << "\\hline" << endl;
@@ -8911,8 +8347,9 @@ void ana::DrawMCTypeTable(const double nevent[][5][nmctype], const string title,
 
 
 //----------------------------------------------------------------------------------------
-//void ana::DrawSignalBGTable(const double nevent[][5][23+5], vector<string> ve ) const {
-void ana::DrawSignalBGTable(const double nevent[][5][nmctype], vector<string> ve ) const {
+// Print weighted event numbers
+//
+void ana::DrawSignalBGTable() const {
 
   cout << "\n%---------------------------------------------------------------------\n";
   cout << "       Expected Signal and Background for " << intlumi << "/pb";
@@ -8926,10 +8363,6 @@ void ana::DrawSignalBGTable(const double nevent[][5][nmctype], vector<string> ve
        << " &  " << setw(10) << "S/B \\\\\n\\hline" << endl;
 
   short njbegin = 0;
-  //short ntjet = 5;
-
-  // 15 Feb 2010: insert 4jet cut
-  ve.insert(ve.begin()+m_muonCutNum+1, Fourjets);
   short p=0;
 
   for(short i=0; i<ncutshown; ++i){ //loop over cuts
@@ -8937,8 +8370,8 @@ void ana::DrawSignalBGTable(const double nevent[][5][nmctype], vector<string> ve
     double total_sig = 0;
     double total_bkg = 0;
    
-    if(ve.at(p)==Fourjets){ njbegin = 4; i--; }
-
+    if(ve2.at(p)==Fourjets){ njbegin = 4; i--; }
+    /*
     //Total Signal
     for(short k=1; k<11; ++k){ //loop over ttbar mc types (code 1 to 10)
       for(short j=njbegin;j<ntjet;++j){ total_sig += nevent[i][j][k]; }  //sum up jet bins
@@ -8948,9 +8381,19 @@ void ana::DrawSignalBGTable(const double nevent[][5][nmctype], vector<string> ve
     for(short k=11; k<23; ++k){ //loop over all bg mc types (code 11 to 22)
       for(short j=njbegin;j<ntjet;++j) {  total_bkg += nevent[i][j][k]; }  //sum up jet bins
     }
+    */
+    for(short j=njbegin; j<ntjet; ++j) { // sum up jet bins
+      
+      for(short k=1; k<11; ++k){ //loop over ttbar mc types (code 1 to 10)
+	total_sig += e_plus_jet_weighted[i][j][k];
+      }
+      for(short k=11; k<23; ++k){ //loop over all bg mc types (code 11 to 22)
+	total_bkg += e_plus_jet_weighted[i][j][k];
+      }
+    }
 
     //Print cut, S+B, S, B
-    printCutStage(p, ve.at(p));
+    printCutStage(p, ve2.at(p));
     p++;
     cout << " & " << setw(13) << fixed << total_sig + total_bkg;
     cout << " & " << setw(13) << fixed << total_sig;
@@ -8960,12 +8403,9 @@ void ana::DrawSignalBGTable(const double nevent[][5][nmctype], vector<string> ve
     if( total_bkg > 0 ) 
       cout << " & " << setw(11) << fixed << total_sig/total_bkg;
     else
-      cout << " & " << setw(12) << "-" ;
+      cout << " & " << setw(11) << "-" ;
     cout << " \\\\" << endl;
   
-    // after mu-veto, place nj>=4 cut
-    //if(ve.at(i)=="!MUON"){ njbegin = 4; ve.at(i) = "$\\ge$4 jets"; i--; }
-
   }// end loop over cut (nstage)
 
   cout << "\\hline\n\\end{tabular}\n" << endl;
@@ -8977,13 +8417,12 @@ void ana::DrawSignalBGTable(const double nevent[][5][nmctype], vector<string> ve
 
 //---------------------------------------------------------------------------------------------
 // Draw event count table for break down of QCD
-//void ana::DrawQCDTable(const double nevent[][5][23+5], const string QCDtitle, vector<string> ve) const {
-void ana::DrawQCDTable(const double nevent[][5][nmctype], const string QCDtitle, vector<string> ve) const {
+//
+void ana::DrawQCDTable(const string QCDtitle) const {
 
-  static bool first_time=true;
-  if(first_time) cout.precision(0); //unweighted table
-  else cout.precision(myprec); //weighted table
-
+  static bool first_time(true);
+  if(first_time) cout.precision(0);      //unweighted table
+  else           cout.precision(myprec); //weighted table
 
   if(first_time) cout << "\\newpage\n" << endl;
   cout << "%------------------------------------------------------------------------" << endl;
@@ -9008,24 +8447,30 @@ void ana::DrawQCDTable(const double nevent[][5][nmctype], const string QCDtitle,
   cout << " &" << setw(13) << "bce3";
   cout << " &" << setw(23) << "AllQCD \\\\\\hline" << endl;
 
-  //short ntjet = 5;
   short njbegin = 0;
+  short p=0;
 
-  for(short i=0; i<11; ++i){ //cut stage
+  for(short i=0; i<ncutshown; ++i){ //cut stage
+
     double totalAllQCD = 0;
-    printCutStage(i, ve.at(i));
+
+    //    printCutStage(i, ve.at(i));
+    printCutStage(p, ve2.at(p));
+    if(ve2.at(p)==Fourjets)  { njbegin = 4; i--; }
+    p++;
+
     for(short k=13; k<19; ++k) { //mctype (QCD): 13-18
       double totalT = 0;
       for(short j=njbegin; j<ntjet; ++j) { //njet
-	totalT += nevent[i][j][k]; 
+	// totalT += nevent[i][j][k]; 
+	if(first_time) totalT += (double)e_plus_jet[i][j][k]; //unweighted
+	else           totalT += e_plus_jet_weighted[i][j][k]; //weighted
       }
       totalAllQCD += totalT;
       cout << " & " << setw(12) << totalT;
     }
     cout << " & " << setw(13) << totalAllQCD << " \\\\"<< endl;
 
-    // insert >=4j cut
-    if(ve.at(i)=="!MUON"){ njbegin = 4; ve.at(i) = "$\\ge$4 jets"; i--; }
   }
   cout << "\\hline" << endl;
   if(!first_time) cout << "\\end{tabular}\\\\[5mm]\n" << endl;
@@ -9036,14 +8481,13 @@ void ana::DrawQCDTable(const double nevent[][5][nmctype], const string QCDtitle,
 
 //---------------------------------------------------------------------------------------------
 // Draw event count table for break down of Single Top
-//void ana::DrawSingleTopTable(const double nevent[][5][23+5], const string title, vector<string> ve) const {
-void ana::DrawSingleTopTable(const double nevent[][5][nmctype], const string title, vector<string> ve) const {
+//
+void ana::DrawSingleTopTable( const string title ) const {
     
-  static bool first_time=true;
-  if(first_time) cout.precision(0); //unweighted table
-  else cout.precision(myprec); //weighted table
+  static bool first_time(true);
+  if(first_time) cout.precision(0);      //unweighted table
+  else           cout.precision(myprec); //weighted table
  
-
   if(first_time) cout << "\\newpage\n" << endl;
   cout << "%------------------------------------------------------------------------" << endl;
   cout << "%                      " << title << endl;
@@ -9064,25 +8508,30 @@ void ana::DrawSingleTopTable(const double nevent[][5][nmctype], const string tit
   cout << " &" << setw(13) << "s-chan";
   cout << " &" << setw(23) << "AllSingleTop \\\\\\hline" << endl;
 
-  //  short ntjet = 5;
   short njbegin = 0;
+  short p=0;
 
-  for(short i=0; i<11; ++i){ //cut stage (up to HT)
+  for(short i=0; i<ncutshown; ++i){ //cut stage
     double allSingleTop = 0;
-    printCutStage(i, ve.at(i));
+ 
+   //    printCutStage(i, ve.at(i));
+    printCutStage(p, ve2.at(p));
+    if(ve2.at(p)==Fourjets)  { njbegin = 4; i--; }
+    p++;
+
     for(short k=20; k<23; ++k) { //mctype (single top): 20-22
       double totalT = 0;
       for(short j=njbegin; j<ntjet; ++j) { //njet
-	totalT += nevent[i][j][k]; 
+	// totalT += nevent[i][j][k]; 
+	if(first_time) totalT += (double)e_plus_jet[i][j][k];
+	else           totalT += e_plus_jet_weighted[i][j][k];
+
       }
       allSingleTop += totalT;
       cout << " & " << setw(12) << totalT;
     }
     cout << " & " << setw(13) << allSingleTop << " \\\\"<< endl;
     
-    //insert >=4j cut
-    if(ve.at(i)=="!MUON"){ njbegin = 4; ve.at(i) = "$\\ge$4 jets"; i--; }
-
   }
   cout << "\\hline" << endl;
   if(!first_time) cout << "\\end{tabular}\\\\[5mm]" << endl;
@@ -9093,10 +8542,10 @@ void ana::DrawSingleTopTable(const double nevent[][5][nmctype], const string tit
 
 //---------------------------------------------------------------------------------------------
 // Draw event count table for break down of TT + n jet
-//void ana::DrawTTnjetTable(const double nevent[][5][23+5], const string title, vector<string> ve) const {
-void ana::DrawTTnjetTable(const double nevent[][5][nmctype], const string title, vector<string> ve) const {
+//
+void ana::DrawTTnjetTable( const string title ) const {
   
-  static bool first_time=true;
+  static bool first_time(true);
   if(first_time) cout.precision(0);      //unweighted table
   else           cout.precision(myprec); //weighted table
 
@@ -9123,21 +8572,22 @@ void ana::DrawTTnjetTable(const double nevent[][5][nmctype], const string title,
 
   short njbegin = 0;
 
-  // insert 4jet cut
-  ve.insert(ve.begin()+m_muonCutNum+1, Fourjets);
   short p=0;
 
   for(short i=0; i<ncutshown; i++){ //loop over cuts
-    double sum = 0;
-    printCutStage(p, ve.at(p));
-    if(ve.at(p)==Fourjets)  { njbegin = 4; i--; }
+
+    printCutStage(p, ve2.at(p));
+    if(ve2.at(p)==Fourjets)  { njbegin = 4; i--; }
     p++;
+
+    double sum = 0;
 
     for(short k=23; k<=27; k++) { //mctype (tt+j): 23-27
 
       double totalT = 0;
       for(short j=njbegin; j<ntjet; ++j) { //njet
-        totalT += nevent[i][j][k]; 
+	if(first_time) totalT += (double)e_plus_jet[i][j][k];
+	else           totalT += e_plus_jet_weighted[i][j][k];
       }
       sum += totalT;
       cout << " & " << setw(12) << totalT;
@@ -9152,8 +8602,9 @@ void ana::DrawTTnjetTable(const double nevent[][5][nmctype], const string title,
 //---------------------------------------------------------------------------------------------
 
 
+// NOTE: print unweighted event numbers
 //void ana::DrawSignalAcceptanceTable(const double nevent[][5][23+5], vector<string> ve) const {
-void ana::DrawSignalAcceptanceTable(const double nevent[][5][nmctype], vector<string> ve) const {
+void ana::DrawSignalAcceptanceTable( vector<string> ve ) const {
 
   cout.precision(0); //reset precision
 
@@ -9169,12 +8620,13 @@ void ana::DrawSignalAcceptanceTable(const double nevent[][5][nmctype], vector<st
   tt.push_back("&    evtv ");
   tt.push_back("&    mvtv ");
   tt.push_back("&    qqqq ");    
+
      
-  for(short h=3; h<5; h++){
-       
+  for(short h=3; h<5; h++){//jet cut: 3 or 4
+    
     TString njets_text = "$\\ge$"; //"$>=$";
     njets_text += h;
-    njets_text += " jets";
+    njets_text += "JETS";
       
     if(h==3) cout << endl << "\\newpage";
     cout << endl << "%------------------------------------------------------------------";
@@ -9187,43 +8639,718 @@ void ana::DrawSignalAcceptanceTable(const double nevent[][5][nmctype], vector<st
     cout << endl << "           Cut        ";
     for(unsigned int k=0; k<tt.size(); ++k) cout << tt.at(k);
     cout << "\\\\\n\\hline" << endl;
-    //cout << "% E_PLUS_JET\n";
        
-    int startnj=0;
-    for(short i=0; i<11; ++i) { //nstage
+    short startnj=0;
+    short countstage=0;
 
-      printCutStage( i, ve.at(i) );
+    for(short i=0; i<ncutshown; ++i) { //nstage
 
-      // calculate the sum of all ttbar first
-      double total_tt = 0;
+      printCutStage( countstage, ve.at(i) );
+      countstage++;
+
+      int total_tt=0;
+      vector<int> total_mode(10,0);
+
       for(short k=1; k<11; ++k) {
-	for(short j=startnj; j<ntjet; ++j) total_tt += nevent[i][j][k];
+	for(short j=startnj; j<ntjet; ++j) total_mode[k-1] += e_plus_jet[i][j][k];
+	total_tt += total_mode[k-1];
       }
-      // now print
+      // print first the sum of all ttbar
       cout << " &  " << setw(6) << total_tt ;
-      for(short k=1; k<11; ++k) {
-	double total = 0;
-	for(short j=startnj; j<ntjet; ++j) total += nevent[i][j][k];	     
-	cout << " &  " << setw(6) << total ;
+      // then each decay mode
+      for(short k=0; k<10; ++k) {
+ 	cout << " &  " << setw(6) << total_mode.at(k) ;
       }
-      cout << " \\\\ " ;
-      
+      cout << " \\\\ ";
+
       if(ve.at(i)=="!MUON") { // extra step for >= n jet cut
 	startnj=h;
 	ve.at(i) = njets_text;
 	i--;
       }
+      
       cout << endl;
     }
     cout << "\\hline\n\\end{tabular}"<< endl;
+    
     if(h==3) {
       cout << "\\\\[5mm]" << endl;
       ve.at(6) = "!MUON"; //reset
     }
-  }
+    
+  }//cut on 3 or 4 jet
 
 }//end DrawSignalAcceptanceTable
 //------------------------------------------------------------------------------------
+
+
+
+
+
+//====================================================================================
+//
+//                             START  of  Error  Tables
+//
+//====================================================================================
+
+void ana::PrintErrorTables(vector<string> ve) const {
+
+
+  const short mynstage = 11; //up to !DIFFZ
+
+  double e_plus_jet_errors[mynstage][5][24];
+  double e_plus_jet_effic[mynstage][5][24];
+  double e_plus_jet_effic_unc[mynstage][5][24];
+
+  for(short i=0; i<mynstage; ++i){
+    for(short j=0; j<5; ++j){
+      for(short k=0; k<24; ++k){
+	e_plus_jet_errors[i][j][k]    = 0;
+	e_plus_jet_effic[i][j][k]     = 0;
+	e_plus_jet_effic_unc[i][j][k] = 0;
+      }
+    }
+  }
+
+
+  string ttsample = "ttbar";
+  if(GetNinit("ttjet")>0) ttsample = "ttjet";
+  //if(GetNinit("TTJet")>0) ttsample = "TTJet";
+
+
+  string wjetSample = "wjet"; //changed from char*
+  //  if(nInitialEventMC["WJET"]>0) wjetSample = "WJET";//or whatever the other wjet sample is
+
+
+  string kIndexmcNames[24] = {"",ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,
+			      wjetSample,"zjet","enri1","enri2","enri3","bce1","bce2","bce3","vqq","tW","tchan","schan",ttsample};
+
+
+
+
+  for(short i=0; i<mynstage; ++i){
+    for(short j=0; j<5; ++j){
+      for(short k=1; k<23; ++k){
+	
+	const long ni = GetNinit( kIndexmcNames[k] );
+
+	//e_plus_jet_effic[i][j][k] = e_plus_jet[i][j][k]/GetNinit(kIndexmcNames[k]);
+		
+	//e_plus_jet_effic_unc[i][j][k] = sqrt(  e_plus_jet_effic[i][j][k]*(1 - e_plus_jet_effic[i][j][k])/GetNinit(kIndexmcNames[k]) );
+
+	//if(e_plus_jet_effic[i][j][k]==0){e_plus_jet_effic_unc[i][j][k] = GetBayesUncertainty(GetNinit(kIndexmcNames[k]));}
+
+	//----------------------
+	// Ask FB to check....
+	if ( ni==0 ) continue;
+
+	if( e_plus_jet[i][j][k] > 0 ) {
+	  e_plus_jet_effic[i][j][k] = e_plus_jet[i][j][k]/ni  ;
+	  e_plus_jet_effic_unc[i][j][k] = sqrt(  e_plus_jet_effic[i][j][k]*(1 - e_plus_jet_effic[i][j][k]) / ni );
+	} else {
+	  // 0 event pass
+	  //	  e_plus_jet_effic[i][j][k] = 0;
+	  e_plus_jet_effic_unc[i][j][k] = GetBayesUncertainty( ni );
+	}
+
+	//e_plus_jet_errors[i][j][k] = e_plus_jet_effic_unc[i][j][k]*weightMap[kIndexmcNames[k]]*GetNinit(kIndexmcNames[k]);
+	e_plus_jet_errors[i][j][k] = e_plus_jet_effic_unc[i][j][k]*GetCrossSection(kIndexmcNames[k])*intlumi; //TL 21-8-09 (ask FB to check)
+	//----------------------
+
+      }//end of k loop
+
+      e_plus_jet_effic[i][j][23] = 0;
+      for(int k=1;k<11;++k){
+	e_plus_jet_effic[i][j][23] += e_plus_jet_effic[i][j][k];
+      }
+      e_plus_jet_effic_unc[i][j][23] = sqrt(e_plus_jet_effic[i][j][23]*(1-e_plus_jet_effic[i][j][23])/GetNinit(ttsample));
+      //e_plus_jet_errors[i][j][23] =  e_plus_jet_effic_unc[i][j][23]*weightMap[ttsample]*GetNinit(ttsample);
+      e_plus_jet_errors[i][j][23] =  e_plus_jet_effic_unc[i][j][23]*GetCrossSection(ttsample)*intlumi; //TL 21-8-09 (ask FB to check)
+
+    }
+  }
+
+
+  // QCD sum
+  double Sum_Effic2[mynstage][ntjet];
+  double Sum_Effic_unc_pos[mynstage][ntjet];
+  double Sum_Effic_unc_neg[mynstage][ntjet];
+  double Sum_pass_weighted2[mynstage][ntjet];
+  // single top sum
+  double STopSum_Effic2[mynstage][ntjet];
+  double STopSum_Effic_unc_pos[mynstage][ntjet];
+  double STopSum_Effic_unc_neg[mynstage][ntjet];
+  double STopSum_pass_weighted2[mynstage][ntjet];
+
+  for(short i=0; i<mynstage; ++i){
+    for(short j=0; j<5; ++j){
+      Sum_Effic2[i][j] = 0.0;
+      Sum_Effic_unc_pos[i][j] = 0.0;
+      Sum_Effic_unc_neg[i][j] = 0.0;
+      Sum_pass_weighted2[i][j] = 0.0;
+
+      STopSum_Effic2[i][j] = 0.0;
+      STopSum_Effic_unc_pos[i][j] = 0.0;
+      STopSum_Effic_unc_neg[i][j] = 0.0;
+      STopSum_pass_weighted2[i][j] = 0.0;
+    }
+  }
+
+
+  // QCD
+  for(short i=0; i<mynstage; ++i){
+    for(short j=0; j<5; ++j){
+      for(short k=13; k<19; ++k){
+	Sum_pass_weighted2[i][j] +=e_plus_jet_weighted[i][j][k];
+	double cer = e_plus_jet_errors[i][j][k];
+	Sum_Effic_unc_pos[i][j] += (cer*cer);
+	if(e_plus_jet_effic[i][j][k] !=0){Sum_Effic_unc_neg[i][j] += (cer*cer);}
+      }
+      Sum_Effic_unc_pos[i][j] = sqrt(Sum_Effic_unc_pos[i][j]);
+      Sum_Effic_unc_neg[i][j] = sqrt(Sum_Effic_unc_neg[i][j]);
+    }
+  }
+
+  // Single top
+  for(int i=0; i<mynstage; ++i){
+    for(int j=0; j<5; ++j){
+      for(int k=20; k<23; ++k){
+        STopSum_pass_weighted2[i][j] +=e_plus_jet_weighted[i][j][k];
+        double cer = e_plus_jet_errors[i][j][k];
+        STopSum_Effic_unc_pos[i][j] += (cer*cer);
+        if(e_plus_jet_effic[i][j][k] !=0){STopSum_Effic_unc_neg[i][j] += (cer*cer);}
+      }
+      STopSum_Effic_unc_pos[i][j] = sqrt(STopSum_Effic_unc_pos[i][j]);
+      STopSum_Effic_unc_neg[i][j] = sqrt(STopSum_Effic_unc_neg[i][j]);
+    }
+  }
+
+
+
+  ofstream myfile;
+  myfile.open("Analyzeroutput.txt",ios::app);
+
+  myfile.setf(ios::fixed,ios::floatfield);
+
+
+  myfile <<endl;
+  myfile <<endl;
+  myfile <<endl;
+  myfile <<endl;
+  myfile <<endl;
+
+  double Allevents[12]; //mynstage
+  double AlleventsUncPos[12];
+  double AlleventsUncNeg[12];
+  double JustSignal[12];
+  double JustSignalUnc[12];
+  double JustBG[12];
+  double JustBGUncPos[12];
+  double JustBGUncNeg[12];
+
+  for(short i=0; i<12; ++i){
+    Allevents[i] = 0;
+    AlleventsUncPos[i] = 0;
+    AlleventsUncNeg[i] = 0;
+    JustBG[i] = 0;
+    JustBGUncPos[i] = 0;
+    JustBGUncNeg[i] = 0;
+    JustSignal[i] = 0;
+    JustSignalUnc[i] = 0;
+  }
+
+  myfile.precision(1);
+
+  myfile <<"\\begin{tabular}{|l|ccccc|c|}"<<endl<<"\\hline"<<endl;
+
+  myfile << setw(23) << " Cuts  &"
+	 << setw(23) << " \\ttbar{}  &"
+	 << setw(23) << " W+jets   &"
+	 << setw(23) << " Z+jets   &"
+	 << setw(23) << " QCD   &"
+    //	 << setw(23) << " VQQ   &"
+	 << setw(23) << " Single Top   &"
+	 << setw(20) << " Total" << " \\\\ \n\\hline" << endl;
+  //    &   W+jets  &  Z+jets  &   QCD   &   VQQ    &  Single Top & Total \\\\ \\hline"<<endl;
+  
+
+  // First 7 cuts (up to mu-veto)
+  for(short i=0; i<7; ++i){
+    double TotalEvents = 0;
+    double TotalErrorPos = 0;
+    double TotalErrorNeg = 0;
+
+    //myfile << setw(11) << left << ve.at(i) << " "<< right;
+    printCutStage(myfile,i,ve.at(i));
+
+    double total = 0;
+    double totalerr = 0;
+
+    // signal
+    for(short j=0; j<5; ++j){
+      for(short k=1; k<11; ++k){total += e_plus_jet_weighted[i][j][k];}
+      totalerr += e_plus_jet_errors[i][j][23]*e_plus_jet_errors[i][j][23];
+    }
+    //myfile << "&" << setw(6) << ScrNum(total) << "$\\pm$" <<setw(6) << left << ScrNum(sqrt(totalerr));
+    //myfile << "&" << setw(6) << ScrNum(total) << "$\\pm$" <<setw(6) << left << ScrNum(sqrt(totalerr)) << right;
+    printLine(myfile, total, sqrt(totalerr));
+    TotalEvents      += total;
+    TotalErrorPos    += totalerr;
+    TotalErrorNeg    += totalerr;
+    JustSignal[i]    += total;
+    JustSignalUnc[i] += totalerr;
+
+
+    // Backgrounds
+    // W+jets
+    total = 0;
+    totalerr = 0;
+    for(short j=0; j<5; ++j){
+      total    += e_plus_jet_weighted[i][j][11];
+      totalerr += e_plus_jet_errors[i][j][11]*e_plus_jet_errors[i][j][11];
+    }
+    //myfile << "&" << setw(6) << ScrNum(total) << "$\\pm$" << setw(6) << ScrNum( sqrt(totalerr));
+    printLine(myfile, total, sqrt(totalerr));
+    TotalEvents     += total;
+    TotalErrorPos   += totalerr;
+    TotalErrorNeg   += totalerr;
+    JustBG[i]       += total;
+    JustBGUncPos[i] += totalerr;
+    JustBGUncNeg[i] += totalerr;
+
+    // Z+jets
+    total = 0;
+    totalerr = 0;
+    for(short j=0; j<5; ++j){
+      total += e_plus_jet_weighted[i][j][12];
+      totalerr += e_plus_jet_errors[i][j][12]*e_plus_jet_errors[i][j][12];
+    }
+    //myfile<<"&"<<setw(6) <<ScrNum(total) << "$\\pm$" <<setw(6) << ScrNum( sqrt(totalerr));
+    printLine(myfile, total, sqrt(totalerr));
+    TotalEvents     += total;
+    TotalErrorPos   += totalerr;
+    TotalErrorNeg   += totalerr;
+    JustBG[i]       += total;
+    JustBGUncPos[i] += totalerr;
+    JustBGUncNeg[i] += totalerr;
+
+    
+    total = 0;
+    totalerr = 0;
+    double totalNerr = 0;
+    for(short j=0; j<5; ++j){
+      total += Sum_pass_weighted2[i][j];
+      totalerr += Sum_Effic_unc_pos[i][j]*Sum_Effic_unc_pos[i][j];
+      totalNerr += Sum_Effic_unc_neg[i][j]*Sum_Effic_unc_neg[i][j];
+    }
+    //myfile<<"&"<<setw(6) <<ScrNum(total)  << "$\\pm$"<< ScrNum( sqrt(totalerr));
+    printLine(myfile, total, sqrt(totalerr));
+    TotalEvents     += total;
+    TotalErrorPos   += totalerr;
+    TotalErrorNeg   += totalNerr;
+    JustBG[i]       += total;
+    JustBGUncPos[i] += totalerr;
+    JustBGUncNeg[i] += totalNerr;
+
+
+    // VQQ
+    /*    
+    total = 0;
+    totalerr = 0;
+    for(short j=0; j<5; ++j){
+      total    += e_plus_jet_weighted[i][j][19];
+      totalerr += e_plus_jet_errors[i][j][19]*e_plus_jet_errors[i][j][19];
+    }
+    //myfile<<"&"<<setw(6) <<ScrNum(total) << "$\\pm$" <<setw(6) << ScrNum( sqrt(totalerr));
+    printLine(myfile, total, sqrt(totalerr));
+    */
+    /*
+      TotalEvents     += total;
+      TotalErrorPos   += totalerr;
+      TotalErrorNeg   += totalerr;
+      JustBG[i]       += total;
+      JustBGUncPos[i] += totalerr;
+      JustBGUncNeg[i] += totalerr;
+    */
+
+    // Single top
+    total = 0;
+    totalerr = 0;
+    for(short j=0; j<5; ++j){
+      total += STopSum_pass_weighted2[i][j];
+      totalerr += STopSum_Effic_unc_pos[i][j]*STopSum_Effic_unc_pos[i][j];
+    }
+    //myfile<<"&"<<setw(6) <<ScrNum(total) << "$\\pm$" <<setw(6) << ScrNum( sqrt(totalerr));
+    printLine(myfile, total, sqrt(totalerr));
+    TotalEvents     += total;
+    TotalErrorPos   += totalerr;
+    TotalErrorNeg   += totalerr;
+    JustBG[i]       += total;
+    JustBGUncPos[i] += totalerr;
+    JustBGUncNeg[i] += totalerr;
+
+    // ALL
+    //    myfile << "& $"<<ScrNum(TotalEvents)<<"^{+" <<ScrNum( sqrt(TotalErrorPos))<<"}_{-"<<ScrNum(sqrt(TotalErrorNeg)) <<"}$ \\\\"<<endl;
+    //myfile << "& "<<ScrNum(TotalEvents)<<"$\\pm$" <<ScrNum( sqrt(TotalErrorPos))<<" \\\\"<<endl;
+    printLine(myfile, TotalEvents, sqrt(TotalErrorPos));
+    myfile << " \\\\" << endl;
+    Allevents[i]       = TotalEvents;
+    AlleventsUncPos[i] = TotalErrorPos;
+    AlleventsUncNeg[i] = TotalErrorNeg;
+  }
+
+
+  
+
+  // For cut 4mj to DIFFZ
+  for(short i=6; i<mynstage; ++i){ //cut (up to !DIFFZ)
+
+    double TotalEvents = 0;
+    double TotalErrorPos = 0;
+    double TotalErrorNeg = 0;
+
+    if(i==6) { printCutStage(myfile, i, Fourjets); }
+    else {     printCutStage(myfile, i, ve.at(i)); }
+
+    double total = 0;
+    for(short k=1; k<11; ++k){total += e_plus_jet_weighted[i][4][k];}
+
+    //myfile << "&" << setw(6) << ScrNum(total) << "$\\pm$" << setw(6) << ScrNum( e_plus_jet_errors[i][4][23]);
+    printLine(myfile, total, e_plus_jet_errors[i][4][23]);
+    TotalErrorPos      += e_plus_jet_errors[i][4][23]*e_plus_jet_errors[i][4][23];
+    TotalErrorNeg      += e_plus_jet_errors[i][4][23]*e_plus_jet_errors[i][4][23];
+    TotalEvents        += total;
+    JustSignal[i+1]    += total;
+    JustSignalUnc[i+1] += e_plus_jet_errors[i][4][23]*e_plus_jet_errors[i][4][23];
+
+    
+    // W+jets
+    //myfile << "&" << setw(6) <<ScrNum(e_plus_jet_weighted[i][4][11]) << "$\\pm$" << setw(6) << ScrNum( e_plus_jet_errors[i][4][11]);
+    printLine(myfile, e_plus_jet_weighted[i][4][11], e_plus_jet_errors[i][4][11]);
+    TotalErrorPos     += e_plus_jet_errors[i][4][11]*e_plus_jet_errors[i][4][11];
+    TotalErrorNeg     += e_plus_jet_errors[i][4][11]*e_plus_jet_errors[i][4][11];
+    TotalEvents       += e_plus_jet_weighted[i][4][11];
+    JustBG[i+1]       += e_plus_jet_weighted[i][4][11];
+    JustBGUncPos[i+1] += e_plus_jet_errors[i][4][11]*e_plus_jet_errors[i][4][11];
+    JustBGUncNeg[i+1] += e_plus_jet_errors[i][4][11]*e_plus_jet_errors[i][4][11];
+    
+    // Z+jets
+    //myfile<<"&" << setw(6) << ScrNum(e_plus_jet_weighted[i][4][12]) << "$\\pm$" << setw(6) << ScrNum( e_plus_jet_errors[i][4][12]);
+    printLine(myfile, e_plus_jet_weighted[i][4][12], e_plus_jet_errors[i][4][12]);
+    TotalErrorPos     += e_plus_jet_errors[i][4][12]*e_plus_jet_errors[i][4][12];
+    TotalErrorNeg     += e_plus_jet_errors[i][4][12]*e_plus_jet_errors[i][4][12];
+    TotalEvents       += e_plus_jet_weighted[i][4][12];
+    JustBG[i+1]       += e_plus_jet_weighted[i][4][12];
+    JustBGUncPos[i+1] += e_plus_jet_errors[i][4][12]*e_plus_jet_errors[i][4][12];
+    JustBGUncNeg[i+1] += e_plus_jet_errors[i][4][12]*e_plus_jet_errors[i][4][12];
+
+
+    // QCD
+    //myfile << " &  " << setw(6) <<ScrNum(Sum_pass_weighted2[i][4]) <<"$\\pm$" << setw(6) <<ScrNum( Sum_Effic_unc_pos[i][4]);
+    printLine(myfile, Sum_pass_weighted2[i][4], Sum_Effic_unc_pos[i][4]);
+    TotalErrorPos     += Sum_Effic_unc_pos[i][4]*Sum_Effic_unc_pos[i][4];
+    TotalErrorNeg     += Sum_Effic_unc_neg[i][4]*Sum_Effic_unc_neg[i][4];
+    TotalEvents       += Sum_pass_weighted2[i][4];
+    JustBG[i+1]       += Sum_pass_weighted2[i][4];
+    JustBGUncPos[i+1] += Sum_Effic_unc_pos[i][4]*Sum_Effic_unc_pos[i][4];
+    JustBGUncNeg[i+1] += Sum_Effic_unc_neg[i][4]*Sum_Effic_unc_neg[i][4];
+
+    // VQQ
+    //myfile<<"&"<< setw(6) <<ScrNum(e_plus_jet_weighted[i][4][19]) << "$\\pm$" << setw(6) << ScrNum( e_plus_jet_errors[i][4][19]);
+    /*
+      printLine(myfile, e_plus_jet_weighted[i][4][19], e_plus_jet_errors[i][4][19]);
+    
+      TotalErrorPos     += e_plus_jet_errors[i][4][19]*e_plus_jet_errors[i][4][19];
+      TotalErrorNeg     += e_plus_jet_errors[i][4][19]*e_plus_jet_errors[i][4][19];
+      TotalEvents       += e_plus_jet_weighted[i][4][19];
+      JustBG[i+1]       += e_plus_jet_weighted[i][4][19];
+      JustBGUncPos[i+1] += e_plus_jet_errors[i][4][19]*e_plus_jet_errors[i][4][19];
+      JustBGUncNeg[i+1] += e_plus_jet_errors[i][4][19]*e_plus_jet_errors[i][4][19];
+    */
+
+    // Single top
+    //myfile << " &  " <<ScrNum(STopSum_pass_weighted2[i][4]) << "$\\pm$" << ScrNum(STopSum_Effic_unc_pos[i][4]);
+    printLine(myfile, STopSum_pass_weighted2[i][4], STopSum_Effic_unc_pos[i][4]);
+    TotalErrorPos     += STopSum_Effic_unc_pos[i][4];
+    TotalErrorNeg     += STopSum_Effic_unc_pos[i][4];
+    TotalEvents       += STopSum_pass_weighted2[i][4];
+    JustBG[i+1]       += STopSum_pass_weighted2[i][4];
+    JustBGUncPos[i+1] += STopSum_Effic_unc_pos[i][4];
+    JustBGUncNeg[i+1] += STopSum_Effic_unc_neg[i][4];
+
+    // All
+    Allevents[i+1]       += TotalEvents;
+    AlleventsUncPos[i+1] += TotalErrorPos;
+    AlleventsUncNeg[i+1] += TotalErrorNeg;
+    //    myfile << "& "<<ScrNum(TotalEvents)<<"$\\pm$" <<ScrNum( sqrt(TotalErrorPos))<<" \\\\"<<endl;
+    printLine(myfile, TotalEvents, sqrt(TotalErrorPos) );
+    myfile << " \\\\" << endl;
+  }
+  myfile <<"  \\hline"<<endl<<"\\end{tabular}"<<endl;
+  myfile<<endl<<endl<<endl;
+
+
+
+  // Break Down of Single Top (with errors)
+  //----------------------------------------
+  myfile << "\\begin{tabular}{|l|rrr|r|}" << endl;
+  myfile << "\\hline" << endl;
+  myfile << "\\multicolumn{5}{|l|}";
+  myfile << "{Break down of expected single top events for " << (int)intlumi << "/pb}";
+  myfile << "\\\\\n\\hline" << endl;
+
+  myfile << "            Cut      ";
+  myfile << " &" << setw(21) << "tW-chan  ";
+  myfile << " &" << setw(21) << "t-chan  ";
+  myfile << " &" << setw(21) << "s-chan  ";
+  myfile << " &" << setw(29) << "AllSingleTop \\\\\\hline" << endl;
+
+
+  short njbegin = 0;
+
+  for(short i=0; i<11; ++i){ //cut stage (up to HT)
+    double allSingleTop = 0;
+    double allSingleTopEr = 0;
+    printCutStage(myfile, i, ve.at(i));
+    //   myfile << " Stage " << setw(2) << i << " " << setw(11) << left << ve.at(i) << right;
+    for(short k=20; k<23; ++k) { //mctype (single top): 20-22
+      double totalT = 0;
+      double totalEr = 0;
+      for(short j=njbegin; j<ntjet; ++j) { //njet
+        totalT += e_plus_jet_weighted[i][j][k];
+	totalEr += e_plus_jet_errors[i][j][k]*e_plus_jet_errors[i][j][k];
+      }
+      totalEr = sqrt(totalEr);
+      allSingleTop += totalT;
+     
+      //myfile << " & " << setw(12) << ScrNum(totalT) <<"$\\pm$"<< ScrNum(totalEr);
+      printLine(myfile, totalT, totalEr);
+    }
+    for(short j=njbegin; j<ntjet; ++j) {allSingleTopEr +=STopSum_Effic_unc_pos[i][j]*STopSum_Effic_unc_pos[i][j];}
+    allSingleTopEr = sqrt(allSingleTopEr);
+
+    myfile << " & " << setw(10) << ScrNum(allSingleTop) << "$\\pm$" << setw(4) << left << ScrNum(allSingleTopEr) 
+	   << right << " \\\\"<< endl;
+
+    // insert >=4j cut
+    if(ve.at(i)=="!MUON"){ 
+      njbegin = 4; ve.at(i) = Fourjets; i--;
+    }
+  }
+
+  myfile << "\\hline" << endl;
+  myfile << "\\end{tabular}\\\\[5mm]" << endl;
+  myfile << endl << endl;
+  ve.at(6) = "!MUON"; //restore
+
+
+  //BEGIN QCD BREAKDOWN TABLE
+  //-------------------------
+  myfile << "\\begin{tabular}{|l|cccccc|c|}" << endl;
+  myfile << "\\hline" << endl;
+  myfile << "\\multicolumn{8}{|l|}";
+  myfile << "{Break down of expected QCD events for " << intlumi << "/pb}";
+  myfile << "\\\\\n\\hline" << endl;
+  
+  myfile << "            Cut      ";
+  myfile << " &" << setw(24) << "enri1 ";
+  myfile << " &" << setw(24) << "enri2 ";
+  myfile << " &" << setw(24) << "enri3 ";
+  myfile << " &" << setw(24) << "bce1 ";
+  myfile << " &" << setw(24) << "bce2 ";
+  myfile << " &" << setw(24) << "bce3 ";
+  myfile << " &" << setw(27) << "AllQCD \\\\\\hline" << endl;
+
+  //ntjet = 5;
+  njbegin = 0;
+
+  for(short i=0; i<11; ++i){ //cut stage (up to HT)
+    double totalAllQCD = 0;
+    double totalAllQCDErPos = 0;
+    double totalAllQCDErNeg = 0;
+    //myfile << "" << setw(2) << i << " " << setw(11) << left << ve.at(i) << right;
+    printCutStage(myfile,i,ve.at(i));
+
+    for(short k=13; k<19; ++k) { //mctype (QCD): 13-18
+      double totalT = 0;
+      double totalEr = 0;
+      for(short j=njbegin; j<ntjet; ++j) { //njet
+        totalT  += e_plus_jet_weighted[i][j][k];
+        totalEr += e_plus_jet_errors[i][j][k]*e_plus_jet_errors[i][j][k];
+      }
+      totalEr = sqrt(totalEr);
+      totalAllQCD += totalT;
+
+      myfile << " &" << setw(12) << ScrNum(totalT);
+      if(totalT !=0) myfile <<"$\\pm$"<< setw(7) << left << ScrNum(totalEr) << right;
+      else{myfile <<"$<$"<< setw(9) << left << ScrNum(totalEr) << right;}
+    }
+    for(short j=njbegin; j<ntjet; ++j) {
+      totalAllQCDErPos +=Sum_Effic_unc_pos[i][j]*Sum_Effic_unc_pos[i][j];
+      totalAllQCDErNeg +=Sum_Effic_unc_neg[i][j]*Sum_Effic_unc_neg[i][j];
+    }
+    
+    totalAllQCDErPos = sqrt(totalAllQCDErPos);
+    totalAllQCDErNeg = sqrt(totalAllQCDErNeg);
+    //    myfile << " & " << setw(13) << "$"<<ScrNum(totalAllQCD) <<"^{+"<<ScrNum(totalAllQCDErPos)<<"}_{-"<<ScrNum(totalAllQCDErNeg) <<"}$ \\\\"<< endl;
+    myfile << " & " << setw(13) <<ScrNum(totalAllQCD) <<"$\\pm$"<< setw(8) << left<< ScrNum(totalAllQCDErPos) << right << " \\\\"<< endl;
+    
+    if(ve.at(i)=="!MUON"){
+      njbegin = 4;  ve.at(i) = Fourjets;  i--;
+    }
+  }
+  myfile << "\\hline" << endl;
+  myfile << "\\end{tabular}\\\\[5mm]\n" << endl<<endl;
+
+  ve.at(6)="!MUON";//restore
+
+
+
+  myfile << "\n%---------------------------------------------------------------------\n";
+  myfile << "       Expected Signal and Background for " << intlumi << "/pb";
+  myfile << "\n%---------------------------------------------------------------------\n\n";
+  myfile << "\\begin{tabular}{|l|r|rr|r|}\\hline" << endl;
+  myfile << "          Cut        "
+	 << " &  " << setw(30) << "Total Events "
+	 << " &  " << setw(24) << "Total Signal (S) "
+	 << " &  " << setw(26) << "Total Background (B) "
+	 << " &  " << setw(20) << "S/B   \\\\\n\\hline" << endl;
+
+  
+  // Insert >=4j cut after muon-veto
+  const short muVeto_pos = 7;
+  ve.insert( ve.begin()+muVeto_pos, Fourjets);
+
+  for(short i=0; i <= 11; ++i){ //loop over cuts (up to DIFFZ)
+
+    printCutStage(myfile, i, ve.at(i));
+    
+    //myfile << " & " << setw(12) << ScrNum(Allevents[i]) << "$^{+"<<ScrNum(sqrt(AlleventsUncPos[i])) << "}_{-"<< ScrNum(sqrt(AlleventsUncNeg[i]))<
+    //myfile << " & " << setw(12) << ScrNum(JustSignal[i])<<"$\\pm$"<<ScrNum(sqrt(JustSignalUnc[i]));
+    //myfile << " & " << setw(12) << ScrNum(JustBG[i])<< "$^{+"<<ScrNum(sqrt(JustBGUncPos[i]))  << "}_{-"<<ScrNum( sqrt(JustBGUncNeg[i]))<<"}$";
+
+    myfile << " & " << setw(12) << right << ScrNum(Allevents[i]) 
+	   << setw(24) << left << Form( "$^{+%s}_{-%s}$",ScrNum(sqrt(AlleventsUncPos[i])).c_str(), ScrNum(sqrt(AlleventsUncNeg[i])).c_str() ) << left;
+    myfile << " & " << setw(10) << right << ScrNum(JustSignal[i])
+	   << setw(10) << left << "$\\pm$"+ScrNum(sqrt(JustSignalUnc[i])) ;
+    myfile << " & " << setw(12) << right << ScrNum(JustBG[i])
+	   << setw(24) << left << Form( "$^{+%s}_{-%s}$", ScrNum(sqrt(JustBGUncPos[i])).c_str(),ScrNum( sqrt(JustBGUncNeg[i])).c_str() ) << right;
+						
+    //Print Signal-to-background ratio (S/B)
+    if( JustBG[i] > 0 ) {
+      double errSBGPos = sqrt(JustSignalUnc[i]/(JustSignal[i]*JustSignal[i]) + JustBGUncPos[i]/(JustBG[i]*JustBG[i]) );
+      myfile << " & " << setw(11) << ScrNum(JustSignal[i]/JustBG[i])<< "$\\pm$" <<ScrNum(errSBGPos*JustSignal[i]/JustBG[i]);
+    } else {
+      myfile << " & " << setw(12) << "-" ;
+    }
+    myfile << " \\\\" << endl;
+  
+  }// end loop over cut (nstage)
+  myfile << "\\hline\n\\end{tabular}\n" << endl<<endl<<endl;
+
+  // restore (take out 4mj)
+  //  ve.erase( ve.begin()+muVeto_pos);
+
+
+  myfile << "%---------------------------------------"<< endl;
+  myfile << "            NjetVcut table "<< endl;
+  myfile << "%---------------------------------------\n"<< endl;
+  PrintError_NjetVcut(myfile, e_plus_jet_errors );
+
+  myfile.close();
+
+}//end PrintErrorTables
+//----------------------------------------------------------------------------------
+
+
+double ana::GetBayesUncertainty(int Ninitial) const{
+
+  if(Ninitial==0) return 0; //NEW, added by TL (Ask FB to check)
+  
+  TH1D *h_total = new TH1D("total","events that are incident",1,0,1);
+  h_total->SetBinContent( 1, Ninitial );
+  TH1D *h_pass = new TH1D("pass","events that pass",1,0,1);
+  h_pass->SetBinContent( 1, 0 );
+
+  TGraphAsymmErrors *tge = new TGraphAsymmErrors();
+  tge->BayesDivide(h_pass,h_total);
+  delete h_total; delete h_pass;
+  double error1 = tge->GetErrorYhigh(0);
+  delete tge;
+  return error1;
+
+}// end GetBayesUncertainty
+//---------------------------------------------------------------------
+
+void ana::printLine(ofstream &myfile, double num, double err) const {
+  myfile << " &" << setw(9) << ScrNum(num) << "$\\pm$" << setw(7) << left << ScrNum(err) << right;
+}
+
+string ana::ScrNum(double num) const{
+
+  string Number = "";
+  if(ScientificNotation){
+    if(num/10000.0 > 1){
+      Number = Form("%.1E",num);
+    }
+    else{Number = Form("%.1f",num);}
+  }
+  else{
+    Number = Form("%.1f",num);
+  }
+  return Number;
+}
+//----------------------------------------------------------------------------------
+
+
+void ana::PrintError_NjetVcut(ofstream& myfile, const double e_plus_jet_errors[][5][24] ) const {
+
+  myfile<<"\\begin{tabular}{|c|ccccc|c|}"<<endl;
+  myfile<<"\\hline"<<endl;
+    
+  myfile << setw(21) << "Cut  "
+	 << " &" << setw(26) << "0-jet "
+	 << " &" << setw(26) << "1-jet "
+	 << " &" << setw(26) << "2-jets "
+	 << " &" << setw(26) << "3-jets "
+	 << " &" << setw(26) << "$\\ge$4-jets "
+	 << " &" << setw(36) << "Total   \\\\\n\\hline\n";
+
+  for(short i=0; i<11; ++i) { //nstage
+
+    printCutStage(myfile,i,ve.at(i));
+
+    double total = 0;
+    double PosError = 0;
+    double NegError = 0;
+    for(short j=0; j<ntjet; ++j){
+      double myTotal = 0;
+      double myPosErr = 0;
+      double myNegError = 0;
+      for(short k=1;k<23;++k){
+	if(k==19) continue;//skip vqq
+	myTotal += e_plus_jet_weighted[i][j][k];
+	myPosErr += e_plus_jet_errors[i][j][k]*e_plus_jet_errors[i][j][k];
+	if(e_plus_jet_weighted[i][j][k] != 0){ myNegError += e_plus_jet_errors[i][j][k]*e_plus_jet_errors[i][j][k];}
+      }
+      myfile << " & " << setw(12) << ScrNum(myTotal) << "$\\pm$"<< setw(8) << left << ScrNum(sqrt(myPosErr)) << right;
+      total    += myTotal;
+      PosError += myPosErr;
+      NegError += myNegError;
+    }//loop jets
+    myfile << " & " << setw(13) << fixed << ScrNum(total) << "$\\pm$"<< setw(8) << left << ScrNum(sqrt(PosError)) <<" \\\\ \n" << right;
+  }//loop cuts
+  myfile << "\n\\hline\n\\end{tabular}" << endl;         
+
+}//end PrintError_NjetVcut
+//----------------------------------------------------------------------------------
+//==================================================================================
+//
+//                          END  of  Error  tables
+//
+//==================================================================================
+
+
 
 
 
@@ -9329,7 +9456,7 @@ float ana::compute_d0 ( const string lepton, const int i ) const {
 }//end compute_d0
 //---------------------------------------------------------------------------------------------
 
-//--------- compute mT(W) given electron 4-vector and MET -------------------------------------
+//--------- compute mT(W) given electron 2-vector and MET -------------------------------------
 float ana::compute_mtw ( const TVector2& e, const TVector2& miss ) const {
   
   float leppx = e.Px();
@@ -9337,8 +9464,6 @@ float ana::compute_mtw ( const TVector2& e, const TVector2& miss ) const {
   float lepet = e.Mod();
   //cout << "lep: px=" << leppx << "  py=" << leppy << " et=" << lepet << endl;
   
-  //  float mspx = mset * sin(msphi);
-  //  float mspy = mset * cos(msphi);
   float mspx = miss.Px();
   float mspy = miss.Py();
   float mset = miss.Mod();
@@ -9406,17 +9531,18 @@ void ana::PrintGenParticles() const {
 }//end PrintGenParticles
 //---------------------------------------------------------------------------------------------
 
-void ana::printCutStage( int i, string cut ) const {
+void ana::printCutStage( const int& i, const string& cut ) const {
   cout << " Stage " << setw(2) << i << " " << setw(11) << left << cut << right;  
 }
 //---------------------------------------------------------------------------------------------
 
-void ana::printCutStage( ofstream& os, int i, string cut ) const {
+void ana::printCutStage( ofstream& os, const int& i, const string& cut ) const {
   os << " Stage " << setw(2) << i << " " << setw(11) << left << cut << right;  
 }
 //---------------------------------------------------------------------------------------------
 
 // *** NOT READY FOR USED ***
+/*
 string ana::CheckEventTypeFromMcTruth() const {
   bool found_top = false;
   bool found_W   = false;
@@ -9434,6 +9560,7 @@ string ana::CheckEventTypeFromMcTruth() const {
   if(found_Z) return "zee";
   return "none";
 }
+*/
 //---------------------------------------------------------------------------------------------
 
 float ana::getRelIso(int i) const {

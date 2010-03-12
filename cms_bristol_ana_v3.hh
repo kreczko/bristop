@@ -1515,7 +1515,7 @@ public:
   void    ApplyMETcut(bool f)        { m_applyMETcut     = f; };
   void    RejectEndcapEle(bool f)    { m_rejectEndcapEle = f; };
 
-  void    StudySystematics(const string, const string);
+  void    StudySystematics(const string&, const string&);
   void    StudyPDFunc(bool f)        { m_studyPDFunc     = f; };
 
   // Switches
@@ -1593,6 +1593,8 @@ private:
   void fillHisto_Njet_DataAndMC( TH1F* h[7][16], const float value, const double w );
 
   void fillHisto_PDF_weights( TH1F* h );
+  //  void fillHisto_event_tables(vector<string> ve);
+  void fillHisto_event_tables();
 
   // W+jets estimation
   void reco_hadronicTop_highestTopPT( const std::vector<TLorentzVector>&, const int nGoodIsoEle );
@@ -1608,22 +1610,22 @@ private:
   double GetWeight(const string) const;
   long   GetNinit(const string) const;
 
-
-  // print event-count tables
-  void DrawEventPerNjetTable( const double nevt[][5][23+5], const vector<string>& ve ) const;
-  void DrawSignalBGTable(     const double nevt[][5][23+5], const vector<string> ve ) const;
-  void DrawMCTypeTable(       const double nevt[][5][23+5], const string title, vector<string> ve ) const;
-  void DrawQCDTable(          const double nevt[][5][23+5], const string title, vector<string> ve ) const;
-  void DrawSingleTopTable(    const double nevt[][5][23+5], const string title, vector<string> ve ) const;
-  void DrawTTnjetTable(       const double nevt[][5][23+5], const string title, vector<string> ve ) const;
-  void DrawSignalAcceptanceTable(const double nevent[][5][23+5], vector<string> ve) const;
-  void printCutStage(int,string) const;
-  void printCutStage(ofstream& os,int,string) const;
-
+  // event-count tables
+  void FillEventCounter(const int, const int&, const int&);
+  void DrawEventPerNjetTable() const;
+  void DrawSignalBGTable() const;
+  void DrawMCTypeTable(    const string title ) const;
+  void DrawQCDTable(       const string title ) const;
+  void DrawSingleTopTable( const string title ) const;
+  void DrawTTnjetTable(    const string title ) const;
+  void DrawSignalAcceptanceTable( vector<string> ve) const;
+  void printCutStage(const int&,const string&) const;
+  void printCutStage(ofstream& os,const int&,const string&) const;
 
   // print event-count tables (with errors)
-  void PrintErrorTables(const double e_plus_jet[][5][23+5], const double e_plus_jet_weighted[][5][23+5], vector<string> ve) const;
-  void PrintError_NjetVcut(ofstream&, const double [][5][23+5], const double [][5][24], vector<string>&) const;
+  void PrintErrorTables( vector<string> ve ) const;
+  void PrintError_NjetVcut(ofstream&, const double [][5][24] ) const;
+
   double GetBayesUncertainty(int Ninitial) const;
   string ScrNum(double num) const;
   void printLine(ofstream &myfile, const double, const double) const;
@@ -1639,17 +1641,8 @@ private:
   void valid_mkHisto_cut_njet(TH1F* h[][7], const string, const string, const int, const float, const float );
   void valid_fillHisto(TH1F* h[][7], const bool cuts[8], int nj, double value) const;
 
-  //int    Njet()                const { return m_nGoodJet; };  //num of cleaned jet in event
   bool   doValidation()        const { return m_doValidation; };
   bool   DoConversionStudies()       { return m_ConversionStudies; };
-  //bool   doPlotRelisoNES()     const { return m_plotRelisoNES; };
-  //bool   debug()               const { return m_debug; };
-  //string jetAlgo()             const { return m_jetAlgo; };
-  //string metAlgo()             const { return m_metAlgo; };
-  //double LHCEnergyInTeV()      const { return m_LHCEnergyInTeV; };
-  //bool   RunOnSD()             const { return m_run_on_SD; };
-  //bool   RunOnMyHLTskim()      const { return m_run_on_myHLTskim; };
-  //bool   DoPDFunc()            const { return m_doPDFunc; };
   
   // conversion
   void PrintConversionTable();
@@ -1705,9 +1698,13 @@ private:
   int    m_nbtag_SSV;
 
   // event counts
-  //  double e_plus_jet[nstage][ntjet][nmctype];
+  //double e_plus_jet[nstage][ntjet][nmctype];
+  vector<vector<vector<int> > >    e_plus_jet; //3D
+  vector<vector<vector<double> > > e_plus_jet_weighted; //3D
 
   // cuts
+  vector<string> ve; //list of cuts (excl nj)
+  vector<string> ve2; //list of cuts (incl nj)
   float ELE_ETCUT;
   float MU_PTCUT;
   float JET_PTCUT;
@@ -1775,6 +1772,14 @@ private:
   TH1F *h_nbtag_TCHP[16];
   TH1F *h_nbtag_SSV[16];
 
+  // event table
+  TH2D *Signal_njetsVcuts;
+  TH2D *QCD_njetsVcuts;
+  TH2D *Wjets_njetsVcuts;
+  TH2D *Zjets_njetsVcuts;
+  TH2D *VQQ_njetsVcuts; 
+  TH2D *SingleTop_njetsVcuts;
+  TH2D *Data_njetsVcuts;
 
   // MC flag
   void SetMCFlag();
