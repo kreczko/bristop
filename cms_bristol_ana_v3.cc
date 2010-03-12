@@ -9165,7 +9165,6 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 	else
 		cout.precision(myprec); //weighted table
 
-
 	if (first_time)
 		cout << "\\newpage\n" << endl;
 	cout << "\n%------------------------------------------------------------------------\n";
@@ -9173,91 +9172,66 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 	cout << "\n%------------------------------------------------------------------------\n";
 
 	if (first_time) {
-		//cout << "\\\\[1em]\n" << endl;
-		cout << "\\begin{tabular}{|l|rrrrrrr|r|}" << endl;//FIXME: added 1 'r'
+		cout << "\\begin{tabular}{|l|rrrrrrr|r|}" << endl;
 		cout << "\\hline" << endl;
 	}
-	cout << "\\multicolumn{9}{|l|}";//FIXME: changed from 8 to 9
+	cout << "\\multicolumn{9}{|l|}";
+
 	if (first_time)
 		cout << "{Actual number of MC events passing selection}";
 	else
 		cout << "{Expected number of events for " << intlumi << "/pb}";
+
 	cout << "\\\\\\hline" << endl;
 
-	cout << "           Cut       " << " &" << setw(13) << "\\ttbar{} " << " &" << setw(13) << "W+jets " << " &" << setw(13)
+	cout << "     Cut       " << " &" << setw(13) << "\\ttbar{} " << " &" << setw(13) << "W+jets " << " &" << setw(13)
 			<< "Z+jets " << " &" << setw(13) << "QCD " << " &" << setw(13) << "VQQ " << " &" << setw(13) << "Single Top " << " &"
-			<< setw(13) << "Zprime_M500GeV_W5GeV " << " &" << setw(25) << "Total  \\\\\n\\hline" << endl;
+			<< setw(13) << "Z'(500, 5) " << " &" << setw(25) << "Total  \\\\\n\\hline" << endl;
 
 	double totalT; //total for a particular mc type
 	double totalA; //total for all event types at each cut stage
 
 	short njbegin = 0;
-	//  short ntjet = 5;
 
 	for (short i = 0; i < 11; ++i) {//loop over cuts (up to HT)
 
 		totalA = 0; //reset to zero for each cut
 		printCutStage(i, ve.at(i));
 
-		totalT = getTotalEvents(nevent, i, 1, 11, njbegin);;
-
 		//Signal
-//		for (short k = 1; k < 11; ++k) { //loop over ttbar mc types
-//			for (short j = njbegin; j < ntjet; ++j) {
-//				totalT += nevent[i][j][k];
-//			} //sum up jet bins
-//		}
+		totalT = getTotalEvents(nevent, i, 1, 11, njbegin);
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add signal to total
 
 		//Wjets
 		totalT = getTotalEvents(nevent, i, 11, 12, njbegin);;
-//		for (short j = njbegin; j < ntjet; ++j) {
-//			totalT += nevent[i][j][11];
-//		} //sum up jet bins
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add wjets to total
 
 		//Zjets
 		totalT = getTotalEvents(nevent, i, 12, 13, njbegin);
-//		for (short j = njbegin; j < ntjet; ++j) {
-//			totalT += nevent[i][j][12];
-//		} //sum up jet bins
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add zjets to total
 
 		//QCD
 		totalT = getTotalEvents(nevent, i, 13, 19, njbegin);//loop over QCD mc types
-//		for (short k = 13; k < 19; ++k) {
-//			for (short j = njbegin; j < ntjet; ++j) {
-//				totalT += nevent[i][j][k];
-//			}
-//		}
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add QCD to total
 
 		//VQQ
 		totalT = getTotalEvents(nevent, i, 19, 20, njbegin);;
-//		for (short j = njbegin; j < ntjet; ++j) {
-//			totalT += nevent[i][j][19];
-//		} //sum up jet bins
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add VQQ to total
 
 		//single top
 		totalT = getTotalEvents(nevent, i, 20, 23, njbegin);//loop over single top mc types (20-22)
-//		for (short k = 20; k < 23; ++k) {
-//			for (short j = njbegin; j < ntjet; ++j) {
-//				totalT += nevent[i][j][k];
-//			}
-//		}
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT; //add single top to total
 
 		//FIXME 17th step to new sample (optional)
 		totalT = getTotalEvents(nevent, i, 23, 24, njbegin);
 		cout << " & " << setw(12) << fixed << totalT;
-		totalA += totalT; //add Zprime_M500GeV_W5GeV to total
+		totalA += totalT; //add Z' M500GeV_W5GeV to total
 
 		//print total column:
 		cout << " & " << setw(13) << fixed << totalA << " \\\\" << endl;
@@ -9276,102 +9250,124 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 	}
 
 
-	//Zprime table. TODO: make an own function for this
-//	if (first_time) {
-//			//cout << "\\\\[1em]\n" << endl;
-//			cout << "\\begin{tabular}{|l|rrrrrrr|r|}" << endl;//FIXME: added 1 'r'
-//			cout << "\\hline" << endl;
-//		}
-//		cout << "\\multicolumn{9}{|l|}";
-//		if (first_time)
-//			cout << "{Actual number of MC events passing selection}";
-//		else
-//			cout << "{Expected number of events for " << intlumi << "/pb}";
-//		cout << "\\\\\\hline" << endl;
-//
-//		cout << "           Cut       " << " &" << setw(13) << "Zprime_M500GeV_W5GeV " << " &" << setw(13) << "Zprime_M500GeV_W50GeV " << " &" << setw(13)
-//				<< "Z+jets " << " &" << setw(13) << "QCD " << " &" << setw(13) << "VQQ " << " &" << setw(13) << "Single Top " << " &"
-//				<< setw(13) << "Zprime_M500GeV_W5GeV " << " &" << setw(25) << "Total  \\\\\n\\hline" << endl;
-//	for (short i = 0; i < 11; ++i) {//loop over cuts (up to HT)
-//
-//			totalA = 0; //reset to zero for each cut
-//			printCutStage(i, ve.at(i));
-//			totalT = 0;
-//
-//			//Signal
-//			for (short k = 1; k < 11; ++k) { //loop over ttbar mc types
-//				for (short j = njbegin; j < ntjet; ++j) {
-//					totalT += nevent[i][j][k];
-//				} //sum up jet bins
-//			}
-//			cout << " & " << setw(12) << fixed << totalT;
-//			totalA += totalT;//add signal to total
-//
-//			//Wjets
-//			totalT = 0;
-//			for (short j = njbegin; j < ntjet; ++j) {
-//				totalT += nevent[i][j][11];
-//			} //sum up jet bins
-//			cout << " & " << setw(12) << fixed << totalT;
-//			totalA += totalT;//add wjets to total
-//
-//			//Zjets
-//			totalT = 0;
-//			for (short j = njbegin; j < ntjet; ++j) {
-//				totalT += nevent[i][j][12];
-//			} //sum up jet bins
-//			cout << " & " << setw(12) << fixed << totalT;
-//			totalA += totalT;//add zjets to total
-//
-//			//QCD
-//			totalT = 0;
-//			for (short k = 13; k < 19; ++k) { //loop over QCD mc types
-//				for (short j = njbegin; j < ntjet; ++j) {
-//					totalT += nevent[i][j][k];
-//				}
-//			}
-//			cout << " & " << setw(12) << fixed << totalT;
-//			totalA += totalT;//add QCD to total
-//
-//			//VQQ
-//			totalT = 0;
-//			for (short j = njbegin; j < ntjet; ++j) {
-//				totalT += nevent[i][j][19];
-//			} //sum up jet bins
-//			cout << " & " << setw(12) << fixed << totalT;
-//			totalA += totalT;//add VQQ to total
-//
-//			//single top
-//			totalT = 0;
-//			for (short k = 20; k < 23; ++k) { //loop over single top mc types (20-22)
-//				for (short j = njbegin; j < ntjet; ++j) {
-//					totalT += nevent[i][j][k];
-//				}
-//			}
-//			cout << " & " << setw(12) << fixed << totalT;
-//			totalA += totalT; //add single top to total
-//
-//			//FIXME 17th step to new sample (optional)
-//			totalT = 0;
-//			for (short k = 23; k < 24; ++k) { //loop over Zprime_M500GeV_W5GeV mc types (23)
-//				for (short j = njbegin; j < ntjet; ++j) {
-//					totalT += nevent[i][j][k];
-//				}
-//			}
-//			cout << " & " << setw(12) << fixed << totalT;
-//			totalA += totalT; //add Zprime_M500GeV_W5GeV to total
-//
-//			//print total column:
-//			cout << " & " << setw(13) << fixed << totalA << " \\\\" << endl;
-//
-//			//after muon-veto, place nj>=4 cut
-//			if (ve.at(i) == "!MUON") {
-//				njbegin = 4;
-//				ve.at(i) = "$\\ge$4 jets";
-//				i--;
-//			}
-//
-//		}// end loop over cut (nstage)
+	//Zprime table 1% width. TODO: make an own function for this
+
+	if (first_time) {
+			//cout << "\\\\[1em]\n" << endl;
+			cout << "\\begin{tabular}{|l|rrrrrrrr|r|}" << endl;
+			cout << "\\hline" << endl;
+		}
+		cout << "\\multicolumn{10}{|l|}";
+		if (first_time)
+			cout << "{Actual number of MC events passing selection}";
+		else
+			cout << "{Expected number of events for " << intlumi << "/pb}";
+		cout << "\\\\\\hline" << endl;
+
+		cout << "           Cut       " << " &" << setw(13) << "Z'(500,5) " << " &" << setw(13) << "Z'(750,7.5) " << " &" << setw(13)
+				<< "Z'(1000,10)" << " &" << setw(13) << "Z'(1250,12.5) " << " &" << setw(13) << "Z'(1500,15) " << " &" << setw(13) << "Z'(2000,20)" << " &"
+				<< setw(13) << "Z'(3000,30) " << " &" << setw(13) << "Z'(4000,40) " << " &" << setw(25) << "Total  \\\\\n\\hline" << endl;
+
+	for (short i = 0; i < 11; ++i) {//loop over cuts (up to HT)
+			totalA = 0; //reset to zero for each cut
+			printCutStage(i, ve.at(i));
+			totalT = getTotalEvents(nevent, i, 23, 24, njbegin);//Z' M500GeV_W5GeV
+			cout << " & " << setw(12) << fixed << totalT;
+			totalA += totalT;//add Z' M500GeV_W5GeV to total
+
+			totalT = getTotalEvents(nevent, i, 25, 26, njbegin);//750, 7.5
+			cout << " & " << setw(12) << fixed << totalT;
+			totalA += totalT;
+
+			totalT = getTotalEvents(nevent, i, 26, 27, njbegin);//1000, 10
+			cout << " & " << setw(12) << fixed << totalT;
+			totalA += totalT;
+
+			totalT = getTotalEvents(nevent, i, 28, 29, njbegin);//1250, 12.5
+			cout << " & " << setw(12) << fixed << totalT;
+			totalA += totalT;
+
+			totalT = getTotalEvents(nevent, i, 29, 30, njbegin);//1500, 15
+			cout << " & " << setw(12) << fixed << totalT;
+			totalA += totalT;
+
+			totalT = getTotalEvents(nevent, i, 31, 32, njbegin);//2000, 20
+						cout << " & " << setw(12) << fixed << totalT;
+			totalA += totalT;
+
+			totalT = getTotalEvents(nevent, i, 33, 34, njbegin);//3000, 30
+									cout << " & " << setw(12) << fixed << totalT;
+				totalA += totalT;
+
+			totalT = getTotalEvents(nevent, i, 35, 36, njbegin);//4000, 40
+			cout << " & " << setw(12) << fixed << totalT;
+									totalA += totalT;
+
+
+
+			//print total column:
+			cout << " & " << setw(13) << fixed << totalA << " \\\\" << endl;
+
+		}// end loop over cut (nstage)
+	cout << "\\hline" << endl;
+		if (!first_time){
+			cout << "\\end{tabular}\\\\[5mm]" << endl;
+		}
+
+		//Zprime table 10% width. TODO: make an own function for this
+			if (first_time) {
+					//cout << "\\\\[1em]\n" << endl;
+					cout << "\\begin{tabular}{|l|rrrrrr|r|}" << endl;
+					cout << "\\hline" << endl;
+				}
+				cout << "\\multicolumn{8}{|l|}";
+				if (first_time)
+					cout << "{Actual number of MC events passing selection}";
+				else
+					cout << "{Expected number of events for " << intlumi << "/pb}";
+				cout << "\\\\\\hline" << endl;
+
+				cout << "           Cut       " << " &" << setw(13) << "Z'(500,50) " << " &" << setw(13)
+						<< "Z'(1000,100)" << " &" <<  setw(13) << "Z'(1500,150)" << " &" << setw(13) << "Z'(2000,200)" << " &"
+						<< setw(13) << "Z'(3000,300) " << " &" << setw(13) << "Z'(4000,400) " << " &" << setw(25) << "Total  \\\\\n\\hline" << endl;
+
+			for (short i = 0; i < 11; ++i) {//loop over cuts (up to HT)
+					totalA = 0; //reset to zero for each cut
+					printCutStage(i, ve.at(i));
+					totalT = getTotalEvents(nevent, i, 24, 25, njbegin);//Z' M500GeV_W50GeV
+					cout << " & " << setw(12) << fixed << totalT;
+					totalA += totalT;//add Z' M500GeV_W5GeV to total
+
+					totalT = getTotalEvents(nevent, i, 27, 28, njbegin);//1000, 100
+					cout << " & " << setw(12) << fixed << totalT;
+					totalA += totalT;
+
+					totalT = getTotalEvents(nevent, i, 30, 31, njbegin);//1500, 150
+					cout << " & " << setw(12) << fixed << totalT;
+					totalA += totalT;
+
+					totalT = getTotalEvents(nevent, i, 32, 33, njbegin);//2000, 200
+								cout << " & " << setw(12) << fixed << totalT;
+					totalA += totalT;
+
+					totalT = getTotalEvents(nevent, i, 34, 35, njbegin);//3000, 300
+											cout << " & " << setw(12) << fixed << totalT;
+						totalA += totalT;
+
+					totalT = getTotalEvents(nevent, i, 36, 37, njbegin);//4000, 400
+					cout << " & " << setw(12) << fixed << totalT;
+											totalA += totalT;
+
+
+
+					//print total column:
+					cout << " & " << setw(13) << fixed << totalA << " \\\\" << endl;
+
+				}// end loop over cut (nstage)
+			cout << "\\hline" << endl;
+				if (!first_time){
+					cout << "\\end{tabular}\\\\[5mm]" << endl;
+				}
 	first_time = false;
 }
 //end DrawMCTypeTable
