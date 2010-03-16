@@ -1492,17 +1492,17 @@ void ana::BookHistograms_QCD(){
      iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_uw_endcap, "QCDest_isoVmet_NES_uw_endcap", "RelIso v MET (NES uw endcap)", 70,0,1.4, 50,0,50);
 
      // iso plots
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES,              "QCDest_iso_NES",              "RelIso (NES)",              140., 0, 1.4 );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_barrel,       "QCDest_iso_NES_barrel",       "RelIso (NES barrel)",       140., 0, 1.4 );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_endcap,       "QCDest_iso_NES_endcap",       "RelIso (NES endcap)",       140., 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES,              "QCDest_iso_NES",              "RelIso (NES)",              140, 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_barrel,       "QCDest_iso_NES_barrel",       "RelIso (NES barrel)",       140, 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_endcap,       "QCDest_iso_NES_endcap",       "RelIso (NES endcap)",       140, 0, 1.4 );
 
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET,        "QCDest_iso_NES_hiMET",        "RelIso (NES hiMET)",        140., 0, 1.4 );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET_barrel, "QCDest_iso_NES_hiMET_barrel", "RelIso (NES hiMET barrel)", 140., 0, 1.4 );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET_endcap, "QCDest_iso_NES_hiMET_endcap", "RelIso (NES hiMET endcap)", 140., 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET,        "QCDest_iso_NES_hiMET",        "RelIso (NES hiMET)",        140, 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET_barrel, "QCDest_iso_NES_hiMET_barrel", "RelIso (NES hiMET barrel)", 140, 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET_endcap, "QCDest_iso_NES_hiMET_endcap", "RelIso (NES hiMET endcap)", 140, 0, 1.4 );
 
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET,        "QCDest_iso_NES_loMET",        "RelIso (NES loMET)",        140., 0, 1.4 );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET_barrel, "QCDest_iso_NES_loMET_barrel", "RelIso (NES loMET barrel)", 140., 0, 1.4 );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET_endcap, "QCDest_iso_NES_loMET_endcap", "RelIso (NES loMET endcap)", 140., 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET,        "QCDest_iso_NES_loMET",        "RelIso (NES loMET)",        140, 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET_barrel, "QCDest_iso_NES_loMET_barrel", "RelIso (NES loMET barrel)", 140, 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET_endcap, "QCDest_iso_NES_loMET_endcap", "RelIso (NES loMET endcap)", 140, 0, 1.4 );
 
    }//if m_plotRelisoNES
 

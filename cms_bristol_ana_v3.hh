@@ -1631,9 +1631,7 @@ private:
   void reco_hadronicTop_highestTopPT( const std::vector<TLorentzVector>&, const int nGoodIsoEle );
   pair<double,double> compute_M3(const std::vector<TLorentzVector>&) const;
 
-  //  void SetHistoLabelCutNjet( TH2D *this_njetVcuts, vector<string>& ve ) const;
   void SetHistoLabelCutNjet( TH2D *this_njetVcuts, const vector<string>& ve ) const;
-  //  void SetHistoLabelEleID( TH1F *eid[] ) const;
   void SetHistoLabelEleID( const vector<TH1*>& h ) const;
 
   void   DefineCrossSection();
