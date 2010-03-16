@@ -1,6 +1,7 @@
 //#====================================================#
 //# Last update:
 //
+// 16 Mar 2010: clean up, small correction.
 // 15 Mar 2010: - take out redundant weight parameter in fillHistoDataAndMC().
 //              - revise. review QCD plot making.
 // 14 Mar 2010: - change histo array to vector. Add BookHistograms() suite.
@@ -689,6 +690,8 @@ ana::ana(){
    m_useMisslayers           = false;
    m_ntoy                    = 2;
    m_muonCutNum              = 0;
+   // pass flag
+   pass_met                  = false;
 
    // Default values of kinematic cuts
    ELE_ETCUT                = 30.0;
@@ -1474,276 +1477,33 @@ void ana::BookHistograms_QCD(){
 
      cout << "plotRelIsoNES" << endl;
 
-     TDirectory *dir_NES = dir_QCD->mkdir("NES_new","normal event selection");
+     TDirectory *dir_NES = dir_QCD->mkdir("NES","normal event selection");
      dir_NES->cd();
-     //   hh_QCDest_isoVmet_NES.reserve(11);//NEW 11=nLevel
-     const int sc_nbIso=70; //iso in scatter plot
-     const int sc_maxIso=70; //iso in scatter plot
-     const int sc_nbMet=50; //met in scatter plot
-     const int sc_maxMet=50; //met in scatter plot
+
+     // 3D vectors of isoVmet plots: h[nlevel][nj][nmc] = [11][7][16]
+
      // weighted
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES,        "QCDest_isoVmet_NES",        "RelIso v MET (NES)",  sc_nbIso,0,sc_maxIso, sc_nbMet,0,sc_maxMet);
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_barrel, "QCDest_isoVmet_NES_barrel", "RelIso v MET (NES barrel)",  sc_nbIso,0,sc_maxIso, sc_nbMet,0,sc_maxMet);
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_endcap, "QCDest_isoVmet_NES_endcap", "RelIso v MET (NES endcap)",  sc_nbIso,0,sc_maxIso, sc_nbMet,0,sc_maxMet);
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES,           "QCDest_isoVmet_NES",	     "RelIso v MET (NES)",         70,0,1.4, 50,0,50);//iso,met
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_barrel,    "QCDest_isoVmet_NES_barrel", "RelIso v MET (NES barrel)",  70,0,1.4, 50,0,50);
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_endcap,    "QCDest_isoVmet_NES_endcap", "RelIso v MET (NES endcap)",  70,0,1.4, 50,0,50);
      // unweighted
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_uw,        "QCDest_isoVmet_NES_uw",        "RelIso v MET (NES uw)",   sc_nbIso,0,sc_maxIso, sc_nbMet,0,sc_maxMet);
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_uw_barrel, "QCDest_isoVmet_NES_uw_barrel", "RelIso v MET (NES uw barrel)",   sc_nbIso,0,sc_maxIso, sc_nbMet,0,sc_maxMet);
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_uw_endcap, "QCDest_isoVmet_NES_uw_endcap", "RelIso v MET (NES uw endcap)",  sc_nbIso,0,sc_maxIso, sc_nbMet,0,sc_maxMet);
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_uw,        "QCDest_isoVmet_NES_uw", 	"RelIso v MET (NES uw)",        70,0,1.4, 50,0,50);
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_uw_barrel, "QCDest_isoVmet_NES_uw_barrel",	"RelIso v MET (NES uw barrel)", 70,0,1.4, 50,0,50);
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_uw_endcap, "QCDest_isoVmet_NES_uw_endcap", "RelIso v MET (NES uw endcap)", 70,0,1.4, 50,0,50);
 
      // iso plots
-     const int nbIso = 140; //nbin reliso
-     const float upIso = 1.4; //max
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES,        "QCDest_iso_NES",        "RelIso (NES)",        nbIso, 0,upIso );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_barrel, "QCDest_iso_NES_barrel", "RelIso (NES barrel)", nbIso, 0,upIso );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_endcap, "QCDest_iso_NES_endcap", "RelIso (NES endcap)", nbIso, 0,upIso );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES,              "QCDest_iso_NES",              "RelIso (NES)",              140., 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_barrel,       "QCDest_iso_NES_barrel",       "RelIso (NES barrel)",       140., 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_endcap,       "QCDest_iso_NES_endcap",       "RelIso (NES endcap)",       140., 0, 1.4 );
 
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET,        "QCDest_iso_NES_hiMET",        "RelIso (NES hiMET)",        nbIso, 0,upIso );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET_barrel, "QCDest_iso_NES_hiMET_barrel", "RelIso (NES hiMET barrel)", nbIso, 0,upIso );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET_endcap, "QCDest_iso_NES_hiMET_endcap", "RelIso (NES hiMET endcap)", nbIso, 0,upIso );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET,        "QCDest_iso_NES_hiMET",        "RelIso (NES hiMET)",        140., 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET_barrel, "QCDest_iso_NES_hiMET_barrel", "RelIso (NES hiMET barrel)", 140., 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET_endcap, "QCDest_iso_NES_hiMET_endcap", "RelIso (NES hiMET endcap)", 140., 0, 1.4 );
 
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET,        "QCDest_iso_NES_loMET",        "RelIso (NES loMET)",        nbIso, 0,upIso );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET_barrel, "QCDest_iso_NES_loMET_barrel", "RelIso (NES loMET barrel)", nbIso, 0,upIso );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET_endcap, "QCDest_iso_NES_loMET_endcap", "RelIso (NES loMET endcap)", nbIso, 0,upIso );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET,        "QCDest_iso_NES_loMET",        "RelIso (NES loMET)",        140., 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET_barrel, "QCDest_iso_NES_loMET_barrel", "RelIso (NES loMET barrel)", 140., 0, 1.4 );
+     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET_endcap, "QCDest_iso_NES_loMET_endcap", "RelIso (NES loMET endcap)", 140., 0, 1.4 );
 
-
-     /*
-     dir_NES->cd();
-     const string levelno[nLevel] = {"L1","L1b","L1c","L1d1","L1d2","L1d3","L1d4","L1d5","L2","L3","L4"};
-     const string levelinfo[nLevel] = {"L1 HLT","L1b E_{T},#eta","L1c d0",
-				       "L1d1 eID H/E",
-				       "L1d2 eID |#Delta#sigma_{in}|",
-				       "L1d3 eID |#Delta#phi_{in}|",
-				       "L1d4 eID #sigma_{i#eta i#eta}",
-				       "L1d5 eID",
-				       "L2 GoodEle","L3 MuZVeto","L4 Conv"};
-
-     for (int iLevel=0; iLevel<nLevel; ++iLevel) {
-
-       const string aname_sc   = "QCDest_isoVmet_NES_"                 + levelno[iLevel];
-       const string aname_scBA = "QCDest_isoVmet_NES_barrel_"          + levelno[iLevel];
-       const string aname_scEN = "QCDest_isoVmet_NES_endcap_"          + levelno[iLevel];
-       const string aname_sc2  = "QCDest_isoVmet_NES_uw_"              + levelno[iLevel];//unweighted
-       const string aname_sc2BA = "QCDest_isoVmet_NES_uw_barrel_"      + levelno[iLevel];//unweighted
-       const string aname_sc2EN = "QCDest_isoVmet_NES_uw_endcap_"      + levelno[iLevel];//unweighted
-       const string aname      = "QCDest_CombRelIso_NES_"              + levelno[iLevel];
-       const string anameBA    = "QCDest_CombRelIso_NES_barrel_"       + levelno[iLevel];
-       const string anameEN    = "QCDest_CombRelIso_NES_endcap_"       + levelno[iLevel];
-       const string aname_lo   = "QCDest_CombRelIso_NES_loMET_"        + levelno[iLevel];
-       const string aname_loBA = "QCDest_CombRelIso_NES_loMET_barrel_" + levelno[iLevel];
-       const string aname_loEN = "QCDest_CombRelIso_NES_loMET_endcap_" + levelno[iLevel];
-       const string aname_hi   = "QCDest_CombRelIso_NES_hiMET_"        + levelno[iLevel];
-       const string aname_hiBA = "QCDest_CombRelIso_NES_hiMET_barrel_" + levelno[iLevel];
-       const string aname_hiEN = "QCDest_CombRelIso_NES_hiMET_endcap_" + levelno[iLevel];
-
-       const string info_sc   = Form("RelIso v MET (NES_%s)",        levelinfo[iLevel].c_str() );
-       const string info_scBA = Form("RelIso v MET (NES_%s barrel)", levelinfo[iLevel].c_str() );
-       const string info_scEN = Form("RelIso v MET (NES_%s endcap)", levelinfo[iLevel].c_str() );
-       const string info_sc2  = Form("RelIso v MET (NES_%s uw)",     levelinfo[iLevel].c_str() );//unweighted
-       const string info_sc2BA = Form("RelIso v MET (NES_%s uw barrel)",  levelinfo[iLevel].c_str() );//unweighted
-       const string info_sc2EN = Form("RelIso v MET (NES_%s uw endcap)",  levelinfo[iLevel].c_str() );//unweighted
-       const string info      = Form("RelIso (NES_%s)",              levelinfo[iLevel].c_str() );
-       const string infoBA    = Form("RelIso (NES_%s barrel)",       levelinfo[iLevel].c_str() );
-       const string infoEN    = Form("RelIso (NES_%s endcap)",       levelinfo[iLevel].c_str() );
-       const string info_lo   = Form("RelIso (NES_%s loMET)",        levelinfo[iLevel].c_str() );
-       const string info_loBA = Form("RelIso (NES_%s loMET barrel)", levelinfo[iLevel].c_str() );
-       const string info_loEN = Form("RelIso (NES_%s loMET endcap)", levelinfo[iLevel].c_str() );
-       const string info_hi   = Form("RelIso (NES_%s hiMET)",        levelinfo[iLevel].c_str() );
-       const string info_hiBA = Form("RelIso (NES_%s hiMET barrel)", levelinfo[iLevel].c_str() );
-       const string info_hiEN = Form("RelIso (NES_%s hiMET endcap)", levelinfo[iLevel].c_str() );
-   
-       const int nb=100; //scatter plot
-       const int nBin = 200; //reliso
-       const float xUp = 2.0; //max
-       cout << "iLevel : "<< iLevel  << endl;
-     
-       cout << "\n   aa"<< endl;
-       addHistoNjet_TH2(h_QCDest_isoVmet_NES[iLevel],                 aname_sc,   "", info_sc,   nb,0,2,nb,0,100);
-       cout << "\n   bb"<< endl;
-
-       addHistoNjet_TH2(h_QCDest_isoVmet_NES_barrel[iLevel],          aname_scBA, "", info_scBA, nb,0,2,nb,0,100);
-       cout << "\n   cc"<< endl;
-       addHistoNjet_TH2(h_QCDest_isoVmet_NES_endcap[iLevel],          aname_scEN, "", info_scEN, nb,0,2,nb,0,100);
-       cout << "\n   dd"<< endl;
-       addHistoNjet(h_QCDest_CombRelIso_NES[iLevel],              aname,      "", info,      nBin,0,xUp);
-       cout << "'n   ee"<< endl;
-       addHistoNjet(h_QCDest_CombRelIso_NES_barrel[iLevel],       anameBA,    "", infoBA,    nBin,0,xUp);
-       cout << "\n   ff"<< endl;
-       addHistoNjet(h_QCDest_CombRelIso_NES_endcap[iLevel],       anameEN,    "", infoEN,    nBin,0,xUp);
-       addHistoNjet(h_QCDest_CombRelIso_NES_loMET[iLevel],        aname_lo,   "", info_lo,   nBin,0,xUp);
-       addHistoNjet(h_QCDest_CombRelIso_NES_loMET_barrel[iLevel], aname_loBA, "", info_loBA, nBin,0,xUp);
-       addHistoNjet(h_QCDest_CombRelIso_NES_loMET_endcap[iLevel], aname_loEN, "", info_loEN, nBin,0,xUp);
-       addHistoNjet(h_QCDest_CombRelIso_NES_hiMET[iLevel],        aname_hi,   "", info_hi,   nBin,0,xUp);
-       addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_barrel[iLevel], aname_hiBA, "", info_hiBA, nBin,0,xUp);
-       addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_endcap[iLevel], aname_hiEN, "", info_hiEN, nBin,0,xUp);
-
-       if(!IsData()){
-	 // scatter plot, iso:met (weighted)
-	 cout << "\n   QCD"<< endl;
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_QCD[iLevel],   aname_sc, "__QCD",   info_sc+" (QCD)", nb,0,2,nb,0,100);
-	 cout << "\n   bce1"<< endl;
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_bce1[iLevel],  aname_sc, "__bce1",  info_sc+" (bce1)",nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_bce2[iLevel],  aname_sc, "__bce2",  info_sc+" (bce2)",nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_bce3[iLevel],  aname_sc, "__bce3",  info_sc+" (bce3)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_enri1[iLevel], aname_sc, "__enri1", info_sc+" (enri1)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_enri2[iLevel], aname_sc, "__enri2", info_sc+" (enri2)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_enri3[iLevel], aname_sc, "__enri3", info_sc+" (enri3)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_ttbar[iLevel], aname_sc, "__ttbar", info_sc+" (ttbar)",  nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_Wjet[iLevel],  aname_sc, "__Wjet",  info_sc+" (W+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_Zjet[iLevel],  aname_sc, "__Zjet",  info_sc+" (Z+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_singleTop[iLevel],aname_sc, "__singleTop", info_sc+" (single top)", nb,0,2,nb,0,100);
-
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_barrel_QCD[iLevel],   aname_scBA, "__QCD",   info_scBA+" (QCD)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_barrel_bce1[iLevel],  aname_scBA, "__bce1",  info_scBA+" (bce1)",nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_barrel_bce2[iLevel],  aname_scBA, "__bce2",  info_scBA+" (bce2)",nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_barrel_bce3[iLevel],  aname_scBA, "__bce3",  info_scBA+" (bce3)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_barrel_enri1[iLevel], aname_scBA, "__enri1", info_scBA+" (enri1)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_barrel_enri2[iLevel], aname_scBA, "__enri2", info_scBA+" (enri2)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_barrel_enri3[iLevel], aname_scBA, "__enri3", info_scBA+" (enri3)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_barrel_ttbar[iLevel], aname_scBA, "__ttbar", info_scBA+" (ttbar)",  nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_barrel_Wjet[iLevel],  aname_scBA, "__Wjet",  info_scBA+" (W+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_barrel_Zjet[iLevel],  aname_scBA, "__Zjet",  info_scBA+" (Z+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_barrel_singleTop[iLevel],aname_scBA, "__singleTop", info_scBA+" (single top)", nb,0,2,nb,0,100);
-
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_endcap_QCD[iLevel],      aname_scEN, "__QCD",   info_scEN+" (QCD)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_endcap_bce1[iLevel],     aname_scEN, "__bce1",  info_scEN+" (bce1)",nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_endcap_bce2[iLevel],     aname_scEN, "__bce2",  info_scEN+" (bce2)",nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_endcap_bce3[iLevel],     aname_scEN, "__bce3",  info_scEN+" (bce3)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_endcap_enri1[iLevel],    aname_scEN, "__enri1", info_scEN+" (enri1)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_endcap_enri2[iLevel],    aname_scEN, "__enri2", info_scEN+" (enri2)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_endcap_enri3[iLevel],    aname_scEN, "__enri3", info_scEN+" (enri3)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_endcap_ttbar[iLevel],    aname_scEN, "__ttbar", info_scEN+" (ttbar)",  nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_endcap_Wjet[iLevel],     aname_scEN, "__Wjet",  info_scEN+" (W+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_endcap_Zjet[iLevel],     aname_scEN, "__Zjet",  info_scEN+" (Z+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_endcap_singleTop[iLevel],aname_scEN, "__singleTop", info_scEN+" (single top)", nb,0,2,nb,0,100);
-
-	 // scatter plot, iso:met (unweighted, for each MC)
-	 //addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_QCD[iLevel],      aname_sc2, "__QCD",   info_sc2+" (QCD)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_bce1[iLevel],     aname_sc2, "__bce1",  info_sc2+" (bce1)",nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_bce2[iLevel],     aname_sc2, "__bce2",  info_sc2+" (bce2)",nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_bce3[iLevel],     aname_sc2, "__bce3",  info_sc2+" (bce3)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_enri1[iLevel],    aname_sc2, "__enri1", info_sc2+" (enri1)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_enri2[iLevel],    aname_sc2, "__enri2", info_sc2+" (enri2)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_enri3[iLevel],    aname_sc2, "__enri3", info_sc2+" (enri3)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_ttbar[iLevel],    aname_sc2, "__ttbar", info_sc2+" (ttbar)",  nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_Wjet[iLevel],     aname_sc2, "__Wjet",  info_sc2+" (W+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_Zjet[iLevel],     aname_sc2, "__Zjet",  info_sc2+" (Z+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_singleTop[iLevel],aname_sc2, "__singleTop", info_sc2+" (single top)", nb,0,2,nb,0,100);
-
-	 //	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_barrel_QCD[iLevel],   aname_sc2BA, "__QCD",   info_sc2BA+" (QCD)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_barrel_bce1[iLevel],  aname_sc2BA, "__bce1",  info_sc2BA+" (bce1)",nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_barrel_bce2[iLevel],  aname_sc2BA, "__bce2",  info_sc2BA+" (bce2)",nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_barrel_bce3[iLevel],  aname_sc2BA, "__bce3",  info_sc2BA+" (bce3)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_barrel_enri1[iLevel], aname_sc2BA, "__enri1", info_sc2BA+" (enri1)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_barrel_enri2[iLevel], aname_sc2BA, "__enri2", info_sc2BA+" (enri2)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_barrel_enri3[iLevel], aname_sc2BA, "__enri3", info_sc2BA+" (enri3)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_barrel_ttbar[iLevel], aname_sc2BA, "__ttbar", info_sc2BA+" (ttbar)",  nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_barrel_Wjet[iLevel],  aname_sc2BA, "__Wjet",  info_sc2BA+" (W+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_barrel_Zjet[iLevel],  aname_sc2BA, "__Zjet",  info_sc2BA+" (Z+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_barrel_singleTop[iLevel],aname_sc2BA, "__singleTop", info_sc2BA+" (single top)", nb,0,2,nb,0,100);
-
-	 //	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_endcap_QCD[iLevel],   aname_sc2EN, "__QCD",   info_sc2EN+" (QCD)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_endcap_bce1[iLevel],  aname_sc2EN, "__bce1",  info_sc2EN+" (bce1)",nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_endcap_bce2[iLevel],  aname_sc2EN, "__bce2",  info_sc2EN+" (bce2)",nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_endcap_bce3[iLevel],  aname_sc2EN, "__bce3",  info_sc2EN+" (bce3)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_endcap_enri1[iLevel], aname_sc2EN, "__enri1", info_sc2EN+" (enri1)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_endcap_enri2[iLevel], aname_sc2EN, "__enri2", info_sc2EN+" (enri2)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_endcap_enri3[iLevel], aname_sc2EN, "__enri3", info_sc2EN+" (enri3)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_endcap_ttbar[iLevel], aname_sc2EN, "__ttbar", info_sc2EN+" (ttbar)",  nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_endcap_Wjet[iLevel],  aname_sc2EN, "__Wjet",  info_sc2EN+" (W+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_endcap_Zjet[iLevel],  aname_sc2EN, "__Zjet",  info_sc2EN+" (Z+jets)", nb,0,2,nb,0,100);
-	 addHistoNjet_TH2(h_QCDest_isoVmet_NES_uw_endcap_singleTop[iLevel],aname_sc2EN, "__singleTop", info_sc2EN+" (single top)", nb,0,2,nb,0,100);
-
-
-	 // a) no met cut
-	 addHistoNjet(h_QCDest_CombRelIso_NES_QCD[iLevel],   aname, "__QCD",   info+" (QCD)", nBin,0,xUp);       
-	 addHistoNjet(h_QCDest_CombRelIso_NES_bce1[iLevel],  aname, "__bce1",  info+" (bce1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_bce2[iLevel],  aname, "__bce2",  info+" (bce2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_bce3[iLevel],  aname, "__bce3",  info+" (bce3)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_enri1[iLevel], aname, "__enri1", info+" (enri1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_enri2[iLevel], aname, "__enri2", info+" (enri2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_enri3[iLevel], aname, "__enri3", info+" (enri3)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_ttbar[iLevel], aname, "__ttbar", info+" (ttbar)",  nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_Wjet[iLevel],  aname, "__Wjet",  info+" (W+jets)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_Zjet[iLevel],  aname, "__Zjet",  info+" (Z+jets)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_singleTop[iLevel],aname, "__singleTop", info+" (single top)", nBin,0,xUp);            
-	 // no met cut, barrel (QCD)
-	 addHistoNjet(h_QCDest_CombRelIso_NES_barrel_QCD[iLevel],   anameBA, "__QCD",   infoBA+" (QCD)", nBin,0,xUp);       
-	 addHistoNjet(h_QCDest_CombRelIso_NES_barrel_bce1[iLevel],  anameBA, "__bce1",  infoBA+" (bce1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_barrel_bce2[iLevel],  anameBA, "__bce2",  infoBA+" (bce2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_barrel_bce3[iLevel],  anameBA, "__bce3",  infoBA+" (bce3)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_barrel_enri1[iLevel], anameBA, "__enri1", infoBA+" (enri1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_barrel_enri2[iLevel], anameBA, "__enri2", infoBA+" (enri2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_barrel_enri3[iLevel], anameBA, "__enri3", infoBA+" (enri3)", nBin,0,xUp);
-	 // no met cut, endcap (QCD)
-	 addHistoNjet(h_QCDest_CombRelIso_NES_endcap_QCD[iLevel],   anameEN, "__QCD",   infoEN+" (QCD)", nBin,0,xUp);       
-	 addHistoNjet(h_QCDest_CombRelIso_NES_endcap_bce1[iLevel],  anameEN, "__bce1",  infoEN+" (bce1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_endcap_bce2[iLevel],  anameEN, "__bce2",  infoEN+" (bce2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_endcap_bce3[iLevel],  anameEN, "__bce3",  infoEN+" (bce3)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_endcap_enri1[iLevel], anameEN, "__enri1", infoEN+" (enri1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_endcap_enri2[iLevel], anameEN, "__enri2", infoEN+" (enri2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_endcap_enri3[iLevel], anameEN, "__enri3", infoEN+" (enri3)", nBin,0,xUp);
-
-	 // b) lowMET
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_QCD[iLevel],   aname_lo, "__QCD",   info_lo+" (QCD)", nBin,0,xUp);       
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_bce1[iLevel],  aname_lo, "__bce1",  info_lo+" (bce1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_bce2[iLevel],  aname_lo, "__bce2",  info_lo+" (bce2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_bce3[iLevel],  aname_lo, "__bce3",  info_lo+" (bce3)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_enri1[iLevel], aname_lo, "__enri1", info_lo+" (enri1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_enri2[iLevel], aname_lo, "__enri2", info_lo+" (enri2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_enri3[iLevel], aname_lo, "__enri3", info_lo+" (enri3)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_ttbar[iLevel], aname_lo, "__ttbar", info_lo+" (ttbar)",  nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_Wjet[iLevel],  aname_lo, "__Wjet",  info_lo+" (W+jets)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_Zjet[iLevel],  aname_lo, "__Zjet",  info_lo+" (Z+jets)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_singleTop[iLevel],aname_lo, "__singleTop", info_lo+" (single top)", nBin,0,xUp);     
-	 // loMET, barrel (QCD)
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_barrel_QCD[iLevel],   aname_loBA, "__QCD",   info_loBA+" (QCD)", nBin,0,xUp);       
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_barrel_bce1[iLevel],  aname_loBA, "__bce1",  info_loBA+" (bce1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_barrel_bce2[iLevel],  aname_loBA, "__bce2",  info_loBA+" (bce2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_barrel_bce3[iLevel],  aname_loBA, "__bce3",  info_loBA+" (bce3)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_barrel_enri1[iLevel], aname_loBA, "__enri1", info_loBA+" (enri1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_barrel_enri2[iLevel], aname_loBA, "__enri2", info_loBA+" (enri2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_barrel_enri3[iLevel], aname_loBA, "__enri3", info_loBA+" (enri3)", nBin,0,xUp);
-	 // loMET, endcap (QCD)
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_endcap_QCD[iLevel],   aname_loEN, "__QCD",   info_loEN+" (QCD)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_endcap_bce1[iLevel],  aname_loEN, "__bce1",  info_loEN+" (bce1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_endcap_bce2[iLevel],  aname_loEN, "__bce2",  info_loEN+" (bce2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_endcap_bce3[iLevel],  aname_loEN, "__bce3",  info_loEN+" (bce3)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_endcap_enri1[iLevel], aname_loEN, "__enri1", info_loEN+" (enri1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_endcap_enri2[iLevel], aname_loEN, "__enri2", info_loEN+" (enri2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_loMET_endcap_enri3[iLevel], aname_loEN, "__enri3", info_loEN+" (enri3)", nBin,0,xUp);
-
-	 // c) highMET
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_QCD[iLevel],   aname_hi, "__QCD",   info_hi+" (QCD)", nBin,0,xUp);       
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_bce1[iLevel],  aname_hi, "__bce1",  info_hi+" (bce1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_bce2[iLevel],  aname_hi, "__bce2",  info_hi+" (bce2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_bce3[iLevel],  aname_hi, "__bce3",  info_hi+" (bce3)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_enri1[iLevel], aname_hi, "__enri1", info_hi+" (enri1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_enri2[iLevel], aname_hi, "__enri2", info_hi+" (enri2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_enri3[iLevel], aname_hi, "__enri3", info_hi+" (enri3)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_ttbar[iLevel], aname_hi, "__ttbar", info_hi+" (ttbar)",  nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_Wjet[iLevel],  aname_hi, "__Wjet",  info_hi+" (W+jets)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_Zjet[iLevel],  aname_hi, "__Zjet",  info_hi+" (Z+jets)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_singleTop[iLevel],aname_hi, "__singleTop", info_hi+" (single top)", nBin,0,xUp);            
-	 // hiMET, barrel (QCD)
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_barrel_QCD[iLevel],   aname_hiBA, "__QCD",   info_hiBA+" (QCD)", nBin,0,xUp);       
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_barrel_bce1[iLevel],  aname_hiBA, "__bce1",  info_hiBA+" (bce1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_barrel_bce2[iLevel],  aname_hiBA, "__bce2",  info_hiBA+" (bce2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_barrel_bce3[iLevel],  aname_hiBA, "__bce3",  info_hiBA+" (bce3)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_barrel_enri1[iLevel], aname_hiBA, "__enri1", info_hiBA+" (enri1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_barrel_enri2[iLevel], aname_hiBA, "__enri2", info_hiBA+" (enri2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_barrel_enri3[iLevel], aname_hiBA, "__enri3", info_hiBA+" (enri3)", nBin,0,xUp);
-	 // hiMET, endcap (QCD)
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_endcap_QCD[iLevel],   aname_hiEN, "__QCD",   info_hiEN+" (QCD)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_endcap_bce1[iLevel],  aname_hiEN, "__bce1",  info_hiEN+" (bce1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_endcap_bce2[iLevel],  aname_hiEN, "__bce2",  info_hiEN+" (bce2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_endcap_bce3[iLevel],  aname_hiEN, "__bce3",  info_hiEN+" (bce3)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_endcap_enri1[iLevel], aname_hiEN, "__enri1", info_hiEN+" (enri1)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_endcap_enri2[iLevel], aname_hiEN, "__enri2", info_hiEN+" (enri2)", nBin,0,xUp);
-	 addHistoNjet(h_QCDest_CombRelIso_NES_hiMET_endcap_enri3[iLevel], aname_hiEN, "__enri3", info_hiEN+" (enri3)", nBin,0,xUp);
-
-       }//MC
-     }//4 levels of cut     
-     */
    }//if m_plotRelisoNES
 
 }//end
@@ -1930,6 +1690,7 @@ void ana::BookHistograms_wj(){
 
 
 void ana::BookHistograms_event_table(){
+
    //--------------------------------------------------
    //  Event Table (cut vs njet)
    //--------------------------------------------------
@@ -2028,13 +1789,6 @@ bool ana::EventLoop(){
 
    BookHistograms();
 
-
-
-
-
-
-
-
    histf->cd();
 
 
@@ -2083,18 +1837,6 @@ bool ana::EventLoop(){
    h_muon_d0_unCor->Sumw2();
    h_muon_d0  ->Sumw2();
    h_muon_hits->Sumw2();
-
-
-
-
-
-
-
-
-
-
-
-   
 
 
    // Histogram to store signal eff.acc
@@ -3399,7 +3141,8 @@ bool ana::EventLoop(){
 
      fillHistoDataAndMC( h_metAlone,     this_met     );
      fillHistoDataAndMC( h_metAlone_phi, this_met_phi );
-
+     
+     pass_met = this_met > METCUT;
 
 
 
@@ -3592,19 +3335,14 @@ bool ana::EventLoop(){
      // INITIAL BEFORE ANY CUT
      //e_plus_jet[0][ntj][mctype]++;
      //e_plus_jet_weighted[0][ntj][mctype] += this_weight; //1 event x weight
-     FillEventCounter(0, ntj, mctype); //TEST
+     FillEventCounter(0, ntj, mctype);
 
      if(m_debug) cout << " Applying event selection" << endl;
 
      if(goodrun) { //Event in GOOD run list
-	  
-       //e_plus_jet[1][ntj][mctype]++;
-       //e_plus_jet_weighted[1][ntj][mctype] += this_weight;
        FillEventCounter(1, ntj, mctype); //TEST
 
        if(fired_single_em) {  //Trigger
-	 //e_plus_jet[2][ntj][mctype]++;	  
-	 //e_plus_jet_weighted[2][ntj][mctype] += this_weight;	
 	 FillEventCounter(2, ntj, mctype); //TEST
 
 	 // Electron checks
@@ -4273,11 +4011,6 @@ bool ana::EventLoop(){
        if( goodrun  &&  fired_single_em ) {
 
 
-	 string metside = "loMET"; //low met
-	 if( this_met > METCUT ) metside = "hiMET"; //high met
-	 //cout << "this_met ="<< this_met << endl;
-	 //cout << "metside = " << metside << endl;
-
 
 	 // Pass L1
 	 if(m_debug) cout << "-> Filling Reliso NES histograms, L1 HLT" << endl; 
@@ -4288,60 +4021,19 @@ bool ana::EventLoop(){
 	   float tmpRelIso = getRelIso(ie);
 
 	   // barrel or endcap?
-	   string etaside = "barrel";
-	   bool inBarrel = true;
-	   if( fabs(els_eta->at(ie)) > 1.5 ) { etaside = "endcap"; inBarrel=false;}
+	   bool inBarrel =  fabs(els_eta->at(ie)) < 1.5 ;
 
-	   iso_fillHisto_NES( 0, inBarrel, tmpRelIso, this_met );
-// 	   iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES[0],    tmpRelIso, this_met, this_weight ); //NEW 0: L1
-// 	   iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_uw[0], tmpRelIso, this_met, 1           ); //NB: unweighted
-// 	   iso_fillHisto_nlevel_nj_nmc( h_QCDest_CombRelIso_NES[0], tmpRelIso, this_met              );
-// 	   if(inBarrel) {
-// 	     iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_barrel[0],    tmpRelIso, this_met );
-// 	     iso_fillHisto_nlevel_nj_nmc( h_QCDest_CombRelIso_NES_barrel[0], tmpRelIso, this_met );
-// 	   } else {
-// 	     iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_endcap[0],    tmpRelIso, this_met );
-// 	     iso_fillHisto_nlevel_nj_nmc( h_QCDest_CombRelIso_NES_endcap[0], tmpRelIso, this_met );
-// 	   }
 
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1",                tmpRelIso, this_met, this_weight );
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1",    tmpRelIso, this_met, this_weight );
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1",             tmpRelIso, this_met, 1 );//unweighted
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1", tmpRelIso, this_met, 1 );//unweighted
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1",             tmpRelIso, this_weight ); //no met cut
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1", tmpRelIso, this_weight );
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1", tmpRelIso, this_weight );
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1", tmpRelIso, this_weight );
-
+	   iso_fillHisto_NES( 0, tmpRelIso, this_met, inBarrel );
 
 
 	   // fill only for electrons with at least 30 GeV ET, and pass eta cut
 	   if( els_et->at(ie) > ELE_ETCUT && fabs(els_eta->at(ie)) < 2.5 &&
 	       ( fabs(els_eta->at(ie)) < 1.442 || fabs(els_eta->at(ie)) > 1.56 ) ) {
 
-	     iso_fillHisto_NES( 1, inBarrel, tmpRelIso, this_met );
-	     /*
-	     iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES[1],    tmpRelIso, this_met, this_weight ); //NEW 1: L1b
-	     iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_uw[1], tmpRelIso, this_met, 1           ); //NB: unweighted
-	     iso_fillHisto_nlevel_nj_nmc( h_QCDest_CombRelIso_NES[1], tmpRelIso, this_met              );
-	     if(isInBarrel) {
-	       iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_barrel[1],    tmpRelIso, this_met );
-	       iso_fillHisto_nlevel_nj_nmc( h_QCDest_CombRelIso_NES_barrel[1], tmpRelIso, this_met );
-	     } else {
-	       iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_endcap[1],    tmpRelIso, this_met );
-	       iso_fillHisto_nlevel_nj_nmc( h_QCDest_CombRelIso_NES_endcap[1], tmpRelIso, this_met );
-	     }
-	     */
 
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1b",                tmpRelIso, this_met, this_weight );
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1b",    tmpRelIso, this_met, this_weight );
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1b",             tmpRelIso, this_met, 1 );//unweighted
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1b", tmpRelIso, this_met, 1 );//unweighted
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1b",             tmpRelIso, this_weight ); //no met cut
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1b", tmpRelIso, this_weight );
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1b", tmpRelIso, this_weight );
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1b", tmpRelIso, this_weight );
-	   	   
+	     iso_fillHisto_NES( 1, tmpRelIso, this_met, inBarrel );
+
 
 	     // d0 cut
 	     // Calculate d0 w.r.t beam spot
@@ -4349,17 +4041,8 @@ bool ana::EventLoop(){
 
 	     if( fabs(d0_corrected) < 0.02 ){
 	     
-	       iso_fillHisto_NES( 2, inBarrel, tmpRelIso, this_met );
+	       iso_fillHisto_NES( 2, tmpRelIso, this_met, inBarrel );
 
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1c",                tmpRelIso, this_met, this_weight );
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1c",    tmpRelIso, this_met, this_weight );
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1c",             tmpRelIso, this_met, 1 );//unweighted
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1c", tmpRelIso, this_met, 1 );//unweighted
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1c",             tmpRelIso, this_weight );
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1c", tmpRelIso, this_weight ); 
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1c", tmpRelIso, this_weight );
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1c", tmpRelIso, this_weight ); 
-	     
 	       // eID (barrel)
 	       //bool pass_eid_c0 =  els_robustTightId->at(ie) > 0; //out-of-box eID variable
 	       bool pass_eid_c0 =  passEleID(ie); //out-of-box eID variable
@@ -4398,91 +4081,32 @@ bool ana::EventLoop(){
 	       if(pass_eid_c1) {
 
 
-		 iso_fillHisto_NES( 3, inBarrel, tmpRelIso, this_met );
+		 iso_fillHisto_NES( 3, tmpRelIso, this_met, inBarrel );
 
-// 		 iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES[3], tmpRelIso, this_met ) ; //NEW 3:L1d1
-// 		 if(isInBarrel) iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES_barrel[3], tmpRelIso, this_met );
-// 		 else           iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES_endcap[3], tmpRelIso, this_met );
-
-// 		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d1",                tmpRelIso, this_met, this_weight );
-// 		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1d1",    tmpRelIso, this_met, this_weight );
-// 		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d1",             tmpRelIso, this_met, 1 );
-// 		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1d1", tmpRelIso, this_met, 1 );
-// 		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d1",             tmpRelIso, this_weight );
-// 		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1d1", tmpRelIso, this_weight );
-// 		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1d1", tmpRelIso, this_weight );
-// 		 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1d1", tmpRelIso, this_weight );
 
 		 if(pass_eid_c2) {
-		   iso_fillHisto_NES( 4, inBarrel, tmpRelIso, this_met );
 
-// 		   iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES[4], tmpRelIso, this_met ) ; //NEW 4: L1d2
-// 		   if(isInBarrel) iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES_barrel[4], tmpRelIso, this_met );
-// 		   else           iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES_endcap[4], tmpRelIso, this_met );
 
-// 		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d2",                tmpRelIso, this_met, this_weight );
-// 		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1d2",   tmpRelIso, this_met, this_weight );
-// 		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d2",             tmpRelIso, this_met, 1 );
-// 		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1d2", tmpRelIso, this_met, 1 );
-// 		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d2",             tmpRelIso, this_weight );
-// 		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1d2", tmpRelIso, this_weight );
-// 		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1d2", tmpRelIso, this_weight );
-// 		   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1d2", tmpRelIso, this_weight );
+		   iso_fillHisto_NES( 4, tmpRelIso, this_met, inBarrel );
+
 
 		   if(pass_eid_c3) {
 
-		     iso_fillHisto_NES( 5, inBarrel, tmpRelIso, this_met );
 
+		     iso_fillHisto_NES( 5, tmpRelIso, this_met, inBarrel );
 
-// 		     iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES[5], tmpRelIso, this_met ) ; //NEW 5:L1d3
-// 		     if(isInBarrel) iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES_barrel[5], tmpRelIso, this_met );
-// 		     else           iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES_endcap[5], tmpRelIso, this_met );
-
-// 		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d3",                tmpRelIso, this_met, this_weight );
-// 		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1d3",    tmpRelIso, this_met, this_weight );
-// 		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d3",             tmpRelIso, this_met, 1 );
-// 		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1d3", tmpRelIso, this_met, 1 );
-// 		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d3",             tmpRelIso, this_weight );
-// 		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1d3", tmpRelIso, this_weight );
-// 		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1d3", tmpRelIso, this_weight );
-// 		     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1d3", tmpRelIso, this_weight ); 
 
 		     if(pass_eid_c4) {
 
-		       iso_fillHisto_NES( 3, inBarrel, tmpRelIso, this_met );
 
+		       iso_fillHisto_NES( 6, tmpRelIso, this_met, inBarrel );
 
-// 		       iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES[6], tmpRelIso, this_met ) ; //NEW 6:L1d4
-// 		       if(isInBarrel) iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES_barrel[6], tmpRelIso, this_met );
-// 		       else           iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES_endcap[6], tmpRelIso, this_met );
-
-// 		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d4",                tmpRelIso, this_met, this_weight );
-// 		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1d4",    tmpRelIso, this_met, this_weight );
-// 		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d4",             tmpRelIso, this_met, 1 );
-// 		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1d4", tmpRelIso, this_met, 1 );
-// 		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d4",             tmpRelIso, this_weight );
-// 		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1d4", tmpRelIso, this_weight );
-// 		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1d4", tmpRelIso, this_weight );
-// 		       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1d4", tmpRelIso, this_weight );
 
 		       if(pass_eid_c0) {
 
-			 iso_fillHisto_NES( 7, inBarrel, tmpRelIso, this_met );
 
-
-// 			 iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES[7], tmpRelIso, this_met ) ; NEW 7:L1d5
-// 			 if(isInBarrel) iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES_barrel[7], tmpRelIso, this_met );
-// 			 else           iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES_endcap[7], tmpRelIso, this_met );
-
-
-// 			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L1d5",                tmpRelIso, this_met, this_weight );
-// 			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L1d5",    tmpRelIso, this_met, this_weight );
-// 			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L1d5",             tmpRelIso, this_met, 1 );
-// 			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L1d5", tmpRelIso, this_met, 1 );
-// 			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L1d5",             tmpRelIso, this_weight );
-// 			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L1d5", tmpRelIso, this_weight );
-// 			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L1d5", tmpRelIso, this_weight );
-// 			 fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L1d5", tmpRelIso, this_weight );
+			 iso_fillHisto_NES( 7, tmpRelIso, this_met, inBarrel );
+			 
 
 		       }//pass c0
 		     }//pass c4
@@ -4499,19 +4123,9 @@ bool ana::EventLoop(){
 
 	   // barrel or endcap?
 	   if(ii_GoodEle_mostIso < 0) cout << "error/warning: could not find most isolated GoodEle." << endl;
-	   string etaside = "barrel";
-	   bool inBarrel = true;
-	   if( fabs(els_eta->at(ii_GoodEle_mostIso))>1.56 ) {
-	     etaside="endcap"; inBarrel=false;
-	   }
-	   /*
-	     cout << "\n" << endl;
-	     cout << "ele eta: " << els_eta->at(ii_GoodEle_mostIso) << "  (" << etaside<< ")" << endl;
-	     cout << "\n" << endl;
-	     cout << " CombRelIso = "<< CombRelIso << endl;
-	     cout << " Check      = "<< (els_tIso->at(ii_GoodEle_mostIso)+els_cIso->at(ii_GoodEle_mostIso))/els_et->at(ii_GoodEle_mostIso) << endl;
-	     cout << endl;
-	   */
+
+	   bool inBarrel =  fabs(els_eta->at(ii_GoodEle_mostIso)) < 1.5 ;
+
 
 	   // cout << "** CombRelIso = " << CombRelIso << endl;
 
@@ -4527,54 +4141,22 @@ bool ana::EventLoop(){
 	   if(m_debug) cout << "-> Filling Reliso NES histograms, L2" << endl;
 
 
-	   iso_fillHisto_NES( 8, inBarrel, CombRelIso, this_met );
-
-
-// 	   iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES[8], CombRelIso, this_met ) ; //NEW 8: L2
-// 	   if(inBarrel) iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES_barrel[8], tmpRelIso, this_met );
-// 	   else           iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES_endcap[8], tmpRelIso, this_met );
-
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L2",                CombRelIso, this_met, this_weight );
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L2",    CombRelIso, this_met, this_weight );
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L2",             CombRelIso, this_met, 1 );//unweighted
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L2", CombRelIso, this_met, 1 );//unweighted
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L2",             CombRelIso, this_weight );
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L2", CombRelIso, this_weight );
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L2", CombRelIso, this_weight );
-// 	   fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L2", CombRelIso, this_weight );
+	   iso_fillHisto_NES( 8, CombRelIso, this_met, inBarrel );
 
 
 	   if( !isMuon  &&  !isZ ) {
 
 	     if(m_debug) cout << "-> Filling Reliso NES histograms, L3" << endl;
 
-	     //	     iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES[9], CombRelIso, this_met ) ; //NEW 9: L3
-	     iso_fillHisto_NES(9, inBarrel, CombRelIso, this_met);
 
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L3",                CombRelIso, this_met, this_weight );
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L3",    CombRelIso, this_met, this_weight );
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L3",             CombRelIso, this_met, 1 );//unweighted
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L3", CombRelIso, this_met, 1 );//unweighted
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L3",             CombRelIso, this_weight );
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L3", CombRelIso, this_weight );
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L3", CombRelIso, this_weight );
-// 	     fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L3", CombRelIso, this_weight );
+	     iso_fillHisto_NES( 9, CombRelIso, this_met, inBarrel );
+
 
 	     if( !isConversion  &&  !isDifferentInteraction ) { //NB: no HT cut
 
 	       if(m_debug) cout << "-> Filling Reliso NES histograms, L4" << endl;
 
-	       //iso_fillHisto_nlevel_nj_nmc( hh_QCDest_isoVmet_NES[10], CombRelIso, this_met ) ; //NEW 10: L4
-	       iso_fillHisto_NES(10, inBarrel, CombRelIso, this_met);
-
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_L4",                CombRelIso, this_met, this_weight );
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_"+etaside+"_L4",    CombRelIso, this_met, this_weight );
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_L4",             CombRelIso, this_met, 1 );//unweighted
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_isoVmet_NES_uw_"+etaside+"_L4", CombRelIso, this_met, 1 );//unweighted
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_L4",             CombRelIso, this_weight );
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_L4", CombRelIso, this_weight );
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+etaside+"_L4", CombRelIso, this_weight );
-// 	       fillHistoNjet_DataAndMC( "QCD_estimation/NES/QCDest_CombRelIso_NES_"+metside+"_"+etaside+"_L4", CombRelIso, this_weight );
+	       iso_fillHisto_NES( 10, CombRelIso, this_met, inBarrel );
 	     }
 	   }
 	 }//nGoodEle > 0
@@ -4992,9 +4574,9 @@ bool ana::EventLoop(){
    histf->Close();
 
    //check histo vector (is it worth clearing the histo vectors???)
-   cout << "h_nEle_all.size(): "<< h_nEle_all.size() << endl;
-   cout << "h_exp_ele_et.size(): "<< h_exp_ele_et.size() << endl;
-   cout << "h_ele_ET.size(): "<< h_ele_ET.size() << endl;
+   //cout << "h_nEle_all.size(): "<< h_nEle_all.size() << endl;
+   //cout << "h_exp_ele_et.size(): "<< h_exp_ele_et.size() << endl;
+   //cout << "h_ele_ET.size(): "<< h_ele_ET.size() << endl;
    
 
    //856
@@ -5639,501 +5221,14 @@ pair<double,double> ana::estimateQCD_assign_pos_neg_estimate( const double est, 
 
 
 
-//========================================================================================
-//
-//                                 Historam Manipulation
-//
-//========================================================================================
-
-
-
-/*
-// arrays
-
-// ------------ my method to add a set of 1D histograms acc to njet ----------------------
-void ana::addHistoNjet( TH1F* h[], const string name, const string ext, const string title,
-			const int nbin, const float xlow, const float xup ){
-  const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
-  const string jetlabel[7] = {"0j","1j","2j","3j","4j", ">=4j","allj"};
-  for (unsigned int j=0; j<7; ++j) {
-    char hname[70];
-    char htitle[100];
-    sprintf( hname,  "%s_%s%s",  name.c_str(), jetname[j].c_str(), ext.c_str() );
-    sprintf( htitle, "%s (%s)",  title.c_str(), jetlabel[j].c_str() );
-    h[j] = new TH1F(hname, htitle, nbin, xlow, xup);
-    // Call Sumw2 to store sum of square of weights per bin
-    // Important to get histogram error to reflect statistical error of MC events, rather than sqrt(nexp)
-    h[j]->Sumw2();
-  }
-}
-
-// ------------ my method to add a set of 2D histograms acc to njet ----------------------
-void ana::addHistoNjet( TH2F* h[], const string name, const string ext, const string title,
-			const int nbinx, const float xlow, const float xup,
-			const int nbiny, const float ylow, const float yup ){
-  const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
-  const string jetlabel[7] = {"0j","1j","2j","3j","4j", ">=4j","allj"};
-  for (unsigned int j=0; j<7; ++j) {
-    char hname[70];
-    char htitle[100];
-    sprintf( hname,  "%s_%s%s",  name.c_str(), jetname[j].c_str(), ext.c_str() );
-    sprintf( htitle, "%s (%s)",  title.c_str(), jetlabel[j].c_str() );
-    h[j] = new TH2F(hname, htitle, nbinx, xlow, xup, nbiny, ylow, yup);
-    h[j]->Sumw2();
-  }
-}
-
-//-------------- my method to fill 1D histograms acc to njet -----------------------------
-void ana::fillHistoNjet(TH1F* h[], const float value, const double w) {
-  
-  h[6]->Fill(value, w); //allj
-  if( m_nGoodJet < 5 ) h[ m_nGoodJet ]->Fill(value, w); //=0,1,2,3,4j
-  if( m_nGoodJet > 3 ) h[5]->Fill(value, w); //4 or more jets
-}
-
-
-//-------------- my method to fill 2D histograms acc to njet -----------------------------
-void ana::fillHistoNjet(TH2F* h[], const float v1, const float v2, const double w) {
-  
-  h[6]->Fill(v1, v2, w); //allj
-  if( m_nGoodJet < 5 ) h[ m_nGoodJet ]->Fill(v1, v2, w); //=0,1,2,3,4j
-  if( m_nGoodJet > 3 ) h[5]->Fill(v1, v2, w); //4 or more jets
-}
-
-//-------------- my method to fill 1D histograms acc to njet, GIVEN eventClass ------------------
-void ana::fillHistoNjet2D(TH1F* h[][16], const int ec, const float value, const double w ) {
-
-  h[6][ec]->Fill(value, w); //allj  
-  if( m_nGoodJet < 5 )  h[ m_nGoodJet ][ec]->Fill(value, w); //0-4j
-  if( m_nGoodJet > 3 )  h[5][ec]->Fill(value, w); //>=4j
-}
-//----------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-//----- my method to add a set of 1D histograms (for each type of MC when running on MC) ------
-void ana::addHistoDataAndMC( TH1F* h[], const string name, const string title,
-			     const int nbin, const float xlow, const float xup ) const {
-
-  //  int nhisto = 1; //1 for real data
-  //  if(!IsData()) nhisto = 16; //MC
-
-  for (int i=0; i<ntype; ++i) {
-    // only do for mc present in input
-    if( i>0 && is_mc_present(i)==false ) continue;
-    char hname[70];
-    char htitle[100];
-    sprintf( hname,  "%s__%s",  name.c_str(),  mcname[i].c_str() );
-    sprintf( htitle, "%s (%s)", title.c_str(), mclabel[i].c_str() );
-    h[i] = new TH1F(hname, htitle, nbin, xlow, xup);
-    h[i]->Sumw2();
-  }
-}
-
-//----- my method to add a set of 2D histograms (for each type of MC when running on MC) ------
-void ana::addHistoDataAndMC( TH2F* h[], const string name, const string title,
-			     const int nbin, const float xlow, const float xup,
-			     const int nbiny, const float ylow, const float yup ) const {
-
-  //  int nhisto = 1; //1 for real data
-  //  if(!IsData()) nhisto = 16; //MC
-
-  for (int i=0; i<ntype; ++i) {
-    // only do for mc present in input
-    if( i>0 && is_mc_present(i)==false ) continue;
-    char hname[70];
-    char htitle[100];
-    sprintf( hname,  "%s__%s",  name.c_str(),  mcname[i].c_str() );
-    sprintf( htitle, "%s (%s)", title.c_str(), mclabel[i].c_str() );
-    h[i] = new TH2F(hname, htitle, nbin, xlow, xup, nbiny, ylow, yup);
-    h[i]->Sumw2();
-  }
-}
-
-
-
-
-
-
-//-------- my method to fill 1D histograms (acc to MC type when running on MC) ---------
-void ana::fillHistoDataAndMC(TH1F* h[], const float value, const double w ) const {
-
-  if(m_debug) cout << "\nStarting << fillHistoDataAndMC >>: " << h[0]->GetName() << endl;
-  h[0]->Fill(value, w); //all events (data)
-  if(!IsData()) { //run on MC
-    if      (isTTbar)       h[1]->Fill(value,w);
-    else if (isQCD) {       h[2]->Fill(value,w); //all QCD
-      if      (isEnri1)     h[3]->Fill(value,w);
-      else if (isEnri2)     h[4]->Fill(value,w);
-      else if (isEnri3)     h[5]->Fill(value,w);
-      else if (isBce1)      h[6]->Fill(value,w);
-      else if (isBce2)      h[7]->Fill(value,w);
-      else if (isBce3)      h[8]->Fill(value,w);
-    } else if (isWjets)     h[9]->Fill(value,w);
-    else if (isZjets)       h[10]->Fill(value,w);
-    else if (isVQQ)         h[11]->Fill(value,w);
-    else if (isSingleTop) { h[12]->Fill(value,w); //all single top
-      if      (isTW)        h[13]->Fill(value,w);
-      else if (isTchan)     h[14]->Fill(value,w);
-      else if (isSchan)     h[15]->Fill(value,w);
-    }
-  }
-  if(m_debug) cout << "End of << fillHistoDataAndMC >>" << endl;
-}
-//--------------------------------------------------------------------------------------
-//-------- my method to fill 2D histograms (acc to MC type when running on MC) ---------
-void ana::fillHistoDataAndMC(TH2F* h[], const float v1, const float v2, const double w ) const {
-
-  if(m_debug) cout << "\nStarting << fillHistoDataAndMC 2D >>: " << h[0]->GetName() << endl;
-  h[0]->Fill(v1,v2, w); //all events (data)
-  if(!IsData()) { //run on MC
-    if      (isTTbar)       h[1]->Fill(v1,v2,w);
-    else if (isQCD) {       h[2]->Fill(v1,v2,w); //all QCD
-      if      (isEnri1)     h[3]->Fill(v1,v2,w);
-      else if (isEnri2)     h[4]->Fill(v1,v2,w);
-      else if (isEnri3)     h[5]->Fill(v1,v2,w);
-      else if (isBce1)      h[6]->Fill(v1,v2,w);
-      else if (isBce2)      h[7]->Fill(v1,v2,w);
-      else if (isBce3)      h[8]->Fill(v1,v2,w);
-    } else if (isWjets)     h[9]->Fill(v1,v2,w);
-    else if (isZjets)       h[10]->Fill(v1,v2,w);
-    else if (isVQQ)         h[11]->Fill(v1,v2,w);
-    else if (isSingleTop) { h[12]->Fill(v1,v2,w); //all single top
-      if      (isTW)        h[13]->Fill(v1,v2,w);
-      else if (isTchan)     h[14]->Fill(v1,v2,w);
-      else if (isSchan)     h[15]->Fill(v1,v2,w);
-    }
-  }
-  if(m_debug) cout << "End of << fillHistoDataAndMC 2D >>" << endl;
-}
-//--------------------------------------------------------------------------------------
-*/
-
-
-
-
-// //-------------- my method to fill 1D histograms acc to njet & mctype -----------------------------
-// void ana::fillHistoNjet_DataAndMC(const string name, const float value, const double w ) {
-  
-//   if(m_debug) cout << "\nStarting << fillHistoNjet_DataAndMC >>" << endl;
-
-//   //  const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
-
-//   // first fill for "allj", then fill for "njet (0-4)", then fill for ">=4j"
-//   for (int i=0; i<3; ++i) {
-
-//     string jetbin = "allj";
-//     TH1F *h;
-//     char hname[70];
-
-//     if(i==1) {
-//       if( m_nGoodJet>=0 && m_nGoodJet<5 )  jetbin = jetname[ m_nGoodJet ]; //0j to 4j
-//       else continue;
-//     }else if(i==2){
-//       if( m_nGoodJet>=4) jetbin = "4mj"; //4 or more
-//       else continue;
-//     }
-
-//     sprintf( hname,  "%s_%s",  name.c_str(), jetbin.c_str() );
-//     if(m_debug) cout <<  "Filling histo: " << hname << endl;
-
-//     h = (TH1F*)histf->Get( Form("%s", hname) );
-//     if( m_debug && h==0 ) cout << "histo not found" << endl;
-
-//     if(h>0) h->Fill(value, w);  
-
-//     // 2a) all-jet, MC type
-//     if(!IsData()) { //MC
-//       if(isTTbar) {//ttbar
-// 	h = (TH1F*)histf->Get( Form("%s__ttbar", hname) );
-// 	if(h>0) h->Fill(value, w);
-
-//       } else if(isWjets) { //wj
-// 	h = (TH1F*)histf->Get( Form("%s__Wjet", hname) );
-// 	if(h>0) h->Fill(value, w);
-
-//       } else if(isZjets) { //zj
-// 	h = (TH1F*)histf->Get( Form("%s__Zjet", hname ) );
-// 	if(h>0) h->Fill(value, w);
-    
-//       } else if(isQCD) {
-// 	h = (TH1F*)histf->Get( Form("%s__QCD", hname) );
-// 	if(h>0) h->Fill(value, w);
-// 	if(isEnri1){
-// 	  h = (TH1F*)histf->Get( Form("%s__enri1", hname) );
-// 	  if(h>0) h->Fill(value, w);
-// 	} else if(isEnri2){
-// 	  h = (TH1F*)histf->Get( Form("%s__enri2", hname) );
-// 	  if(h>0) h->Fill(value, w);
-// 	} else if(isEnri3){
-// 	  h = (TH1F*)histf->Get( Form("%s__enri3", hname) );
-// 	  if(h>0) h->Fill(value, w);
-// 	} else if(isBce1){
-// 	  h = (TH1F*)histf->Get( Form("%s__bce1", hname) );
-// 	  if(h>0) h->Fill(value, w);
-// 	} else if(isBce2){
-// 	  h = (TH1F*)histf->Get( Form("%s__bce2", hname) );
-// 	  if(h>0) h->Fill(value, w);
-// 	} else if(isBce3){
-// 	  h = (TH1F*)histf->Get( Form("%s__bce3", hname) );
-// 	  if(h>0) h->Fill(value, w);
-// 	}
-//       }else if(isSingleTop) {
-// 	h = (TH1F*)histf->Get( Form("%s__singleTop", hname) );
-// 	if(h>0) h->Fill(value, w);
-// 	if(isTW) {
-// 	  h = (TH1F*)histf->Get( Form("%s__tW", hname) );
-// 	  if(h>0) h->Fill(value, w);
-// 	}else if(isTchan){
-// 	  h = (TH1F*)histf->Get( Form("%s__tchan", hname) );
-// 	  if(h>0) h->Fill(value, w);
-// 	}else if(isSchan){
-// 	  h = (TH1F*)histf->Get( Form("%s__schan", hname) );
-// 	  if(h>0) h->Fill(value, w);
-// 	}
-//       }
-//     }//if run on MC
-//   }// loop: "allj", "0-4j",">=4j"
-  
-//   if(m_debug) cout << "End of << fillHistoNjet_DataAndMC >>" << endl;
-// }
-
-// //-------------- my method to fill 2D histograms acc to njet & mctype -----------------------------
-// void ana::fillHistoNjet_DataAndMC(const string name, const float v1, const float v2, const double w ) {
-  
-//   if(m_debug) cout << "\nStarting << fillHistoNjet_DataAndMC (h2D) >>" << endl;
-
-//   //  const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
-
-//   // first fill for "allj", then fill for "njet (0-4)", then fill for ">=4j"
-//   for (int i=0; i<3; ++i) {
-
-//     string jetbin = "allj";
-//     TH2F *h;
-//     char hname[70];
-
-//     if(i==1) {
-//       if(m_nGoodJet>=0 && m_nGoodJet<5)  jetbin = jetname[ m_nGoodJet ]; //0j to 4j
-//       else continue;
-//     }else if(i==2){
-//       if( m_nGoodJet>=4) jetbin = "4mj"; //4 or more
-//       else continue;
-//     }
-
-//     sprintf( hname,  "%s_%s",  name.c_str(), jetbin.c_str() );
-//     if(m_debug) cout <<  "Filling histo: " << hname << endl;
-
-//     h = (TH2F*)histf->Get( Form("%s", hname) );
-//     if( m_debug && h==0 ) cout << "histo not found" << endl;
-    
-//     if(h>0) h->Fill(v1, v2, w);  
-
-//     // 2a) all-jet, MC type
-//     if(!IsData()) { //MC
-//       if(isTTbar) {//ttbar
-// 	h = (TH2F*)histf->Get( Form("%s__ttbar", hname) );
-// 	if(h>0) h->Fill(v1, v2, w);
-
-//       } else if(isWjets) { //wj
-// 	h = (TH2F*)histf->Get( Form("%s__Wjet", hname) );
-// 	if(h>0) h->Fill(v1, v2, w);
-
-//       } else if(isZjets) { //zj
-// 	h = (TH2F*)histf->Get( Form("%s__Zjet", hname) );
-// 	if(h>0) h->Fill(v1, v2, w);
-    
-//       } else if(isQCD) {
-// 	h = (TH2F*)histf->Get( Form("%s__QCD", hname) );
-// 	if(h>0) h->Fill(v1, v2, w);
-// 	if(isEnri1){
-// 	  h = (TH2F*)histf->Get( Form("%s__enri1", hname) );
-// 	  if(h>0) h->Fill(v1, v2, w);
-// 	} else if(isEnri2){
-// 	  h = (TH2F*)histf->Get( Form("%s__enri2", hname) );
-// 	  if(h>0) h->Fill(v1, v2, w);
-// 	} else if(isEnri3){
-// 	  h = (TH2F*)histf->Get( Form("%s__enri3", hname) );
-// 	  if(h>0) h->Fill(v1, v2, w);
-// 	} else if(isBce1){
-// 	  h = (TH2F*)histf->Get( Form("%s__bce1", hname) );
-// 	  if(h>0) h->Fill(v1, v2, w);
-// 	} else if(isBce2){
-// 	  h = (TH2F*)histf->Get( Form("%s__bce2", hname) );
-// 	  if(h>0) h->Fill(v1, v2, w);
-// 	} else if(isBce3){
-// 	  h = (TH2F*)histf->Get( Form("%s__bce3", hname) );
-// 	  if(h>0) h->Fill(v1, v2, w);
-// 	}
-//       }else if(isSingleTop) {
-// 	h = (TH2F*)histf->Get( Form("%s__singleTop", hname) );
-// 	if(h>0) h->Fill(v1, v2, w);
-// 	if(isTW) {
-// 	  h = (TH2F*)histf->Get( Form("%s__tW", hname) );
-// 	  if(h>0) h->Fill(v1, v2, w);
-// 	}else if(isTchan){
-// 	  h = (TH2F*)histf->Get( Form("%s__tchan", hname) );
-// 	  if(h>0) h->Fill(v1, v2, w);
-// 	}else if(isSchan){
-// 	  h = (TH2F*)histf->Get( Form("%s__schan", hname) );
-// 	  if(h>0) h->Fill(v1, v2, w);
-// 	}
-//       }
-//     }//if run on MC
-//   }// loop: "allj", "0-4j",">=4j"
-  
-//   if(m_debug) cout << "End of << fillHistoNjet_DataAndMC (h2D) >>" << endl;
-// }
-
-/*
-//----- my method to add a set of 1D histograms (for each type of MC when running on MC) ------
-void ana::addHisto_Njet_DataAndMC( TH1F* h[7][16], const string name, const string title,
-				   const int nbin, const float xlow, const float xup ) {
-  // example: xxx_[1-4j]__[data,ttbar,wj..]
-
-  const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
-  const string jetlabel[7] = {"0j","1j","2j","3j","4j", ">=4j","allj"};
-
-  //  int ntype = 1; //1 for real data
-  //  if(!IsData()) ntype = 16; //MC
-
-  for (int j=0; j<7; ++j) {
-    for (int i=0; i<ntype; ++i) {
-      // only do for mc present in input
-      char hname[70];
-      char htitle[100];
-      if( i>0 && is_mc_present(i)==false ) continue;
-      sprintf( hname,  "%s_%s__%s",    name.c_str(),  jetname[j].c_str(), mcname[i].c_str()  );
-      sprintf( htitle, "%s (%s, %s)",  title.c_str(), jetlabel[j].c_str(), mclabel[i].c_str() );       
-      h[j][i] = new TH1F(hname, htitle, nbin, xlow, xup);
-      h[j][i]->Sumw2();      
-    }
-  }
-}
-
-//-------------- my method to fill  1D  histograms acc to njet & mctype ------------------
-void ana::fillHisto_Njet_DataAndMC( TH1F* h[7][16], const float value, const double w ) {
-
-  if(m_debug) cout << "\nStarting << fillHisto_Njet_DataAndMC >>: " << h[0][0]->GetName() << endl;
-
-  if(h[0][0]==0) cout << "[ERROR] histo " << h[0][0]->GetName() << " not found!"<< endl;
-
-  // ALL data (2nd dimention = eventClass = 0)  
-  fillHistoNjet2D( h, 0, value, w );
-
-  if(!IsData()) { //MC
-    if(isTTbar)           fillHistoNjet2D( h, 1,  value, w );
-    else if(isQCD) {      fillHistoNjet2D( h, 2,  value, w );
-      if     (isEnri1)    fillHistoNjet2D( h, 3,  value, w );
-      else if(isEnri2)    fillHistoNjet2D( h, 4,  value, w );
-      else if(isEnri3)    fillHistoNjet2D( h, 5,  value, w );
-      else if(isBce1)     fillHistoNjet2D( h, 6,  value, w );
-      else if(isBce2)     fillHistoNjet2D( h, 7,  value, w );
-      else if(isBce3)     fillHistoNjet2D( h, 8,  value, w );
-    } else if(isWjets)    fillHistoNjet2D( h, 9,  value, w );
-    else if(isZjets)      fillHistoNjet2D( h, 10, value, w );
-    else if(isWjets)      fillHistoNjet2D( h, 11, value, w );
-    else if(isSingleTop){ fillHistoNjet2D( h, 12, value, w );
-      if     (isTW)       fillHistoNjet2D( h, 13, value, w );
-      else if(isTchan)	  fillHistoNjet2D( h, 14, value, w );
-      else if(isSchan)	  fillHistoNjet2D( h, 15, value, w );
-    }
-  }
-  if(m_debug) cout << "End of << fillHisto_Njet_DataAndMC >>" << endl;
-}
-*/
-
-
-
-
-
-
 
 //========================================================================================
 //
-//                                   histogram vectors
+//                                Historam Manipulation
 //
 //========================================================================================
 
-// // ------------ my method to add a set of 1D histograms acc to njet ----------------------
-// void ana::addHistoNjet( vector<TH1*>& h, const string name, const string ext, const string title,
-// 			const int nbin, const float xlow, const float xup ){
-//   //  const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
-//   //  const string jetlabel[7] = {"0j","1j","2j","3j","4j", ">=4j","allj"};
-//   h.resize(7);
-//   for (unsigned int j=0; j<7; ++j) {
-//     char hname[70];
-//     char htitle[100];
-//     sprintf( hname,  "%s_%s%s",  name.c_str(), jetname[j].c_str(), ext.c_str() );
-//     sprintf( htitle, "%s (%s)",  title.c_str(), jetlabel[j].c_str() );
-//     h[j] = new TH1F(hname, htitle, nbin, xlow, xup);
-//     // Call Sumw2 to store sum of square of weights per bin
-//     // Important to get histogram error to reflect statistical error of MC events, rather than sqrt(nexp)
-//     h[j]->Sumw2();
-//   }
-// }
 
-// // ------------ my method to add a set of 2D histograms acc to njet ----------------------
-// void ana::addHistoNjet_TH2( vector<TH2*>& h, const string name, const string ext, const string title,
-// 			    const int nbinx, const float xlow, const float xup,
-// 			    const int nbiny, const float ylow, const float yup ){
-//   if(m_debug) cout << "Starting << addHistoNjet_TH2 >> " << name << endl;
-//   //  const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
-//   //  const string jetlabel[7] = {"0j","1j","2j","3j","4j", ">=4j","allj"};
-//   /*
-//   cout << "\n\n   addHistoNjet_TH2:  " << name << endl;
-//   cout << "name=" << name << ",  title="<< title << endl;
-//   cout << "ext=" << ext << endl;
-//   cout << "amtb 0: h.resize(7)" << endl;
-//   */
-//   //  h.resize(7);//err
-//   h.reserve(7);
-//   //  cout << "amtb 1" << endl;
-
-//   for (unsigned int j=0; j<7; ++j) {
-//     //    cout << " amtb 2   j=" << j << endl;  
-//     char hname[70];
-//     char htitle[100];
-//     sprintf( hname,  "%s_%s%s",  name.c_str(), jetname[j].c_str(), ext.c_str() );
-//     sprintf( htitle, "%s (%s)",  title.c_str(), jetlabel[j].c_str() );
-//     //cout << " amtb 3  " << hname << "  "<< htitle <<endl;
-//     h[j] = new TH2F(hname, htitle, nbinx, xlow, xup, nbiny, ylow, yup);
-//     h[j]->Sumw2();
-//     //cout << " amtb after new, sumw2" << endl;
-//   }
-//   cout << "  end" << endl;
-// }
-
-// //-------------- my method to fill 1D histograms acc to njet -----------------------------
-// void ana::fillHistoNjet(vector<TH1*>& h, const float& value, const double& w) {
-  
-//   h[6]->Fill(value, w); //allj
-//   if( m_nGoodJet < 5 ) h[ m_nGoodJet ]->Fill(value, w); //=0,1,2,3,4j
-//   if( m_nGoodJet > 3 ) h[5]->Fill(value, w); //4 or more jets
-// }
-
-
-// //-------------- my method to fill 2D histograms acc to njet -----------------------------
-// void ana::fillHistoNjet(vector<TH2*>& h, const float& v1, const float& v2, const double& w) {
-  
-//   h[6]->Fill(v1, v2, w); //allj
-//   if( m_nGoodJet < 5 ) h[ m_nGoodJet ]->Fill(v1, v2, w); //=0,1,2,3,4j
-//   if( m_nGoodJet > 3 ) h[5]->Fill(v1, v2, w); //4 or more jets
-// }
-
-
-//--------- method to fill TH1D histograms acc to njet, GIVEN eventClass ------------------
-void ana::fillHistoNjet2D(v2D_TH1& h, const int& ec, const float& value, const double& w ) {
-
-  if(m_debug) cout << "fillHistoNjet2D"<< endl;
-  h[6][ec]->Fill(value, w); //allj  
-  if( m_nGoodJet < 5 )  h[ m_nGoodJet ][ec]->Fill(value, w); //0-4j
-  if( m_nGoodJet > 3 )  h[5][ec]->Fill(value, w); //>=4j
-}
-//----------------------------------------------------------------------------------------
 
 
 //----- method to add a set of TH1 histograms (for each type of MC when running on MC) ------
@@ -6154,7 +5249,7 @@ void ana::addHistoDataAndMC( vector<TH1*>& h,
   }
 }
 //----- method to add a set of TH2 histograms (for each type of MC when running on MC) ------
-void ana::addHistoDataAndMC( vector<TH2*>& h, 
+void ana::addHistoDataAndMC( vector<TH2*>& h,
 			     const string& name, const string& title,
 			     const int& nbin, const float& xlow, const float& xup,
 			     const int& nbiny, const float& ylow, const float& yup ) {
@@ -6175,7 +5270,7 @@ void ana::addHistoDataAndMC( vector<TH2*>& h,
 
 //-------- method to fill TH1 histograms (acc to MC type when running on MC) ---------
 //void ana::fillHistoDataAndMC(vector<TH1*>& h, const float& value, const double& w ) {
-void ana::fillHistoDataAndMC(vector<TH1*>& h, const float& value ) {
+void ana::fillHistoDataAndMC(const vector<TH1*>& h, const float& value ) const {
 
   if(m_debug) cout << "\nStarting << fillHistoDataAndMC >>: " << h[0]->GetName() << endl;
   h[0]->Fill(value, this_weight); //all events (data)
@@ -6199,9 +5294,8 @@ void ana::fillHistoDataAndMC(vector<TH1*>& h, const float& value ) {
   }
   if(m_debug) cout << "  End" << endl;
 }
-//-------- my method to fill TH2 histograms (acc to MC type when running on MC) ---------
-void ana::fillHistoDataAndMC(vector<TH2*>& h, const float& v1, const float& v2, const double& w ) {
-//void ana::fillHistoDataAndMC(vector<TH2*>& h, const float& v1, const float& v2, ) {
+//-------- my method to fill << TH2 >> histograms (acc to MC type when running on MC) ---------
+void ana::fillHistoDataAndMC(const vector<TH2*>& h, const float& v1, const float& v2, const double& w ) const {
 
   if(m_debug) cout << "\nStarting << fillHistoDataAndMC 2D >>: " << h[0]->GetName() << endl;
   h[0]->Fill(v1,v2, w); //all events (data)
@@ -6253,7 +5347,7 @@ void ana::addHisto_Njet_DataAndMC( v2D_TH1& h, const string& name, const string&
 }
 
 //-------------- my method to fill  1D  histograms acc to njet & mctype ------------------
-void ana::fillHisto_Njet_DataAndMC( v2D_TH1& h, const float& value, const double& w ) {
+void ana::fillHisto_Njet_DataAndMC( v2D_TH1& h, const float& value, const double& w ) const {
 
   if(m_debug) cout << "\nStarting << fillHisto_Njet_DataAndMC >> vec: " << h[0][0]->GetName() << endl;
   if(h[0][0]==0) cout << "[ERROR] histo " << h[0][0]->GetName() << " not found!"<< endl;
@@ -6282,11 +5376,22 @@ void ana::fillHisto_Njet_DataAndMC( v2D_TH1& h, const float& value, const double
   if(m_debug) cout << "  End" << endl;
 }
 
+//--------- method to fill TH1D histograms acc to njet, GIVEN eventClass ------------------
+void ana::fillHistoNjet2D(v2D_TH1& h, const int& ec, const float& value, const double& w ) const {
 
-//
+  if(m_debug) cout << "fillHistoNjet2D"<< endl;
+  h[6][ec]->Fill(value, w); //allj  
+  if( m_nGoodJet < 5 )  h[ m_nGoodJet ][ec]->Fill(value, w); //0-4j
+  if( m_nGoodJet > 3 )  h[5][ec]->Fill(value, w); //>=4j
+}
+//----------------------------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------------------------
 // book 3D histogram h[cut][nj][proc] for reliso
 //                     11    7   16
-// 1D
+// TH1F
+//----------------------------------------------------------------------------------------
 void ana::iso_addHisto_nlevel_nj_nmc(v3D_TH1& h,
 				     const string& name,  const string& title,
 				     const int& xnb,  const float& xlow,  const float& xup ){
@@ -6330,13 +5435,15 @@ void ana::iso_addHisto_nlevel_nj_nmc(v3D_TH1& h,
   if(m_debug) cout << "  End" << endl;
 }//end iso_addHisto_nlevel_nj_nmc
 
+//----------------------------------------------------------------------------------------
+// TH2F
 void ana::iso_addHisto_nlevel_nj_nmc(v3D_TH2& h,
 				     const string& name,  const string& title,
 				     const int& xnb,  const float& xlow,  const float& xup,
 				     const int& ynb,  const float& ylow,  const float& yup){
 
   if(m_debug) cout << "Starting << iso_addisto_nlevel_nj_nmc >>: " << name << endl;
-  //  cout << "amtb 1"<< endl;
+
   // cut
   const int nLevel=11;
   const string level_name[nLevel] = {"L1","L1b","L1c","L1d1","L1d2","L1d3","L1d4","L1d5","L2","L3","L4"};
@@ -6347,39 +5454,28 @@ void ana::iso_addHisto_nlevel_nj_nmc(v3D_TH2& h,
 				      "L1d4 eID #sigma_{i#eta i#eta}",
 				      "L1d5 eID",
 				      "L2 GoodEle","L3 MuZVeto","L4 Conv"};
-  // njet
-  //  const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
-  //  const string jetlabel[7] = {"0j","1j","2j","3j","4j", ">=4j","allj"};
-  // proc = mcname
-  //  cout << "amtb 2"<< endl;
   h.resize(nLevel);
-  //  cout << "amtb 3"<< endl;
+
   for (int k=0; k<nLevel; ++k) {//nlevel
-    //cout << "amtb 4"<< endl;
+
     h[k].resize(7);
-    //cout << "amtb 5"<< endl;
+
     for (int j=0; j<7; ++j) {//nj
-      //cout << "amtb 6"<< endl;
+
       h[k][j].resize(ntype);
-      ///      cout << "amtb 7"<< endl;
+
       for (int i=0; i<ntype; ++i) {//nmc
-	//cout << "amtb 8"<< endl;
+
 	// only do for mc present in input
 	if( i>0 && is_mc_present(i)==false ) continue;
-	//cout << "amtb 9"<< endl;
+
 	char hname[70];
 	char htitle[100];
 	sprintf( hname,  "%s_%s_%s__%s",  name.c_str(),  level_name[k].c_str(), jetname[j].c_str(),  mcname[i].c_str() );
 	sprintf( htitle, "%s (%s,%s,%s)", title.c_str(), level_label[k].c_str(), jetlabel[j].c_str(), mclabel[i].c_str() );
-	h[k][j][i] = new TH2F(hname, htitle, xnb, xlow, xup, ynb, ylow, yup);
-	//cout << "amtb 96"<< endl;
-	//string hname = Form( "%s_%s_%s__%s",   name.c_str(),  level_name[k].c_str(), jetname[j].c_str(),  mcname[i].c_str() );
-	//cout << "amtb 97  "<< hname << endl;
-	//string htitle = Form( "%s (%s,%s,%s)",  title.c_str(), level_label[k].c_str(), jetlabel[j].c_str(), mclabel[i].c_str() );       
-	//cout << "amtb 98  " << htitle << endl;
-	//h[k][j][i] = new TH2F(Form("%s",hname.c_str()), Form("%s",htitle.c_str()), xnb, xlow, xup, ynb, ylow, yup);
+
+        h[k][j][i] = new TH2F(hname, htitle, xnb, xlow, xup, ynb, ylow, yup);//TH2
 	h[k][j][i]->Sumw2();
-	//cout << "amtb 99"<< endl;
   
       }//i
     }//j
@@ -6387,35 +5483,42 @@ void ana::iso_addHisto_nlevel_nj_nmc(v3D_TH2& h,
   if(m_debug) cout << "  End" << endl;
 }//end iso_addHisto_nlevel_nj_nmc
 
+//------------------------------------------------------------------------------------
 
-void ana::iso_fillHisto_NES( const int& ilevel, const bool& inBarrel,
-			     const float& iso, const float& met ){
+void ana::iso_fillHisto_NES( const int& ilevel, const float& iso, const float& met,const bool& inBarrel )const{
+
   if(m_debug) cout << "\n\n++ Starting << iso_fillHisto_NES >>" << endl;
 
   iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES[ilevel],    iso, met, this_weight ); //NEW 1: L1b
   iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_uw[ilevel], iso, met, 1           ); //NB: unweighted
   iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES[ilevel],        iso );
   if(inBarrel) {
-    iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_barrel[ilevel], iso, met, this_weight );
-    iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_barrel[ilevel],     iso );
+    iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_barrel[ilevel], iso );
+    if(pass_met) {
+      iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_hiMET_barrel[ilevel], iso );
+    }else{
+      iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_loMET_barrel[ilevel], iso );
+    }
   } else {
-    iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_endcap[ilevel], iso, met, this_weight );
-    iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_endcap[ilevel],     iso );
-  }
+    iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_endcap[ilevel], iso );
+    if(pass_met) {
+      iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_hiMET_endcap[ilevel], iso );
+    }else{
+      iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_loMET_endcap[ilevel], iso );
+    }
+  }//barrel/endcap
   if(m_debug) cout << "\n++ End of << iso_fillHist_NES >>" << endl;
 }
-//------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------
+
 // fill 2D vector of TH1 (weighted)
-void ana::iso_fillHisto_nlevel_nj_nmc(v2D_TH1& h, const float& v1 ) {
+void ana::iso_fillHisto_nlevel_nj_nmc(const v2D_TH1& h, const float& v1 ) const {
   if(m_debug) cout << "\n   **** Starting << iso_fillHisto_nlevel_nj_nmc >>" << endl;
 
   vector<int> njbin;
   njbin.push_back(6); //fill [6]: allj
   if(m_nGoodJet<5)  njbin.push_back(m_nGoodJet); //[nj]:0j-4j
   if(m_nGoodJet>=4) njbin.push_back(5); //[5]:>=4j
-
-  //  cout << "njbin.size: "<< njbin.size() << endl;
-  //  cout << "goodjet: "<< m_nGoodJet << endl;
 
   for(unsigned int j=0; j<njbin.size(); ++j){//nj
     int thejetbin = njbin.at(j);
@@ -6428,7 +5531,7 @@ void ana::iso_fillHisto_nlevel_nj_nmc(v2D_TH1& h, const float& v1 ) {
 
 
 // fill 2D vector of TH2 (can be weighted or unweighted)
-void ana::iso_fillHisto_nlevel_nj_nmc(v2D_TH2& h, const float& v1, const float& v2, const double& w) {
+void ana::iso_fillHisto_nlevel_nj_nmc(const v2D_TH2& h, const float& v1, const float& v2, const double& w) const {
   if(m_debug) cout << "\n   +++ Starting << iso_fillHisto_nlevel_nj_nmc >>" << endl;
 
   vector<int> njbin;
@@ -6436,8 +5539,6 @@ void ana::iso_fillHisto_nlevel_nj_nmc(v2D_TH2& h, const float& v1, const float& 
   if(m_nGoodJet<5) njbin.push_back(m_nGoodJet); //[nj]:0j-4j
   if(m_nGoodJet>=4) njbin.push_back(5); //[5]:>=4j
 
-  //  cout << "njbin.size: "<< njbin.size() << endl;
-  //  cout << "goodjet: "<< m_nGoodJet << endl;
   if(m_debug) cout << "will call fillHistoDataAandMC"<< endl;
 
   for(unsigned int j=0; j<njbin.size(); ++j){//nj
@@ -6448,6 +5549,8 @@ void ana::iso_fillHisto_nlevel_nj_nmc(v2D_TH2& h, const float& v1, const float& 
   if(m_debug) cout << "\n   +++ End of << iso_fillHisto_nlevel_nj_nmc >>" << endl;
 }//end iso_addHisto_nlevel_nj_nmc
 //------------------------------------------------------------------------------------
+
+
 
 
 
@@ -6493,12 +5596,6 @@ void ana::valid_fillHisto(v2D_TH1& h, const bool cuts[8], const double& value) c
 }
 //81FB end
 //----------------------------------------------------------------------------------------
-
-//=========================================================================================
-//
-//                                   end of histo vectors
-//
-//=========================================================================================
 
 
 
@@ -7338,9 +6435,11 @@ pair<double, double> ana::compute_M3( const vector<TLorentzVector>& jetColl ) co
 
 
 
-//----------------------------------------------------------------------------------------
+//========================================================================================
+//
 //                                 W+jets Estimation
-//----------------------------------------------------------------------------------------
+//
+//========================================================================================
 // Descriptions:
 //   o  The code are designed to run on data _or_ MC.
 //   o  When running on data, it takes the m3 template shapes for ttbar and W+jets from MC.
@@ -8494,14 +7593,16 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
  
   return true;
 }
-//----------------------------------------------------------------------------------------
+//========================================================================================
+//
 //                                 W+jets Estimation (end)
-//----------------------------------------------------------------------------------------
+//
+//========================================================================================
 
 
 
-void ana::StudySystematics(const string& name,const string& name2){ //TEST
-//void ana::StudySystematics(const string name,const string name2){
+
+void ana::StudySystematics(const string& name,const string& name2){
   doSystematics = name;
   sysSample = name2;
   cout << "Study Systematics"<< endl;
@@ -8679,17 +7780,7 @@ void ana::DrawSignalBGTable() const {
     double total_bkg = 0;
    
     if(ve2.at(p)==Fourjets){ njbegin = 4; i--; }
-    /*
-    //Total Signal
-    for(int k=1; k<11; ++k){ //loop over ttbar mc types (code 1 to 10)
-      for(int j=njbegin;j<ntjet;++j){ total_sig += nevent[i][j][k]; }  //sum up jet bins
-    }
 
-    //Total BG
-    for(int k=11; k<23; ++k){ //loop over all bg mc types (code 11 to 22)
-      for(int j=njbegin;j<ntjet;++j) {  total_bkg += nevent[i][j][k]; }  //sum up jet bins
-    }
-    */
     for(int j=njbegin; j<ntjet; ++j) { // sum up jet bins
       
       for(int k=1; k<11; ++k){ //loop over ttbar mc types (code 1 to 10)
@@ -8762,7 +7853,6 @@ void ana::DrawQCDTable(const string QCDtitle) const {
 
     double totalAllQCD = 0;
 
-    //    printCutStage(i, ve.at(i));
     printCutStage(p, ve2.at(p));
     if(ve2.at(p)==Fourjets)  { njbegin = 4; i--; }
     p++;
@@ -8822,7 +7912,6 @@ void ana::DrawSingleTopTable( const string title ) const {
   for(int i=0; i<ncutshown; ++i){ //cut stage
     double allSingleTop = 0;
  
-   //    printCutStage(i, ve.at(i));
     printCutStage(p, ve2.at(p));
     if(ve2.at(p)==Fourjets)  { njbegin = 4; i--; }
     p++;
@@ -8879,7 +7968,6 @@ void ana::DrawTTnjetTable( const string title ) const {
   cout << " &" << setw(20) << "Total \\\\\\hline" << endl;
 
   int njbegin = 0;
-
   int p=0;
 
   for(int i=0; i<ncutshown; i++){ //loop over cuts
@@ -9662,7 +8750,7 @@ void ana::PrintError_NjetVcut(ofstream& myfile, const double e_plus_jet_errors[]
 
 
 
-void ana::SetHistoLabelCutNjet( TH2D *this_njetsVcuts, vector<string>& ve ) const {
+void ana::SetHistoLabelCutNjet( TH2D *this_njetsVcuts, const vector<string>& ve ) const {
 
   // ve.size() = nstage
   for (size_t i=0; i < ve.size(); ++i) {
@@ -9683,8 +8771,9 @@ void ana::SetHistoLabelCutNjet( TH2D *this_njetsVcuts, vector<string>& ve ) cons
 }//end SetHistoLabelCutNjet
 //---------------------------------------------------------------------------------------------
 
-//void ana::SetHistoLabelEleID( TH1F *eid[] ) const {
-void ana::SetHistoLabelEleID( vector<TH1*>& eid ) const {
+
+//void ana::SetHistoLabelEleID( vector<TH1*>& eid ) const {
+void ana::SetHistoLabelEleID( const vector<TH1*>& eid ) const {
   
   //  int nhisto = 1; //data
   //  if(!IsData()) nhisto = 16; //MC

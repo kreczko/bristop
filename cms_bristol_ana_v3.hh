@@ -1596,70 +1596,32 @@ private:
   void BookHistograms_btag();
   void BookHistograms_PDFunc();
 
-  // Helper methods to make/fill histograms
-  // array
 
-  // used by QCD plots
-  
-//   void addHistoNjet( TH1F* h[], const string, const string, const string, const int, const float, const float );
-//   void addHistoNjet( TH2F* h[], const string, const string, const string, 
-// 		     const int, const float, const float, const int, const float, const float );
-//   void fillHistoNjet( TH1F* h[], const float value, const double weight );
-//   void fillHistoNjet( TH2F* h[], const float value, const float value2, const double weight );
-//  void fillHistoNjet_DataAndMC( const string hname, const float value, const double weight );
-//  void fillHistoNjet_DataAndMC( const string hname, const float v1, const float v2, const double weight );
-//   void fillHistoNjet2D( TH1F* h[][16], const int ec, const float value, const double weight );
-  
-
-//   void addHistoDataAndMC( TH1F* h[], const string, const string, const int, const float, const float ) const;
-//   void addHistoDataAndMC( TH2F* h[], const string, const string, const int, const float, const float, 
-// 			  const int, const float, const float ) const;
-
-//   void fillHistoDataAndMC( TH1F* h[], const float value, const double weight ) const;
-//   void fillHistoDataAndMC( TH2F* h[], const float v1, const float v2, const double weight ) const;
-////   void addHisto_Njet_DataAndMC( TH1F* h[7][16], const string, const string, const int, const float, const float);
-//   void fillHisto_Njet_DataAndMC( TH1F* h[7][16], const float value, const double w );
-  // validation plots
-  // void valid_mkHisto_cut_njet(TH1F* h[][7], const string, const string, const int, const float, const float );
-  //  void valid_fillHisto(TH1F* h[][7], const bool cuts[8], int nj, double value) const;
-
-
-  // histo vectors
-  //---------------
+  // Helper methods to make/fill histograms (vectors)
   typedef vector<vector<TH1*> > v2D_TH1; //TH1[][]
   typedef vector<vector<TH2*> > v2D_TH2; //TH2[][]
   typedef vector<v2D_TH1>       v3D_TH1; //TH1[][][]
   typedef vector<v2D_TH2>       v3D_TH2; //TH2[][][]
 
-  // used by QCD plots
-  //  void addHistoNjet( vector<TH1*>& h, const string, const string, const string, const int, const float, const float );
-  //void addHistoNjet_TH2( vector<TH2*>& h, const string, const string, const string, 
-  //			 const int, const float, const float, const int, const float, const float );
-  //  void fillHistoNjet( vector<TH1*>& h, const float& v, const double& w );
-  //  void fillHistoNjet( vector<TH2*>& h, const float& v1, const float& v2, const double& w );
-
-
-  void fillHistoNjet2D( v2D_TH1& h, const int& ec, const float& v, const double& w );
   void addHistoDataAndMC( vector<TH1*>& h, const string&, const string&, const int&, const float&, const float& );
   void addHistoDataAndMC( vector<TH2*>& h, const string&, const string&, const int&, const float&, const float&, 
-			  const int&, const float&, const float& );
-  //  void fillHistoDataAndMC( vector<TH1*>& h, const float& v, const double& w );
-  //  void fillHistoDataAndMC( vector<TH2*>& h, const float& v1, const float& v2, const double& w );
-  void fillHistoDataAndMC( vector<TH1*>& h, const float& v ); //take out weight
-  void fillHistoDataAndMC( vector<TH2*>& h, const float& v1, const float& v2, const double& w );
+  			  const int&, const float&, const float& );
+  void fillHistoDataAndMC( const vector<TH1*>& h, const float& v ) const; //take out weight
+  void fillHistoDataAndMC( const vector<TH2*>& h, const float& v1, const float& v2, const double& w ) const;
+
   void addHisto_Njet_DataAndMC( v2D_TH1& h, const string&, const string&, const int&, const float&, const float&);
-  void fillHisto_Njet_DataAndMC( v2D_TH1& h, const float& v, const double& w );
+  void fillHisto_Njet_DataAndMC( v2D_TH1& h, const float& v, const double& w ) const;
+  void fillHistoNjet2D( v2D_TH1& h, const int& ec, const float& v, const double& w ) const;
   // validation
   void valid_mkHisto_cut_njet(v2D_TH1& h, const string&, const string&, const int&, const float&, const float& );
   void valid_fillHisto(v2D_TH1& h, const bool cuts[8], const double& value) const;
-  // NEW for reliso NES plots
+  // Reliso NES plots
   void iso_addHisto_nlevel_nj_nmc( v3D_TH1& h, const string&, const string&, const int&, const float&, const float& );
   void iso_addHisto_nlevel_nj_nmc( v3D_TH2& h, const string&, const string&, const int&, const float&, const float&,
-				   const int&, const float&, const float& );
-  void iso_fillHisto_nlevel_nj_nmc( v2D_TH1& h, const float& ) ;
-  void iso_fillHisto_nlevel_nj_nmc( v2D_TH2& h, const float&, const float&, const double& w ) ;
-  void iso_fillHisto_NES( const int& ilevel, const bool& inBarrel,
-			  const float& iso, const float& met );
+  				   const int&, const float&, const float& );
+  void iso_fillHisto_NES( const int& ilevel, const float& iso, const float& met, const bool& inBarrel ) const;
+  void iso_fillHisto_nlevel_nj_nmc( const v2D_TH1& h, const float& ) const ;
+  void iso_fillHisto_nlevel_nj_nmc( const v2D_TH2& h, const float&, const float&, const double& w ) const ;
 
   void fillHisto_event_tables();
   void fillHisto_PDF_weights( TH1F* h );
@@ -1669,9 +1631,10 @@ private:
   void reco_hadronicTop_highestTopPT( const std::vector<TLorentzVector>&, const int nGoodIsoEle );
   pair<double,double> compute_M3(const std::vector<TLorentzVector>&) const;
 
-  void SetHistoLabelCutNjet( TH2D *this_njetVcuts, vector<string>& ve ) const;
+  //  void SetHistoLabelCutNjet( TH2D *this_njetVcuts, vector<string>& ve ) const;
+  void SetHistoLabelCutNjet( TH2D *this_njetVcuts, const vector<string>& ve ) const;
   //  void SetHistoLabelEleID( TH1F *eid[] ) const;
-  void SetHistoLabelEleID( vector<TH1*>& h ) const;
+  void SetHistoLabelEleID( const vector<TH1*>& h ) const;
 
   void   DefineCrossSection();
   void   DefineCrossSectionAlpgen7TeV();
@@ -1765,7 +1728,8 @@ private:
   int    m_nbtag_TCHE;
   int    m_nbtag_TCHP;
   int    m_nbtag_SSV;
-
+  // pass flag
+  bool   pass_met;
   // event counts
   //double e_plus_jet[nstage][ntjet][nmctype];
   vector<vector<vector<int> > >    e_plus_jet; //3D
@@ -1952,13 +1916,12 @@ private:
   v2D_TH1       h_QCDest_CombRelIso_AES_justHT;    //[7][nclass];      // AES: just HT
   v2D_TH1       h_QCDest_CombRelIso_AES_justZ;    //[7][nclass];       // AES: just Tighter Z (both)
   // dir /NES/
-  // TH2F is also inherited from TH1?
   v3D_TH2       h_QCDest_isoVmet_NES;     //[nLevel][7][nmc] weighted
   v3D_TH2       h_QCDest_isoVmet_NES_barrel;
   v3D_TH2       h_QCDest_isoVmet_NES_endcap;
   v3D_TH2       h_QCDest_isoVmet_NES_uw;  //[nLevel][7][nmc] unweighted
   v3D_TH2       h_QCDest_isoVmet_NES_uw_barrel;
-  v3D_TH2       h_QCDest_isoVmet_NES_uw_endcap;
+  v3D_TH2       h_QCDest_isoVmet_NES_uw_endcap;  
 
   // NB: actually the following plots can be derived from the isoVmet scatter plot using projection,
   //     but right now keeping them so that we can just plot it without extra macro.
