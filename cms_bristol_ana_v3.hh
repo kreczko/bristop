@@ -1521,6 +1521,7 @@ public:
   // Switches
   void Validation(bool val)            { m_doValidation      = val; };
   void ConversionStudySwitch(bool val) { m_ConversionStudies = val; };
+  void StudyZveto(bool val)            { m_studyZveto        = val; };
   void PlotRelisoNES(bool val)         { m_plotRelisoNES     = val; };
   void SetDebug(bool val)              { m_debug             = val; };
   void SetJetAlgo(string val)          { m_jetAlgo           = val; };
@@ -1528,6 +1529,7 @@ public:
   void SetLHCEnergyInTeV(double val)   { m_LHCEnergyInTeV    = val; };
   void SetRunOnSD(bool val)            { m_runOnSD           = val; };
   void SetRunOnMyHLTskim(bool val)     { m_runOnMyHLTskim    = val; };
+
 
   //switch to preclue missing layers as these are not in 314 data samples
   void UseMissLayers(bool val)         { m_useMisslayers     = val; };
@@ -1571,37 +1573,105 @@ private:
   float Get_Reliso_bin_width() const { return m_QCDest_reliso_bin_width; };
 
   // Histograms
-  void addHistoNjet( TH1F* h[], const string, const string, const string, const int, const float, const float );
-  void addHistoNjet( TH2F* h[], const string, const string, const string, 
-		     const int, const float, const float, const int, const float, const float );
-  void fillHistoNjet( TH1F* h[], const float value, const double weight );
-  void fillHistoNjet( TH2F* h[], const float value, const float value2, const double weight );
+  void BookHistograms();
+  void BookHistograms_valid();
+  void BookHistograms_basicKin();
+  void BookHistograms_explore();
+  void BookHistograms_nEle();
+  void BookHistograms_eid();
+  void BookHistograms_ed0();
+  void BookHistograms_zVeto();
+  void BookHistograms_met();
+  void BookHistograms_HT();
+  void BookHistograms_mtw();
+  void BookHistograms_DRemu();
+  void BookHistograms_DPhiEmet();
+  void BookHistograms_DPhimetjet();
+  void BookHistograms_conv();
+  void BookHistograms_QCD();
+  void BookHistograms_QCD_planA();
+  void BookHistograms_QCD_planB();
+  void BookHistograms_wj();
+  void BookHistograms_event_table();
+  void BookHistograms_btag();
+  void BookHistograms_PDFunc();
 
-  void fillHistoNjet_DataAndMC( const string hname, const float value, const double weight );
-  void fillHistoNjet_DataAndMC( const string hname, const float v1, const float v2, const double weight );
+  // Helper methods to make/fill histograms
+  // array
 
-  void fillHistoNjet2D( TH1F* h[][16], const int ec, const float value, const double weight );
+  // used by QCD plots
+  
+//   void addHistoNjet( TH1F* h[], const string, const string, const string, const int, const float, const float );
+//   void addHistoNjet( TH2F* h[], const string, const string, const string, 
+// 		     const int, const float, const float, const int, const float, const float );
+//   void fillHistoNjet( TH1F* h[], const float value, const double weight );
+//   void fillHistoNjet( TH2F* h[], const float value, const float value2, const double weight );
+//  void fillHistoNjet_DataAndMC( const string hname, const float value, const double weight );
+//  void fillHistoNjet_DataAndMC( const string hname, const float v1, const float v2, const double weight );
+//   void fillHistoNjet2D( TH1F* h[][16], const int ec, const float value, const double weight );
+  
 
-  // Helper methods to fill histograms for data and each type of MC
-  void addHistoDataAndMC( TH1F* h[], const string, const string, const int, const float, const float ) const;
-  void addHistoDataAndMC( TH2F* h[], const string, const string, const int, const float, const float, 
-			  const int, const float, const float ) const;
-  void fillHistoDataAndMC( TH1F* h[], const float value, const double weight ) const;
-  void fillHistoDataAndMC( TH2F* h[], const float v1, const float v2, const double weight ) const;
+//   void addHistoDataAndMC( TH1F* h[], const string, const string, const int, const float, const float ) const;
+//   void addHistoDataAndMC( TH2F* h[], const string, const string, const int, const float, const float, 
+// 			  const int, const float, const float ) const;
 
-  void addHisto_Njet_DataAndMC( TH1F* h[7][16], const string, const string, const int, const float, const float);
-  void fillHisto_Njet_DataAndMC( TH1F* h[7][16], const float value, const double w );
+//   void fillHistoDataAndMC( TH1F* h[], const float value, const double weight ) const;
+//   void fillHistoDataAndMC( TH2F* h[], const float v1, const float v2, const double weight ) const;
+////   void addHisto_Njet_DataAndMC( TH1F* h[7][16], const string, const string, const int, const float, const float);
+//   void fillHisto_Njet_DataAndMC( TH1F* h[7][16], const float value, const double w );
+  // validation plots
+  // void valid_mkHisto_cut_njet(TH1F* h[][7], const string, const string, const int, const float, const float );
+  //  void valid_fillHisto(TH1F* h[][7], const bool cuts[8], int nj, double value) const;
 
-  void fillHisto_PDF_weights( TH1F* h );
-  //  void fillHisto_event_tables(vector<string> ve);
+
+  // histo vectors
+  //---------------
+  typedef vector<vector<TH1*> > v2D_TH1; //TH1[][]
+  typedef vector<vector<TH2*> > v2D_TH2; //TH2[][]
+  typedef vector<v2D_TH1>       v3D_TH1; //TH1[][][]
+  typedef vector<v2D_TH2>       v3D_TH2; //TH2[][][]
+
+  // used by QCD plots
+  //  void addHistoNjet( vector<TH1*>& h, const string, const string, const string, const int, const float, const float );
+  //void addHistoNjet_TH2( vector<TH2*>& h, const string, const string, const string, 
+  //			 const int, const float, const float, const int, const float, const float );
+  //  void fillHistoNjet( vector<TH1*>& h, const float& v, const double& w );
+  //  void fillHistoNjet( vector<TH2*>& h, const float& v1, const float& v2, const double& w );
+
+
+  void fillHistoNjet2D( v2D_TH1& h, const int& ec, const float& v, const double& w );
+  void addHistoDataAndMC( vector<TH1*>& h, const string&, const string&, const int&, const float&, const float& );
+  void addHistoDataAndMC( vector<TH2*>& h, const string&, const string&, const int&, const float&, const float&, 
+			  const int&, const float&, const float& );
+  //  void fillHistoDataAndMC( vector<TH1*>& h, const float& v, const double& w );
+  //  void fillHistoDataAndMC( vector<TH2*>& h, const float& v1, const float& v2, const double& w );
+  void fillHistoDataAndMC( vector<TH1*>& h, const float& v ); //take out weight
+  void fillHistoDataAndMC( vector<TH2*>& h, const float& v1, const float& v2, const double& w );
+  void addHisto_Njet_DataAndMC( v2D_TH1& h, const string&, const string&, const int&, const float&, const float&);
+  void fillHisto_Njet_DataAndMC( v2D_TH1& h, const float& v, const double& w );
+  // validation
+  void valid_mkHisto_cut_njet(v2D_TH1& h, const string&, const string&, const int&, const float&, const float& );
+  void valid_fillHisto(v2D_TH1& h, const bool cuts[8], const double& value) const;
+  // NEW for reliso NES plots
+  void iso_addHisto_nlevel_nj_nmc( v3D_TH1& h, const string&, const string&, const int&, const float&, const float& );
+  void iso_addHisto_nlevel_nj_nmc( v3D_TH2& h, const string&, const string&, const int&, const float&, const float&,
+				   const int&, const float&, const float& );
+  void iso_fillHisto_nlevel_nj_nmc( v2D_TH1& h, const float& ) ;
+  void iso_fillHisto_nlevel_nj_nmc( v2D_TH2& h, const float&, const float&, const double& w ) ;
+  void iso_fillHisto_NES( const int& ilevel, const bool& inBarrel,
+			  const float& iso, const float& met );
+
   void fillHisto_event_tables();
+  void fillHisto_PDF_weights( TH1F* h );
+
 
   // W+jets estimation
   void reco_hadronicTop_highestTopPT( const std::vector<TLorentzVector>&, const int nGoodIsoEle );
   pair<double,double> compute_M3(const std::vector<TLorentzVector>&) const;
 
   void SetHistoLabelCutNjet( TH2D *this_njetVcuts, vector<string>& ve ) const;
-  void SetHistoLabelEleID( TH1F *eid[] ) const;
+  //  void SetHistoLabelEleID( TH1F *eid[] ) const;
+  void SetHistoLabelEleID( vector<TH1*>& h ) const;
 
   void   DefineCrossSection();
   void   DefineCrossSectionAlpgen7TeV();
@@ -1631,41 +1701,39 @@ private:
   void printLine(ofstream &myfile, const double, const double) const;
   bool ScientificNotation;
 
-  bool  is_mc_present(const int) const;
-  float compute_d0(const string, const int) const;
+  bool  is_mc_present(const int&) const;
+  float compute_d0(const string&, const int&) const;
   float compute_mtw(const TVector2&, const TVector2&) const;
 
   void  PrintGenParticles() const;
 
-  // validation plots
-  void valid_mkHisto_cut_njet(TH1F* h[][7], const string, const string, const int, const float, const float );
-  void valid_fillHisto(TH1F* h[][7], const bool cuts[8], int nj, double value) const;
-
-  bool   doValidation()        const { return m_doValidation; };
-  bool   DoConversionStudies()       { return m_ConversionStudies; };
-  
   // conversion
+  bool   DoConversionStudies()       { return m_ConversionStudies; };
   void PrintConversionTable();
   int ConversionCounter;
   int ConversionArray[23][2][6];
   void OptimiseConversionFinder(const TLorentzVector& e1, int mctype);  
 
-  TH2D *Conv_Opti[2];
-  TH2D *Conv_Optis[2];
-  TH2D *Conv_OptiL[2];
-  TH2D *Conv_Opti_extragran[2];
+//   TH2D *Conv_Opti[2];
+//   TH2D *Conv_Optis[2];
+//   TH2D *Conv_OptiL[2];
+//   TH2D *Conv_Opti_extragran[2];
+  vector<TH2D*> Conv_Opti;  //[2];
+  vector<TH2D*> Conv_Optis; //[2];
+  vector<TH2D*> Conv_OptiL; //[2];
+  vector<TH2D*> Conv_Opti_extragran;//[2];
   TH1D *Conv_CheckDelR_GSFTk_ctfTk;
   int mycounter;
 
   // new (to run on mixed MC) (not currently needed)
   string CheckEventTypeFromMcTruth() const;
 
-  float  getRelIso(int) const; 
-  bool   passEleID(unsigned int) const;
+  float  getRelIso(const unsigned int&) const; 
+  bool   passEleID(const unsigned int&) const;
   bool   passHLT() const;
   string printTimeNow() const;
-  void   DoBTagging(vector<TLorentzVector>&);
-  bool   jetNotNearElectron(TLorentzVector& j, vector<TLorentzVector>& e) const;
+  void   DoBTagging(const vector<TLorentzVector>&);
+  bool   jetNotNearElectron(const TLorentzVector& j, const vector<TLorentzVector>& e) const;
 
   //--------------------
   // private variables
@@ -1682,6 +1750,7 @@ private:
   int    m_nGoodJet;  //number of cleaned, good jets
   float  m_QCDest_reliso_bin_width;
   bool   m_doValidation;
+  bool   m_studyZveto;
   bool   m_plotRelisoNES;
   bool   m_debug;
   bool   m_ConversionStudies;
@@ -1728,6 +1797,213 @@ private:
   map<string,long>   nInitialEventMC; //initial number of event, used to compute event weight
   map<string,double> weightMap;
 
+  // Histograms
+  //------------
+  // validation
+  v2D_TH1     valid_HT;         //[9][7]
+  v2D_TH1     valid_jetsEt;     //[9][7]
+  v2D_TH1     valid_jetsEta;    //[9][7]
+  v2D_TH1     valid_jetsPhi;    //[9][7]
+  v2D_TH1     valid_jets1stEt;  //[9][7]
+  v2D_TH1     valid_jets2ndEt;  //[9][7]
+  v2D_TH1     valid_jets3rdEt;  //[9][7]
+  v2D_TH1     valid_jets4thEt;  //[9][7]
+  v2D_TH1     valid_eleEt;      //[9][7]
+  v2D_TH1     valid_eleEta;     //[9][7]
+  v2D_TH1     valid_elePhi;     //[9][7]
+  v2D_TH1     valid_eleCalIso;  //[9][7]
+  v2D_TH1     valid_eleTrkIso;  //[9][7]
+  v2D_TH1     valid_eleRelIso;  //[9][7]
+  v2D_TH1     valid_eled0;      //[9][7]
+  v2D_TH1     valid_metEt;      //[9][7]
+  v2D_TH1     valid_metPhi;     //[9][7]
+  v2D_TH1     valid_genTT_pt;   //[9][7]
+  v2D_TH1     valid_genT_pt;    //[9][7]
+  v2D_TH1     valid_recoM3;     //[9][7]
+  v2D_TH1     valid_mass_ee;    //[9][7]
+  v2D_TH1     valid_recoM3_PTMax; //[9][7]
+  v2D_TH1     valid_numberTracks; //[9][7]
+  v2D_TH1     valid_trackPt;      //[9][7]
+
+  // basic
+  //v2D_TH1F h_ele_ET2;//[4][nclass];
+  // - ele
+  vector<TH1*>  h_nele;    //[nclass];
+  v2D_TH1       h_ele_ET;  //[4][nclass];
+  v2D_TH1       h_ele_eta; //[4][nclass];
+  v2D_TH1       h_ele_phi; //[4][nclass];
+  v2D_TH1       h_ele_iso; //[4][nclass];
+  // - jets
+  vector<TH1*>  h_njet;    //[nclass]; //per MC type
+  v2D_TH1       h_jet_PT;  //[5][nclass];
+  v2D_TH1       h_jet_eta; //[5][nclass];
+  v2D_TH1       h_jet_phi; //[5][nclass];
+  // - met
+  vector<TH1*>  h_metAlone;     //[nclass]; //per MC type
+  vector<TH1*>  h_metAlone_phi; //[nclass];
+
+  // explore
+  vector<TH1*>  h_exp_ele_et;     //[nclass];  // selected ele et
+  vector<TH1*>  h_exp_ele_eta;    //[nclass];  // selected ele eta
+  vector<TH1*>  h_exp_j0_pt;      //[nclass];  // leading jet pt
+  vector<TH1*>  h_exp_j1_pt;      //[nclass];  // 2n-leading jet pt
+  vector<TH1*>  h_exp_DRej;       //[nclass];  // DR(e,j0)
+  vector<TH1*>  h_exp_DPhiej;     //[nclass];  // DPhi(e,j0)
+  vector<TH1*>  h_exp_DRjj;       //[nclass];  // DR(j0,j1)
+  vector<TH1*>  h_exp_DPhijj;     //[nclass];  // DPhi(j0,j1)
+  vector<TH2*>  h_exp_met_v_eeta; //[nclass];  // met:ele_eta
+
+  // ele count
+  v2D_TH1       h_nEle_all; //[7][nclass];
+  v2D_TH1       h_nEle_s1;
+  v2D_TH1       h_nEle_s2;
+  v2D_TH1       h_nEle_s3_idLoose;
+  v2D_TH1       h_nEle_s3_idTight;
+  v2D_TH1       h_nEle_s3_idRL;
+  v2D_TH1       h_nEle_s3_idRT;
+
+  // ele id
+  vector<TH1*>  h_eid; //[nclass];
+  // ele d0
+  vector<TH1*>  h_ed0_unCor;//[nclass]
+  vector<TH1*>  h_ed0;      //[nclass] w.r.t beam spot
+  vector<TH1*>  h_ed0_pass; //[nclass] w.r.t beam spot
+
+  // z veto
+  TH1F         *h_nGenBasicEle_Zee_allj;
+  TH1F         *h_Zee_eta;
+  TH1F         *h_Zee_pt;
+  TH1F         *h_Z_photon_eta;
+  TH1F         *h_Z_photon_et;
+  TH1F         *h_Zee_photon_eta;
+  TH1F         *h_Zee_photon_et;
+  TH2F         *h_Zee_photon_eteta_2D;			
+  TH1F         *h_Z_Nphotons;
+  TH1F         *h_Zee_Nphotons;
+  vector<TH1*>  h_mass_diele;            //[nclass];
+  vector<TH1*>  h_mass_diele_new;        //[nclass];
+  vector<TH1*>  h_mass_diele_lowMet_1j;  //[nclass];
+  vector<TH1*>  h_mass_ephoton_lowMet_1j;//[nclass];
+  vector<TH1*>  h_Nele_lowMet_1j;        //[nclass];
+  vector<TH1*>  h_Nphoton_lowMet_1j;     //[nclass];
+  vector<TH1*>  h_photon_eta_lowMet_1j;  //[nclass];
+  vector<TH1*>  h_photon_et_lowMet_1j;   //[nclass];
+  vector<TH1*>  h_photon1_eta_lowMet_1j; //[nclass];
+  vector<TH1*>  h_photon1_et_lowMet_1j;  //[nclass];
+
+  // MET
+  v2D_TH1       h_met;                  //[7][nclass]; //user-chosen MET
+  v2D_TH1       h_met_mu;               //[7][nclass]; //muon-MET
+  v2D_TH1       h_met_t1;               //[7][nclass]; //type1-MET
+  v2D_TH1       h_met_BA;               //[7][nclass]; //user-chosen MET (Barrel)
+  v2D_TH1       h_met_mu_BA;            //[7][nclass]; //muon-MET (Barrel)
+  v2D_TH1       h_met_t1_BA;            //[7][nclass]; //type1-MET (Barrel)
+  vector<TH1*>  h_met_ante_ISO;         //[nclass]; //user-chosen MET
+  vector<TH1*>  h_met_ante_ISO_mu;      //[nclass];
+  vector<TH1*>  h_met_ante_ISO_t1;      //[nclass];
+  v2D_TH1       h_met_gen;              //[7][nclass]; //BA+EN
+  v2D_TH1       h_met_gen_diff_t1;      //[7][nclass]; //delta et (t1-gen)
+  v2D_TH1       h_met_gen_diff_mu;      //[7][nclass]; //delta et (mu-gen)
+  v2D_TH1       h_met_gen_dphi_t1;      //[7][nclass]; //delta phi (t1-gen)
+  v2D_TH1       h_met_gen_dphi_mu;      //[7][nclass]; //delta phi (mu-gen)
+  v2D_TH1       h_met_gen_BA;           //[7][nclass]; //Barrel
+  v2D_TH1       h_met_gen_diff_t1_BA;   //[7][nclass];
+  v2D_TH1       h_met_gen_diff_mu_BA;   //[7][nclass];
+  v2D_TH1       h_met_gen_dphi_t1_BA;   //[7][nclass];
+  v2D_TH1       h_met_gen_dphi_mu_BA;   //[7][nclass];
+
+  // HT
+  v2D_TH1       h_HT;     //[7][nclass];
+
+  // mtw
+  vector<TH1*>  h_mtw_mu_incl; //[nclass];   //inclusive
+  vector<TH1*>  h_mtw_t1_incl; //[nclass];   //type 1 calomet
+  v2D_TH1       h_mtw_mu;      //[7][nclass];  // after all but MET cut
+  v2D_TH1       h_mtw_t1;      //[7][nclass];
+
+  // DR(ele,mu)
+  vector<TH1*>  h_DRemu_selE_GoodMu;      // [nclass];
+  vector<TH1*>  h_DRemu_selE_GoodMu_pass; // [nclass];
+
+  // Dphi(ele,met)
+  vector<TH1*>  h_DPhiEmet_mu_incl;   //[nclass];
+  vector<TH1*>  h_DPhiEmet_t1_incl;   //[class];
+  v2D_TH1       h_DPhiEmet_mu;        //[7][nclass];
+  v2D_TH1       h_DPhiEmet_t1;        //[7][nclass];
+
+  // Dphi(met,jet)
+  v2D_TH1       h_DPhiMetJet_mu_goodE;  //[7][nclass]; //pass HLT, e30, eta<2.5
+  v2D_TH1       h_DPhiMetJet_t1_goodE;  //[7][nclass];
+  v2D_TH1       h_DPhiMetJet_gen_goodE; //[7][nclass]; //gen
+  v2D_TH1       h_DPhiMetJet_mu;        //[7][nclass]; //pass all cut except met
+  v2D_TH1       h_DPhiMetJet_t1;        //[7][nclass];
+  v2D_TH1       h_DPhiMetJet_gen;       //[7][nclass];
+
+  // QCD estimation
+  v2D_TH1       h_QCDest_CombRelIso;    //[7][nclass];     //"new" formulation (0-infinity)
+  // dir /AES/
+  v2D_TH1       h_QCDest_CombRelIso_AES;    //[7][nclass];  //ALL AES
+  v2D_TH1       h_QCDest_CombRelIso_AES_minusMET;    //[7][nclass];  // AES except MET cut
+  v2D_TH1       h_QCDest_CombRelIso_AES_minusHT;    //[7][nclass];   // AES except HT cut
+  v2D_TH1       h_QCDest_CombRelIso_AES_minusTighterZ;    //[7][nclass];  // AES except tighter Z veto cut (both mee and mep)
+  v2D_TH1       h_QCDest_CombRelIso_AES_before;    //[7][nclass];      // Before AES
+  v2D_TH1       h_QCDest_CombRelIso_AES_justMET;    //[7][nclass];     // AES: just MET (<x)
+  v2D_TH1       h_QCDest_CombRelIso_AES_justHighMET;    //[7][nclass]; // AES: just high MET (>x)
+  v2D_TH1       h_QCDest_CombRelIso_AES_justHT;    //[7][nclass];      // AES: just HT
+  v2D_TH1       h_QCDest_CombRelIso_AES_justZ;    //[7][nclass];       // AES: just Tighter Z (both)
+  // dir /NES/
+  // TH2F is also inherited from TH1?
+  v3D_TH2       h_QCDest_isoVmet_NES;     //[nLevel][7][nmc] weighted
+  v3D_TH2       h_QCDest_isoVmet_NES_barrel;
+  v3D_TH2       h_QCDest_isoVmet_NES_endcap;
+  v3D_TH2       h_QCDest_isoVmet_NES_uw;  //[nLevel][7][nmc] unweighted
+  v3D_TH2       h_QCDest_isoVmet_NES_uw_barrel;
+  v3D_TH2       h_QCDest_isoVmet_NES_uw_endcap;
+
+  // NB: actually the following plots can be derived from the isoVmet scatter plot using projection,
+  //     but right now keeping them so that we can just plot it without extra macro.
+  // a) reliso: no MET cut
+  v3D_TH1       h_QCDest_iso_NES; //[nLevel=11][nj=7][nmc=16] weighted
+  v3D_TH1       h_QCDest_iso_NES_barrel;
+  v3D_TH1       h_QCDest_iso_NES_endcap;
+  // b) reliso: fail MET cut
+  v3D_TH1       h_QCDest_iso_NES_loMET;
+  v3D_TH1       h_QCDest_iso_NES_loMET_barrel;
+  v3D_TH1       h_QCDest_iso_NES_loMET_endcap;
+  // c) reliso: pass MET cut
+  v3D_TH1       h_QCDest_iso_NES_hiMET;
+  v3D_TH1       h_QCDest_iso_NES_hiMET_barrel;
+  v3D_TH1       h_QCDest_iso_NES_hiMET_endcap;
+
+  // AES plan A
+  v2D_TH1       h_QCDest_CombRelIso_AES_planA1_e20; //[7][nclass]//no !conv cut
+  v2D_TH1       h_QCDest_CombRelIso_AES_planA1_e30; //[7][nclass]
+  v2D_TH1       h_QCDest_CombRelIso_AES_planA2_e20; //[7][nclass]//invert !conv cut
+  v2D_TH1       h_QCDest_CombRelIso_AES_planA2_e30; //[7][nclass]
+  v2D_TH1       h_QCDest_CombRelIso_AES_planA3_e20; //[7][nclass]//invert d0 cut
+  v2D_TH1       h_QCDest_CombRelIso_AES_planA3_e30; //[7][nclass]
+
+  // AES plan B
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB1_e20; //[7][nclass]//EleET >x
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB1_e30; //[7][nclass]
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB2_e20; //[7][nclass]//EleET < x
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB2_e30; //[7][nclass]
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB3_e20; //[7][nclass]//fail RT ID
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB3_e30; //[7][nclass]
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB3b_e20; //[7][nclass]//fail RT ID (BARREL)
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB3b_e30; //[7][nclass]
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB4_e20; //[7][nclass]//fail RL ID
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB4_e30; //[7][nclass]
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB5_e20; //[7][nclass]//fail Loose ID
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB5_e30; //[7][nclass]
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB6_e20; //[7][nclass]//fail Tight ID
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB6_e30; //[7][nclass]
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB7_e20; //[7][nclass]//d0 > 200um, pass RT
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB7_e30; //[7][nclass]
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB8_e20; //[7][nclass]//d0 > 200um, fail RT
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB8_e30; //[7][nclass]
+
+
   // Wjet estimation
   TH1D *h_hadTop_maxPT_mass_4j;   // 960 bins (0-960)
   TH1D *h_hadTop_maxPT_pt_4j;
@@ -1768,9 +2044,6 @@ private:
   TH1D *h_m3_singletop_control_1000;
   TH1D *h_m3_bce_control_1000[3];
   TH1D *h_m3_enri_control_1000[3];
-  TH1F *h_nbtag_TCHE[16];//nclass
-  TH1F *h_nbtag_TCHP[16];
-  TH1F *h_nbtag_SSV[16];
 
   // event table
   TH2D *Signal_njetsVcuts;
@@ -1780,6 +2053,18 @@ private:
   TH2D *VQQ_njetsVcuts; 
   TH2D *SingleTop_njetsVcuts;
   TH2D *Data_njetsVcuts;
+
+  // btag
+  vector<TH1*> h_nbtag_TCHE; //[nclass]
+  vector<TH1*> h_nbtag_TCHP; //[nclass]
+  vector<TH1*> h_nbtag_SSV;  //[nclass]
+
+  // signal PDF unc
+  TH1F *h_pdf_total;
+  TH1F *h_pdf_pass;
+  TH1F *h_pdf_eff;
+
+
 
   // MC flag
   void SetMCFlag();
@@ -1817,10 +2102,15 @@ private:
   bool isTchan;
   bool isSchan;
 
+  // z studies
+  bool isZee, isZmm, isZtt;
+  vector<TLorentzVector> Zele;
+
   bool signal_is_Alpgen;
   unsigned int signal_Alpgen_matching_threshold;
 
 };
+
 
 void ana::Init(){
    cout << "\n Initializing tree branches\n"  << endl;

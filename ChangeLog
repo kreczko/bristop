@@ -1,6 +1,22 @@
 //#====================================================#
 //# Last update:
 //
+// 15 Mar 2010: - take out redundant weight parameter in fillHistoDataAndMC().
+//              - revise. review QCD plot making.
+// 14 Mar 2010: - change histo array to vector. Add BookHistograms() suite.
+//              - Revert all short to int to optimize code.
+//              - remove doValidaion(), replaced with m_doValidation.
+//              - add switch StudyZveto (D=on).
+//
+// 12 Mar 2010: fix small bug.
+// 11 Mar 2010: replace 3D arrays (e_plus_jet & e_plus_jets_weighted) with 
+//              private vectors. Simplify and imporve codes.
+//
+//  9 Mar 2010: - Adapt to accommodate tt0j-tt4j alpgen signal samples. 
+//              - Add methods: DefineCrossSectionAlpgen7TeV, DrawTTnjetTable.
+//              - Consistent use of GetNinit() & GetCrossSection().
+//              - Remove old logs, keep only this year's.
+//
 //  3 Mar 2010: add DPhiMetJet, genMET plots.
 // 25 Feb 2010: add Data_njetsVcuts TH2.
 // 23 Feb 2010: fix nstage (16->13).
