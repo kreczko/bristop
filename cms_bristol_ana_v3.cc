@@ -1,6 +1,7 @@
 //#====================================================#
 //# Last update:
 //
+// 17 Mar 2010: small correction (h_QCDest_isoVmet_NES_barrel/endcap not filled).
 // 16 Mar 2010: clean up, small correction.
 // 15 Mar 2010: - take out redundant weight parameter in fillHistoDataAndMC().
 //              - revise. review QCD plot making.
@@ -5489,10 +5490,14 @@ void ana::iso_fillHisto_NES( const int& ilevel, const float& iso, const float& m
 
   if(m_debug) cout << "\n\n++ Starting << iso_fillHisto_NES >>" << endl;
 
-  iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES[ilevel],    iso, met, this_weight ); //NEW 1: L1b
-  iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_uw[ilevel], iso, met, 1           ); //NB: unweighted
+  iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES[ilevel],    iso, met, this_weight ); //weighted
+  iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_uw[ilevel], iso, met, 1           ); //unweighted
   iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES[ilevel],        iso );
   if(inBarrel) {
+    /// BARREL
+    iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_barrel[ilevel],    iso, met, this_weight ); //w
+    iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_uw_barrel[ilevel], iso, met, 1           ); //uw
+
     iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_barrel[ilevel], iso );
     if(pass_met) {
       iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_hiMET_barrel[ilevel], iso );
@@ -5500,6 +5505,10 @@ void ana::iso_fillHisto_NES( const int& ilevel, const float& iso, const float& m
       iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_loMET_barrel[ilevel], iso );
     }
   } else {
+    /// ENDCAP
+    iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_endcap[ilevel],    iso, met, this_weight ); //w
+    iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_uw_endcap[ilevel], iso, met, 1           ); //uw
+
     iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_endcap[ilevel], iso );
     if(pass_met) {
       iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_hiMET_endcap[ilevel], iso );
