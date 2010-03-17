@@ -3144,7 +3144,7 @@ bool ana::EventLoop(){
      fillHistoDataAndMC( h_metAlone_phi, this_met_phi );
      
      pass_met = this_met > METCUT;
-
+     //cout  << "pass_met: "<< pass_met <<endl;
 
 
      // 6 - Calculate some kinematic variables
@@ -5493,6 +5493,10 @@ void ana::iso_fillHisto_NES( const int& ilevel, const float& iso, const float& m
   iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES[ilevel],    iso, met, this_weight ); //weighted
   iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_uw[ilevel], iso, met, 1           ); //unweighted
   iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES[ilevel],        iso );
+
+  if(pass_met) {   iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_hiMET[ilevel], iso ); }
+  else{            iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_loMET[ilevel], iso ); }  
+
   if(inBarrel) {
     /// BARREL
     iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_barrel[ilevel],    iso, met, this_weight ); //w
@@ -5500,8 +5504,10 @@ void ana::iso_fillHisto_NES( const int& ilevel, const float& iso, const float& m
 
     iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_barrel[ilevel], iso );
     if(pass_met) {
+      //cout << "fill hiMET barrel"<< endl;
       iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_hiMET_barrel[ilevel], iso );
     }else{
+      //cout << "fill loMET barrel"<< endl;
       iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_loMET_barrel[ilevel], iso );
     }
   } else {
@@ -5511,8 +5517,10 @@ void ana::iso_fillHisto_NES( const int& ilevel, const float& iso, const float& m
 
     iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_endcap[ilevel], iso );
     if(pass_met) {
+      //cout << "fill hiMET endcap"<< endl;
       iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_hiMET_endcap[ilevel], iso );
     }else{
+      //cout << "fill loMET endcap"<< endl;
       iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_loMET_endcap[ilevel], iso );
     }
   }//barrel/endcap
