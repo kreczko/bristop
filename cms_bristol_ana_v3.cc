@@ -22,6 +22,8 @@ using namespace std;
 #include "TLegend.h"
 #include "TChainElement.h"
 #include "TGraphAsymmErrors.h"
+#include "TROOT.h"
+#include "TMath.h"
 
 // RooFit includes, needed by m3 fit
 #include "TRandom.h"
@@ -2169,104 +2171,131 @@ bool ana::EventLoop() {
 				// set nmctype code
 				if (this_mc == "ttbar" || this_mc == "ttjet") {
 					isTTbar = true;
+					fastmctype = ksignal;
 				} //mctype 1-10
 				else if (this_mc == "wjet" || this_mc == "wenu") {
 					isWjets = true;
 					mctype = 11;
+					fastmctype = kWjets;
 				} else if (this_mc == "zjet" || this_mc == "zee") {
 					isZjets = true;
 					mctype = 12;
+					fastmctype = kZjets;
 				} else if (this_mc == "enri1") {
 					isQCD = true;
 					isEnri1 = true;
 					mctype = 13;
+					fastmctype = kenri1;
 				} else if (this_mc == "enri2") {
 					isQCD = true;
 					isEnri2 = true;
 					mctype = 14;
+					fastmctype = kenri2;
 				} else if (this_mc == "enri3") {
 					isQCD = true;
 					isEnri3 = true;
 					mctype = 15;
+					fastmctype = kenri3;
 				} else if (this_mc == "bce1") {
 					isQCD = true;
 					isBce1 = true;
 					mctype = 16;
+					fastmctype = kbce1;
 				} else if (this_mc == "bce2") {
 					isQCD = true;
 					isBce2 = true;
 					mctype = 17;
+					fastmctype = kbce2;
 				} else if (this_mc == "bce3") {
 					isQCD = true;
 					isBce3 = true;
 					mctype = 18;
+					fastmctype = kbce3;
 				} else if (this_mc == "vqq") {
 					isVQQ = true;
 					mctype = 19;
+					fastmctype = kVQQ;
 				} else if (this_mc == "tW") {
 					isSingleTop = true;
 					isTW = true;
 					mctype = 20;
+					fastmctype = ktW;
 				} else if (this_mc == "tchan") {
 					isSingleTop = true;
 					isTchan = true;
 					mctype = 21;
+					fastmctype = ktchan;
 				} else if (this_mc == "schan") {
 					isSingleTop = true;
 					isSchan = true;
 					mctype = 22;
+					fastmctype = kschan;
 				}
 				//FIXME: 10th step to new sample - set mctype and is*
 				else if (this_mc == "Zprime_M500GeV_W5GeV") {
 					isZprime_M500GeV_W5GeV = true;
 					mctype = 23;
+					fastmctype = Zprime_M500GeV_W5GeV;
 				} else if (this_mc == "Zprime_M500GeV_W50GeV") {
 					isZprime_M500GeV_W50GeV = true;
 					mctype = 24;
+					fastmctype = Zprime_M500GeV_W50GeV;
 				}
 
 				else if (this_mc == "Zprime_M750GeV_W7500MeV") {
 					isZprime_M750GeV_W7500MeV = true;
 					mctype = 25;
+					fastmctype = Zprime_M750GeV_W7500MeV;
 				}
 
 				else if (this_mc == "Zprime_M1TeV_W10GeV") {
 					isZprime_M1TeV_W10GeV = true;
 					mctype = 26;
+					fastmctype = Zprime_M1TeV_W10GeV;
 				} else if (this_mc == "Zprime_M1TeV_W100GeV") {
 					isZprime_M1TeV_W100GeV = true;
 					mctype = 27;
+					fastmctype = Zprime_M1TeV_W100GeV;
 				}
 
 				else if (this_mc == "Zprime_M1250GeV_W12500MeV") {
 					isZprime_M1250GeV_W12500MeV = true;
 					mctype = 28;
+					fastmctype = Zprime_M1250GeV_W12500MeV;
 				}
 
 				else if (this_mc == "Zprime_M1500GeV_W15GeV") {
 					isZprime_M1500GeV_W15GeV = true;
 					mctype = 29;
+					fastmctype = Zprime_M1500GeV_W15GeV;
 				} else if (this_mc == "Zprime_M1500GeV_W150GeV") {
 					isZprime_M1500GeV_W150GeV = true;
 					mctype = 30;
+					fastmctype = Zprime_M1500GeV_W150GeV;
 				} else if (this_mc == "Zprime_M2TeV_W20GeV") {
 					isZprime_M2TeV_W20GeV = true;
 					mctype = 31;
+					fastmctype = Zprime_M2TeV_W20GeV;
 				} else if (this_mc == "Zprime_M2TeV_W200GeV") {
 					isZprime_M2TeV_W200GeV = true;
 					mctype = 32;
+					fastmctype = Zprime_M2TeV_W200GeV;
 				} else if (this_mc == "Zprime_M3TeV_W30GeV") {
 					isZprime_M3TeV_W30GeV = true;
 					mctype = 33;
+					fastmctype = Zprime_M3TeV_W30GeV;
 				} else if (this_mc == "Zprime_M3TeV_W300GeV") {
 					isZprime_M3TeV_W300GeV = true;
 					mctype = 34;
+					fastmctype = Zprime_M3TeV_W300GeV;
 				} else if (this_mc == "Zprime_M4TeV_W40GeV") {
 					isZprime_M4TeV_W40GeV = true;
 					mctype = 35;
+					fastmctype = Zprime_M4TeV_W40GeV;
 				} else if (this_mc == "Zprime_M4TeV_W400GeV") {
 					isZprime_M4TeV_W400GeV = true;
 					mctype = 36;
+					fastmctype = Zprime_M4TeV_W400GeV;
 				}
 
 				if (m_debug) {
@@ -4213,7 +4242,7 @@ bool ana::EventLoop() {
 							// eID (barrel)
 							//bool pass_eid_c0 =  els_robustTightId->at(ie) > 0; //out-of-box eID variable
 							bool pass_eid_c0 = passEleID(ie); //out-of-box eID variable
-							bool pass_eid_c1 = false;
+							bool pass_eid_c1 = false;//Question: What are they?
 							bool pass_eid_c2 = false;
 							bool pass_eid_c3 = false;
 							bool pass_eid_c4 = false;
@@ -4423,7 +4452,7 @@ bool ana::EventLoop() {
 		if (goodrun && fired_single_em && nGoodEle > 0 && this_met > METCUT && !isMuon && !isZ && !isConversion && !isDifferentInteraction && ht
 				>= HTCUT && nGoodJet >= 4) {
 			reco_hadronicTop_highestTopPT(jets, nGoodIsoEle);
-			reco_mttbar_using_M3(jets, electrons, met, nGoodIsoEle);
+			reco_mttbar(jets, electrons, met, nGoodIsoEle);
 		}
 
 		// Add Delta R(e,mu)
@@ -8920,9 +8949,10 @@ void ana::DrawEventPerNjetTable(const double nevent[][5][nmctype], const vector<
 }//end DrawEventPerNjetTable
 
 
+
 //----------------------------------------------------------------------------------------
 void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string title, vector<string> ve) const {
-
+	vector<string> ve_initial = ve;
 	static bool first_time = true;
 	if (first_time)
 		cout.precision(0); //unweighted table
@@ -9015,7 +9045,8 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 	if (!first_time) {
 		cout << "\\end{tabular}\\\\[5mm]" << endl;
 	}
-
+	//restore ve
+	ve = ve_initial;
 	//Zprime table 1% width. TODO: make an own function for this
 
 	if (first_time) {
@@ -9033,6 +9064,7 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 	cout << "           Cut       " << " &" << setw(13) << "Z'(500,5) " << " &" << setw(13) << "Z'(750,7.5) " << " &" << setw(13) << "Z'(1000,10)"
 			<< " &" << setw(13) << "Z'(1250,12.5) " << " &" << setw(13) << "Z'(1500,15) " << " &" << setw(13) << "Z'(2000,20)" << " &" << setw(13)
 			<< "Z'(3000,30) " << " &" << setw(13) << "Z'(4000,40) " << " &" << setw(25) << "Total  \\\\\n\\hline" << endl;
+	njbegin = 0;
 
 	for (short i = 0; i < 11; ++i) {//loop over cuts (up to HT)
 		totalA = 0; //reset to zero for each cut
@@ -9080,11 +9112,13 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 		}
 
 	}// end loop over cut (nstage)
+	//restore ve
+	ve = ve_initial;
 	cout << "\\hline" << endl;
 	if (!first_time) {
 		cout << "\\end{tabular}\\\\[5mm]" << endl;
 	}
-
+	njbegin = 0;
 	//Zprime table 10% width. TODO: make an own function for this
 	if (first_time) {
 		//cout << "\\\\[1em]\n" << endl;
@@ -9131,7 +9165,11 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 
 		//print total column:
 		cout << " & " << setw(13) << fixed << totalA << " \\\\" << endl;
-
+		if (ve.at(i) == "!MUON") {
+			njbegin = 4;
+			ve.at(i) = "$\\ge$4 jets";
+			i--;
+		}
 	}// end loop over cut (nstage)
 	cout << "\\hline" << endl;
 	if (!first_time) {
@@ -9746,113 +9784,149 @@ string ana::printTimeNow() const {
 }
 
 void ana::bookHistograms() {
-	for (short int i = 0; i < mcsize; i++) {
-		string histname;
-		histname = mclabel[i] + "_" + "mttbar";
-		//TODO: change 10000 to whatever the CoM energy is.
-		hists_[histname.c_str()] = new TH1F(histname.c_str(), "reconstructed M_{ttbar}", 10000, 0, 10000);
-		histname = mclabel[i] + "_" + "neutrino_pz";
-		hists_[histname.c_str()] = new TH1F(histname.c_str(), "reconstructed p_z(#nu)", 50, -500, 500);
-		histname = mclabel[i] + "_" + "neutrino_pz_mc";
-		hists_[histname.c_str()] = new TH1F(histname.c_str(), "reconstructed p_z(#nu)", 50, -500, 500);
-		histname = mclabel[i] + "_" + "recoWmass";
-		hists_[histname.c_str()] = new TH1F(histname.c_str(), "reconstructed leptonic W mass", 50, 0, 500);
+	fasthist_.resize(kNumMCTypes);
+	fasthist2D_.resize(kNumMCTypes);
+	//	TFile *fdata = new TFile(outputHistFileName.c_str(), "UPDATE");
+	for (unsigned short type = 0; type < (short) kNumMCTypes; ++type) {
+		TString prefix(mclabel[type] + "_");
+		gROOT->cd();
+		TDirectory *dir = histf->mkdir(mclabel[type].c_str());
+		dir->cd();
+		fasthist_[type].resize(kNumHists);
+		fasthist_[type][kneutrino_pz] = new TH1F(prefix + histnames[kneutrino_pz], "reconstructed p_z(#nu)", 50, -500, 500);
+		fasthist_[type][kneutrino_pz_mc] = new TH1F(prefix + histnames[kneutrino_pz_mc], "reconstructed p_z(#nu)", 50, -500, 500);
+
+		fasthist_[type][kMttbar] = new TH1F(prefix + histnames[kMttbar], "reconstructed M_{ttbar}", 10000, 0, 10000);
+		fasthist_[type][kMttbar_mc] = new TH1F(prefix + histnames[kMttbar_mc], "reconstructed M_{ttbar}", 10000, 0, 10000);
+
+		fasthist_[type][kRecoWlepmass] = new TH1F(prefix + histnames[kRecoWlepmass], "reconstructed leptonic W mass", 500, 0, 500);
+		fasthist_[type][kRecoWlepmass_mc] = new TH1F(prefix + histnames[kRecoWlepmass_mc], "reconstructed leptonic W mass", 500, 0, 500);
+
+		fasthist_[type][kRecoWhadmass] = new TH1F(prefix + histnames[kRecoWhadmass], "reconstructed hadronic W mass", 500, 0, 500);
+		fasthist_[type][kRecoWhadmass_mc] = new TH1F(prefix + histnames[kRecoWhadmass_mc], "reconstructed hadronic W mass", 500, 0, 500);
+
+		fasthist_[type][kptRel_ele_jet] = new TH1F(prefix + histnames[kptRel_ele_jet], "relative p_{T} electron - closest jet", 300, 0, 300);
+		fasthist_[type][kminDeltaR_ele_Jet] = new TH1F(prefix + histnames[kminDeltaR_ele_Jet], "min. #Delta R(electron, jet)", 100, 0, 1);
+
+		fasthist_[type][kmthad] = new TH1F(prefix + histnames[kmthad], "reconstructed hadronic top mass", 500, 0, 500);
+		fasthist_[type][kmthad_mc] = new TH1F(prefix + histnames[kmthad_mc], "reconstructed hadronic top mass", 500, 0, 500);
+		fasthist_[type][kmthad_mc2] = new TH1F(prefix + histnames[kmthad_mc2], "reconstructed hadronic top mass", 500, 0, 500);
+
+		fasthist_[type][kmtlep] = new TH1F(prefix + histnames[kmtlep], "reconstructed leptonic top mass", 500, 0, 500);
+		fasthist_[type][kmtlep_mc] = new TH1F(prefix + histnames[kmtlep_mc], "reconstructed leptonic top mass", 500, 0, 500);
+		fasthist_[type][kmtlep_mc2] = new TH1F(prefix + histnames[kmtlep_mc2], "reconstructed leptonic top mass", 500, 0, 500);
+		for (unsigned short ihist = 0; ihist < fasthist_[type].size(); ++ihist)
+			fasthist_[type][ihist]->Sumw2();
+
+		//2D histograms
+		fasthist2D_[type].resize(kNum2DHists);
+		fasthist2D_[type][kptRel_vs_deltaRmin]
+				= new TH2F(prefix + histnames2D[kptRel_vs_deltaRmin], "ptrel vs min. #Delta R", 100, 0, 1, 300, 0, 300);
+
 	}
-	for (std::map<string, TH1F*>::const_iterator iter = hists_.begin(); iter != hists_.end(); ++iter)
-		iter->second->Sumw2();
+	gROOT->cd();
 }
 
-void ana::reco_mttbar_using_M3(const vector<TLorentzVector>& jets, const vector<TLorentzVector>& eles, const std::vector<TLorentzVector>& met,
+void ana::reco_mttbar(const vector<TLorentzVector>& jets, const vector<TLorentzVector>& eles, const std::vector<TLorentzVector>& met,
 		const int nGoodIsoEle) {
 	if (nGoodIsoEle > 0) {
-		TLorentzVector blep, thad, tlep;
+		const TLorentzVector electron = eles[0];
+		TLorentzVector blep, thad, tlep, bhad, Whad, Wlep;
 		TLorentzVector neutrino1, neutrino2;
+		double pze = electron.Pz();
 		double et, px, py;
 		et = met[0].Et();
 		px = met[0].Px();
 		py = met[0].Py();
-		pair<double, double> pznu = compute_neutrino_momentum_z(et, eles[0]);
+		pair<double, double> pznu = compute_neutrino_momentum_z(et, electron);
 		double pz1, pz2;
 		pz1 = pznu.first;
 		pz2 = pznu.second;
-		//		cout << "first root: " << pz1 << endl;
-		//		cout << "second root: " << pz2 << endl;
 		double energy1 = sqrt(px * px + py * py + pz1 * pz1);
 		double energy2 = sqrt(px * px + py * py + pz2 * pz2);
 		neutrino1.SetPxPyPzE(px, py, pz1, energy1);
 		neutrino2.SetPxPyPzE(px, py, pz2, energy2);
-
-		TLorentzVector W1 = TLorentzVector(neutrino1 + eles[0]);
-		TLorentzVector W2 = TLorentzVector(neutrino2 + eles[0]);
+		TLorentzVector W1 = TLorentzVector(neutrino1 + electron);
+		TLorentzVector W2 = TLorentzVector(neutrino2 + electron);
+		short cid = findClosest(jets, electron);//used to exclude closest jet from hadronic decay
+		blep = jets[cid];
+		double minDeltaR = jets[cid].DeltaR(electron);
+		double costheta = jets[cid].Dot(electron) / electron.P() / jets[cid].P();
+		double sintheta = TMath::Sqrt(1 - costheta * costheta);
+		double ptrel = sintheta * electron.P();
+		fasthist_[fastmctype][kptRel_ele_jet]->Fill(ptrel);
+		fasthist_[fastmctype][kminDeltaR_ele_Jet]->Fill(minDeltaR);
+		fasthist2D_[fastmctype][kptRel_vs_deltaRmin]->Fill(minDeltaR, ptrel);
+		//		if (dr > 0.75)
+		//			return;
 		//		cout << "W_1 mass_t:" << W1.Mt() << "\t" << "W_2 mass_t:" << W2.Mt() << endl;
 		//		cout << "W_1 mass:" << W1.M() << "\t" << "W_2 mass:" << W2.M() << endl;
-		if (W1.M() > 0 && W2.M() > 0) {
-			if (fabs(W1.M() - 80) < fabs(W2.M() - 80)) {
-				if (isZprime_M500GeV_W5GeV) {
-					hists_["Zprime_M500GeV_W5GeV_recoWmass"]->Fill(W1.M());
-					hists_["Zprime_M500GeV_W5GeV_neutrino_pz"]->Fill(pz1);
-				} else if (isTTbar) {
-					hists_["signal_neutrino_pz"]->Fill(pz1);
-					hists_["signal_recoWmass"]->Fill(W1.M());
-				}
-			} else {
-				if (isZprime_M500GeV_W5GeV) {
-					hists_["Zprime_M500GeV_W5GeV_neutrino_pz"]->Fill(pz2);
-					hists_["Zprime_M500GeV_W5GeV_recoWmass"]->Fill(W1.M());
-				} else if (isTTbar) {
-					hists_["signal_neutrino_pz"]->Fill(pz2);
-					hists_["signal_recoWmass"]->Fill(W2.M());
-				}
+		//		bool cond1 = fabs(W1.M() - 80) < fabs(W2.M() - 80);
+		bool cond2 = (fabs(pz1 - pze) < fabs(pz2 - pze)) && W1.M() > 0;
+		if (W1.M() > 0 || W2.M() > 0) {//reqiure positive masses
+			double pzneutrino;
+			cond2 ? Wlep = W1 : Wlep = W2;
+			cond2 ? pzneutrino = pz1 : pzneutrino = pz2;
+			//reconstruct hadronic W
+			pair<unsigned short, unsigned short> wjets = reco_hadronic_W(jets, cid);
+			Whad = TLorentzVector(jets[wjets.first] + jets[wjets.second]);
+			//construct subset of jets:
+			vector<TLorentzVector> subjets;
+			for (unsigned short jet = 0; jet < jets.size(); jet++){
+				if(jet != cid && jet != wjets.first && jet != wjets.second)
+					subjets.push_back(jets[jet]);
 			}
-		}
-		for (unsigned int x = 0; x < Nmc_doc; x++) {
-			if (fabs(mc_doc_id->at(x)) == 12//electron neutrino
-					&& fabs(mc_doc_mother_id->at(x)) == 24//W-boson
-					&& fabs(mc_doc_grandmother_id->at(x)) == 6)//top quark
-			{//electron neutrino from W-decay from top-quark
-				if (isZprime_M500GeV_W5GeV)
-					hists_["Zprime_M500GeV_W5GeV_neutrino_pz_mc"]->Fill(mc_doc_pz->at(x));
-				else if (isTTbar)
-					hists_["signal_neutrino_pz_mc"]->Fill(mc_doc_pz->at(x));
-			}
+			unsigned short hadbID = findClosest(subjets, Whad);
+			bhad = subjets[hadbID];
+			thad = TLorentzVector(bhad + Whad);
+			tlep = TLorentzVector(blep + Wlep);
+			TLorentzVector resonance = TLorentzVector(thad + tlep);
+			fasthist_[fastmctype][kMttbar]->Fill(resonance.M());
+			fasthist_[fastmctype][kRecoWhadmass]->Fill(Whad.M());
+			fasthist_[fastmctype][kRecoWlepmass]->Fill(Wlep.M());
+			fasthist_[fastmctype][kneutrino_pz]->Fill(pzneutrino);
+			fasthist_[fastmctype][kmtlep]->Fill(tlep.M());
+			fasthist_[fastmctype][kmthad]->Fill(thad.M());
 
-		}
+			//only if ttbar is present in MC
+			if(fastmctype == ksignal || fastmctype >= Zprime_M500GeV_W5GeV )
+				fillMCTopEventHists();//fill MC information
+//			for (unsigned int x = 0; x < Nmc_doc; x++) {
+//				if (fabs(mc_doc_id->at(x)) == 12//electron neutrino
+//						&& fabs(mc_doc_mother_id->at(x)) == 24//W-boson
+//						&& fabs(mc_doc_grandmother_id->at(x)) == 6)//top quark
+//					//electron neutrino from W-decay from top-quark
+//					fasthist_[fastmctype][kneutrino_pz_mc]->Fill(mc_doc_pz->at(x));
+//			}
 
-		//		pair<double, double> newton= compute_neutrino_momentum_z2(met[0], eles[0]);
-		//		double newpz = newton.first;
-		//		neutrino1.SetPz(newpz);
-		//		neutrino1.SetE(px * px + py * py + newpz * newpz);
-		//		TLorentzVector W3 = TLorentzVector(neutrino1 + eles[0]);
-		//		cout << "newton W mass_t: " << W3.Mt() << endl;
-		//		cout << "newton W mass: " << W3.M() << endl;
+		}//end if goodele > 0//TODO: remove this cut
 	}
-	//		TLorentzVector electron = eles[0];
-	//		pair<vector<double>, vector<unsigned int> > res;
-	//		res = compute_M3_modified(jets);
-	//		double m3 = res.first[0];
-	//		double maxpt = res.first[1];
-	//		vector<unsigned int> which_3jet = res.second;
-	//		double mttbar(-1);
-	//
-	//		vector<TLorentzVector> selected_jets;
-	//		vector<TLorentzVector> rejected_jets;
-	//		for(unsigned int i = 0; i< jets.size(); i++){
-	//			if (i != which_3jet[0]
-	//			 && i != which_3jet[1]
-	//			 && i!= which_3jet[2]){
-	//				rejected_jets.push_back(jets[i]);
-	//			}
-	//			else{
-	//				selected_jets.push_back(jets[i]);}
-	//		}
-	//		unsigned int j = findClosest(rejected_jets, electron);
+}
+pair<unsigned short, unsigned short> ana::reco_hadronic_W(const std::vector<TLorentzVector>& jets, short ommit_blep_id) const {
+	double tempmass = 0;
+	unsigned short jet1(0), jet2(0);
+	for (unsigned short i = 0; i < jets.size(); i++) {
+		if (i == ommit_blep_id)
+			continue;
 
-	//	}
+		for (unsigned short j = 0; j < jets.size(); j++) {
+			if (j == ommit_blep_id)
+				continue;
+			TLorentzVector tempW = TLorentzVector(jets[i] + jets[j]);
+			//if this is closer than last one:
+			if (fabs(tempW.M() - WMASS) < fabs(tempmass - WMASS)) {
+				tempmass = tempW.M();
+				jet1 = i;
+				jet2 = j;
+			}
 
+		}
+	}
+	return pair<unsigned short, unsigned short> (jet1, jet2);
 }
 
 unsigned int ana::findClosest(const vector<TLorentzVector>& group, const TLorentzVector& obj) {
-	unsigned int cId = -1;
+	short cId = -1;
 	float deltaR = 99999;
 	for (unsigned int i = 0; i < group.size(); i++) {
 		float dr = calcDeltaR(group[i], obj);
@@ -9872,9 +9946,8 @@ pair<double, double> ana::compute_neutrino_momentum_z(double met, const TLorentz
 	pze = electron.Pz();
 	ptnu = met;
 	Ee = electron.Energy();
-	const double mw = 80.;
-	double k = mw * mw * 0.5 + ptnu * pte;
-	double l = Ee * Ee - pze * pze;
+	double k = WMASS * WMASS * 0.5 + ptnu * pte;//checked
+	double l = Ee * Ee - pze * pze;//checked
 	double b = pze * k / l;
 	double q = (k * k - Ee * Ee * ptnu * ptnu) / l;
 	double r = b * b + q;
@@ -11120,5 +11193,90 @@ double ana::getTotalEvents(const double nevent[][5][nmctype], short cut, short k
 		} //sum up jet bins
 	}
 	return totalT;
+}
+
+vector<TLorentzVector> ana::GetMCTopEvent(){
+	TLorentzVector blep_mc, thad_mc, tlep_mc, bhad_mc, Whad_mc, Wlep_mc, neutrino_mc, electron_mc;
+	short tlepPID(0), thadPID(0), WlepPID(0), WhadPID(0), blepPID(0), bhadPID(0), electronPID(0);
+	//use neutrino from W-decay from top-decay as reference particle
+	for (unsigned int x = 0; x < Nmc_doc; x++) {
+		bool isneutrino = fabs(mc_doc_id->at(x)) == 12//electron neutrino
+						&& fabs(mc_doc_mother_id->at(x)) == 24//W-boson
+						&& fabs(mc_doc_grandmother_id->at(x)) == 6;//top quark
+		if(isneutrino){
+			tlepPID = mc_doc_grandmother_id->at(x);
+			thadPID = -tlepPID;
+			WlepPID = mc_doc_mother_id->at(x);
+			WhadPID = -WlepPID;
+			blepPID = 5* (int)(WlepPID/24);
+			bhadPID = -blepPID;
+			electronPID = -11*(int)(mc_doc_id->at(x)/12); //opposite sign of the electron neutrino
+			neutrino_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
+		}
+	}
+	for (unsigned int x = 0; x < Nmc_doc; x++) {
+		bool isBlep = mc_doc_id->at(x) == blepPID && mc_doc_grandmother_id->at(x) == tlepPID;
+		bool isBhad = mc_doc_id->at(x) == bhadPID && mc_doc_grandmother_id->at(x) == thadPID;
+		bool isThad =  mc_doc_id->at(x) == thadPID;
+		bool isTlep =  mc_doc_id->at(x) == tlepPID;
+		bool isWhad =  mc_doc_id->at(x) == WhadPID;
+		bool isWlep =  mc_doc_id->at(x) == WlepPID;
+		bool isElectron =  mc_doc_id->at(x) == electronPID && mc_doc_mother_id->at(x) == WlepPID;
+
+		if(isBlep)
+			blep_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
+		else if(isBhad)
+			bhad_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
+		else if(isThad){
+			thad_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
+			fasthist_[fastmctype][kmthad_mc2]->Fill(mc_doc_mass->at(x));
+		}
+		else if(isTlep){
+			tlep_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
+			fasthist_[fastmctype][kmtlep_mc2]->Fill(mc_doc_mass->at(x));
+		}
+		else if(isWhad)
+			Whad_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
+		else if(isWlep)
+			Wlep_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
+		else if(isElectron)
+			electron_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
+	}
+	vector<TLorentzVector> MCEvent;
+	MCEvent.push_back(thad_mc);
+	MCEvent.push_back(tlep_mc);
+	MCEvent.push_back(bhad_mc);
+	MCEvent.push_back(blep_mc);
+	MCEvent.push_back(Whad_mc);
+	MCEvent.push_back(Wlep_mc);
+	MCEvent.push_back(neutrino_mc);
+	MCEvent.push_back(electron_mc);
+	return MCEvent;
+
+}
+
+void ana::fillMCTopEventHists(){
+	TLorentzVector blep, thad, tlep, bhad, Whad, Wlep, neutrino, electron;
+	vector<TLorentzVector> MCEvent = GetMCTopEvent();
+	thad = MCEvent[0];
+	tlep = MCEvent[1];
+	bhad = MCEvent[2];
+	blep = MCEvent[3];
+	Whad = MCEvent[4];
+	Wlep = MCEvent[5];
+	neutrino = MCEvent[6];
+	electron = MCEvent[7];
+
+	TLorentzVector zprime = TLorentzVector(tlep + thad);
+
+	fasthist_[fastmctype][kneutrino_pz_mc]->Fill(neutrino.Pz());
+	fasthist_[fastmctype][kmtlep_mc]->Fill(tlep.M());
+	fasthist_[fastmctype][kmthad_mc]->Fill(thad.M());
+
+	fasthist_[fastmctype][kRecoWlepmass_mc]->Fill(Wlep.M());
+	fasthist_[fastmctype][kRecoWhadmass_mc]->Fill(Whad.M());
+	fasthist_[fastmctype][kMttbar_mc]->Fill(zprime.M());
+
+
 }
 //-- eof ------------------------------------------------------------------------------------------
