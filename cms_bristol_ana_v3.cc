@@ -572,7 +572,7 @@ void ana::SetEventWeightMap() { //only if run on MC
 }//End SetEventWeightMap
 
 //TODO: set the right things
-void ana::SetWeights(){
+void ana::SetWeights() {
 	fastWeight.resize(kNumMCTypes);
 	fastWeight[kdata] = 1.0;
 
@@ -583,7 +583,7 @@ double ana::GetWeight(string mc) const {
 }
 
 //FIXME: can't be used as long as SetWEights is not implemented
-double ana::GetWeight(short mc) const{
+double ana::GetWeight(short mc) const {
 	return fastWeight.at(mc);
 }
 //-------------------------------------------------------------------------------------------
@@ -9916,7 +9916,7 @@ void ana::bookHistograms() {
 	fasthist2D_.resize(kNumMCTypes);
 	//	TFile *fdata = new TFile(outputHistFileName.c_str(), "UPDATE");
 	for (unsigned short type = 0; type < (short) kNumMCTypes; ++type) {
-//		TString prefix(mclabel[type] + "_");
+		//		TString prefix(mclabel[type] + "_");
 		gROOT->cd();
 		TDirectory *dir = histf->mkdir(mclabel[type].c_str());
 		dir->cd();
@@ -9928,20 +9928,15 @@ void ana::bookHistograms() {
 		fasthist_[type][kMttbar_mc] = new TH1F(histnames[kMttbar_mc], "generated M_{ttbar}", 10000, 0, 10000);
 		fasthist_[type][kMZprime_mc] = new TH1F(histnames[kMZprime_mc], "generated M_{Z'}", 10000, 0, 10000);
 
-		fasthist_[type][kRecoWlepmass]
-				= new TH1F(histnames[kRecoWlepmass], "reconstructed leptonic W mass", 500, 0, 500);
-		fasthist_[type][kRecoWlepmass_mc] = new TH1F(histnames[kRecoWlepmass_mc], "generated leptonic W mass", 500, 0,
-				500);
+		fasthist_[type][kRecoWlepmass] = new TH1F(histnames[kRecoWlepmass], "reconstructed leptonic W mass", 500, 0, 500);
+		fasthist_[type][kRecoWlepmass_mc] = new TH1F(histnames[kRecoWlepmass_mc], "generated leptonic W mass", 500, 0, 500);
 
-		fasthist_[type][kRecoWhadmass]
-				= new TH1F(histnames[kRecoWhadmass], "reconstructed hadronic W mass", 500, 0, 500);
-		fasthist_[type][kRecoWhadmass_mc] = new TH1F(histnames[kRecoWhadmass_mc], "generated hadronic W mass", 500, 0,
-				500);
+		fasthist_[type][kRecoWhadmass] = new TH1F(histnames[kRecoWhadmass], "reconstructed hadronic W mass", 500, 0, 500);
+		fasthist_[type][kRecoWhadmass_mc] = new TH1F(histnames[kRecoWhadmass_mc], "generated hadronic W mass", 500, 0, 500);
 
-		fasthist_[type][kptRel_ele_jet] = new TH1F(histnames[kptRel_ele_jet], "relative p_{T} electron - closest jet",
-				300, 0, 300);
-		fasthist_[type][kminDeltaR_ele_Jet] = new TH1F(histnames[kminDeltaR_ele_Jet], "min. #Delta R(electron, jet)",
-				100, 0, 1);
+		fasthist_[type][kptRel_ele_jet] = new TH1F(histnames[kptRel_ele_jet], "relative p_{T} electron - closest jet", 300, 0,
+				300);
+		fasthist_[type][kminDeltaR_ele_Jet] = new TH1F(histnames[kminDeltaR_ele_Jet], "min. #Delta R(electron, jet)", 100, 0, 1);
 
 		fasthist_[type][kmthad] = new TH1F(histnames[kmthad], "reconstructed hadronic top mass", 500, 0, 500);
 		fasthist_[type][kmthad_mc] = new TH1F(histnames[kmthad_mc], "generated hadronic top mass", 500, 0, 500);
@@ -9958,16 +9953,15 @@ void ana::bookHistograms() {
 		TDirectory *planB = dir->mkdir("PlanB");
 		planB->cd();
 		fasthist_[type][kMttbarB] = new TH1F(histnames[kMttbarB], "reconstructed M_{ttbar}", 10000, 0, 10000);
-		fasthist_[type][kRecoWlepmassB]
-						= new TH1F(histnames[kRecoWlepmassB], "reconstructed leptonic W mass", 500, 0, 500);
+		fasthist_[type][kRecoWlepmassB] = new TH1F(histnames[kRecoWlepmassB], "reconstructed leptonic W mass", 500, 0, 500);
 		dir->cd();
 		for (unsigned short ihist = 0; ihist < fasthist_[type].size(); ++ihist)
 			fasthist_[type][ihist]->Sumw2();
 
 		//2D histograms
 		fasthist2D_[type].resize(kNum2DHists);
-		fasthist2D_[type][kptRel_vs_deltaRmin] = new TH2F(histnames2D[kptRel_vs_deltaRmin], "ptrel vs min. #Delta R",
-				500, 0, 5, 1000, 0, 1000);
+		fasthist2D_[type][kptRel_vs_deltaRmin] = new TH2F(histnames2D[kptRel_vs_deltaRmin], "ptrel vs min. #Delta R", 500, 0, 5,
+				1000, 0, 1000);
 
 	}
 	gROOT->cd();
@@ -9977,7 +9971,7 @@ void ana::reco_mttbar(const vector<TLorentzVector>& jets, const vector<TLorentzV
 		const std::vector<TLorentzVector>& met, const int nGoodIsoEle) {
 	if (nGoodIsoEle > 0) {
 		const TLorentzVector electron = eles[0];
-		TLorentzVector blep, thad, tlep,tlepB, bhad, Whad, Wlep, WlepB;
+		TLorentzVector blep, thad, tlep, tlepB, bhad, Whad, Wlep, WlepB;
 		TLorentzVector neutrino1, neutrino2;
 		double pze = electron.Pz();
 		double et, px, py;
@@ -10011,7 +10005,7 @@ void ana::reco_mttbar(const vector<TLorentzVector>& jets, const vector<TLorentzV
 			planA ? Wlep = W1 : Wlep = W2;
 			planA ? pzneutrino = pz1 : pzneutrino = pz2;
 			//refine planA: if pz>300GeV choose smaller absolute value
-			if (fabs(pzneutrino) > 300){
+			if (fabs(pzneutrino) > 300) {
 				(fabs(pz1) < fabs(pz2)) ? pzneutrino = pz1 : pzneutrino = pz2;
 			}
 			planB ? pzneutrinoB = pz1 : pzneutrinoB = pz2;
@@ -11425,11 +11419,11 @@ void ana::fillMCTopEventHists() {
 	fasthist_[fastmctype][kMttbar_mc]->Fill(zprime.M());
 	fasthist_[fastmctype][kthad_pt_mc]->Fill(thad.Pt());
 	fasthist_[fastmctype][ktlep_pt_mc]->Fill(tlep.Pt());
-	if(fastmctype >= Zprime_M500GeV_W5GeV){
+	if (fastmctype >= Zprime_M500GeV_W5GeV) {
 		for (unsigned int x = 0; x < Nmc_doc; x++) {
-				bool zprime = fabs(mc_doc_id->at(x)) == 32;
-				if(zprime)
-					fasthist_[fastmctype][kMZprime_mc]->Fill(mc_doc_mass->at(x));
+			bool zprime = fabs(mc_doc_id->at(x)) == 32;
+			if (zprime)
+				fasthist_[fastmctype][kMZprime_mc]->Fill(mc_doc_mass->at(x));
 		}
 
 	}
