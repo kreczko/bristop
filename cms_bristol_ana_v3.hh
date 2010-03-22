@@ -17,6 +17,7 @@ using namespace std;
 // Global variables/constants
 #define WMASS 80.398
 #define WMASSERROR 0.025
+#define ZMASS 91.1876
 const int ntjet(5);
 const int myprec(1); //no of decimal point for weighted nEvent
 const int nbm3 = 960;
@@ -36,9 +37,9 @@ const string mclabel[] = { "data", "signal", "QCD", "enri1", "enri2", "enri3", "
 		"Zprime_M1500GeV_W150GeV", "Zprime_M2TeV_W20GeV", "Zprime_M2TeV_W200GeV", "Zprime_M3TeV_W30GeV", "Zprime_M3TeV_W300GeV",
 		"Zprime_M4TeV_W40GeV", "Zprime_M4TeV_W400GeV" };
 
-static const char* histnames[] = { "neutrino_pz", "neutrino_pz_mc", "mttbar", "mttbar_mc", "recoWlepmass", "recoWlepmass_mc",
-		"recoWhadmass", "recoWhadmass_mc", "minDeltaR_ele_Jet", "ptRel_ele_jet", "mtlep", "mtlep_mc", "mtlep_mc2", "mthad",
-		"mthad_mc", "mthad_mc2" };
+static const char* histnames[] = { "neutrino_pz", "neutrino_pz_mc", "mttbar","mttbarB", "mttbar_mc", "mZprime", "recoWlepmass",
+		"recoWlepmassB", "recoWlepmass_mc",	"recoWhadmass", "recoWhadmass_mc", "minDeltaR_ele_Jet", "ptRel_ele_jet", "mtlep", "mtlep_mc", "mtlep_mc2", "mthad",
+		"mthad_mc", "mthad_mc2", "thad_pt", "thad_pt_mc", "tlep_pt", "tlep_pt_mc" };
 static const char* histnames2D[] = { "kptRel_vs_deltaRmin" };
 const short int mcsize = sizeof(mcname) / sizeof(mcname[0]);
 const int nmctype(mcsize + 7); //extend to include wj, zj, QCD, VQQ, single top
@@ -1498,7 +1499,9 @@ private:
 	void DefineCrossSection();
 	double GetCrossSection(const string) const;
 	void SetEventWeightMap();
+	void SetWeights();
 	double GetWeight(const string) const;
+	double GetWeight(const short) const;
 	long GetNinit(const string) const;
 
 	// print event-count tables
@@ -1625,6 +1628,7 @@ private:
 	map<string, double> cross_section;
 	map<string, long> nInitialEventMC; //initial number of event, used to compute event weight
 	map<string, double> weightMap;
+	vector<double> fastWeight;
 	//  map<string, TH1F*> hists_;
 	//  map<string, map<string, TH1F*> > histsBySample_;
 	// Wjet estimation
@@ -1753,9 +1757,11 @@ private:
 	enum EHist {
 		kneutrino_pz,
 		kneutrino_pz_mc,
-		kMttbar,
+		kMttbar,kMttbarB,
 		kMttbar_mc,
+		kMZprime_mc,
 		kRecoWlepmass,
+		kRecoWlepmassB,
 		kRecoWlepmass_mc,
 		kRecoWhadmass,
 		kRecoWhadmass_mc,
@@ -1767,6 +1773,10 @@ private:
 		kmthad,
 		kmthad_mc,
 		kmthad_mc2,
+		kthad_pt,
+		kthad_pt_mc,
+		ktlep_pt,
+		ktlep_pt_mc,
 		kNumHists
 	};
 
