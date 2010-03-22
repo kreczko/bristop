@@ -37,9 +37,9 @@ const string mclabel[] = { "data", "signal", "QCD", "enri1", "enri2", "enri3", "
 		"Zprime_M1500GeV_W150GeV", "Zprime_M2TeV_W20GeV", "Zprime_M2TeV_W200GeV", "Zprime_M3TeV_W30GeV", "Zprime_M3TeV_W300GeV",
 		"Zprime_M4TeV_W40GeV", "Zprime_M4TeV_W400GeV" };
 
-static const char* histnames[] = { "neutrino_pz", "neutrino_pz_mc", "mttbar","mttbarB", "mttbar_mc", "mZprime", "recoWlepmass",
-		"recoWlepmassB", "recoWlepmass_mc",	"recoWhadmass", "recoWhadmass_mc", "minDeltaR_ele_Jet", "ptRel_ele_jet", "mtlep", "mtlep_mc", "mtlep_mc2", "mthad",
-		"mthad_mc", "mthad_mc2", "thad_pt", "thad_pt_mc", "tlep_pt", "tlep_pt_mc" };
+static const char* histnames[] = { "neutrino_pz", "neutrino_pz_mc", "mttbar", "mttbarB", "mttbar_mc", "mZprime", "recoWlepmass",
+		"recoWlepmassB", "recoWlepmass_mc", "recoWhadmass", "recoWhadmass_mc", "minDeltaR_ele_Jet", "ptRel_ele_jet", "mtlep",
+		"mtlep_mc", "mtlep_mc2", "mthad", "mthad_mc", "mthad_mc2", "thad_pt", "thad_pt_mc", "tlep_pt", "tlep_pt_mc" };
 static const char* histnames2D[] = { "kptRel_vs_deltaRmin" };
 const short int mcsize = sizeof(mcname) / sizeof(mcname[0]);
 const int nmctype(mcsize + 7); //extend to include wj, zj, QCD, VQQ, single top
@@ -1757,7 +1757,8 @@ private:
 	enum EHist {
 		kneutrino_pz,
 		kneutrino_pz_mc,
-		kMttbar,kMttbarB,
+		kMttbar,
+		kMttbarB,
 		kMttbar_mc,
 		kMZprime_mc,
 		kRecoWlepmass,
