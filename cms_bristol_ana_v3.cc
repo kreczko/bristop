@@ -727,187 +727,6 @@ ana::ana() {
 	mycounter = 0;
 }
 
-void ana::ReadSelectedBranches() const {
-
-	chain->SetBranchStatus("*", 0); //disable all branches
-	chain->SetBranchStatus("run", 1);
-	chain->SetBranchStatus("event", 1);
-	chain->SetBranchStatus("lumiBlock", 1);
-	chain->SetBranchStatus("beamSpot_x", 1); //beam spot
-	chain->SetBranchStatus("beamSpot_y", 1);
-	chain->SetBranchStatus("Nels", 1); //electrons
-	chain->SetBranchStatus("els_px", 1);
-	chain->SetBranchStatus("els_py", 1);
-	chain->SetBranchStatus("els_pz", 1);
-	chain->SetBranchStatus("els_energy", 1);
-	chain->SetBranchStatus("els_et", 1);
-	chain->SetBranchStatus("els_eta", 1);
-	chain->SetBranchStatus("els_phi", 1);//z study
-	chain->SetBranchStatus("els_looseId", 1);
-	chain->SetBranchStatus("els_tightId", 1);
-	chain->SetBranchStatus("els_robustLooseId", 1);
-	chain->SetBranchStatus("els_robustTightId", 1);
-	chain->SetBranchStatus("els_robustHighEnergyId", 1);
-	chain->SetBranchStatus("els_sigmaIEtaIEta", 1); //sigma i eta i eta
-	chain->SetBranchStatus("els_hadOverEm", 1);
-	chain->SetBranchStatus("els_dEtaIn", 1);
-	chain->SetBranchStatus("els_dPhiIn", 1);
-	chain->SetBranchStatus("els_eOverPIn", 1);
-	chain->SetBranchStatus("els_tIso", 1);
-	chain->SetBranchStatus("els_dr04EcalRecHitSumEt", 1);
-	chain->SetBranchStatus("els_dr04HcalTowerSumEt", 1);
-	chain->SetBranchStatus("els_d0dum", 1);
-	chain->SetBranchStatus("els_vx", 1);
-	chain->SetBranchStatus("els_vy", 1);
-	chain->SetBranchStatus("els_vpx", 1);
-	chain->SetBranchStatus("els_vpy", 1);
-	chain->SetBranchStatus("els_closestCtfTrackRef", 1);
-	chain->SetBranchStatus("els_tk_pt", 1);
-	chain->SetBranchStatus("els_tk_phi", 1);
-	chain->SetBranchStatus("els_tk_eta", 1);
-	chain->SetBranchStatus("els_tk_charge", 1);
-	chain->SetBranchStatus("els_tk_theta", 1);
-	chain->SetBranchStatus("els_shFracInnerHits", 1);
-	if (m_useMisslayers)
-		chain->SetBranchStatus("els_innerLayerMissingHits", 1);
-	chain->SetBranchStatus("Nmus", 1); //muons
-	chain->SetBranchStatus("mus_cm_px", 1); //global muon
-	chain->SetBranchStatus("mus_cm_py", 1);
-	chain->SetBranchStatus("mus_cm_pz", 1);
-	chain->SetBranchStatus("mus_energy", 1);
-	chain->SetBranchStatus("mus_cm_pt", 1);
-	chain->SetBranchStatus("mus_cm_eta", 1);
-	chain->SetBranchStatus("mus_cm_chi2", 1);
-	chain->SetBranchStatus("mus_cm_ndof", 1);
-	chain->SetBranchStatus("mus_cm_d0dum", 1);
-	chain->SetBranchStatus("mus_tk_vx", 1);
-	chain->SetBranchStatus("mus_tk_vy", 1);
-	chain->SetBranchStatus("mus_tk_px", 1);
-	chain->SetBranchStatus("mus_tk_py", 1);
-	chain->SetBranchStatus("mus_tkHits", 1);
-	chain->SetBranchStatus("mus_tIso", 1);
-	chain->SetBranchStatus("mus_cIso", 1);
-	chain->SetBranchStatus("mus_id_AllGlobalMuons", 1); //new
-	chain->SetBranchStatus("mus_ecalvetoDep", 1); //new
-	chain->SetBranchStatus("mus_hcalvetoDep", 1); //new
-
-	if (m_jetAlgo == "Default") { //using default jet-met
-		chain->SetBranchStatus("Njets", 1); //jets
-		chain->SetBranchStatus("jets_px", 1);
-		chain->SetBranchStatus("jets_py", 1);
-		chain->SetBranchStatus("jets_pz", 1);
-		chain->SetBranchStatus("jets_energy", 1);
-		chain->SetBranchStatus("jets_eta", 1);
-		chain->SetBranchStatus("jets_pt", 1);
-		chain->SetBranchStatus("jets_emf", 1);
-
-	} else if (m_jetAlgo == "pfjet") { //PFJet
-		chain->SetBranchStatus(Form("NPFJets"), 1); //jets
-		chain->SetBranchStatus("PFJets_px", 1);
-		chain->SetBranchStatus("PFJets_py", 1);
-		chain->SetBranchStatus("PFJets_pz", 1);
-		chain->SetBranchStatus("PFJets_energy", 1);
-		chain->SetBranchStatus("PFJets_eta", 1);
-		chain->SetBranchStatus("PFJets_pt", 1);
-
-	} else { //if not using default jets
-		chain->SetBranchStatus(Form("Njets%s", m_jetAlgo.c_str()), 1); //jets
-		chain->SetBranchStatus(Form("jets%s_px", m_jetAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("jets%s_py", m_jetAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("jets%s_pz", m_jetAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("jets%s_energy", m_jetAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("jets%s_eta", m_jetAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("jets%s_pt", m_jetAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("jets%s_emf", m_jetAlgo.c_str()), 1);
-	}
-
-	// 30-10-09
-	chain->SetBranchStatus("Nmets", 1);
-	chain->SetBranchStatus("mets_et_muonCor", 1);
-	chain->SetBranchStatus("mets_phi_muonCor", 1);
-	chain->SetBranchStatus("mets_et", 1);
-	chain->SetBranchStatus("mets_phi", 1);
-	chain->SetBranchStatus("mets_ex", 1);
-	chain->SetBranchStatus("mets_ey", 1);
-
-	if (m_metAlgo == "tcmet") { //tcMET
-		chain->SetBranchStatus("Ntcmets", 1);
-		chain->SetBranchStatus("tcmets_et", 1);
-		chain->SetBranchStatus("tcmets_phi", 1);
-		chain->SetBranchStatus("tcmets_ex", 1);
-		chain->SetBranchStatus("tcmets_ey", 1);
-	} else if (m_metAlgo == "pfmet") { //PFMET
-		chain->SetBranchStatus("NPFMets", 1);
-		chain->SetBranchStatus("PFMets_et", 1);
-		chain->SetBranchStatus("PFMets_phi", 1);
-		chain->SetBranchStatus("PFMets_ex", 1);
-		chain->SetBranchStatus("PFMets_ey", 1);
-
-	} else if (m_metAlgo == "SC5" || m_metAlgo == "SC7" || m_metAlgo == "KT4" || m_metAlgo == "KT6") { //CaloMET: SC5/7, KT4/6
-		chain->SetBranchStatus(Form("Nmets%s", m_metAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("mets%s_et", m_metAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("mets%s_phi", m_metAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("mets%s_ex", m_metAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("mets%s_ey", m_metAlgo.c_str()), 1);
-	}
-
-	chain->SetBranchStatus("Ntracks", 1); //tracks
-	chain->SetBranchStatus("tracks_pt", 1);
-	chain->SetBranchStatus("tracks_phi", 1);
-	chain->SetBranchStatus("tracks_eta", 1);
-	chain->SetBranchStatus("tracks_chg", 1);
-	chain->SetBranchStatus("tracks_theta", 1);
-	chain->SetBranchStatus("tracks_vx", 1);
-	chain->SetBranchStatus("tracks_vy", 1);
-	chain->SetBranchStatus("tracks_px", 1);
-	chain->SetBranchStatus("tracks_py", 1);
-	if (m_useMisslayers)
-		chain->SetBranchStatus("tracks_innerLayerMissingHits", 1);
-
-	chain->SetBranchStatus("Nphotons", 1); //z study
-	chain->SetBranchStatus("photons_eta", 1); //z study
-	chain->SetBranchStatus("photons_et", 1); //z study
-	chain->SetBranchStatus("photons_phi", 1); //z study
-	chain->SetBranchStatus("photons_px", 1); //z study
-	chain->SetBranchStatus("photons_py", 1); //z study
-	chain->SetBranchStatus("photons_pz", 1); //z study
-	chain->SetBranchStatus("photons_energy", 1); //z study
-	///-------------------------- MC Truth info ------------------------------
-	if (!IsData()) {
-		chain->SetBranchStatus("Nmc_doc", 1); // generator particles
-		chain->SetBranchStatus("mc_doc_id", 1);
-		chain->SetBranchStatus("mc_doc_status", 1);
-		chain->SetBranchStatus("mc_doc_mother_id", 1);
-		chain->SetBranchStatus("mc_doc_grandmother_id", 1);
-		//		chain->SetBranchStatus("mc_doc_mother_id", 1);
-		chain->SetBranchStatus("mc_doc_mass", 1);
-		chain->SetBranchStatus("mc_doc_px", 1);
-		chain->SetBranchStatus("mc_doc_py", 1);
-		chain->SetBranchStatus("mc_doc_pz", 1);
-		chain->SetBranchStatus("mc_doc_pt", 1);
-		chain->SetBranchStatus("mc_doc_eta", 1);
-		chain->SetBranchStatus("mc_doc_phi", 1); //z study
-		chain->SetBranchStatus("mc_doc_energy", 1); //z study
-
-		if (m_studyPDFunc) {
-			for (short i = 0; i <= 44; i++) {
-				string pdf = Form("PDFWcteq66_%u", i);//unsigned %u
-				if (m_debug)
-					cout << " pdf  " << pdf << endl;
-				chain->SetBranchStatus(pdf.c_str(), 1);
-			}
-		}
-	}
-	///------------------------  MC Truth info (END)  ---------------------------
-
-	if (GetTrigger()) {
-		//chain->SetBranchStatus("HLT_Ele15_LW_L1R",1); //trigger (8e29)
-		//chain->SetBranchStatus("HLT_Ele10_SW_L1R",1); //trigger (1e30)
-		chain->SetBranchStatus(HLTBit.c_str(), 1);
-	}
-}//end ReadSelectedBranches
-//------------------------------------------------------------------------------------
-
 void ana::CheckAvailableJetMET() {
 
 	vector<string> availableJET;
@@ -915,8 +734,6 @@ void ana::CheckAvailableJetMET() {
 
 	// check if various jet/met is in the ntuple
 	TObjArray *list = chain->GetListOfBranches();
-	//int m = list->GetEntries();
-	//cout << "Number of branches: " << m << endl;
 
 	// -- Loop over all, and draw their variables into TCanvas c1
 	for (int i = 0; i < list->GetEntries(); ++i) {
@@ -2259,131 +2076,131 @@ bool ana::EventLoop() {
 				// set nmctype code
 				if (this_mc == "ttbar" || this_mc == "ttjet") {
 					isTTbar = true;
-					fastmctype = ksignal;
+					fastmctype_ = ksignal;
 				} //mctype 1-10
 				else if (this_mc == "wjet" || this_mc == "wenu") {
 					isWjets = true;
 					mctype = 11;
-					fastmctype = kWjets;
+					fastmctype_ = kWjets;
 				} else if (this_mc == "zjet" || this_mc == "zee") {
 					isZjets = true;
 					mctype = 12;
-					fastmctype = kZjets;
+					fastmctype_ = kZjets;
 				} else if (this_mc == "enri1") {
 					isQCD = true;
 					isEnri1 = true;
 					mctype = 13;
-					fastmctype = kenri1;
+					fastmctype_ = kenri1;
 				} else if (this_mc == "enri2") {
 					isQCD = true;
 					isEnri2 = true;
 					mctype = 14;
-					fastmctype = kenri2;
+					fastmctype_ = kenri2;
 				} else if (this_mc == "enri3") {
 					isQCD = true;
 					isEnri3 = true;
 					mctype = 15;
-					fastmctype = kenri3;
+					fastmctype_ = kenri3;
 				} else if (this_mc == "bce1") {
 					isQCD = true;
 					isBce1 = true;
 					mctype = 16;
-					fastmctype = kbce1;
+					fastmctype_ = kbce1;
 				} else if (this_mc == "bce2") {
 					isQCD = true;
 					isBce2 = true;
 					mctype = 17;
-					fastmctype = kbce2;
+					fastmctype_ = kbce2;
 				} else if (this_mc == "bce3") {
 					isQCD = true;
 					isBce3 = true;
 					mctype = 18;
-					fastmctype = kbce3;
+					fastmctype_ = kbce3;
 				} else if (this_mc == "vqq") {
 					isVQQ = true;
 					mctype = 19;
-					fastmctype = kVQQ;
+					fastmctype_ = kVQQ;
 				} else if (this_mc == "tW") {
 					isSingleTop = true;
 					isTW = true;
 					mctype = 20;
-					fastmctype = ktW;
+					fastmctype_ = ktW;
 				} else if (this_mc == "tchan") {
 					isSingleTop = true;
 					isTchan = true;
 					mctype = 21;
-					fastmctype = ktchan;
+					fastmctype_ = ktchan;
 				} else if (this_mc == "schan") {
 					isSingleTop = true;
 					isSchan = true;
 					mctype = 22;
-					fastmctype = kschan;
+					fastmctype_ = kschan;
 				}
 				//FIXME: 10th step to new sample - set mctype and is*
 				else if (this_mc == "Zprime_M500GeV_W5GeV") {
 					isZprime_M500GeV_W5GeV = true;
 					mctype = 23;
-					fastmctype = Zprime_M500GeV_W5GeV;
+					fastmctype_ = Zprime_M500GeV_W5GeV;
 				} else if (this_mc == "Zprime_M500GeV_W50GeV") {
 					isZprime_M500GeV_W50GeV = true;
 					mctype = 24;
-					fastmctype = Zprime_M500GeV_W50GeV;
+					fastmctype_ = Zprime_M500GeV_W50GeV;
 				}
 
 				else if (this_mc == "Zprime_M750GeV_W7500MeV") {
 					isZprime_M750GeV_W7500MeV = true;
 					mctype = 25;
-					fastmctype = Zprime_M750GeV_W7500MeV;
+					fastmctype_ = Zprime_M750GeV_W7500MeV;
 				}
 
 				else if (this_mc == "Zprime_M1TeV_W10GeV") {
 					isZprime_M1TeV_W10GeV = true;
 					mctype = 26;
-					fastmctype = Zprime_M1TeV_W10GeV;
+					fastmctype_ = Zprime_M1TeV_W10GeV;
 				} else if (this_mc == "Zprime_M1TeV_W100GeV") {
 					isZprime_M1TeV_W100GeV = true;
 					mctype = 27;
-					fastmctype = Zprime_M1TeV_W100GeV;
+					fastmctype_ = Zprime_M1TeV_W100GeV;
 				}
 
 				else if (this_mc == "Zprime_M1250GeV_W12500MeV") {
 					isZprime_M1250GeV_W12500MeV = true;
 					mctype = 28;
-					fastmctype = Zprime_M1250GeV_W12500MeV;
+					fastmctype_ = Zprime_M1250GeV_W12500MeV;
 				}
 
 				else if (this_mc == "Zprime_M1500GeV_W15GeV") {
 					isZprime_M1500GeV_W15GeV = true;
 					mctype = 29;
-					fastmctype = Zprime_M1500GeV_W15GeV;
+					fastmctype_ = Zprime_M1500GeV_W15GeV;
 				} else if (this_mc == "Zprime_M1500GeV_W150GeV") {
 					isZprime_M1500GeV_W150GeV = true;
 					mctype = 30;
-					fastmctype = Zprime_M1500GeV_W150GeV;
+					fastmctype_ = Zprime_M1500GeV_W150GeV;
 				} else if (this_mc == "Zprime_M2TeV_W20GeV") {
 					isZprime_M2TeV_W20GeV = true;
 					mctype = 31;
-					fastmctype = Zprime_M2TeV_W20GeV;
+					fastmctype_ = Zprime_M2TeV_W20GeV;
 				} else if (this_mc == "Zprime_M2TeV_W200GeV") {
 					isZprime_M2TeV_W200GeV = true;
 					mctype = 32;
-					fastmctype = Zprime_M2TeV_W200GeV;
+					fastmctype_ = Zprime_M2TeV_W200GeV;
 				} else if (this_mc == "Zprime_M3TeV_W30GeV") {
 					isZprime_M3TeV_W30GeV = true;
 					mctype = 33;
-					fastmctype = Zprime_M3TeV_W30GeV;
+					fastmctype_ = Zprime_M3TeV_W30GeV;
 				} else if (this_mc == "Zprime_M3TeV_W300GeV") {
 					isZprime_M3TeV_W300GeV = true;
 					mctype = 34;
-					fastmctype = Zprime_M3TeV_W300GeV;
+					fastmctype_ = Zprime_M3TeV_W300GeV;
 				} else if (this_mc == "Zprime_M4TeV_W40GeV") {
 					isZprime_M4TeV_W40GeV = true;
 					mctype = 35;
-					fastmctype = Zprime_M4TeV_W40GeV;
+					fastmctype_ = Zprime_M4TeV_W40GeV;
 				} else if (this_mc == "Zprime_M4TeV_W400GeV") {
 					isZprime_M4TeV_W400GeV = true;
 					mctype = 36;
-					fastmctype = Zprime_M4TeV_W400GeV;
+					fastmctype_ = Zprime_M4TeV_W400GeV;
 				}
 
 				if (m_debug) {
@@ -3892,7 +3709,6 @@ bool ana::EventLoop() {
 				//cout << "TEST: N(e) = " << Nels << endl;
 				for (unsigned int i = 0; i < Nels; ++i) { //1st e loop
 
-					//cout << "\n TEST: e[" << i << "]"  ;
 					// Require 1 GoodEle
 					if (els_et->at(i) < 30.0)
 						continue;
@@ -3902,7 +3718,6 @@ bool ana::EventLoop() {
 						continue; //ignore gap
 					if (fabs(compute_d0("electron", i)) > 0.02)
 						continue;
-					//if( els_robustTightId->at(i) < 1 ) continue;
 					if (passEleID(i) == false)
 						continue;
 
@@ -3924,7 +3739,6 @@ bool ana::EventLoop() {
 						TLorentzVector loose(els_px->at(j), els_py->at(j), els_pz->at(j), els_energy->at(j));
 
 						float mass = (tight + loose).M();
-						//cout << "   m(e,e) = " << mass << endl;
 						// if fall in the window, flag as Z
 						if (mass < 65. || mass > 106.)
 							flag_AES_pass_tighterZveto_mee = true; // not Z, keep event
@@ -3933,37 +3747,6 @@ bool ana::EventLoop() {
 				}//1st e loop
 				//cout << "isZ_mee_TEST = " << isZ_mee_TEST << endl;
 			}//if more than 2 electron
-
-
-			// OLD
-
-			/*
-			 if ( Nels>=2 && nGoodEle>=1 ) {
-			 if ( nGoodEle==1 ) {
-			 TLorentzVector e1(electrons.at(0));
-			 int index = -1;
-			 for (unsigned int i=0; i<Nels; ++i){ //e loop
-			 if( fabs(e1.Px() - els_px->at(i)) < 1e-6 ) index = i;//match;
-			 }
-			 if(index<0) cout << "EROOR: cannot find the selected electron."<<endl;
-			 unsigned int partner = 0;  //default is 1st
-			 if(index==0) partner=1; //if RTe is 1st, take 2nd
-
-			 TLorentzVector e2(els_px->at(partner),els_py->at(partner),els_pz->at(partner),els_energy->at(partner));
-			 float mass = (e1+e2).M();
-
-			 fillHistoDataAndMC( h_mass_diele_lowMet_1j, mass, this_weight );
-			 if(mass>65 && mass<106) isZ_mee_AES = true; //reject this if 76<m<106
-			 }
-
-			 else if ( nGoodEle>=2 ) {
-			 float mass = ( electrons.at(0) + electrons.at(1) ).M();
-			 // if(mass>76 && mass<106) isZ_mee = true;
-			 if(mass>65 && mass<106) isZ_mee_AES = true;
-			 }
-			 }// 2 reco-e, of which 1 is RT
-			 */
-			//if(m_debug && isZ_mee_AES) { cout << "z veto (mee): fall in window, reject" << endl;  }
 
 
 			//=============================================
@@ -4183,10 +3966,7 @@ bool ana::EventLoop() {
 				//if(  fabs(els_eta->at(0))           < 1.442  &&
 				if (fabs(els_eta->at(0)) < 2.5 && fabs(compute_d0("electron", 0)) < 0.02) {
 
-					//TLorentzVector eles_temp(els_px->at(0),els_py->at(0),els_pz->at(0),els_energy->at(0));
-					//isConversion = ConversionFinder(eles_temp, mctype, 0);
-
-					//if ( !isConversion ) {
+					//FIXME: if true? obsolete if
 					if (true) {
 
 						const double this_iso = getRelIso(0);
@@ -4273,8 +4053,6 @@ bool ana::EventLoop() {
 		//       3: mu, Z veto
 		//       4: conversion cut
 		//---------------------------------------------------------------
-		//cout << "* CombRelIso = " << CombRelIso << endl;
-
 		if (m_plotRelisoNES) {
 
 			if (goodrun && fired_single_em) {
@@ -4282,17 +4060,12 @@ bool ana::EventLoop() {
 				string metside = "loMET"; //low met
 				if (this_met > METCUT)
 					metside = "hiMET"; //high met
-				//cout << "this_met ="<< this_met << endl;
-				//cout << "metside = " << metside << endl;
-
-
 				// Pass L1
 				if (m_debug)
 					cout << "-> Filling Reliso NES histograms, L1" << endl;
 				// fill for all electrons
 				for (unsigned int ie = 0; ie < Nels; ie++) {
 
-					//double tmpRelIso = (els_tIso->at(ie) + els_dr04EcalRecHitSumEt->at(ie) + els_dr04HcalTowerSumEt->at(ie)) / els_et->at(ie);
 					float tmpRelIso = getRelIso(ie);
 
 					// barrel or endcap?
@@ -4340,7 +4113,6 @@ bool ana::EventLoop() {
 									+ "_L1c", tmpRelIso, this_weight);
 
 							// eID (barrel)
-							//bool pass_eid_c0 =  els_robustTightId->at(ie) > 0; //out-of-box eID variable
 							bool pass_eid_c0 = passEleID(ie); //out-of-box eID variable
 							bool pass_eid_c1 = false;//Question: What are they?
 							bool pass_eid_c2 = false;
@@ -4354,12 +4126,6 @@ bool ana::EventLoop() {
 							//
 
 							if (fabs(els_eta->at(ie)) < 1.442) { // barrel
-
-								// 		 if( els_sigmaIEtaIEta->at(ie) < 0.0092 ) pass_eid_c1 = true;
-								// 		 if( els_hadOverEm->at(ie) < 0.015 )      pass_eid_c2 = true;
-								// 		 if( fabs(els_dEtaIn->at(ie)) < 0.0025 )  pass_eid_c3 = true;
-								// 		 if( fabs(els_dPhiIn->at(ie)) < 0.020 )   pass_eid_c4 = true;
-
 								// Updated eID cut values: tight Fixed Threshold "RobustTight"
 								// ref: https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideCutBasedElectronID
 								if (els_hadOverEm->at(ie) < 0.01)
@@ -4472,16 +4238,6 @@ bool ana::EventLoop() {
 					string etaside = "barrel";
 					if (fabs(els_eta->at(ii_GoodEle_mostIso)) > 1.56)
 						etaside = "endcap";
-					/*
-					 cout << "\n" << endl;
-					 cout << "ele eta: " << els_eta->at(ii_GoodEle_mostIso) << "  (" << etaside<< ")" << endl;
-					 cout << "\n" << endl;
-					 cout << " CombRelIso = "<< CombRelIso << endl;
-					 cout << " Check      = "<< (els_tIso->at(ii_GoodEle_mostIso)+els_cIso->at(ii_GoodEle_mostIso))/els_et->at(ii_GoodEle_mostIso) << endl;
-					 cout << endl;
-					 */
-
-					// cout << "** CombRelIso = " << CombRelIso << endl;
 
 					if (CombRelIso < 0) {
 						static short mm = 0;
@@ -4578,6 +4334,7 @@ bool ana::EventLoop() {
 				&& !isDifferentInteraction && ht >= HTCUT && nGoodJet >= 4) {
 			reco_hadronicTop_highestTopPT(jets, nGoodIsoEle);
 			reco_mttbar(jets, electrons, met, nGoodIsoEle);
+			reco_Mttbar(jets, electrons, met);
 		}
 
 		// Add Delta R(e,mu)
@@ -4585,14 +4342,10 @@ bool ana::EventLoop() {
 		// Get isolated electrons
 		for (size_t e = 0; e < iso_electrons.size(); e++) {
 
-			//TLorentzVector ele( els_px->at(e), els_py->at(e), els_pz->at(e), els_energy->at(e) );
-			//cout << "ele pt : "<< iso_electrons.at(e).Pt()  << endl;
 			if (iso_electrons.at(e).Pt() < 1)
 				cout << "iso ele pt < 1, ev:" << ev << endl;
 			// Get all GoodMuon
 			for (size_t m = 0; m < muons.size(); m++) {
-				//TLorentzVector muo( mus_cm_px->at(m), mus_cm_py->at(m), mus_cm_pz->at(m), mus_energy->at(m) );
-				//cout << "mu pt : "<< muons.at(m).Pt()  << endl;
 				if (muons.at(m).Pt() < 1)
 					cout << "mu pt < 1, ev:" << ev << endl;
 				float DRemu = (iso_electrons.at(e)).DeltaR(muons.at(m));
@@ -4624,7 +4377,6 @@ bool ana::EventLoop() {
 		iso_muons.clear();
 		jets.clear();
 		met.clear();
-		//tagged_jets.clear();
 		electrons_isoval.clear();
 		electrons_isoval2.clear();
 
@@ -4762,9 +4514,6 @@ bool ana::EventLoop() {
 						SingleTop_njetsVcuts->Fill(5, nstage - i - 1, e_plus_jet_weighted[i][j][k]);//sum for all jets
 					}
 				}
-				//	 if (mc_sample_has_Zprime_M500GeV_W5GeV){
-				//
-				//	 }
 			}
 		}
 	}//end MC
@@ -4981,10 +4730,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 	}
 
 	string ttsample = "ttbar";
-	//   if(nInitialEventMC["ttjet"]>0) ttsample = "ttjet";
-	//   if(nInitialEventMC["TTJet"]>0) ttsample = "TTJet";
-	//   if(nInitialEventMC.count("ttjet")>0) ttsample = "ttjet";
-	//   if(nInitialEventMC.count("TTJet")>0) ttsample = "TTJet";
 	if (GetNinit("ttjet") > 0)
 		ttsample = "ttjet";
 	if (GetNinit("TTJet") > 0)
@@ -5008,13 +4753,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 			for (short k = 1; k < 23; ++k) {
 
 				const long ni = GetNinit(kIndexmcNames[k]);
-
-				//e_plus_jet_effic[i][j][k] = e_plus_jet[i][j][k]/GetNinit(kIndexmcNames[k]);
-
-				//e_plus_jet_effic_unc[i][j][k] = sqrt(  e_plus_jet_effic[i][j][k]*(1 - e_plus_jet_effic[i][j][k])/GetNinit(kIndexmcNames[k]) );
-
-				//if(e_plus_jet_effic[i][j][k]==0){e_plus_jet_effic_unc[i][j][k] = GetBayesUncertainty(GetNinit(kIndexmcNames[k]));}
-
 				//----------------------
 				// Ask FB to check....
 				if (ni == 0)
@@ -5025,11 +4763,8 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 					e_plus_jet_effic_unc[i][j][k] = sqrt(e_plus_jet_effic[i][j][k] * (1 - e_plus_jet_effic[i][j][k]) / ni);
 				} else {
 					// 0 event pass
-					//	  e_plus_jet_effic[i][j][k] = 0;
 					e_plus_jet_effic_unc[i][j][k] = GetBayesUncertainty(ni);
 				}
-
-				//e_plus_jet_errors[i][j][k] = e_plus_jet_effic_unc[i][j][k]*weightMap[kIndexmcNames[k]]*GetNinit(kIndexmcNames[k]);
 				e_plus_jet_errors[i][j][k] = e_plus_jet_effic_unc[i][j][k] * GetCrossSection(kIndexmcNames[k]) * intlumi; //TL 21-8-09 (ask FB to check)
 				//----------------------
 
@@ -5041,7 +4776,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 			}
 			e_plus_jet_effic_unc[i][j][23] = sqrt(e_plus_jet_effic[i][j][23] * (1 - e_plus_jet_effic[i][j][23]) / GetNinit(
 					ttsample));
-			//e_plus_jet_errors[i][j][23] =  e_plus_jet_effic_unc[i][j][23]*weightMap[ttsample]*GetNinit(ttsample);
 			e_plus_jet_errors[i][j][23] = e_plus_jet_effic_unc[i][j][23] * GetCrossSection(ttsample) * intlumi; //TL 21-8-09 (ask FB to check)
 
 		}
@@ -5142,8 +4876,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 	myfile << setw(23) << " Cuts  &" << setw(23) << " \\ttbar{}  &" << setw(23) << " W+jets   &" << setw(23) << " Z+jets   &"
 			<< setw(23) << " QCD   &" << setw(23) << " VQQ   &" << setw(23) << " Single Top   &" << setw(20) << " Total"
 			<< " \\\\ \n\\hline" << endl;
-	//    &   W+jets  &  Z+jets  &   QCD   &   VQQ    &  Single Top & Total \\\\ \\hline"<<endl;
-
 
 	// First 7 cuts (up to mu-veto)
 	for (short i = 0; i < 7; ++i) {
@@ -5151,7 +4883,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 		double TotalErrorPos = 0;
 		double TotalErrorNeg = 0;
 
-		//myfile << setw(11) << left << ve.at(i) << " "<< right;
 		printCutStage(myfile, i, ve.at(i));
 
 		double total = 0;
@@ -5164,8 +4895,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 			}
 			totalerr += e_plus_jet_errors[i][j][23] * e_plus_jet_errors[i][j][23];
 		}
-		//myfile << "&" << setw(6) << ScrNum(total) << "$\\pm$" <<setw(6) << left << ScrNum(sqrt(totalerr));
-		//myfile << "&" << setw(6) << ScrNum(total) << "$\\pm$" <<setw(6) << left << ScrNum(sqrt(totalerr)) << right;
 		printLine(myfile, total, sqrt(totalerr));
 		TotalEvents += total;
 		TotalErrorPos += totalerr;
@@ -5181,7 +4910,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 			total += e_plus_jet_weighted[i][j][11];
 			totalerr += e_plus_jet_errors[i][j][11] * e_plus_jet_errors[i][j][11];
 		}
-		//myfile << "&" << setw(6) << ScrNum(total) << "$\\pm$" << setw(6) << ScrNum( sqrt(totalerr));
 		printLine(myfile, total, sqrt(totalerr));
 		TotalEvents += total;
 		TotalErrorPos += totalerr;
@@ -5197,7 +4925,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 			total += e_plus_jet_weighted[i][j][12];
 			totalerr += e_plus_jet_errors[i][j][12] * e_plus_jet_errors[i][j][12];
 		}
-		//myfile<<"&"<<setw(6) <<ScrNum(total) << "$\\pm$" <<setw(6) << ScrNum( sqrt(totalerr));
 		printLine(myfile, total, sqrt(totalerr));
 		TotalEvents += total;
 		TotalErrorPos += totalerr;
@@ -5214,7 +4941,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 			totalerr += Sum_Effic_unc_pos[i][j] * Sum_Effic_unc_pos[i][j];
 			totalNerr += Sum_Effic_unc_neg[i][j] * Sum_Effic_unc_neg[i][j];
 		}
-		//myfile<<"&"<<setw(6) <<ScrNum(total)  << "$\\pm$"<< ScrNum( sqrt(totalerr));
 		printLine(myfile, total, sqrt(totalerr));
 		TotalEvents += total;
 		TotalErrorPos += totalerr;
@@ -5230,16 +4956,7 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 			total += e_plus_jet_weighted[i][j][19];
 			totalerr += e_plus_jet_errors[i][j][19] * e_plus_jet_errors[i][j][19];
 		}
-		//myfile<<"&"<<setw(6) <<ScrNum(total) << "$\\pm$" <<setw(6) << ScrNum( sqrt(totalerr));
 		printLine(myfile, total, sqrt(totalerr));
-		/*
-		 TotalEvents     += total;
-		 TotalErrorPos   += totalerr;
-		 TotalErrorNeg   += totalerr;
-		 JustBG[i]       += total;
-		 JustBGUncPos[i] += totalerr;
-		 JustBGUncNeg[i] += totalerr;
-		 */
 
 		// Single top
 		total = 0;
@@ -5248,7 +4965,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 			total += STopSum_pass_weighted2[i][j];
 			totalerr += STopSum_Effic_unc_pos[i][j] * STopSum_Effic_unc_pos[i][j];
 		}
-		//myfile<<"&"<<setw(6) <<ScrNum(total) << "$\\pm$" <<setw(6) << ScrNum( sqrt(totalerr));
 		printLine(myfile, total, sqrt(totalerr));
 		TotalEvents += total;
 		TotalErrorPos += totalerr;
@@ -5258,8 +4974,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 		JustBGUncNeg[i] += totalerr;
 
 		// ALL
-		//    myfile << "& $"<<ScrNum(TotalEvents)<<"^{+" <<ScrNum( sqrt(TotalErrorPos))<<"}_{-"<<ScrNum(sqrt(TotalErrorNeg)) <<"}$ \\\\"<<endl;
-		//myfile << "& "<<ScrNum(TotalEvents)<<"$\\pm$" <<ScrNum( sqrt(TotalErrorPos))<<" \\\\"<<endl;
 		printLine(myfile, TotalEvents, sqrt(TotalErrorPos));
 		myfile << " \\\\" << endl;
 		Allevents[i] = TotalEvents;
@@ -5274,8 +4988,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 		double TotalErrorPos = 0;
 		double TotalErrorNeg = 0;
 
-		//    if(i==6) { myfile << setw(11) << "$\\ge$4 jets"; }
-		//    else {     myfile << setw(11) << ve.at(i) << " "; }
 		if (i == 6) {
 			printCutStage(myfile, i, "$\\ge$4 jets");
 		} else {
@@ -5287,7 +4999,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 			total += e_plus_jet_weighted[i][4][k];
 		}
 
-		//myfile << "&" << setw(6) << ScrNum(total) << "$\\pm$" << setw(6) << ScrNum( e_plus_jet_errors[i][4][23]);
 		printLine(myfile, total, e_plus_jet_errors[i][4][23]);
 		TotalErrorPos += e_plus_jet_errors[i][4][23] * e_plus_jet_errors[i][4][23];
 		TotalErrorNeg += e_plus_jet_errors[i][4][23] * e_plus_jet_errors[i][4][23];
@@ -5296,7 +5007,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 		JustSignalUnc[i + 1] += e_plus_jet_errors[i][4][23] * e_plus_jet_errors[i][4][23];
 
 		// W+jets
-		//myfile << "&" << setw(6) <<ScrNum(e_plus_jet_weighted[i][4][11]) << "$\\pm$" << setw(6) << ScrNum( e_plus_jet_errors[i][4][11]);
 		printLine(myfile, e_plus_jet_weighted[i][4][11], e_plus_jet_errors[i][4][11]);
 		TotalErrorPos += e_plus_jet_errors[i][4][11] * e_plus_jet_errors[i][4][11];
 		TotalErrorNeg += e_plus_jet_errors[i][4][11] * e_plus_jet_errors[i][4][11];
@@ -5306,7 +5016,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 		JustBGUncNeg[i + 1] += e_plus_jet_errors[i][4][11] * e_plus_jet_errors[i][4][11];
 
 		// Z+jets
-		//myfile<<"&" << setw(6) << ScrNum(e_plus_jet_weighted[i][4][12]) << "$\\pm$" << setw(6) << ScrNum( e_plus_jet_errors[i][4][12]);
 		printLine(myfile, e_plus_jet_weighted[i][4][12], e_plus_jet_errors[i][4][12]);
 		TotalErrorPos += e_plus_jet_errors[i][4][12] * e_plus_jet_errors[i][4][12];
 		TotalErrorNeg += e_plus_jet_errors[i][4][12] * e_plus_jet_errors[i][4][12];
@@ -5316,7 +5025,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 		JustBGUncNeg[i + 1] += e_plus_jet_errors[i][4][12] * e_plus_jet_errors[i][4][12];
 
 		// QCD
-		//myfile << " &  " << setw(6) <<ScrNum(Sum_pass_weighted2[i][4]) <<"$\\pm$" << setw(6) <<ScrNum( Sum_Effic_unc_pos[i][4]);
 		printLine(myfile, Sum_pass_weighted2[i][4], Sum_Effic_unc_pos[i][4]);
 		TotalErrorPos += Sum_Effic_unc_pos[i][4] * Sum_Effic_unc_pos[i][4];
 		TotalErrorNeg += Sum_Effic_unc_neg[i][4] * Sum_Effic_unc_neg[i][4];
@@ -5326,19 +5034,9 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 		JustBGUncNeg[i + 1] += Sum_Effic_unc_neg[i][4] * Sum_Effic_unc_neg[i][4];
 
 		// VQQ
-		//myfile<<"&"<< setw(6) <<ScrNum(e_plus_jet_weighted[i][4][19]) << "$\\pm$" << setw(6) << ScrNum( e_plus_jet_errors[i][4][19]);
 		printLine(myfile, e_plus_jet_weighted[i][4][19], e_plus_jet_errors[i][4][19]);
-		/*
-		 TotalErrorPos     += e_plus_jet_errors[i][4][19]*e_plus_jet_errors[i][4][19];
-		 TotalErrorNeg     += e_plus_jet_errors[i][4][19]*e_plus_jet_errors[i][4][19];
-		 TotalEvents       += e_plus_jet_weighted[i][4][19];
-		 JustBG[i+1]       += e_plus_jet_weighted[i][4][19];
-		 JustBGUncPos[i+1] += e_plus_jet_errors[i][4][19]*e_plus_jet_errors[i][4][19];
-		 JustBGUncNeg[i+1] += e_plus_jet_errors[i][4][19]*e_plus_jet_errors[i][4][19];
-		 */
 
 		// Single top
-		//myfile << " &  " <<ScrNum(STopSum_pass_weighted2[i][4]) << "$\\pm$" << ScrNum(STopSum_Effic_unc_pos[i][4]);
 		printLine(myfile, STopSum_pass_weighted2[i][4], STopSum_Effic_unc_pos[i][4]);
 		TotalErrorPos += STopSum_Effic_unc_pos[i][4];
 		TotalErrorNeg += STopSum_Effic_unc_pos[i][4];
@@ -5351,7 +5049,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 		Allevents[i + 1] += TotalEvents;
 		AlleventsUncPos[i + 1] += TotalErrorPos;
 		AlleventsUncNeg[i + 1] += TotalErrorNeg;
-		//    myfile << "& "<<ScrNum(TotalEvents)<<"$\\pm$" <<ScrNum( sqrt(TotalErrorPos))<<" \\\\"<<endl;
 		printLine(myfile, TotalEvents, sqrt(TotalErrorPos));
 		myfile << " \\\\" << endl;
 	}
@@ -5378,7 +5075,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 		double allSingleTop = 0;
 		double allSingleTopEr = 0;
 		printCutStage(myfile, i, ve.at(i));
-		//   myfile << " Stage " << setw(2) << i << " " << setw(11) << left << ve.at(i) << right;
 		for (short k = 20; k < 23; ++k) { //mctype (single top): 20-22
 			double totalT = 0;
 			double totalEr = 0;
@@ -5389,7 +5085,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 			totalEr = sqrt(totalEr);
 			allSingleTop += totalT;
 
-			//myfile << " & " << setw(12) << ScrNum(totalT) <<"$\\pm$"<< ScrNum(totalEr);
 			printLine(myfile, totalT, totalEr);
 		}
 		for (short j = njbegin; j < ntjet; ++j) {
@@ -5465,7 +5160,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 
 		totalAllQCDErPos = sqrt(totalAllQCDErPos);
 		totalAllQCDErNeg = sqrt(totalAllQCDErNeg);
-		//    myfile << " & " << setw(13) << "$"<<ScrNum(totalAllQCD) <<"^{+"<<ScrNum(totalAllQCDErPos)<<"}_{-"<<ScrNum(totalAllQCDErNeg) <<"}$ \\\\"<< endl;
 		myfile << " & " << setw(13) << ScrNum(totalAllQCD) << "$\\pm$" << setw(8) << left << ScrNum(totalAllQCDErPos) << right
 				<< " \\\\" << endl;
 
@@ -5495,10 +5189,6 @@ void ana::PrintErrorTables(const double e_plus_jet[][5][nmctype], const double e
 	for (short i = 0; i <= 11; ++i) { //loop over cuts (up to DIFFZ)
 
 		printCutStage(myfile, i, ve.at(i));
-
-		//myfile << " & " << setw(12) << ScrNum(Allevents[i]) << "$^{+"<<ScrNum(sqrt(AlleventsUncPos[i])) << "}_{-"<< ScrNum(sqrt(AlleventsUncNeg[i]))<
-		//myfile << " & " << setw(12) << ScrNum(JustSignal[i])<<"$\\pm$"<<ScrNum(sqrt(JustSignalUnc[i]));
-		//myfile << " & " << setw(12) << ScrNum(JustBG[i])<< "$^{+"<<ScrNum(sqrt(JustBGUncPos[i]))  << "}_{-"<<ScrNum( sqrt(JustBGUncNeg[i]))<<"}$";
 
 		myfile << " & " << setw(12) << right << ScrNum(Allevents[i]) << setw(24) << left << Form("$^{+%s}_{-%s}$", ScrNum(sqrt(
 				AlleventsUncPos[i])).c_str(), ScrNum(sqrt(AlleventsUncNeg[i])).c_str()) << left;
@@ -5622,11 +5312,6 @@ void ana::PrintError_NjetVcut(ofstream& myfile, const double e_plus_jet_weighted
 
 float ana::calcDeltaPhi(const TLorentzVector& p1, const TLorentzVector& p2) const {
 	return p1.DeltaPhi(p2);
-	//	float delPhi(999.0);
-	//	delPhi = fabs(p1.Phi() - p2.Phi());
-	//	if (delPhi > TMath::Pi())
-	//		delPhi = 2.0 * TMath::Pi() - delPhi;
-	//	return delPhi;
 }
 
 float ana::calcDeltaEta(const TLorentzVector& p1, const TLorentzVector& p2) const {
@@ -5638,19 +5323,6 @@ float ana::calcDeltaEta(const TLorentzVector& p1, const TLorentzVector& p2) cons
 // Calculate Delta R
 float ana::calcDeltaR(const TLorentzVector& p1, const TLorentzVector& p2) const {
 	return p1.DeltaR(p2);
-	//	float phi1 = p1.Phi();
-	//	float eta1 = p1.PseudoRapidity();
-	//
-	//	float phi2 = p2.Phi();
-	//	float eta2 = p2.PseudoRapidity();
-	//
-	//	float delR = calcDeltaR(phi1, eta1, phi2, eta2);
-
-	//std::cout << " phi1= " << phi1 << " phi2= " << phi2
-	//<< " eta1= " << eta1 << " eta2= " << eta2
-	//<< " delR= " << delR << std::endl;
-
-	//	return delR;
 }
 
 //Calculate Delta R
@@ -5697,8 +5369,6 @@ bool ana::EstimateQCD(const string inputFile) {
 
 	//f.Print();
 	const int nrange = 1;// number of trial fit ranges
-	//  const double fit_range_low[nrange] = {    0,  0.5 };
-	//  const double fit_range_up[nrange]  = { 0.85, 0.85 };
 
 	const int nj = 4;
 
@@ -5725,7 +5395,6 @@ bool ana::EstimateQCD(const string inputFile) {
 	double fit_range_up[nj];
 
 	int rebin_oldReliso[nj] = { 1, 2, 5, 10 };
-	//  int    rebin_newReliso[nj] = { 2, 2,  5, 10 };  //<----
 	int rebin_newReliso[nj] = { 10, 10, 10, 10 }; //<----
 	int rebin[nj];
 
@@ -5742,13 +5411,11 @@ bool ana::EstimateQCD(const string inputFile) {
 	}
 
 	string func = "gaus";
-	//string func = "landau";
-	//string func = "pol3";
 	if (!useNewReliso)
 		func = "gaus"; //old reliso
 	cout << "Fit function: " << func << endl;
 
-	//double nall_actual_sig[nrange][nj]; //all=s+b, for 0j,1j,2j,3j,4j,>=4j
+	//all=s+b, for 0j,1j,2j,3j,4j,>=4j
 	double nall_actual_ctr[nrange][nj];
 	double nqcd_actual_sig[nrange][nj]; //qcd only
 	double nqcd_actual_ctr[nrange][nj];
@@ -5763,7 +5430,6 @@ bool ana::EstimateQCD(const string inputFile) {
 	// initialize arrays to zero
 	for (int i = 0; i < nrange; ++i) {
 		for (int j = 0; j < nj; ++j) {
-			//nall_actual_sig[i][j] = 0;
 			nall_actual_ctr[i][j] = 0;
 			nqcd_actual_sig[i][j] = 0;
 			nqcd_actual_ctr[i][j] = 0;
@@ -5784,12 +5450,6 @@ bool ana::EstimateQCD(const string inputFile) {
 
 	for (int i = 0; i < nrange; ++i) {
 
-		/*
-		 cout << "-------------------- " << endl;
-		 cout << " Range: " << low << " to "<< up << endl;
-		 cout << "-------------------- " << endl;
-		 */
-
 		// 27 Feb 09
 		vector<double> mpv;
 
@@ -5801,9 +5461,7 @@ bool ana::EstimateQCD(const string inputFile) {
 			cout << "\n\n-----------------------" << endl;
 			cout << " " << jettext[j] << "  fit range: " << fit_from << " to " << fit_upto << endl;
 
-			//char *hname = Form("QCDest_NormCombRelIso_%dj",j+1);
 			char *hname = Form("%s_%dj", isoVariable.c_str(), j + 1);
-			// if (j+1==4) hname = Form("QCDest_NormCombRelIso_4mj";
 			if (j + 1 == 4)
 				hname = Form("%s_4mj", isoVariable.c_str());
 			TH1F *allEvent = (TH1F*) f.Get(Form("QCD_estimation/%s__data", hname)); //all events
@@ -5823,25 +5481,10 @@ bool ana::EstimateQCD(const string inputFile) {
 			cout << "     signal bin:  " << sig_bin_low << " to " << sig_bin_up;
 			cout << "  control bin:  " << ctr_bin_low << " to " << ctr_bin_up << endl;
 
-			//int sig_bin_low = 86;
-			//int sig_bin_up =  100;
-			//      n_actual_ctr[i][j] = allEvent->Integral( (int)(low*100), (int)(up*100) ); //actual number of _all_ event in control region
 			nall_actual_ctr[i][j] = allEvent->Integral(ctr_bin_low, ctr_bin_up); //actual number of _all_ event in control region
-			//nall_actual_sig[i][j] = allEvent->Integral( sig_bin_low, sig_bin_up ); //actual number of _all_ event in signal region
 
 			nqcd_actual_ctr[i][j] = qcdEvent->Integral(ctr_bin_low, ctr_bin_up); //actual number of _QCD_ event in control region
 			nqcd_actual_sig[i][j] = qcdEvent->Integral(sig_bin_low, sig_bin_up); //actual number of _QCD_ event in signal region
-			/*
-			 cout <<  "qcdEvent->Integral( ctr_bin_low, ctr_bin_up ) " <<qcdEvent->Integral( ctr_bin_low, ctr_bin_up ) << endl;
-			 cout <<  "qcdEvent->Integral( 41, 80 )                  " << qcdEvent->Integral( 41, 85 ) << endl;
-			 cout <<  "qcdEvent->Integral( sig_bin_low, sig_bin_up ) " <<qcdEvent->Integral( sig_bin_low, sig_bin_up ) << endl;
-			 cout <<  "qcdEvent->Integral( 86, 100                 ) " << qcdEvent->Integral( 86, 100 ) << endl;
-
-			 cout <<  "allEvent->Integral( ctr_bin_low, ctr_bin_up ) " <<allEvent->Integral( ctr_bin_low, ctr_bin_up ) << endl;
-			 cout <<  "allEvent->Integral( 41,80 )                   " << allEvent->Integral( 41, 80 ) << endl;
-			 cout <<  "allEvent->Integral( sig_bin_low, sig_bin_up ) " <<allEvent->Integral( sig_bin_low, sig_bin_up ) << endl;
-			 cout <<  "allEvent->Integral( 86, 100 )                 " << allEvent->Integral( 86, 100 ) << endl;
-			 */
 
 			nqcd_actual_all_unweighted[j] = qcdEvent->GetEntries();
 			nqcd_actual_all[j] = qcdEvent->Integral();
@@ -5863,26 +5506,18 @@ bool ana::EstimateQCD(const string inputFile) {
 
 			// Draw
 			c1.cd(j + 1);
-			//all->SetFillColor(kGray);
 			qcd->SetFillColor(kAzure - 9); //blue
 			qcd->SetLineColor(kAzure + 2); //blue (darker)
-			//h1->SetFillStyle(3001);
 			all->Draw("ahist");
 			if (useNewReliso)
 				all->GetXaxis()->SetRangeUser(0, 1.6);
 			all->SetMinimum(0);
 			all->SetTitle(Form("RelIso distribution (%s)", myjetbin[j].c_str()));
 			all->GetXaxis()->SetTitle("RelIso");
-			//if(!useNewReliso) all->SetTitle( Form("Old RelIso distribution (%s)", myjetbin[j].c_str()) );
-
 
 			// Do the fit if there are non-0 event in control region
 
 			if (nall_actual_ctr[i][j] > 0) {
-
-				//cout << "do fit" << endl;
-				//	h1->Fit("gaus","Q0","goff",0.,0.85); //"Q": Quiet, "0": do not draw
-				//	h1->Fit("gaus","Q","h", low, up); //"Q": Quiet, "0": do not draw
 
 				// For 3j, >=4j, set limit on MPV (for Landau only)
 				//---------------------------------
@@ -5891,26 +5526,20 @@ bool ana::EstimateQCD(const string inputFile) {
 					// MPV-Constrained Landau Fit
 					TF1 *fitf = new TF1("landau", "landau", 0, 2);
 
-					//fitf->SetParameters( 1, mpv.at(0), 0.1 ); //set initial values of parameters
-					//fitf->FixParameter( 1, mpv.at(0) );   // fix 2nd parameter is MPV
-
 					// Set limit on MPV parameter for 3,>=4 jet bins
 					if (mpv.size() >= 2) {
 
 						cout << "mpv fitted: 1j= " << mpv.at(0) << ", 2j=" << mpv.at(1) << endl;
 						if (mpv.at(0) <= mpv.at(1)) {
 							fitf->SetParLimits(1, mpv.at(0), mpv.at(1));
-							//fitf->SetParLimits(1, 0.1, 1000 );
 						} else {
 							fitf->SetParLimits(1, mpv.at(1), mpv.at(0));
-							//fitf->SetParLimits(1, 0.1, 1000 );
 						}
 					} else {
 						cout << "\n could not find 2 mpv values from 1j,2j fits.\n" << endl;
 					}
 
 					all->Fit(fitf, "V", "ah", fit_from, fit_upto); //"Q": Quiet, "0": do not draw, "ah": (no axis)
-					//all->Fit(fitf,"BV","ah", fit_from, fit_upto); //"BV": if fixing parameter value
 					delete fitf;//test
 				} else {
 					// Free Fit
@@ -5929,8 +5558,6 @@ bool ana::EstimateQCD(const string inputFile) {
 				TF1 *myf2 = (TF1*) myf->Clone();
 				myf2->SetLineColor(kBlue);
 				myf2->SetRange(sig_from, sig_upto); //new
-				//if(useNewReliso) myf2->SetRange( 0,    0.1 ); //new
-				//else             myf2->SetRange( 0.85, 1.0 ); //old
 				myf2->Draw("same");
 
 				// resize the stat box
@@ -5948,18 +5575,7 @@ bool ana::EstimateQCD(const string inputFile) {
 				fit_ndf[i][j] = myf->GetNDF();
 				// Extrapolate fitted function
 
-				//double bin_width_now = 1.1/110*this_rebin;  //xxxxxxxxxxx
-				//cout << "QCDest_reliso_bin_width (2) "<< QCDest_reliso_bin_width << endl;
-
-				//n_extrap[i][j] = myf->Integral( sig_from, sig_upto ) / QCDest_reliso_bin_width;
 				n_extrap[i][j] = myf->Integral(sig_from, sig_upto) / Get_Reliso_bin_width();
-				//if(useNewReliso)  n_extrap[i][j] = myf->Integral( 0,    0.1 ) / QCDest_reliso_bin_width;
-				//else              n_extrap[i][j] = myf->Integral( 0.85, 1.0 ) / QCDest_reliso_bin_width;
-
-
-				//cout << "n (signal region) extrapolated (est): " << n_extrap[i][j] << endl;
-				//cout << "n (signal region) actual: " << n_actual_sig[i][j] << endl;
-				//cout << "n (control/fit region) actual: " << n_actual_ctr[i][j] << endl;
 
 				// calculate uncertainty on n_extrap by varying the fit function
 				if (func == "gaus" || func == "landau") {
@@ -5985,15 +5601,6 @@ bool ana::EstimateQCD(const string inputFile) {
 				leg->Draw();
 
 			}// end fit
-
-			/*
-			 // jet bin label
-			 TLatex *la = new TLatex(0.25, 0.73, myjetbin[j].c_str());
-			 la->SetNDC(); //use NDC
-			 la->SetTextSize(0.1);
-			 la->Draw();
-			 */
-
 		}// end nj loop: 0 to 4 jets
 
 		cout << "-----------------------------------------------" << endl;
@@ -6047,7 +5654,6 @@ bool ana::EstimateQCD(const string inputFile) {
 			if (nqcd_actual_sig[i][j] > 0)
 				diff = (n_extrap[i][j] / nqcd_actual_sig[i][j] - 1) * 100;
 
-			//      fprintf(outfile, Form( "%8s & ", jetlabel[j].c_str() ) ); // %10.4g = 4 sig figures
 			fprintf(outfile, "%8s & ", jetlabel[j].c_str()); // %10.4g = 4 sig figures
 			fprintf(outfile, "%6.0f & %9.1f & ", nqcd_actual_all_unweighted[j], nqcd_actual_all[j]); //total QCD
 			fprintf(outfile, "%8.1f & %8.1f & ", nall_actual_ctr[i][j], nqcd_actual_ctr[i][j]); //control region: all, QCD
@@ -6083,17 +5689,6 @@ bool ana::EstimateQCD(const string inputFile) {
 	QCDEstimate->SetBinContent(3, n_extrap_err_minus[0][3]);
 	//average error = (plus + minus)/2
 	QCDEstimate->SetBinContent(4, (n_extrap_err_plus[0][3] + n_extrap_err_minus[0][3]) / 2); //average
-	// TL 12-2-09: no longer using gaussian for >=4j bin, error on fit, take 30% (ad-hoc value)
-	//  QCDEstimate->SetBinContent( 4, n_extrap[0][3]*0.3 ); // assume 30% error
-
-	/*
-	 // (ii) range 2: 0.5 to 0.85
-	 QCDEstimate->SetBinContent(5,n_extrap[1][3]);
-	 QCDEstimate->SetBinContent(6,n_extrap_err_plus[1][3]);
-	 QCDEstimate->SetBinContent(7,n_extrap_err_minus[1][3]);
-	 QCDEstimate->SetBinContent(8,(n_extrap_err_plus[1][3]+n_extrap_err_minus[1][3])/2); //average
-	 */
-
 	QCDEstimate->Write();
 	f.Close();
 
@@ -6153,11 +5748,7 @@ pair<double, double> ana::estimateQCD_computeFitResultUncertainty(const double e
 			(est_sigma_pos - est), 2));
 	double unc_neg = sqrt(TMath::Power((est_const_neg - est), 2) + TMath::Power((est_mean_neg - est), 2) + TMath::Power(
 			(est_sigma_neg - est), 2));
-	//cout << "total unc +ve =  " << unc_pos << endl;
-	//cout << "total unc -ve =  " << unc_neg << endl;
 	pair<double, double> unc(unc_pos, unc_neg);
-	//  unc.first  = unc_pos;
-	//  unc.second = unc_neg;
 	return unc;
 }
 
@@ -6179,14 +5770,11 @@ double ana::estimateQCD_newEstimateByVaryingFitFunction(const double this_consta
 	f1a->SetParameter("Sigma", this_sigma);
 
 	double new_est = 0;
-	//   if(useNewReliso) new_est =  f1a->Integral(0,   0.1) / QCDest_reliso_bin_width;
-	//   else             new_est =  f1a->Integral(0.85,1.0) / QCDest_reliso_bin_width;
 	if (useNewReliso)
 		new_est = f1a->Integral(0, 0.1) / Get_Reliso_bin_width();
 	else
 		new_est = f1a->Integral(0.85, 1.0) / Get_Reliso_bin_width();
 
-	//cout << "QCD new est = " << new_est << endl;//"  diff = " << new_est-est << endl;
 	delete f1a;
 	return new_est;
 }
@@ -6203,8 +5791,6 @@ pair<double, double> ana::estimateQCD_assign_pos_neg_estimate(const double est, 
 		pos = new_est[1];
 		neg = new_est[0];
 	} else {
-		//cout << "--> Info: both new estimates are on the same side (nom=" << est << "): "
-		//     << new_est[0]<< ", " <<new_est[1] << endl;
 		if (new_est[0] > est && new_est[1] > est) { //+ve side
 			if (new_est[0] >= new_est[1]) {
 				pos = new_est[0];
@@ -7108,18 +6694,6 @@ bool ana::ConversionFinder2(const TLorentzVector& e1, int mctype, int index_sele
 	float eta_ie = e1.PseudoRapidity();
 
 	int mytrackref = static_cast<int> (els_closestCtfTrackRef->at(index_selected_ele));
-	/*
-	 float tphi1;
-	 float teta1;
-	 if(mytrackref>-1){
-	 tphi1 = tracks_phi->at(mytrackref);
-	 teta1 = tracks_eta->at(mytrackref);
-	 float tEleTrackDelR = calcDeltaR( tphi1, teta1, phi_ie, eta_ie);
-	 ///    cout<<"tEleTrackDelR: "<<tEleTrackDelR <<endl;
-	 Conv_CheckDelR_GSFTk_ctfTk->Fill(tEleTrackDelR);
-	 }
-	 else{Conv_CheckDelR_GSFTk_ctfTk->Fill(10);}
-	 */
 
 	//declare track variables
 	float phi1, eta1, phi2, eta2;
@@ -7156,16 +6730,6 @@ bool ana::ConversionFinder2(const TLorentzVector& e1, int mctype, int index_sele
 		tk1Curvature = -0.3 * bfield * tracks_chg->at(i) / (100 * (tracks_pt->at(i)));
 		tk1r = fabs(1 / tk1Curvature);
 
-		/*
-		 //  d0 = tracks_d0->at(i);
-		 // Calculate d0 w.r.t beam spot position (x,y)=(0.0325839, 0.0001793) (3 Mar 09)
-		 float vx = tracks_vx->at(i);
-		 float vy = tracks_vy->at(i);
-		 float px = tracks_px->at(i);
-		 float py = tracks_py->at(i);
-		 float pt = tracks_pt->at(i);
-		 d0 = - (-(vx-0.0325839)*py + (vy-0.0001793)*px) / pt ; //d0 = -dxy
-		 */
 		// NEW (Aug 09)
 		d0 = compute_d0("track", i);
 
@@ -7193,14 +6757,6 @@ bool ana::ConversionFinder2(const TLorentzVector& e1, int mctype, int index_sele
 			tk2Curvature = -0.3 * bfield * tracks_chg->at(j) / (100 * (tracks_pt->at(j)));
 			tk2r = fabs(1 / tk2Curvature);
 
-			//d02 = tracks_d0->at(j);
-			// Calculate d0 w.r.t beam spot position (x,y)=(0.0325839, 0.0001793) (3 Mar 09)
-			//       float vx2 = tracks_vx->at(j);
-			//       float vy2 = tracks_vy->at(j);
-			//       float px2 = tracks_px->at(j);
-			//       float py2 = tracks_py->at(j);
-			//       float pt2 = tracks_pt->at(j);
-			//       d02 = - (-(vx2-0.0322)*py2 + vy2*px2) / pt2 ; //d0 = -dxy
 			d02 = compute_d0("track", j);
 
 			tk2x = ((1 / tk2Curvature) - d02) * cos(phi2);
@@ -7271,11 +6827,6 @@ bool ana::ConversionFinder2(const TLorentzVector& e1, int mctype, int index_sele
 			}
 		}//end mc particle loop
 
-		//     cout << "amtb 4c" << endl;
-		//     cout << "ii="<<ii << endl;
-		//     cout << "Nmc_doc="<< Nmc_doc << endl;
-		//     cout << "mc_doc_id(ii)="<< mc_doc_id->at(ii) << endl;
-
 		if (fabs(mc_doc_id->at(ii)) == 11) {
 			if (m_debug)
 				cout << "It matches closest to a real electron" << endl;
@@ -7324,6 +6875,21 @@ float ana::MCTruthMatch(float eta, float phi) {
 	if (ii == -1)
 		cout << "ERROR: index for mc_doc_id is -1" << endl;
 	return mc_doc_id->at(ii);
+}
+
+short ana::match(TLorentzVector recoObj, vector<TLorentzVector> eventpartons) {
+	vector<short> results;
+	short id = -1;
+
+	short closest = findClosest(eventpartons, recoObj);
+
+	//deltaR requirement
+	bool dr = recoObj.DeltaR(eventpartons[closest]) < 0.4;
+	//Pt requirement
+	bool pt = fabs(recoObj.Pt() - eventpartons[closest].Pt()) / eventpartons[closest].Pt() < 3.0;
+	if (dr && pt)
+		id = closest;
+	return id;
 }
 
 bool ana::ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele) {
@@ -7444,7 +7010,6 @@ bool ana::ConversionFinder(const TLorentzVector& e1, int mctype, int index_selec
 
 void ana::ConversionMCMatching(const TLorentzVector& e1, int mctype, bool isthisConversion) {
 
-	//float phi_ie,eta_ie;
 	float phi_ie = e1.Phi();
 	float eta_ie = e1.PseudoRapidity();
 
@@ -7621,19 +7186,7 @@ void ana::OptimiseConversionFinder(const TLorentzVector& e1, int mctype) {
 				Mindist = dist;
 				Mindcot = dcot;
 			}
-
-			//if(mctype<11){ Conv_Opti[0]->Fill(dist,dcot);Conv_Optis[0]->Fill(dist,dcot);}
-			//if(mctype==15){Conv_Opti[1]->Fill(dist,dcot);Conv_Optis[1]->Fill(dist,dcot);}
-
-			// if( dist > -0.04 && dist < 0.04 && fabs(dcot) < 0.03)
-			//{
-			//std::cout <<"Found a Conversion!"<<std::endl;
-			//  isthisConversion = true;
-			//    break;
-			//}
-
 		}//end of second track loop
-		//   if(isthisConversion) break;
 	}//end of first track loop
 
 	//  return isthisConversion;
@@ -7671,7 +7224,6 @@ void ana::PrintConversionTable() {
 		std::cout << ConvNames[i];
 	std::cout << ConvNames[12] << " \\\\" << std::endl;
 
-	//for(int k=0;k<20;k++){
 	int ff;
 
 	for (int k = 10; k != 1; ++k) {
@@ -7694,7 +7246,6 @@ void ana::PrintConversionTable() {
 		std::cout << setw(7) << MySamples[ff] << "&  " << std::setw(7) << (ConversionArray[k][0][0] + ConversionArray[k][1][0]);
 
 		for (int i = 1; i > -1; --i) {
-			//     std::cout<<ConversionArray[0][i][0]<<std::setw(8);
 			for (int j = 0; j < 6; ++j) {
 				std::cout << " & " << std::setw(8) << ConversionArray[k][i][j];
 			}
@@ -7716,9 +7267,7 @@ void ana::reco_hadronicTop_highestTopPT(const vector<TLorentzVector>& jetColl, c
 
 	pair<double, double> res = compute_M3(jetColl);
 	const double max_top_PT = res.second;
-	//double had_top_mass = res.first;
 	const double m3 = res.first; //renamed from "had_top_mass"
-	//cout << "selected Top (max pt):  pt=" << max_top_PT << "  m=" << had_top_mass << endl;
 
 	// fill histo
 	if (nGoodIsoEle > 0) { // this is signal region
@@ -7831,22 +7380,17 @@ pair<double, double> ana::compute_M3(const vector<TLorentzVector>& jetColl) cons
 	// Permute over all 3-jet combination, compute vector sum PT, find 3 jets which give the highest value
 	for (unsigned int a = 0; a < (jetColl.size() - 2); ++a) {
 
-		// const pat::Jet& j1 = jetColl[a];
 		TLorentzVector j1(jetColl[a].Px(), jetColl[a].Py(), jetColl[a].Pz(), jetColl[a].Energy());
-		//cout << "j1 Pt=" << j1.Pt() << " (check: " << jetColl[a].Pt() << ")" << endl;
 
 		for (unsigned int b = a + 1; b < (jetColl.size() - 1); ++b) {
 
 			TLorentzVector j2(jetColl[b].Px(), jetColl[b].Py(), jetColl[b].Pz(), jetColl[b].Energy());
-			//cout << "j2 Pt=" << j2.Pt() << endl;
 
 			for (unsigned int c = b + 1; c < jetColl.size(); ++c) {
 
 				TLorentzVector j3(jetColl[c].Px(), jetColl[c].Py(), jetColl[c].Pz(), jetColl[c].Energy());
-				//cout << "j3 Pt=" << j3.Pt() << endl;
 
 				TLorentzVector top(j1 + j2 + j3); //construct a hadronic top candidate
-				//cout << "top Pt=" << top.Pt() << "  mass=" << top.M() << endl;
 				double this_top_PT = top.Pt();
 
 				// find top quark candidate with the highest PT (ie 3-jet combination with highest PT)
@@ -7876,22 +7420,17 @@ pair<vector<double> , vector<unsigned int> > ana::compute_M3_modified(const vect
 	// Permute over all 3-jet combination, compute vector sum PT, find 3 jets which give the highest value
 	for (unsigned int a = 0; a < (jetColl.size() - 2); ++a) {
 
-		// const pat::Jet& j1 = jetColl[a];
 		TLorentzVector j1(jetColl[a].Px(), jetColl[a].Py(), jetColl[a].Pz(), jetColl[a].Energy());
-		//cout << "j1 Pt=" << j1.Pt() << " (check: " << jetColl[a].Pt() << ")" << endl;
 
 		for (unsigned int b = a + 1; b < (jetColl.size() - 1); ++b) {
 
 			TLorentzVector j2(jetColl[b].Px(), jetColl[b].Py(), jetColl[b].Pz(), jetColl[b].Energy());
-			//cout << "j2 Pt=" << j2.Pt() << endl;
 
 			for (unsigned int c = b + 1; c < jetColl.size(); ++c) {
 
 				TLorentzVector j3(jetColl[c].Px(), jetColl[c].Py(), jetColl[c].Pz(), jetColl[c].Energy());
-				//cout << "j3 Pt=" << j3.Pt() << endl;
 
 				TLorentzVector top(j1 + j2 + j3); //construct a hadronic top candidate
-				//cout << "top Pt=" << top.Pt() << "  mass=" << top.M() << endl;
 				double this_top_PT = top.Pt();
 
 				// find top quark candidate with the highest PT (ie 3-jet combination with highest PT)
@@ -7905,7 +7444,6 @@ pair<vector<double> , vector<unsigned int> > ana::compute_M3_modified(const vect
 			}//3rd jet
 		}//2nd jet
 	}//1st jet
-	//cout << "BBB selected Top (max pt):  pt=" << max_top_PT << "  m=" << had_top_mass << endl;
 
 	mass_and_pt.push_back(had_top_mass);
 	mass_and_pt.push_back(max_top_PT);
@@ -7988,7 +7526,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 
 	TH1D *h_m3_zj(0);
 	TH1D *h_m3_stop(0);
-	//TH1D *h_m3_qcd(0);         //NB: for QCD template, we use data in control region (was called "control_all")
+	//NB: for QCD template, we use data in control region (was called "control_all")
 	TH1D *h_m3_qcd_control(0); //only used when doing "QCD template unc"
 
 	if (IsData() == false) { //MC
@@ -8021,19 +7559,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 		h_m3_stop = (TH1D*) fstop->Get("h_m3_100");
 	}
 
-	/*
-	 // 27 May 09: use KA's ttjet shape
-	 TFile *ftt = new TFile("Thorsten/ttbar.root");
-	 h_m3_tt = (TH1D*)ftt->Get("h_m3_100");
-	 cout << "\n*** NOTE: For signal ttjet, use KA shape. ***" << endl;
-	 */
-	/*
-	 // 27 May 09: use ttbar pythia as default shape
-	 TFile *ftt = new TFile("test_mc_ttbar.root");
-	 h_m3_tt = (TH1D*)ftt->Get("Wjets_estimation/m3_tt");
-	 cout << "\n*** NOTE: For signal, use ttbar pythia shape. ***" << endl;
-	 */
-
 	// 1 June 09: to do ttbar ISR/FSR systematics, use fastsim ttbar nominal as reference
 	if (sysSample.find("ttbar_fastsim_ISRFSR") != string::npos) { //match "ttbar_fastsim_ISRFSR"
 		TFile *ftt = new TFile("test_mc_ttbar_fastsim_ISRFSR_nom.root");
@@ -8052,12 +7577,10 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	cout << "pointer tt: " << h_m3_tt << endl;
 	cout << "pointer wj: " << h_m3_wj << endl;
 	cout << "pointer zj: " << h_m3_zj << endl;
-	//cout << "pointer qcd: "<< h_m3_qcd << endl;
 	if (h_m3_tt > 0)
 		h_m3_tt->ls();
 	if (h_m3_wj > 0)
 		h_m3_wj->ls();
-	//if(h_m3_qcd>0) h_m3_qcd->ls();
 	if (h_m3_tt == 0 || h_m3_wj == 0 || control_all == 0) {
 		cout << "Warning: zero pointer to either h_m3_tt or h_m3_wj or control_all. Exit EstimateWjets()." << endl;
 		return false;
@@ -8085,13 +7608,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	TH1D *model_stop = (TH1D*) h_m3_stop->Clone("model_stop");
 	TH1D *model_qcd = (TH1D*) control_all->Clone("model_qcd");
 
-	// pick one for QCD
-	//// NOTE: switch to use control region to generate if there are very few QCD events in signal region.
-	//// TO BE SWITCH to signal region if we have enough QCD events
-	//TH1D *h_qcd_model = (TH1D*)h_m3_control_qcd->Clone("model_qcd");  //<--- control region
-	//TH1D *h_qcd_model = (TH1D*)h_m3_qcd->Clone("model_qcd");   //<--- signal region
-
-
 	//---------------------------------------------
 	// 25 Apr 09: Systematic Shape Uncertainties
 	//---------------------------------------------
@@ -8114,8 +7630,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 					fmc2 = new TFile("test_mc_ttjet_largerISR.root"); //old
 				else if (sysSample == "ttjet_smallerISR")
 					fmc2 = new TFile("test_mc_ttjet_smallerISR.root"); //old
-				// new pythia ttbar ISR/FSR sample (1 June)
-				//else if(sysSample=="ttbar_fastsim_ISRFSR_nom")   fmc2 = new TFile("test_mc_ttbar_fastsim_ISRFSR_nom.root");
 				else if (sysSample == "ttbar_fastsim_ISRFSR_large")
 					fmc2 = new TFile("test_mc_ttbar_fastsim_ISRFSR_large.root");
 				else if (sysSample == "ttbar_fastsim_ISRFSR_small")
@@ -8144,7 +7658,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 		}
 
 		// (2) if vary  wj
-		//  TFile *fmc2 = new TFile("test_mc_SETTHIS.root");
 		else if (sysSample.find("wj") != string::npos) { //match "wj"
 
 			if (!use_Thorsten_histo) { //use our histo
@@ -8179,31 +7692,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 		cout << ",  file: " << fmc2->GetName() << endl;
 	}//end if vary shape
 
-	/*
-	 // 27 May 09
-	 cout << "NOTE: Use Thorsten's pythia histo for ttbar shape (as model)" << endl;
-	 TFile *fmc2 = new TFile("Thorsten/ttbar_Pythia.root");
-	 model_tt = (TH1D*)fmc2->Get("h_m3_100")->Clone("model_tt");
-	 */
-
-	/*
-	 cout << "\nNOTE: Use wj fastsim as generation model (pseudodata)\n" << endl;
-	 TFile *fmc2 = new TFile("test_mc_wjet_fastsim_nom.root");
-	 model_wj = (TH1D*)fmc2->Get("Wjets_estimation/m3_wj")->Clone("model_wj");
-
-	 cout << "\nNOTE: Use ttbar pythia as generation model (pseudodata)\n" << endl;
-	 TFile *fmc3 = new TFile("test_mc_ttbar.root");
-	 model_tt = (TH1D*)fmc3->Get("Wjets_estimation/m3_tt")->Clone("model_wj");
-	 */
-
-	//Uncomment the next five lines if carrying out JES systematic, and change pdf inputs to *2 (i.e. h_m3_tt -> h_m3_tt2). fmc2 should point to a file with the standard templates.
-	//    TFile *fmc2 = new TFile("test_mc_mixture.root");
-	//TH1D *h_m3_tt2 = (TH1D*)fmc2->Get("Wjets_estimation/m3_tt")->Clone("model_tt");
-	//TH1D *h_m3_wj2 = (TH1D*)fmc2->Get("Wjets_estimation/m3_wj")->Clone("model_wj");
-	//h_m3_tt2->Rebin(8);
-	//h_m3_wj2->Rebin(8);
-
-
 	//---------------------------
 	// SYS: Unc due to QCD template
 	//---------------------------
@@ -8214,9 +7702,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	}
 
 	// 1-2-09: use more appropriate binning (1000/12.5 bins = 80GeV/bin)
-	//const int m3_bin_used_in_AN = 80; //GeV
 	int rB = 1;
-	//  const int rB = nbm3 / m3_bin_used_in_AN; //800 bins / 10 = 80GeV/bin
 	if (temp_tt->GetNbinsX() == 100)
 		rB = 8; //12.5 bins
 	else if (temp_tt->GetNbinsX() == 960)
@@ -8261,27 +7747,12 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	TH2D *QCDEvents = (TH2D*) fmc->Get("QCD_njetsVcuts");
 	TH2D *SingleTopEvents = (TH2D*) fmc->Get("SingleTop_njetsVcuts");
 
-	/*
-	 // use only when redoing m3 fit for 200/pb using 20/pb hist file
-	 if(1){ //multiply by 10
-	 SigEvents->Scale(10);
-	 WjetsEvents->Scale(10);
-	 ZjetsEvents->Scale(10);
-	 QCDEvents->Scale(10);
-	 SingleTopEvents->Scale(10);
-	 }
-	 */
-
 	// new event yields for wj fastsim sys samples (to do accept unc)
-	//const double  ntrue_wjet_fastsim_nom = 79.9; //91.77;
 	double ntrue_wjet_T20 = 108.9; //125.06;
 	double ntrue_wjet_T5 = 82.7; //95.01;
 	double ntrue_wjet_scaleUp = 54.6; //62.73;
 	double ntrue_wjet_scaleDown = 160.3; //184.09;
 	double ntrue_ttbar = 180.7;
-	//  const double  ntrue_ttjet_largerISR   = 208.93;
-	//  const double  ntrue_ttjet_smallerISR  = 215.38;
-	//  const double  ntrue_ttbar_fastsim_ISRFSR_nom   = 160.9;
 	const double ntrue_ttbar_fastsim_ISRFSR_large = 181.95; // unscaled = 159.7;
 	const double ntrue_ttbar_fastsim_ISRFSR_small = 169.78; // unscaled = 149.0;
 	// ttjet fastsim (scaled to Fullsim)
@@ -8303,11 +7774,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	double nzj_true = ZjetsEvents->GetBinContent(5, 5);
 	double nqcd_true = QCDEvents->GetBinContent(5, 5);
 	double nstop_true = SingleTopEvents->GetBinContent(5, 5);
-	/*
-	 ntt_true = 180.7; // pythia
-	 cout << "\n NOTE: normalize n(signal) to " << ntt_true << endl;
-
-	 */
 
 	if (use_Thorsten_eventNo) {
 		// Use Thorsten's event yields
@@ -8421,38 +7887,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	cout << "True n(qcd): " << nqcd_true << endl;
 	cout << "True n(singletop): " << nstop_true << endl;
 
-	//-----------------------------------------------------
-	//   // constrain on QCD: QCD estimate
-	//   double nqcd_est     = nqcd_true;     // ideal, take true MC expectation <--- we'll put our QCD estimate here
-	//   double nqcd_est_err = nqcd_true*0.5;  // 50%
-	//   // To do QCD normalization uncertainty
-	//   if ( doSystematics.find( "QCDnorm" ) != string::npos ) { //match "QCDnorm"
-	//     cout << "Doing QCD normalizatoin uncertainy" << endl;
-	//     nqcd_est = 17.0;
-	//     nqcd_est_err = 8.5;
-	//     cout << "In QCD Gaussian-constraint, mean = " << nqcd_est;
-	//     cout << "  width = " << nqcd_est_err << endl;
-	//   }
-
-	/*
-	 nqcd_est = 17.0; //nqcd_true;   //ideal case
-	 //nqcd_est = 17.0; //to do QCD norm sys //est=17.0, 25.5, 8.5
-	 //    nqcd_est_err = sqrt(nqcd_true);
-	 nqcd_est_err = 8.5; // nqcd_est*0.5; //do the same as Thorsten, 50% of the estimate.
-	 */
-	/*
-
-	 TH1D *qcdEstimate = (TH1D*)fdata->Get("QCDEstimate");
-	 //qcdEstimate->Scale(10);  //use only when redoing m3 fit for 200/pb using 20/pb hist file
-
-	 //  if(false){//some statement to check we have done qcd estimate (xxxxxxxx)
-	 if(qcdEstimate>0){ //some statement to check we have done qcd estimate
-	 nqcd_est     = qcdEstimate->GetBinContent(1);
-	 nqcd_est_err = qcdEstimate->GetBinContent(4); //average error
-	 // 13 Feb 09: if error is larger than estimate, assume 100% error
-	 if (nqcd_est_err > nqcd_est) nqcd_est_err = nqcd_est;
-	 }
-	 */
 	cout << "QCD Estimate used: n(qcd):  " << nqcd_est << " +/- " << nqcd_est_err << endl;
 	//-----------------------------------------------------
 
@@ -8461,13 +7895,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	// add  singlet top as Gaussian constraint like qcd
 	const double nstop_exp_err = sqrt(nstop_exp + 0.3 * 0.3 * nstop_exp * nstop_exp);
 	//---------------
-
-	//------------------------------------------------
-	//  Create a new output root file
-	//------------------------------
-	//    TFile fout("out.root","recreate");
-	//  TFile *fout = new TFile("m3_out.root","recreate");
-	//------------------------------------------------
 
 	// Book histograms to store fit results
 	TH1D *h_ntt_fit = new TH1D("h_ntt_fit", "n(tt) fit", 100, 0, 500 * intlumi / 20);
@@ -8522,11 +7949,9 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	}
 	// keep a few set of pseudo-data
 	TH1D *h_m3_sum_toy_keep[5];
-	//TH1D *h_m3_sum_ctr_toy_keep[5];
 
 	for (short i = 0; i < 5; ++i) {
 		h_m3_sum_toy_keep[i] = new TH1D(Form("h_m3_sum_toy_%d", i + 1), Form("m3 sum toy mc %d", i + 1), 100, 0, 1000);
-		//h_m3_sum_ctr_toy_keep[i] = new TH1D(Form("h_m3_sum_ctr_toy_%d",i+1), Form("m3 sum ctr toy mc %d",i+1), 100,0,1000);
 	}
 
 	// keep data (real/sim) to write to root file
@@ -8549,9 +7974,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	RooPlot* m3frame9(0);
 	RooPlot* m3frame10(0);
 	RooPlot* m3frame11(0);
-	//RooPlot* m3frame21(0);
-	//RooPlot* m3frame22(0);
-
 
 	//---------------
 	// perform fit
@@ -8613,8 +8035,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 			}
 
 			// b) Book histos to store pseudo-data (can use smaller binning if needed)
-			//const int nbin = 12;
-			//      const int max = 960;
 			// TEST 15-Jan-10
 			const int nbin = temp_tt->GetNbinsX();
 			const float max = temp_tt->GetXaxis()->GetXmax();
@@ -8836,7 +8256,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 		// calculate the pull when running on MC
 		if (IsData() == false) {
 			double ntt_pull = (ntt_fit - ntt_true) / ntt_fiterr;
-			//double nwj_pull  = (nwj_fit - nwj_true) / nwj_fiterr;
 			double nwj_pull = (nwj_fit - nwj_true) / nwj_fiterr;
 			if (doSystematics == "addZj_fitWithWjShape") {
 				nwj_pull = (nwj_fit - nwj_true - nzj_true) / nwj_fiterr; //include also z+jets
@@ -8851,7 +8270,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 
 			// to exclude problematic fit
 			if (ntt_fiterr < 100 && nwj_fiterr > 20) {
-				//if(fabs(nwj_pull)<5. && ) {
 				h_ntt_goodfit ->Fill(ntt_fit);
 				h_nwj_goodfit ->Fill(nwj_fit);
 				h_nqcd_goodfit->Fill(nqcd_fit);
@@ -8936,8 +8354,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	delete ZjetsEvents;
 	delete SingleTopEvents;
 
-	// delete qcdEstimate;
-
 	delete h_m3_tt; //template
 	delete h_m3_wj; //template
 	delete h_m3_MCdata_control;
@@ -8949,8 +8365,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	}
 
 	if (fdata->GetDirectory("m3_fit") > 0) {
-		//cout << "warning: Directory m3_fit exists. Exit EstimateWjets()."<< endl;
-		//return false;
 		fdata->rmdir("m3_fit");
 	}
 
@@ -8995,8 +8409,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	m3frame11->SetName("m3frame11");
 	m3frame11->SetTitle("m3 pdf: single top constraint (mc)");
 	m3frame11->Write();
-	//  m3frame21->SetName("m3frame21");  m3frame21->SetTitle("m3 hist: data control");  m3frame21->Write();
-	//  m3frame22->SetName("m3frame22");  m3frame22->SetTitle("m3 pdf: zj (mc)");  m3frame22->Write(); //pdf_22
 
 	h_ntt_fit->Write();
 	h_nwj_fit->Write();
@@ -9032,7 +8444,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 	const int nn = min(nfit, 5);
 	for (short i = 0; i < nn; ++i)
 		h_m3_sum_toy_keep[i]->Write();
-	//  for(short i=0; i<nn; ++i)  h_m3_sum_ctr_toy_keep[i]->Write();
 	for (short i = 0; i < nn; ++i)
 		m3_qcd_pdf[i]->Write();
 
@@ -9078,10 +8489,8 @@ void ana::StudySystematics(const string name, const string name2) {
 //----------------------------------------------------------------------------------------
 void ana::DrawEventPerNjetTable(const double nevent[][5][nmctype], const vector<string>& ve) const {
 
-	//const short ntjet = 5;
 	cout << setw(23) << " &" << setw(13) << "0-jet" << " &" << setw(13) << "1-jet" << " &" << setw(13) << "2-jets" << " &"
 			<< setw(13) << "3-jets" << " &" << setw(13) << "$\\ge$4-jets" << " &" << setw(23) << "Total \\\\\n\\hline";
-	//cout << endl << "% E_PLUS_JET";
 	cout << endl;
 
 	for (short i = 0; i < 11; ++i) { //nstage
@@ -9508,7 +8917,7 @@ void ana::DrawSingleTopTable(const double nevent[14][5][nmctype], const string t
 			cout << " & " << setw(12) << totalT;
 		}
 		cout << " & " << setw(13) << allSingleTop << " \\\\" << endl;
-
+		//FIXME: reducing the iterating variable is not a good idea
 		//insert >=4j cut
 		if (ve.at(i) == "!MUON") {
 			njbegin = 4;
@@ -9562,7 +8971,6 @@ void ana::DrawSignalAcceptanceTable(const double nevent[][5][nmctype], vector<st
 		for (unsigned int k = 0; k < tt.size(); ++k)
 			cout << tt.at(k);
 		cout << "\\\\\n\\hline" << endl;
-		//cout << "% E_PLUS_JET\n";
 
 		int startnj = 0;
 		for (short i = 0; i < 11; ++i) { //nstage
@@ -9775,7 +9183,6 @@ float ana::compute_d0(const string lepton, const int i) const {
 	float refy = beamSpot_y->at(0);
 
 	float d0_corrected = -(-(vx - refx) * py + (vy - refy) * px) / TMath::Hypot(px, py); //d0 = -dxy
-	//cout << "d0 corrected (px,py):  " << d0_corrected << endl;
 
 	return d0_corrected;
 }//end compute_d0
@@ -9799,7 +9206,6 @@ float ana::compute_mtw(const TVector2& e, const TVector2& miss) const {
 	if (z3 > 0) {
 		mtlm = sqrt(z3);
 	}
-	//cout << "mtlm: " << mtlm << endl;
 	return mtlm;
 
 }//end compute_mtw
@@ -9837,7 +9243,6 @@ string ana::CheckEventTypeFromMcTruth() const {
 	bool found_Z = false;
 	// Look only at "documentation lines" (in Pythia), ie status=3 particles
 	for (unsigned int i = 0; i < Nmc_doc; ++i) {
-		//cout << "mc " << i << ",  st "<< mc_doc_status->at(i) << endl;
 		if (mc_doc_status->at(i) != 3)
 			break;
 		if (fabs(mc_doc_id->at(i)) == 6)
@@ -9914,13 +9319,13 @@ string ana::printTimeNow() const {
 void ana::bookHistograms() {
 	fasthist_.resize(kNumMCTypes);
 	fasthist2D_.resize(kNumMCTypes);
-	//	TFile *fdata = new TFile(outputHistFileName.c_str(), "UPDATE");
 	for (unsigned short type = 0; type < (short) kNumMCTypes; ++type) {
-		//		TString prefix(mclabel[type] + "_");
+		fasthist_[type].resize(kNumHists);
 		gROOT->cd();
 		TDirectory *dir = histf->mkdir(mclabel[type].c_str());
 		dir->cd();
-		fasthist_[type].resize(kNumHists);
+
+		bookChi2MatchedHists(type);
 		fasthist_[type][kneutrino_pz] = new TH1F(histnames[kneutrino_pz], "reconstructed p_z(#nu)", 50, -500, 500);
 		fasthist_[type][kneutrino_pz_mc] = new TH1F(histnames[kneutrino_pz_mc], "generated p_z(#nu)", 50, -500, 500);
 
@@ -9928,34 +9333,34 @@ void ana::bookHistograms() {
 		fasthist_[type][kMttbar_mc] = new TH1F(histnames[kMttbar_mc], "generated M_{ttbar}", 10000, 0, 10000);
 		fasthist_[type][kMZprime_mc] = new TH1F(histnames[kMZprime_mc], "generated M_{Z'}", 10000, 0, 10000);
 
-		fasthist_[type][kRecoWlepmass] = new TH1F(histnames[kRecoWlepmass], "reconstructed leptonic W mass", 500, 0, 500);
-		fasthist_[type][kRecoWlepmass_mc] = new TH1F(histnames[kRecoWlepmass_mc], "generated leptonic W mass", 500, 0, 500);
+		fasthist_[type][kmWlep] = new TH1F(histnames[kmWlep], "reconstructed leptonic W mass", 500, 0, 500);
+		fasthist_[type][kmWlep_mc] = new TH1F(histnames[kmWlep_mc], "generated leptonic W mass", 500, 0, 500);
 
-		fasthist_[type][kRecoWhadmass] = new TH1F(histnames[kRecoWhadmass], "reconstructed hadronic W mass", 500, 0, 500);
-		fasthist_[type][kRecoWhadmass_mc] = new TH1F(histnames[kRecoWhadmass_mc], "generated hadronic W mass", 500, 0, 500);
+		fasthist_[type][kmWhad] = new TH1F(histnames[kmWhad], "reconstructed hadronic W mass", 500, 0, 500);
+		fasthist_[type][kmWhad_mc] = new TH1F(histnames[kmWhad_mc], "generated hadronic W mass", 500, 0, 500);
 
 		fasthist_[type][kptRel_ele_jet] = new TH1F(histnames[kptRel_ele_jet], "relative p_{T} electron - closest jet", 300, 0,
 				300);
 		fasthist_[type][kminDeltaR_ele_Jet] = new TH1F(histnames[kminDeltaR_ele_Jet], "min. #Delta R(electron, jet)", 100, 0, 1);
 
-		fasthist_[type][kmthad] = new TH1F(histnames[kmthad], "reconstructed hadronic top mass", 500, 0, 500);
-		fasthist_[type][kmthad_mc] = new TH1F(histnames[kmthad_mc], "generated hadronic top mass", 500, 0, 500);
-		fasthist_[type][kmthad_mc2] = new TH1F(histnames[kmthad_mc2], "generated hadronic top mass", 500, 0, 500);
+		fasthist_[type][kmthad] = new TH1F(histnames[kmthad], "reconstructed hadronic top mass", 1000, 0, 1000);
+		fasthist_[type][kmthad_mc] = new TH1F(histnames[kmthad_mc], "generated hadronic top mass", 1000, 0, 1000);
 
-		fasthist_[type][kmtlep] = new TH1F(histnames[kmtlep], "reconstructed leptonic top mass", 500, 0, 500);
-		fasthist_[type][kmtlep_mc] = new TH1F(histnames[kmtlep_mc], "generated leptonic top mass", 500, 0, 500);
-		fasthist_[type][kmtlep_mc2] = new TH1F(histnames[kmtlep_mc2], "generated leptonic top mass", 500, 0, 500);
+		fasthist_[type][kmtlep] = new TH1F(histnames[kmtlep], "reconstructed leptonic top mass", 1000, 0, 1000);
+		fasthist_[type][kmtlep_mc] = new TH1F(histnames[kmtlep_mc], "generated leptonic top mass", 1000, 0, 1000);
 
 		fasthist_[type][kthad_pt] = new TH1F(histnames[kthad_pt], "reconstructed hadronic top p_{T}", 2000, 0, 2000);
 		fasthist_[type][kthad_pt_mc] = new TH1F(histnames[kthad_pt_mc], "generated hadronic top p_{T}", 2000, 0, 2000);
 		fasthist_[type][ktlep_pt] = new TH1F(histnames[ktlep_pt], "reconstructed leptonic top p_{T}", 2000, 0, 2000);
 		fasthist_[type][ktlep_pt_mc] = new TH1F(histnames[ktlep_pt_mc], "generated leptonic top p_{T}", 2000, 0, 2000);
-		TDirectory *planB = dir->mkdir("PlanB");
-		planB->cd();
-		fasthist_[type][kMttbarB] = new TH1F(histnames[kMttbarB], "reconstructed M_{ttbar}", 10000, 0, 10000);
-		fasthist_[type][kRecoWlepmassB] = new TH1F(histnames[kRecoWlepmassB], "reconstructed leptonic W mass", 500, 0, 500);
-		dir->cd();
-		for (unsigned short ihist = 0; ihist < fasthist_[type].size(); ++ihist)
+
+		fasthist_[type][kangle_b_ele] = new TH1F(histnames[kangle_b_ele], "angle between b-jet and electron", 400, 0, 4);
+
+		fasthist_[type][kptratio] = new TH1F(histnames[kptratio], "Pt ratio (top/W)",  600, -6, 6);
+		fasthist_[type][kpttbar] = new TH1F(histnames[kpttbar], "Pttbar",500, 0, 1000);
+		fasthist_[type][khtsystem] = new TH1F(histnames[khtsystem], "HTsystem ", 240, 0, 1.2);
+
+		for (unsigned short ihist = 0; ihist < kNumHists; ++ihist)
 			fasthist_[type][ihist]->Sumw2();
 
 		//2D histograms
@@ -9967,83 +9372,174 @@ void ana::bookHistograms() {
 	gROOT->cd();
 }
 
+void ana::bookChi2MatchedHists(unsigned short type) {
+	fasthist_[type][kmtlep_matched] = new TH1F(histnames[kmtlep_matched], "reconstructed leptonic top mass (matched)", 1000, 0,
+			1000);
+	fasthist_[type][kmthad_matched] = new TH1F(histnames[kmthad_matched], "reconstructed hadronic top mass (matched)", 1000, 0,
+			1000);
+
+	fasthist_[type][kangle_b_ele_matched] = new TH1F(histnames[kangle_b_ele_matched],
+			"angle between b-jet and electron(matched)", 400, 0, 4);
+
+	fasthist_[type][kmWhad_matched] = new TH1F(histnames[kmWhad_matched], "reconstructed hadronic W mass(matched)", 1000, 0, 1000);
+	fasthist_[type][kmWlep_matched] = new TH1F(histnames[kmWlep_matched], "reconstructed leptonic W mass(matched)", 1000, 0, 1000);
+	fasthist_[type][kptratio_matched] = new TH1F(histnames[kptratio_matched], "Pt ratio (top/W)(matched)",  600, -6, 6);
+	fasthist_[type][kpttbar_matched] = new TH1F(histnames[kpttbar_matched], "Pttbar(matched)", 500, 0, 1000);
+	fasthist_[type][khtsystem_matched] = new TH1F(histnames[khtsystem_matched], "HTsystem (matched)",240, 0, 1.2);
+	fasthist_[type][kWhadPartons]
+			= new TH1F(histnames[kWhadPartons], "Number of partons assosiated with hadronic W", 100, 0, 100);
+}
+void ana::reco_Mttbar(const vector<TLorentzVector>& jets, const vector<TLorentzVector>& eles,
+		const std::vector<TLorentzVector>& met) {
+	TLorentzVector electron = eles[0];
+	//TODO: move this to new function
+	vector<TLorentzVector> MCEvent = GetMCTopEvent();
+	if(MCEvent.size() == 0)
+		return;
+	vector<TLorentzVector> mcpartons;
+	mcpartons.push_back(MCEvent[kq1]);
+	mcpartons.push_back(MCEvent[kq2]);
+	mcpartons.push_back(MCEvent[kbhad]);
+	mcpartons.push_back(MCEvent[kblep]);
+	vector<pair<ushort, ushort> > ids;
+	short id;
+
+	for (ushort x = 0; x < jets.size(); x++) {
+		id = match(jets[x], mcpartons);
+		if (id >= 0)
+			ids.push_back(pair<ushort, ushort> (x, id));
+	}
+
+	//remove duplicates
+	if (ids.size() > 4) {
+		cout << "WARNING: duplicate matches with MC partons" << endl;
+		//		ids.erase(unique( ids.begin(), ids.end()), ids.end());
+	}
+
+	if (ids.size() == 4) {
+		//fill histos
+		TLorentzVector blepjet, bhadjet, q1jet, q2jet;
+		for (ushort x = 0; x < ids.size(); x++) {
+			ushort mc = ids[x].second;
+			switch (mc) {
+			case 0:
+				q1jet = jets[ids[x].first];
+				break;
+			case 1:
+				q2jet = jets[ids[x].first];
+				break;
+			case 2:
+				bhadjet = jets[ids[x].first];
+				break;
+			case 3:
+				blepjet = jets[ids[x].first];
+			}
+		}
+		TLorentzVector thad, tlep, Whad, Wlep;
+		Whad = TLorentzVector(q1jet + q2jet);
+		TLorentzVector neutrino;
+		neutrino = reconstruct_neutrino(electron, met[0]);
+		Wlep = TLorentzVector(neutrino + electron);
+		thad = TLorentzVector(Whad + bhadjet);
+		tlep = TLorentzVector(Wlep + blepjet);
+		fasthist_[fastmctype_][kmthad_matched]->Fill(thad.M());
+		fasthist_[fastmctype_][kmtlep_matched]->Fill(tlep.M());
+		fasthist_[fastmctype_][kmWhad_matched]->Fill(Whad.M());
+		fasthist_[fastmctype_][kmWlep_matched]->Fill(Wlep.M());
+
+		double angle = blepjet.Angle(electron.Vect());
+		fasthist_[fastmctype_][kangle_b_ele_matched]->Fill(angle);
+		double ptratio = TMath::Log(thad.Pt() / Whad.Pt());
+		fasthist_[fastmctype_][kptratio_matched]->Fill(ptratio);
+		double htsystem(0);
+		double htsystemnum(0), htsystemdiv(0);
+		for (ushort x = 0; x < jets.size(); x++) {
+			if (x < 5) {
+				htsystemnum += jets[x].Pt();
+				htsystemdiv += jets[x].Pt();
+			} else if (x > 4 && x < 9) {
+				htsystemdiv += jets[x].Pt();
+			}
+		}
+
+		htsystem = htsystemnum/htsystemdiv;
+
+		fasthist_[fastmctype_][khtsystem_matched]->Fill(htsystem);
+		TLorentzVector temp = TLorentzVector(blepjet + q1jet + q2jet + bhadjet + neutrino + electron);
+		double pttbar = temp.Pt()/htsystem;
+		fasthist_[fastmctype_][kpttbar_matched]->Fill(pttbar);
+		//		fasthist_[fastmctype_][k]
+	}
+//	else {
+//		cout << "NOTICE: not all jets could be matched with MC partons" << endl;
+//	}
+	//end move
+}
+
+TLorentzVector ana::reconstruct_neutrino(const TLorentzVector& electron, const TLorentzVector& met) {
+	TLorentzVector neutrino1, neutrino2, neutrino;
+	pair<double, double> pz = compute_neutrino_momentum_z(met.Et(), electron);
+	double energy1 = TMath::Sqrt(met.Pt() + pz.first * pz.first);
+	double energy2 = TMath::Sqrt(met.Pt() + pz.second * pz.second);
+	neutrino1.SetPxPyPzE(met.Px(), met.Py(), pz.first, energy1);
+	neutrino2.SetPxPyPzE(met.Px(), met.Py(), pz.second, energy2);
+	//choose right solution
+	bool stage1 = fabs(neutrino1.Pz() - electron.Pz()) < fabs(neutrino2.Pz() - electron.Pz());
+	stage1 ? neutrino = neutrino1 : neutrino = neutrino2;
+	if (fabs(neutrino.Pz()) > 300)
+		fabs(neutrino1.Pz()) < fabs(neutrino2.Pz()) ? neutrino = neutrino1 : neutrino = neutrino2;
+
+	return neutrino;
+}
 void ana::reco_mttbar(const vector<TLorentzVector>& jets, const vector<TLorentzVector>& eles,
 		const std::vector<TLorentzVector>& met, const int nGoodIsoEle) {
 	if (nGoodIsoEle > 0) {
 		const TLorentzVector electron = eles[0];
-		TLorentzVector blep, thad, tlep, tlepB, bhad, Whad, Wlep, WlepB;
-		TLorentzVector neutrino1, neutrino2;
-		double pze = electron.Pz();
-		double et, px, py;
-		et = met[0].Et();
-		px = met[0].Px();
-		py = met[0].Py();
-		pair<double, double> pznu = compute_neutrino_momentum_z(et, electron);
-		double pz1, pz2;
-		pz1 = pznu.first;
-		pz2 = pznu.second;
-		double energy1 = sqrt(px * px + py * py + pz1 * pz1);
-		double energy2 = sqrt(px * px + py * py + pz2 * pz2);
-		neutrino1.SetPxPyPzE(px, py, pz1, energy1);
-		neutrino2.SetPxPyPzE(px, py, pz2, energy2);
-		TLorentzVector W1 = TLorentzVector(neutrino1 + electron);
-		TLorentzVector W2 = TLorentzVector(neutrino2 + electron);
+		TLorentzVector blep, thad, tlep, bhad, Whad, Wlep;
+		TLorentzVector neutrino;
+		neutrino = reconstruct_neutrino(electron, met[0]);
+
 		short cid = findClosest(jets, electron);//used to exclude closest jet from hadronic decay
 		blep = jets[cid];
 		double minDeltaR = jets[cid].DeltaR(electron);
 		double costheta = jets[cid].Dot(electron) / electron.P() / jets[cid].P();
 		double sintheta = TMath::Sqrt(1 - costheta * costheta);
 		double ptrel = sintheta * electron.P();
-		fasthist_[fastmctype][kptRel_ele_jet]->Fill(ptrel);
-		fasthist_[fastmctype][kminDeltaR_ele_Jet]->Fill(minDeltaR);
-		fasthist2D_[fastmctype][kptRel_vs_deltaRmin]->Fill(minDeltaR, ptrel);
+		fasthist_[fastmctype_][kptRel_ele_jet]->Fill(ptrel);
+		fasthist_[fastmctype_][kminDeltaR_ele_Jet]->Fill(minDeltaR);
+		fasthist2D_[fastmctype_][kptRel_vs_deltaRmin]->Fill(minDeltaR, ptrel);
 
-		if (W1.M() > 0 || W2.M() > 0) {//reqiure positive masses
-			double pzneutrino, pzneutrinoB;
-			bool planB = fabs(W1.M() - 80) < fabs(W2.M() - 80);
-			bool planA = (fabs(pz1 - pze) < fabs(pz2 - pze)) && W1.M() > 0;
-			planA ? Wlep = W1 : Wlep = W2;
-			planA ? pzneutrino = pz1 : pzneutrino = pz2;
-			//refine planA: if pz>300GeV choose smaller absolute value
-			if (fabs(pzneutrino) > 300) {
-				(fabs(pz1) < fabs(pz2)) ? pzneutrino = pz1 : pzneutrino = pz2;
-			}
-			planB ? pzneutrinoB = pz1 : pzneutrinoB = pz2;
-			planB ? WlepB = W1 : WlepB = W2;
+		Wlep = TLorentzVector(neutrino + electron);
+		//reconstruct hadronic W
+		pair<unsigned short, unsigned short> wjets = reco_hadronic_W(jets, cid);
+		Whad = TLorentzVector(jets[wjets.first] + jets[wjets.second]);
+		//construct subset of jets:
+		vector<TLorentzVector> subjets;
+		for (unsigned short jet = 0; jet < jets.size(); jet++) {
+			if (jet != cid && jet != wjets.first && jet != wjets.second)
+				subjets.push_back(jets[jet]);
+		}
+		unsigned short hadbID = findClosest(subjets, Whad);
+		bhad = subjets[hadbID];
+		thad = TLorentzVector(bhad + Whad);
+		tlep = TLorentzVector(blep + Wlep);
+		//			tlepB = TLorentzVector(blep + WlepB);
+		TLorentzVector resonance = TLorentzVector(thad + tlep);
+		//			TLorentzVector resonanceB = TLorentzVector(thad + tlepB);
+		fasthist_[fastmctype_][kMttbar]->Fill(resonance.M());
+		fasthist_[fastmctype_][kmWhad]->Fill(Whad.M());
+		fasthist_[fastmctype_][kmWlep]->Fill(Wlep.M());
+		fasthist_[fastmctype_][kneutrino_pz]->Fill(neutrino.Pz());
+		fasthist_[fastmctype_][kmtlep]->Fill(tlep.M());
+		fasthist_[fastmctype_][kmthad]->Fill(thad.M());
+		fasthist_[fastmctype_][kthad_pt]->Fill(thad.Pt());
+		fasthist_[fastmctype_][ktlep_pt]->Fill(tlep.Pt());
 
-			//reconstruct hadronic W
-			pair<unsigned short, unsigned short> wjets = reco_hadronic_W(jets, cid);
-			Whad = TLorentzVector(jets[wjets.first] + jets[wjets.second]);
-			//construct subset of jets:
-			vector<TLorentzVector> subjets;
-			for (unsigned short jet = 0; jet < jets.size(); jet++) {
-				if (jet != cid && jet != wjets.first && jet != wjets.second)
-					subjets.push_back(jets[jet]);
-			}
-			unsigned short hadbID = findClosest(subjets, Whad);
-			bhad = subjets[hadbID];
-			thad = TLorentzVector(bhad + Whad);
-			tlep = TLorentzVector(blep + Wlep);
-			tlepB = TLorentzVector(blep + WlepB);
-			TLorentzVector resonance = TLorentzVector(thad + tlep);
-			TLorentzVector resonanceB = TLorentzVector(thad + tlepB);
-			fasthist_[fastmctype][kMttbar]->Fill(resonance.M());
-			fasthist_[fastmctype][kMttbarB]->Fill(resonanceB.M());
-			fasthist_[fastmctype][kRecoWhadmass]->Fill(Whad.M());
-			fasthist_[fastmctype][kRecoWlepmass]->Fill(Wlep.M());
-			fasthist_[fastmctype][kRecoWlepmassB]->Fill(WlepB.M());
-			fasthist_[fastmctype][kneutrino_pz]->Fill(pzneutrino);
-			fasthist_[fastmctype][kmtlep]->Fill(tlep.M());
-			fasthist_[fastmctype][kmthad]->Fill(thad.M());
-			fasthist_[fastmctype][kthad_pt]->Fill(thad.Pt());
-			fasthist_[fastmctype][ktlep_pt]->Fill(tlep.Pt());
+		//only if ttbar is present in MC
+		if (fastmctype_ == ksignal || fastmctype_ >= Zprime_M500GeV_W5GeV)
+			fillMCTopEventHists();//fill MC information
 
-			//only if ttbar is present in MC
-			if (fastmctype == ksignal || fastmctype >= Zprime_M500GeV_W5GeV)
-				fillMCTopEventHists();//fill MC information
-
-		}//end if goodele > 0//TODO: remove this cut
-	}
+	}//end if goodele > 0//TODO: remove this cut
 }
 pair<unsigned short, unsigned short> ana::reco_hadronic_W(const std::vector<TLorentzVector>& jets, short ommit_blep_id) const {
 	double tempmass = 0;
@@ -10105,49 +9601,6 @@ pair<double, double> ana::compute_neutrino_momentum_z(double met, const TLorentz
 	return pair<double, double> (pznu1, pznu2);
 }
 
-//pair<double, double> ana::compute_neutrino_momentum_z2(const TLorentzVector& met, const TLorentzVector& electron) {
-//	double pze, pznu1, pznu2, Ee, Enu, pte, ptnu;
-//	pze = electron.Pz();
-//	ptnu = met.Energy();
-//	double pye = electron.Py();
-//	double pxe = electron.Px();
-//	double pxnu = met.Px();
-//	double pynu = met.Py();
-//	Ee = electron.Energy();
-//	const double mw = 80.;
-//	double a = pze * pze;
-////	double b = 2 * pze * (pxe * pxnu + pye * pynu);
-//
-//	double k = mw * mw * 0.5 + ptnu * pte;
-//	double l = Ee * Ee - pze * pze;
-//	double b = pze * k / l;
-//	double q = (k * k - Ee * Ee * ptnu * ptnu) / l;
-//	double r = b * b + q;
-//
-//	if (r >= 0) {//positive root
-//		pznu1 = b + sqrt(r);
-//		pznu2 = b - sqrt(r);
-//	} else if (r < 0) {//complex root
-//		pznu1 = b;//take only real part
-//		pznu2 = b;//take only real part
-//		cout << "complex root " << endl;
-//	}
-//
-//	double pznu = 1;
-//	double eps = sqrt(0.00001);
-//	//other approach:
-//	for(unsigned int x=0; x<10;x++){
-//		double h = eps*pznu;
-//		double deriv = (neutrino_constrain(pznu - h, met, electron) - neutrino_constrain(pznu + h, met, electron))/(2*h);
-//		pznu = pznu - neutrino_constrain(pznu, met, electron)/deriv;
-//		cout << "new pz " << pznu << " gradient " << deriv << endl;
-//	}
-//	cout << "newton method: " << pznu << endl;
-//	cout << "normal: " << pznu1 << " " << pznu2 << endl;
-//	cout << "pze: " << pze << endl;
-//	return pair<double, double> (pznu, pznu);
-//}
-
 double ana::neutrino_constrain(double nu_z_momentum, const TLorentzVector& met, const TLorentzVector& electron) {
 	double pze = electron.Pz();
 	double pye = electron.Py();
@@ -10163,1170 +9616,6 @@ double ana::neutrino_constrain(double nu_z_momentum, const TLorentzVector& met, 
 	return (E + Enu) * (E + Enu) - ppnu - mw * mw;
 }
 
-void ana::Init() {
-	cout << "\n Initializing tree branches\n" << endl;
-
-	// Set object pointer (v3)
-	PFJets_energy = 0;
-	PFJets_et = 0;
-	PFJets_eta = 0;
-	PFJets_phi = 0;
-	PFJets_pt = 0;
-	PFJets_px = 0;
-	PFJets_py = 0;
-	PFJets_pz = 0;
-	PFJets_status = 0;
-	PFJets_theta = 0;
-	PFJets_chgEmE = 0;
-	PFJets_chgHadE = 0;
-	PFJets_chgMuE = 0;
-	PFJets_chg_Mult = 0;
-	PFJets_neutralEmE = 0;
-	PFJets_neutralHadE = 0;
-	PFJets_neutral_Mult = 0;
-	PFJets_mu_Mult = 0;
-	PFJets_mass = 0;
-	PFMets_et = 0;
-	PFMets_phi = 0;
-	PFMets_ex = 0;
-	PFMets_ey = 0;
-	PFMets_sumEt = 0;
-	beamSpot_x = 0;
-	beamSpot_y = 0;
-	beamSpot_z = 0;
-	beamSpot_x0Error = 0;
-	beamSpot_y0Error = 0;
-	beamSpot_z0Error = 0;
-	beamSpot_sigmaZ = 0;
-	beamSpot_sigmaZ0Error = 0;
-	beamSpot_dxdz = 0;
-	beamSpot_dxdzError = 0;
-	beamSpot_dydz = 0;
-	beamSpot_dydzError = 0;
-	beamSpot_beamWidthX = 0;
-	beamSpot_beamWidthY = 0;
-	beamSpot_beamWidthXError = 0;
-	beamSpot_beamWidthYError = 0;
-	els_energy = 0;
-	els_et = 0;
-	els_eta = 0;
-	els_phi = 0;
-	els_pt = 0;
-	els_px = 0;
-	els_py = 0;
-	els_pz = 0;
-	els_status = 0;
-	els_theta = 0;
-	els_closestCtfTrackRef = 0;
-	els_isEcalDriven = 0;
-	els_isTrackerDriven = 0;
-	els_dr03EcalRecHitSumEt = 0;
-	els_dr04EcalRecHitSumEt = 0;
-	els_dr03HcalTowerSumEt = 0;
-	els_dr04HcalTowerSumEt = 0;
-	els_gen_id = 0;
-	els_gen_phi = 0;
-	els_gen_pt = 0;
-	els_gen_pz = 0;
-	els_gen_px = 0;
-	els_gen_py = 0;
-	els_gen_eta = 0;
-	els_gen_theta = 0;
-	els_gen_et = 0;
-	els_gen_mother_id = 0;
-	els_gen_mother_phi = 0;
-	els_gen_mother_pt = 0;
-	els_gen_mother_pz = 0;
-	els_gen_mother_px = 0;
-	els_gen_mother_py = 0;
-	els_gen_mother_eta = 0;
-	els_gen_mother_theta = 0;
-	els_gen_mother_et = 0;
-	els_tightId = 0;
-	els_looseId = 0;
-	els_robustTightId = 0;
-	els_robustLooseId = 0;
-	els_robustHighEnergyId = 0;
-	els_cIso = 0;
-	els_tIso = 0;
-	els_ecalIso = 0;
-	els_hcalIso = 0;
-	els_chi2 = 0;
-	els_charge = 0;
-	els_caloEnergy = 0;
-	els_hadOverEm = 0;
-	els_eOverPIn = 0;
-	els_eSeedOverPOut = 0;
-	els_eSCraw = 0;
-	els_eSeed = 0;
-	els_sigmaEtaEta = 0;
-	els_sigmaIEtaIEta = 0;
-	els_scE1x5 = 0;
-	els_scE2x5Max = 0;
-	els_scE5x5 = 0;
-	els_dEtaIn = 0;
-	els_dPhiIn = 0;
-	els_dEtaOut = 0;
-	els_dPhiOut = 0;
-	els_numvalhits = 0;
-	els_numlosthits = 0;
-	els_basicClustersSize = 0;
-	els_tk_pt = 0;
-	els_tk_phi = 0;
-	els_tk_eta = 0;
-	els_tk_charge = 0;
-	els_tk_theta = 0;
-	els_shFracInnerHits = 0;
-	els_d0dum = 0;
-	els_dz = 0;
-	els_vx = 0;
-	els_vy = 0;
-	els_vz = 0;
-	els_ndof = 0;
-	els_ptError = 0;
-	els_d0dumError = 0;
-	els_dzError = 0;
-	els_etaError = 0;
-	els_phiError = 0;
-	els_cpx = 0;
-	els_cpy = 0;
-	els_cpz = 0;
-	els_vpx = 0;
-	els_vpy = 0;
-	els_vpz = 0;
-	els_cx = 0;
-	els_cy = 0;
-	els_cz = 0;
-	els_isEE = 0;
-	els_isEEGap = 0;
-	els_isEB = 0;
-	els_isEBGap = 0;
-	els_isConvertedPhoton = 0;
-	els_innerLayerMissingHits = 0;
-	jets_energy = 0;
-	jets_et = 0;
-	jets_eta = 0;
-	jets_phi = 0;
-	jets_pt = 0;
-	jets_px = 0;
-	jets_py = 0;
-	jets_pz = 0;
-	jets_status = 0;
-	jets_theta = 0;
-	jets_parton_Id = 0;
-	jets_parton_motherId = 0;
-	jets_parton_pt = 0;
-	jets_parton_phi = 0;
-	jets_parton_eta = 0;
-	jets_parton_Energy = 0;
-	jets_parton_mass = 0;
-	jets_parton_motherID = 0;
-	jets_gen_et = 0;
-	jets_gen_pt = 0;
-	jets_gen_eta = 0;
-	jets_gen_phi = 0;
-	jets_gen_mass = 0;
-	jets_gen_Energy = 0;
-	jets_gen_Id = 0;
-	jets_gen_motherID = 0;
-	jets_gen_threeCharge = 0;
-	jets_partonFlavour = 0;
-	jets_btag_TC_highPur = 0;
-	jets_btag_TC_highEff = 0;
-	jets_btag_jetProb = 0;
-	jets_btag_jetBProb = 0;
-	jets_btag_softEle = 0;
-	jets_btag_softMuon = 0;
-	jets_btag_softMuonNoIP = 0;
-	jets_btag_secVertex = 0;
-	jets_chgEmE = 0;
-	jets_chgHadE = 0;
-	jets_chgMuE = 0;
-	jets_chg_Mult = 0;
-	jets_neutralEmE = 0;
-	jets_neutralHadE = 0;
-	jets_neutral_Mult = 0;
-	jets_mu_Mult = 0;
-	jets_emf = 0;
-	jets_ehf = 0;
-	jets_n60 = 0;
-	jets_n90 = 0;
-	jets_area = 0;
-	jets_mass = 0;
-
-	jetsKT4_energy = 0;
-	jetsKT4_et = 0;
-	jetsKT4_eta = 0;
-	jetsKT4_phi = 0;
-	jetsKT4_pt = 0;
-	jetsKT4_px = 0;
-	jetsKT4_py = 0;
-	jetsKT4_pz = 0;
-	jetsKT4_status = 0;
-	jetsKT4_theta = 0;
-	jetsKT4_btag_TC_highPur = 0;
-	jetsKT4_btag_TC_highEff = 0;
-	jetsKT4_btag_jetProb = 0;
-	jetsKT4_btag_jetBProb = 0;
-	jetsKT4_btag_softEle = 0;
-	jetsKT4_btag_softMuon = 0;
-	jetsKT4_btag_softMuonNoIP = 0;
-	jetsKT4_btag_secVertex = 0;
-	jetsKT4_chgEmE = 0;
-	jetsKT4_chgHadE = 0;
-	jetsKT4_chgMuE = 0;
-	jetsKT4_chg_Mult = 0;
-	jetsKT4_neutralEmE = 0;
-	jetsKT4_neutralHadE = 0;
-	jetsKT4_neutral_Mult = 0;
-	jetsKT4_mu_Mult = 0;
-	jetsKT4_emf = 0;
-	jetsKT4_ehf = 0;
-	jetsKT4_n60 = 0;
-	jetsKT4_n90 = 0;
-	jetsKT4_area = 0;
-	jetsKT4_mass = 0;
-
-	jetsSC5_energy = 0;
-	jetsSC5_et = 0;
-	jetsSC5_eta = 0;
-	jetsSC5_phi = 0;
-	jetsSC5_pt = 0;
-	jetsSC5_px = 0;
-	jetsSC5_py = 0;
-	jetsSC5_pz = 0;
-	jetsSC5_status = 0;
-	jetsSC5_theta = 0;
-	jetsSC5_btag_TC_highPur = 0;
-	jetsSC5_btag_TC_highEff = 0;
-	jetsSC5_btag_jetProb = 0;
-	jetsSC5_btag_jetBProb = 0;
-	jetsSC5_btag_softEle = 0;
-	jetsSC5_btag_softMuon = 0;
-	jetsSC5_btag_softMuonNoIP = 0;
-	jetsSC5_btag_secVertex = 0;
-	jetsSC5_chgEmE = 0;
-	jetsSC5_chgHadE = 0;
-	jetsSC5_chgMuE = 0;
-	jetsSC5_chg_Mult = 0;
-	jetsSC5_neutralEmE = 0;
-	jetsSC5_neutralHadE = 0;
-	jetsSC5_neutral_Mult = 0;
-	jetsSC5_mu_Mult = 0;
-	jetsSC5_emf = 0;
-	jetsSC5_ehf = 0;
-	jetsSC5_n60 = 0;
-	jetsSC5_n90 = 0;
-	jetsSC5_area = 0;
-	jetsSC5_mass = 0;
-	mc_doc_id = 0;
-	mc_doc_pt = 0;
-	mc_doc_px = 0;
-	mc_doc_py = 0;
-	mc_doc_pz = 0;
-	mc_doc_eta = 0;
-	mc_doc_phi = 0;
-	mc_doc_theta = 0;
-	mc_doc_energy = 0;
-	mc_doc_status = 0;
-	mc_doc_charge = 0;
-	mc_doc_mother_id = 0;
-	mc_doc_grandmother_id = 0;
-	mc_doc_ggrandmother_id = 0;
-	mc_doc_mother_pt = 0;
-	mc_doc_vertex_x = 0;
-	mc_doc_vertex_y = 0;
-	mc_doc_vertex_z = 0;
-	mc_doc_mass = 0;
-	mc_doc_numOfDaughters = 0;
-	mc_doc_numOfMothers = 0;
-	mets_et = 0;
-	mets_phi = 0;
-	mets_ex = 0;
-	mets_ey = 0;
-	mets_gen_et = 0;
-	mets_gen_phi = 0;
-	mets_sign = 0;
-	mets_sumEt = 0;
-	mets_unCPhi = 0;
-	mets_unCPt = 0;
-	mets_et_muonCor = 0;
-	mets_phi_muonCor = 0;
-	mets_et_JESCor = 0;
-	mets_phi_JESCor = 0;
-	metsKT4_et = 0;
-	metsKT4_phi = 0;
-	metsKT4_ex = 0;
-	metsKT4_ey = 0;
-	metsKT4_sumEt = 0;
-	metsKT4_et_JESCor = 0;
-	metsKT4_phi_JESCor = 0;
-	metsSC5_et = 0;
-	metsSC5_phi = 0;
-	metsSC5_ex = 0;
-	metsSC5_ey = 0;
-	metsSC5_sumEt = 0;
-	metsSC5_et_JESCor = 0;
-	metsSC5_phi_JESCor = 0;
-	mus_energy = 0;
-	mus_et = 0;
-	mus_eta = 0;
-	mus_phi = 0;
-	mus_pt = 0;
-	mus_px = 0;
-	mus_py = 0;
-	mus_pz = 0;
-	mus_status = 0;
-	mus_theta = 0;
-	mus_gen_id = 0;
-	mus_gen_phi = 0;
-	mus_gen_pt = 0;
-	mus_gen_pz = 0;
-	mus_gen_px = 0;
-	mus_gen_py = 0;
-	mus_gen_eta = 0;
-	mus_gen_theta = 0;
-	mus_gen_et = 0;
-	mus_gen_mother_id = 0;
-	mus_gen_mother_phi = 0;
-	mus_gen_mother_pt = 0;
-	mus_gen_mother_pz = 0;
-	mus_gen_mother_px = 0;
-	mus_gen_mother_py = 0;
-	mus_gen_mother_eta = 0;
-	mus_gen_mother_theta = 0;
-	mus_gen_mother_et = 0;
-	mus_tkHits = 0;
-	mus_cIso = 0;
-	mus_tIso = 0;
-	mus_ecalIso = 0;
-	mus_hcalIso = 0;
-	mus_ecalvetoDep = 0;
-	mus_hcalvetoDep = 0;
-	mus_calEnergyEm = 0;
-	mus_calEnergyHad = 0;
-	mus_calEnergyHo = 0;
-	mus_calEnergyEmS9 = 0;
-	mus_calEnergyHadS9 = 0;
-	mus_calEnergyHoS9 = 0;
-	mus_iso03_sumPt = 0;
-	mus_iso03_emEt = 0;
-	mus_iso03_hadEt = 0;
-	mus_iso03_hoEt = 0;
-	mus_iso03_nTracks = 0;
-	mus_iso05_sumPt = 0;
-	mus_iso05_emEt = 0;
-	mus_iso05_hadEt = 0;
-	mus_iso05_hoEt = 0;
-	mus_iso05_nTracks = 0;
-	mus_charge = 0;
-	mus_cm_chi2 = 0;
-	mus_cm_ndof = 0;
-	mus_cm_chg = 0;
-	mus_cm_pt = 0;
-	mus_cm_px = 0;
-	mus_cm_py = 0;
-	mus_cm_pz = 0;
-	mus_cm_eta = 0;
-	mus_cm_phi = 0;
-	mus_cm_theta = 0;
-	mus_cm_d0dum = 0;
-	mus_cm_dz = 0;
-	mus_cm_vx = 0;
-	mus_cm_vy = 0;
-	mus_cm_vz = 0;
-	mus_cm_numvalhits = 0;
-	mus_cm_numlosthits = 0;
-	mus_cm_d0dumErr = 0;
-	mus_cm_dzErr = 0;
-	mus_cm_ptErr = 0;
-	mus_cm_etaErr = 0;
-	mus_cm_phiErr = 0;
-	mus_tk_chi2 = 0;
-	mus_tk_ndof = 0;
-	mus_tk_chg = 0;
-	mus_tk_pt = 0;
-	mus_tk_px = 0;
-	mus_tk_py = 0;
-	mus_tk_pz = 0;
-	mus_tk_eta = 0;
-	mus_tk_phi = 0;
-	mus_tk_theta = 0;
-	mus_tk_d0dum = 0;
-	mus_tk_dz = 0;
-	mus_tk_vx = 0;
-	mus_tk_vy = 0;
-	mus_tk_vz = 0;
-	mus_tk_numvalhits = 0;
-	mus_tk_numlosthits = 0;
-	mus_tk_d0dumErr = 0;
-	mus_tk_dzErr = 0;
-	mus_tk_ptErr = 0;
-	mus_tk_etaErr = 0;
-	mus_tk_phiErr = 0;
-	mus_stamu_chi2 = 0;
-	mus_stamu_ndof = 0;
-	mus_stamu_chg = 0;
-	mus_stamu_pt = 0;
-	mus_stamu_px = 0;
-	mus_stamu_py = 0;
-	mus_stamu_pz = 0;
-	mus_stamu_eta = 0;
-	mus_stamu_phi = 0;
-	mus_stamu_theta = 0;
-	mus_stamu_d0dum = 0;
-	mus_stamu_dz = 0;
-	mus_stamu_vx = 0;
-	mus_stamu_vy = 0;
-	mus_stamu_vz = 0;
-	mus_stamu_numvalhits = 0;
-	mus_stamu_numlosthits = 0;
-	mus_stamu_d0dumErr = 0;
-	mus_stamu_dzErr = 0;
-	mus_stamu_ptErr = 0;
-	mus_stamu_etaErr = 0;
-	mus_stamu_phiErr = 0;
-	mus_num_matches = 0;
-	mus_id_All = 0;
-	mus_id_AllGlobalMuons = 0;
-	mus_id_AllStandAloneMuons = 0;
-	mus_id_AllTrackerMuons = 0;
-	mus_id_TrackerMuonArbitrated = 0;
-	mus_id_AllArbitrated = 0;
-	mus_id_GlobalMuonPromptTight = 0;
-	mus_id_TMLastStationLoose = 0;
-	mus_id_TMLastStationTight = 0;
-	mus_id_TM2DCompatibilityLoose = 0;
-	mus_id_TM2DCompatibilityTight = 0;
-	mus_id_TMOneStationLoose = 0;
-	mus_id_TMOneStationTight = 0;
-	mus_id_TMLastStationOptimizedLowPtLoose = 0;
-	mus_id_TMLastStationOptimizedLowPtTight = 0;
-	photons_energy = 0;
-	photons_et = 0;
-	photons_eta = 0;
-	photons_phi = 0;
-	photons_pt = 0;
-	photons_px = 0;
-	photons_py = 0;
-	photons_pz = 0;
-	photons_status = 0;
-	photons_theta = 0;
-	photons_hadOverEM = 0;
-	photons_scEnergy = 0;
-	photons_scRawEnergy = 0;
-	photons_scEta = 0;
-	photons_scPhi = 0;
-	photons_scEtaWidth = 0;
-	photons_scPhiWidth = 0;
-	photons_tIso = 0;
-	photons_ecalIso = 0;
-	photons_hcalIso = 0;
-	photons_isoEcalRecHitDR04 = 0;
-	photons_isoHcalRecHitDR04 = 0;
-	photons_isoSolidTrkConeDR04 = 0;
-	photons_isoHollowTrkConeDR04 = 0;
-	photons_nTrkSolidConeDR04 = 0;
-	photons_nTrkHollowConeDR04 = 0;
-	photons_isoEcalRecHitDR03 = 0;
-	photons_isoHcalRecHitDR03 = 0;
-	photons_isoSolidTrkConeDR03 = 0;
-	photons_isoHollowTrkConeDR03 = 0;
-	photons_nTrkSolidConeDR03 = 0;
-	photons_nTrkHollowConeDR03 = 0;
-	photons_isAlsoElectron = 0;
-	photons_hasPixelSeed = 0;
-	photons_isConverted = 0;
-	photons_isEBGap = 0;
-	photons_isEEGap = 0;
-	photons_isEBEEGap = 0;
-	photons_isEBPho = 0;
-	photons_isEEPho = 0;
-	photons_isLoosePhoton = 0;
-	photons_isTightPhoton = 0;
-	photons_r9 = 0;
-	photons_gen_et = 0;
-	photons_gen_eta = 0;
-	photons_gen_phi = 0;
-	photons_gen_id = 0;
-	pv_x = 0;
-	pv_y = 0;
-	pv_z = 0;
-	pv_xErr = 0;
-	pv_yErr = 0;
-	pv_zErr = 0;
-	tcmets_et = 0;
-	tcmets_phi = 0;
-	tcmets_ex = 0;
-	tcmets_ey = 0;
-	tcmets_sumEt = 0;
-	tcmets_et_muonCor = 0;
-	tcmets_phi_muonCor = 0;
-	tracks_chi2 = 0;
-	tracks_ndof = 0;
-	tracks_chg = 0;
-	tracks_pt = 0;
-	tracks_px = 0;
-	tracks_py = 0;
-	tracks_pz = 0;
-	tracks_eta = 0;
-	tracks_phi = 0;
-	tracks_theta = 0;
-	tracks_d0dum = 0;
-	tracks_dz = 0;
-	tracks_vx = 0;
-	tracks_vy = 0;
-	tracks_vz = 0;
-	tracks_numvalhits = 0;
-	tracks_numlosthits = 0;
-	tracks_d0dumErr = 0;
-	tracks_dzErr = 0;
-	tracks_ptErr = 0;
-	tracks_etaErr = 0;
-	tracks_phiErr = 0;
-	tracks_Nrechits = 0;
-	tracks_innerHitX = 0;
-	tracks_innerHitY = 0;
-	tracks_innerHitZ = 0;
-	tracks_outerHitX = 0;
-	tracks_outerHitY = 0;
-	tracks_outerHitZ = 0;
-	tracks_highPurity = 0;
-	tracks_innerLayerMissingHits = 0;
-
-	// Set branch addresses and branch pointers
-	if (m_jetAlgo == "pfjet") {
-		chain->SetBranchAddress("NPFJets", &NPFJets, &b_NPFJets);
-		chain->SetBranchAddress("PFJets_energy", &PFJets_energy, &b_PFJets_energy);
-		chain->SetBranchAddress("PFJets_et", &PFJets_et, &b_PFJets_et);
-		chain->SetBranchAddress("PFJets_eta", &PFJets_eta, &b_PFJets_eta);
-		chain->SetBranchAddress("PFJets_phi", &PFJets_phi, &b_PFJets_phi);
-		chain->SetBranchAddress("PFJets_pt", &PFJets_pt, &b_PFJets_pt);
-		chain->SetBranchAddress("PFJets_px", &PFJets_px, &b_PFJets_px);
-		chain->SetBranchAddress("PFJets_py", &PFJets_py, &b_PFJets_py);
-		chain->SetBranchAddress("PFJets_pz", &PFJets_pz, &b_PFJets_pz);
-		chain->SetBranchAddress("PFJets_status", &PFJets_status, &b_PFJets_status);
-		chain->SetBranchAddress("PFJets_theta", &PFJets_theta, &b_PFJets_theta);
-		chain->SetBranchAddress("PFJets_chgEmE", &PFJets_chgEmE, &b_PFJets_chgEmE);
-		chain->SetBranchAddress("PFJets_chgHadE", &PFJets_chgHadE, &b_PFJets_chgHadE);
-		chain->SetBranchAddress("PFJets_chgMuE", &PFJets_chgMuE, &b_PFJets_chgMuE);
-		chain->SetBranchAddress("PFJets_chg_Mult", &PFJets_chg_Mult, &b_PFJets_chg_Mult);
-		chain->SetBranchAddress("PFJets_neutralEmE", &PFJets_neutralEmE, &b_PFJets_neutralEmE);
-		chain->SetBranchAddress("PFJets_neutralHadE", &PFJets_neutralHadE, &b_PFJets_neutralHadE);
-		chain->SetBranchAddress("PFJets_neutral_Mult", &PFJets_neutral_Mult, &b_PFJets_neutral_Mult);
-		chain->SetBranchAddress("PFJets_mu_Mult", &PFJets_mu_Mult, &b_PFJets_mu_Mult);
-		chain->SetBranchAddress("PFJets_mass", &PFJets_mass, &b_PFJets_mass);
-	}
-	if (m_metAlgo == "pfmet") {
-		chain->SetBranchAddress("NPFMets", &NPFMets, &b_NPFMets);
-		chain->SetBranchAddress("PFMets_et", &PFMets_et, &b_PFMets_et);
-		chain->SetBranchAddress("PFMets_phi", &PFMets_phi, &b_PFMets_phi);
-		chain->SetBranchAddress("PFMets_ex", &PFMets_ex, &b_PFMets_ex);
-		chain->SetBranchAddress("PFMets_ey", &PFMets_ey, &b_PFMets_ey);
-		chain->SetBranchAddress("PFMets_sumEt", &PFMets_sumEt, &b_PFMets_sumEt);
-	}
-	chain->SetBranchAddress("NbeamSpot", &NbeamSpot, &b_NbeamSpot);
-	chain->SetBranchAddress("beamSpot_x", &beamSpot_x, &b_beamSpot_x);
-	chain->SetBranchAddress("beamSpot_y", &beamSpot_y, &b_beamSpot_y);
-	chain->SetBranchAddress("beamSpot_z", &beamSpot_z, &b_beamSpot_z);
-	chain->SetBranchAddress("beamSpot_x0Error", &beamSpot_x0Error, &b_beamSpot_x0Error);
-	chain->SetBranchAddress("beamSpot_y0Error", &beamSpot_y0Error, &b_beamSpot_y0Error);
-	chain->SetBranchAddress("beamSpot_z0Error", &beamSpot_z0Error, &b_beamSpot_z0Error);
-	chain->SetBranchAddress("beamSpot_sigmaZ", &beamSpot_sigmaZ, &b_beamSpot_sigmaZ);
-	chain->SetBranchAddress("beamSpot_sigmaZ0Error", &beamSpot_sigmaZ0Error, &b_beamSpot_sigmaZ0Error);
-	chain->SetBranchAddress("beamSpot_dxdz", &beamSpot_dxdz, &b_beamSpot_dxdz);
-	chain->SetBranchAddress("beamSpot_dxdzError", &beamSpot_dxdzError, &b_beamSpot_dxdzError);
-	chain->SetBranchAddress("beamSpot_dydz", &beamSpot_dydz, &b_beamSpot_dydz);
-	chain->SetBranchAddress("beamSpot_dydzError", &beamSpot_dydzError, &b_beamSpot_dydzError);
-	chain->SetBranchAddress("beamSpot_beamWidthX", &beamSpot_beamWidthX, &b_beamSpot_beamWidthX);
-	chain->SetBranchAddress("beamSpot_beamWidthY", &beamSpot_beamWidthY, &b_beamSpot_beamWidthY);
-	chain->SetBranchAddress("beamSpot_beamWidthXError", &beamSpot_beamWidthXError, &b_beamSpot_beamWidthXError);
-	chain->SetBranchAddress("beamSpot_beamWidthYError", &beamSpot_beamWidthYError, &b_beamSpot_beamWidthYError);
-	chain->SetBranchAddress("Nels", &Nels, &b_Nels);
-	chain->SetBranchAddress("els_energy", &els_energy, &b_els_energy);
-	chain->SetBranchAddress("els_et", &els_et, &b_els_et);
-	chain->SetBranchAddress("els_eta", &els_eta, &b_els_eta);
-	chain->SetBranchAddress("els_phi", &els_phi, &b_els_phi);
-	chain->SetBranchAddress("els_pt", &els_pt, &b_els_pt);
-	chain->SetBranchAddress("els_px", &els_px, &b_els_px);
-	chain->SetBranchAddress("els_py", &els_py, &b_els_py);
-	chain->SetBranchAddress("els_pz", &els_pz, &b_els_pz);
-	chain->SetBranchAddress("els_status", &els_status, &b_els_status);
-	chain->SetBranchAddress("els_theta", &els_theta, &b_els_theta);
-	chain->SetBranchAddress("els_closestCtfTrackRef", &els_closestCtfTrackRef, &b_els_closestCtfTrackRef);
-	chain->SetBranchAddress("els_isEcalDriven", &els_isEcalDriven, &b_els_isEcalDriven);
-	chain->SetBranchAddress("els_isTrackerDriven", &els_isTrackerDriven, &b_els_isTrackerDriven);
-	chain->SetBranchAddress("els_dr03EcalRecHitSumEt", &els_dr03EcalRecHitSumEt, &b_els_dr03EcalRecHitSumEt);
-	chain->SetBranchAddress("els_dr04EcalRecHitSumEt", &els_dr04EcalRecHitSumEt, &b_els_dr04EcalRecHitSumEt);
-	chain->SetBranchAddress("els_dr03HcalTowerSumEt", &els_dr03HcalTowerSumEt, &b_els_dr03HcalTowerSumEt);
-	chain->SetBranchAddress("els_dr04HcalTowerSumEt", &els_dr04HcalTowerSumEt, &b_els_dr04HcalTowerSumEt);
-	chain->SetBranchAddress("els_gen_id", &els_gen_id, &b_els_gen_id);
-	chain->SetBranchAddress("els_gen_phi", &els_gen_phi, &b_els_gen_phi);
-	chain->SetBranchAddress("els_gen_pt", &els_gen_pt, &b_els_gen_pt);
-	chain->SetBranchAddress("els_gen_pz", &els_gen_pz, &b_els_gen_pz);
-	chain->SetBranchAddress("els_gen_px", &els_gen_px, &b_els_gen_px);
-	chain->SetBranchAddress("els_gen_py", &els_gen_py, &b_els_gen_py);
-	chain->SetBranchAddress("els_gen_eta", &els_gen_eta, &b_els_gen_eta);
-	chain->SetBranchAddress("els_gen_theta", &els_gen_theta, &b_els_gen_theta);
-	chain->SetBranchAddress("els_gen_et", &els_gen_et, &b_els_gen_et);
-	chain->SetBranchAddress("els_gen_mother_id", &els_gen_mother_id, &b_els_gen_mother_id);
-	chain->SetBranchAddress("els_gen_mother_phi", &els_gen_mother_phi, &b_els_gen_mother_phi);
-	chain->SetBranchAddress("els_gen_mother_pt", &els_gen_mother_pt, &b_els_gen_mother_pt);
-	chain->SetBranchAddress("els_gen_mother_pz", &els_gen_mother_pz, &b_els_gen_mother_pz);
-	chain->SetBranchAddress("els_gen_mother_px", &els_gen_mother_px, &b_els_gen_mother_px);
-	chain->SetBranchAddress("els_gen_mother_py", &els_gen_mother_py, &b_els_gen_mother_py);
-	chain->SetBranchAddress("els_gen_mother_eta", &els_gen_mother_eta, &b_els_gen_mother_eta);
-	chain->SetBranchAddress("els_gen_mother_theta", &els_gen_mother_theta, &b_els_gen_mother_theta);
-	chain->SetBranchAddress("els_gen_mother_et", &els_gen_mother_et, &b_els_gen_mother_et);
-	chain->SetBranchAddress("els_tightId", &els_tightId, &b_els_tightId);
-	chain->SetBranchAddress("els_looseId", &els_looseId, &b_els_looseId);
-	chain->SetBranchAddress("els_robustTightId", &els_robustTightId, &b_els_robustTightId);
-	chain->SetBranchAddress("els_robustLooseId", &els_robustLooseId, &b_els_robustLooseId);
-	chain->SetBranchAddress("els_robustHighEnergyId", &els_robustHighEnergyId, &b_els_robustHighEnergyId);
-	chain->SetBranchAddress("els_cIso", &els_cIso, &b_els_cIso);
-	chain->SetBranchAddress("els_tIso", &els_tIso, &b_els_tIso);
-	chain->SetBranchAddress("els_ecalIso", &els_ecalIso, &b_els_ecalIso);
-	chain->SetBranchAddress("els_hcalIso", &els_hcalIso, &b_els_hcalIso);
-	chain->SetBranchAddress("els_chi2", &els_chi2, &b_els_chi2);
-	chain->SetBranchAddress("els_charge", &els_charge, &b_els_charge);
-	chain->SetBranchAddress("els_caloEnergy", &els_caloEnergy, &b_els_caloEnergy);
-	chain->SetBranchAddress("els_hadOverEm", &els_hadOverEm, &b_els_hadOverEm);
-	chain->SetBranchAddress("els_eOverPIn", &els_eOverPIn, &b_els_eOverPIn);
-	chain->SetBranchAddress("els_eSeedOverPOut", &els_eSeedOverPOut, &b_els_eSeedOverPOut);
-	chain->SetBranchAddress("els_eSCraw", &els_eSCraw, &b_els_eSCraw);
-	chain->SetBranchAddress("els_eSeed", &els_eSeed, &b_els_eSeed);
-	chain->SetBranchAddress("els_sigmaEtaEta", &els_sigmaEtaEta, &b_els_sigmaEtaEta);
-	chain->SetBranchAddress("els_sigmaIEtaIEta", &els_sigmaIEtaIEta, &b_els_sigmaIEtaIEta);
-	chain->SetBranchAddress("els_scE1x5", &els_scE1x5, &b_els_scE1x5);
-	chain->SetBranchAddress("els_scE2x5Max", &els_scE2x5Max, &b_els_scE2x5Max);
-	chain->SetBranchAddress("els_scE5x5", &els_scE5x5, &b_els_scE5x5);
-	chain->SetBranchAddress("els_dEtaIn", &els_dEtaIn, &b_els_dEtaIn);
-	chain->SetBranchAddress("els_dPhiIn", &els_dPhiIn, &b_els_dPhiIn);
-	chain->SetBranchAddress("els_dEtaOut", &els_dEtaOut, &b_els_dEtaOut);
-	chain->SetBranchAddress("els_dPhiOut", &els_dPhiOut, &b_els_dPhiOut);
-	chain->SetBranchAddress("els_numvalhits", &els_numvalhits, &b_els_numvalhits);
-	chain->SetBranchAddress("els_numlosthits", &els_numlosthits, &b_els_numlosthits);
-	chain->SetBranchAddress("els_basicClustersSize", &els_basicClustersSize, &b_els_basicClustersSize);
-	chain->SetBranchAddress("els_tk_pt", &els_tk_pt, &b_els_tk_pt);
-	chain->SetBranchAddress("els_tk_phi", &els_tk_phi, &b_els_tk_phi);
-	chain->SetBranchAddress("els_tk_eta", &els_tk_eta, &b_els_tk_eta);
-	chain->SetBranchAddress("els_tk_charge", &els_tk_charge, &b_els_tk_charge);
-	chain->SetBranchAddress("els_tk_theta", &els_tk_theta, &b_els_tk_theta);
-	chain->SetBranchAddress("els_shFracInnerHits", &els_shFracInnerHits, &b_els_shFracInnerHits);
-	chain->SetBranchAddress("els_d0dum", &els_d0dum, &b_els_d0dum);
-	chain->SetBranchAddress("els_dz", &els_dz, &b_els_dz);
-	chain->SetBranchAddress("els_vx", &els_vx, &b_els_vx);
-	chain->SetBranchAddress("els_vy", &els_vy, &b_els_vy);
-	chain->SetBranchAddress("els_vz", &els_vz, &b_els_vz);
-	chain->SetBranchAddress("els_ndof", &els_ndof, &b_els_ndof);
-	chain->SetBranchAddress("els_ptError", &els_ptError, &b_els_ptError);
-	chain->SetBranchAddress("els_d0dumError", &els_d0dumError, &b_els_d0dumError);
-	chain->SetBranchAddress("els_dzError", &els_dzError, &b_els_dzError);
-	chain->SetBranchAddress("els_etaError", &els_etaError, &b_els_etaError);
-	chain->SetBranchAddress("els_phiError", &els_phiError, &b_els_phiError);
-	chain->SetBranchAddress("els_cpx", &els_cpx, &b_els_cpx);
-	chain->SetBranchAddress("els_cpy", &els_cpy, &b_els_cpy);
-	chain->SetBranchAddress("els_cpz", &els_cpz, &b_els_cpz);
-	chain->SetBranchAddress("els_vpx", &els_vpx, &b_els_vpx);
-	chain->SetBranchAddress("els_vpy", &els_vpy, &b_els_vpy);
-	chain->SetBranchAddress("els_vpz", &els_vpz, &b_els_vpz);
-	chain->SetBranchAddress("els_cx", &els_cx, &b_els_cx);
-	chain->SetBranchAddress("els_cy", &els_cy, &b_els_cy);
-	chain->SetBranchAddress("els_cz", &els_cz, &b_els_cz);
-	chain->SetBranchAddress("els_isEE", &els_isEE, &b_els_isEE);
-	chain->SetBranchAddress("els_isEEGap", &els_isEEGap, &b_els_isEEGap);
-	chain->SetBranchAddress("els_isEB", &els_isEB, &b_els_isEB);
-	chain->SetBranchAddress("els_isEBGap", &els_isEBGap, &b_els_isEBGap);
-	chain->SetBranchAddress("els_isConvertedPhoton", &els_isConvertedPhoton, &b_els_isConvertedPhoton);
-	if (m_useMisslayers)
-		chain->SetBranchAddress("els_innerLayerMissingHits", &els_innerLayerMissingHits, &b_els_innerLayerMissingHits);
-
-	chain->SetBranchAddress("Njets", &Njets, &b_Njets);
-	chain->SetBranchAddress("jets_energy", &jets_energy, &b_jets_energy);
-	chain->SetBranchAddress("jets_et", &jets_et, &b_jets_et);
-	chain->SetBranchAddress("jets_eta", &jets_eta, &b_jets_eta);
-	chain->SetBranchAddress("jets_phi", &jets_phi, &b_jets_phi);
-	chain->SetBranchAddress("jets_pt", &jets_pt, &b_jets_pt);
-	chain->SetBranchAddress("jets_px", &jets_px, &b_jets_px);
-	chain->SetBranchAddress("jets_py", &jets_py, &b_jets_py);
-	chain->SetBranchAddress("jets_pz", &jets_pz, &b_jets_pz);
-	chain->SetBranchAddress("jets_status", &jets_status, &b_jets_status);
-	chain->SetBranchAddress("jets_theta", &jets_theta, &b_jets_theta);
-	chain->SetBranchAddress("jets_parton_Id", &jets_parton_Id, &b_jets_parton_Id);
-	chain->SetBranchAddress("jets_parton_motherId", &jets_parton_motherId, &b_jets_parton_motherId);
-	chain->SetBranchAddress("jets_parton_pt", &jets_parton_pt, &b_jets_parton_pt);
-	chain->SetBranchAddress("jets_parton_phi", &jets_parton_phi, &b_jets_parton_phi);
-	chain->SetBranchAddress("jets_parton_eta", &jets_parton_eta, &b_jets_parton_eta);
-	chain->SetBranchAddress("jets_parton_Energy", &jets_parton_Energy, &b_jets_parton_Energy);
-	chain->SetBranchAddress("jets_parton_mass", &jets_parton_mass, &b_jets_parton_mass);
-	chain->SetBranchAddress("jets_parton_motherID", &jets_parton_motherID, &b_jets_parton_motherID);
-	chain->SetBranchAddress("jets_gen_et", &jets_gen_et, &b_jets_gen_et);
-	chain->SetBranchAddress("jets_gen_pt", &jets_gen_pt, &b_jets_gen_pt);
-	chain->SetBranchAddress("jets_gen_eta", &jets_gen_eta, &b_jets_gen_eta);
-	chain->SetBranchAddress("jets_gen_phi", &jets_gen_phi, &b_jets_gen_phi);
-	chain->SetBranchAddress("jets_gen_mass", &jets_gen_mass, &b_jets_gen_mass);
-	chain->SetBranchAddress("jets_gen_Energy", &jets_gen_Energy, &b_jets_gen_Energy);
-	chain->SetBranchAddress("jets_gen_Id", &jets_gen_Id, &b_jets_gen_Id);
-	chain->SetBranchAddress("jets_gen_motherID", &jets_gen_motherID, &b_jets_gen_motherID);
-	chain->SetBranchAddress("jets_gen_threeCharge", &jets_gen_threeCharge, &b_jets_gen_threeCharge);
-	chain->SetBranchAddress("jets_partonFlavour", &jets_partonFlavour, &b_jets_partonFlavour);
-	chain->SetBranchAddress("jets_btag_TC_highPur", &jets_btag_TC_highPur, &b_jets_btag_TC_highPur);
-	chain->SetBranchAddress("jets_btag_TC_highEff", &jets_btag_TC_highEff, &b_jets_btag_TC_highEff);
-	chain->SetBranchAddress("jets_btag_jetProb", &jets_btag_jetProb, &b_jets_btag_jetProb);
-	chain->SetBranchAddress("jets_btag_jetBProb", &jets_btag_jetBProb, &b_jets_btag_jetBProb);
-	chain->SetBranchAddress("jets_btag_softEle", &jets_btag_softEle, &b_jets_btag_softEle);
-	chain->SetBranchAddress("jets_btag_softMuon", &jets_btag_softMuon, &b_jets_btag_softMuon);
-	chain->SetBranchAddress("jets_btag_softMuonNoIP", &jets_btag_softMuonNoIP, &b_jets_btag_softMuonNoIP);
-	chain->SetBranchAddress("jets_btag_secVertex", &jets_btag_secVertex, &b_jets_btag_secVertex);
-	chain->SetBranchAddress("jets_chgEmE", &jets_chgEmE, &b_jets_chgEmE);
-	chain->SetBranchAddress("jets_chgHadE", &jets_chgHadE, &b_jets_chgHadE);
-	chain->SetBranchAddress("jets_chgMuE", &jets_chgMuE, &b_jets_chgMuE);
-	chain->SetBranchAddress("jets_chg_Mult", &jets_chg_Mult, &b_jets_chg_Mult);
-	chain->SetBranchAddress("jets_neutralEmE", &jets_neutralEmE, &b_jets_neutralEmE);
-	chain->SetBranchAddress("jets_neutralHadE", &jets_neutralHadE, &b_jets_neutralHadE);
-	chain->SetBranchAddress("jets_neutral_Mult", &jets_neutral_Mult, &b_jets_neutral_Mult);
-	chain->SetBranchAddress("jets_mu_Mult", &jets_mu_Mult, &b_jets_mu_Mult);
-	chain->SetBranchAddress("jets_emf", &jets_emf, &b_jets_emf);
-	chain->SetBranchAddress("jets_ehf", &jets_ehf, &b_jets_ehf);
-	chain->SetBranchAddress("jets_n60", &jets_n60, &b_jets_n60);
-	chain->SetBranchAddress("jets_n90", &jets_n90, &b_jets_n90);
-	chain->SetBranchAddress("jets_area", &jets_area, &b_jets_area);
-	chain->SetBranchAddress("jets_mass", &jets_mass, &b_jets_mass);
-
-	if (m_jetAlgo == "KT4") {
-		chain->SetBranchAddress("jetsKT4_energy", &jetsKT4_energy, &b_jetsKT4_energy);
-		chain->SetBranchAddress("jetsKT4_et", &jetsKT4_et, &b_jetsKT4_et);
-		chain->SetBranchAddress("jetsKT4_eta", &jetsKT4_eta, &b_jetsKT4_eta);
-		chain->SetBranchAddress("jetsKT4_phi", &jetsKT4_phi, &b_jetsKT4_phi);
-		chain->SetBranchAddress("jetsKT4_pt", &jetsKT4_pt, &b_jetsKT4_pt);
-		chain->SetBranchAddress("jetsKT4_px", &jetsKT4_px, &b_jetsKT4_px);
-		chain->SetBranchAddress("jetsKT4_py", &jetsKT4_py, &b_jetsKT4_py);
-		chain->SetBranchAddress("jetsKT4_pz", &jetsKT4_pz, &b_jetsKT4_pz);
-		chain->SetBranchAddress("jetsKT4_status", &jetsKT4_status, &b_jetsKT4_status);
-		chain->SetBranchAddress("jetsKT4_theta", &jetsKT4_theta, &b_jetsKT4_theta);
-		chain->SetBranchAddress("jetsKT4_btag_TC_highPur", &jetsKT4_btag_TC_highPur, &b_jetsKT4_btag_TC_highPur);
-		chain->SetBranchAddress("jetsKT4_btag_TC_highEff", &jetsKT4_btag_TC_highEff, &b_jetsKT4_btag_TC_highEff);
-		chain->SetBranchAddress("jetsKT4_btag_jetProb", &jetsKT4_btag_jetProb, &b_jetsKT4_btag_jetProb);
-		chain->SetBranchAddress("jetsKT4_btag_jetBProb", &jetsKT4_btag_jetBProb, &b_jetsKT4_btag_jetBProb);
-		chain->SetBranchAddress("jetsKT4_btag_softEle", &jetsKT4_btag_softEle, &b_jetsKT4_btag_softEle);
-		chain->SetBranchAddress("jetsKT4_btag_softMuon", &jetsKT4_btag_softMuon, &b_jetsKT4_btag_softMuon);
-		chain->SetBranchAddress("jetsKT4_btag_softMuonNoIP", &jetsKT4_btag_softMuonNoIP, &b_jetsKT4_btag_softMuonNoIP);
-		chain->SetBranchAddress("jetsKT4_btag_secVertex", &jetsKT4_btag_secVertex, &b_jetsKT4_btag_secVertex);
-		chain->SetBranchAddress("jetsKT4_chgEmE", &jetsKT4_chgEmE, &b_jetsKT4_chgEmE);
-		chain->SetBranchAddress("jetsKT4_chgHadE", &jetsKT4_chgHadE, &b_jetsKT4_chgHadE);
-		chain->SetBranchAddress("jetsKT4_chgMuE", &jetsKT4_chgMuE, &b_jetsKT4_chgMuE);
-		chain->SetBranchAddress("jetsKT4_chg_Mult", &jetsKT4_chg_Mult, &b_jetsKT4_chg_Mult);
-		chain->SetBranchAddress("jetsKT4_neutralEmE", &jetsKT4_neutralEmE, &b_jetsKT4_neutralEmE);
-		chain->SetBranchAddress("jetsKT4_neutralHadE", &jetsKT4_neutralHadE, &b_jetsKT4_neutralHadE);
-		chain->SetBranchAddress("jetsKT4_neutral_Mult", &jetsKT4_neutral_Mult, &b_jetsKT4_neutral_Mult);
-		chain->SetBranchAddress("jetsKT4_mu_Mult", &jetsKT4_mu_Mult, &b_jetsKT4_mu_Mult);
-		chain->SetBranchAddress("jetsKT4_emf", &jetsKT4_emf, &b_jetsKT4_emf);
-		chain->SetBranchAddress("jetsKT4_ehf", &jetsKT4_ehf, &b_jetsKT4_ehf);
-		chain->SetBranchAddress("jetsKT4_n60", &jetsKT4_n60, &b_jetsKT4_n60);
-		chain->SetBranchAddress("jetsKT4_n90", &jetsKT4_n90, &b_jetsKT4_n90);
-		chain->SetBranchAddress("jetsKT4_area", &jetsKT4_area, &b_jetsKT4_area);
-		chain->SetBranchAddress("jetsKT4_mass", &jetsKT4_mass, &b_jetsKT4_mass);
-	}
-
-	if (m_jetAlgo == "SC5") {
-		chain->SetBranchAddress("NjetsSC5", &NjetsSC5, &b_NjetsSC5);
-		chain->SetBranchAddress("jetsSC5_energy", &jetsSC5_energy, &b_jetsSC5_energy);
-		chain->SetBranchAddress("jetsSC5_et", &jetsSC5_et, &b_jetsSC5_et);
-		chain->SetBranchAddress("jetsSC5_eta", &jetsSC5_eta, &b_jetsSC5_eta);
-		chain->SetBranchAddress("jetsSC5_phi", &jetsSC5_phi, &b_jetsSC5_phi);
-		chain->SetBranchAddress("jetsSC5_pt", &jetsSC5_pt, &b_jetsSC5_pt);
-		chain->SetBranchAddress("jetsSC5_px", &jetsSC5_px, &b_jetsSC5_px);
-		chain->SetBranchAddress("jetsSC5_py", &jetsSC5_py, &b_jetsSC5_py);
-		chain->SetBranchAddress("jetsSC5_pz", &jetsSC5_pz, &b_jetsSC5_pz);
-		chain->SetBranchAddress("jetsSC5_status", &jetsSC5_status, &b_jetsSC5_status);
-		chain->SetBranchAddress("jetsSC5_theta", &jetsSC5_theta, &b_jetsSC5_theta);
-		chain->SetBranchAddress("jetsSC5_btag_TC_highPur", &jetsSC5_btag_TC_highPur, &b_jetsSC5_btag_TC_highPur);
-		chain->SetBranchAddress("jetsSC5_btag_TC_highEff", &jetsSC5_btag_TC_highEff, &b_jetsSC5_btag_TC_highEff);
-		chain->SetBranchAddress("jetsSC5_btag_jetProb", &jetsSC5_btag_jetProb, &b_jetsSC5_btag_jetProb);
-		chain->SetBranchAddress("jetsSC5_btag_jetBProb", &jetsSC5_btag_jetBProb, &b_jetsSC5_btag_jetBProb);
-		chain->SetBranchAddress("jetsSC5_btag_softEle", &jetsSC5_btag_softEle, &b_jetsSC5_btag_softEle);
-		chain->SetBranchAddress("jetsSC5_btag_softMuon", &jetsSC5_btag_softMuon, &b_jetsSC5_btag_softMuon);
-		chain->SetBranchAddress("jetsSC5_btag_softMuonNoIP", &jetsSC5_btag_softMuonNoIP, &b_jetsSC5_btag_softMuonNoIP);
-		chain->SetBranchAddress("jetsSC5_btag_secVertex", &jetsSC5_btag_secVertex, &b_jetsSC5_btag_secVertex);
-		chain->SetBranchAddress("jetsSC5_chgEmE", &jetsSC5_chgEmE, &b_jetsSC5_chgEmE);
-		chain->SetBranchAddress("jetsSC5_chgHadE", &jetsSC5_chgHadE, &b_jetsSC5_chgHadE);
-		chain->SetBranchAddress("jetsSC5_chgMuE", &jetsSC5_chgMuE, &b_jetsSC5_chgMuE);
-		chain->SetBranchAddress("jetsSC5_chg_Mult", &jetsSC5_chg_Mult, &b_jetsSC5_chg_Mult);
-		chain->SetBranchAddress("jetsSC5_neutralEmE", &jetsSC5_neutralEmE, &b_jetsSC5_neutralEmE);
-		chain->SetBranchAddress("jetsSC5_neutralHadE", &jetsSC5_neutralHadE, &b_jetsSC5_neutralHadE);
-		chain->SetBranchAddress("jetsSC5_neutral_Mult", &jetsSC5_neutral_Mult, &b_jetsSC5_neutral_Mult);
-		chain->SetBranchAddress("jetsSC5_mu_Mult", &jetsSC5_mu_Mult, &b_jetsSC5_mu_Mult);
-		chain->SetBranchAddress("jetsSC5_emf", &jetsSC5_emf, &b_jetsSC5_emf);
-		chain->SetBranchAddress("jetsSC5_ehf", &jetsSC5_ehf, &b_jetsSC5_ehf);
-		chain->SetBranchAddress("jetsSC5_n60", &jetsSC5_n60, &b_jetsSC5_n60);
-		chain->SetBranchAddress("jetsSC5_n90", &jetsSC5_n90, &b_jetsSC5_n90);
-		chain->SetBranchAddress("jetsSC5_area", &jetsSC5_area, &b_jetsSC5_area);
-		chain->SetBranchAddress("jetsSC5_mass", &jetsSC5_mass, &b_jetsSC5_mass);
-	}
-	chain->SetBranchAddress("Nmets", &Nmets, &b_Nmets);
-	chain->SetBranchAddress("mets_et", &mets_et, &b_mets_et);
-	chain->SetBranchAddress("mets_phi", &mets_phi, &b_mets_phi);
-	chain->SetBranchAddress("mets_ex", &mets_ex, &b_mets_ex);
-	chain->SetBranchAddress("mets_ey", &mets_ey, &b_mets_ey);
-	chain->SetBranchAddress("mets_gen_et", &mets_gen_et, &b_mets_gen_et);
-	chain->SetBranchAddress("mets_gen_phi", &mets_gen_phi, &b_mets_gen_phi);
-	chain->SetBranchAddress("mets_sign", &mets_sign, &b_mets_sign);
-	chain->SetBranchAddress("mets_sumEt", &mets_sumEt, &b_mets_sumEt);
-	chain->SetBranchAddress("mets_unCPhi", &mets_unCPhi, &b_mets_unCPhi);
-	chain->SetBranchAddress("mets_unCPt", &mets_unCPt, &b_mets_unCPt);
-	chain->SetBranchAddress("mets_et_muonCor", &mets_et_muonCor, &b_mets_et_muonCor);
-	chain->SetBranchAddress("mets_phi_muonCor", &mets_phi_muonCor, &b_mets_phi_muonCor);
-	chain->SetBranchAddress("mets_et_JESCor", &mets_et_JESCor, &b_mets_et_JESCor);
-	chain->SetBranchAddress("mets_phi_JESCor", &mets_phi_JESCor, &b_mets_phi_JESCor);
-
-	if (m_metAlgo == "KT4") {
-		chain->SetBranchAddress("NmetsKT4", &NmetsKT4, &b_NmetsKT4);
-		chain->SetBranchAddress("metsKT4_et", &metsKT4_et, &b_metsKT4_et);
-		chain->SetBranchAddress("metsKT4_phi", &metsKT4_phi, &b_metsKT4_phi);
-		chain->SetBranchAddress("metsKT4_ex", &metsKT4_ex, &b_metsKT4_ex);
-		chain->SetBranchAddress("metsKT4_ey", &metsKT4_ey, &b_metsKT4_ey);
-		chain->SetBranchAddress("metsKT4_sumEt", &metsKT4_sumEt, &b_metsKT4_sumEt);
-		chain->SetBranchAddress("metsKT4_et_JESCor", &metsKT4_et_JESCor, &b_metsKT4_et_JESCor);
-		chain->SetBranchAddress("metsKT4_phi_JESCor", &metsKT4_phi_JESCor, &b_metsKT4_phi_JESCor);
-	}
-	if (m_metAlgo == "SC5") {
-		chain->SetBranchAddress("NmetsSC5", &NmetsSC5, &b_NmetsSC5);
-		chain->SetBranchAddress("metsSC5_et", &metsSC5_et, &b_metsSC5_et);
-		chain->SetBranchAddress("metsSC5_phi", &metsSC5_phi, &b_metsSC5_phi);
-		chain->SetBranchAddress("metsSC5_ex", &metsSC5_ex, &b_metsSC5_ex);
-		chain->SetBranchAddress("metsSC5_ey", &metsSC5_ey, &b_metsSC5_ey);
-		chain->SetBranchAddress("metsSC5_sumEt", &metsSC5_sumEt, &b_metsSC5_sumEt);
-		chain->SetBranchAddress("metsSC5_et_JESCor", &metsSC5_et_JESCor, &b_metsSC5_et_JESCor);
-		chain->SetBranchAddress("metsSC5_phi_JESCor", &metsSC5_phi_JESCor, &b_metsSC5_phi_JESCor);
-	}
-	if (m_metAlgo == "tcmet") {
-		chain->SetBranchAddress("Ntcmets", &Ntcmets, &b_Ntcmets);
-		chain->SetBranchAddress("tcmets_et", &tcmets_et, &b_tcmets_et);
-		chain->SetBranchAddress("tcmets_phi", &tcmets_phi, &b_tcmets_phi);
-		chain->SetBranchAddress("tcmets_ex", &tcmets_ex, &b_tcmets_ex);
-		chain->SetBranchAddress("tcmets_ey", &tcmets_ey, &b_tcmets_ey);
-		chain->SetBranchAddress("tcmets_sumEt", &tcmets_sumEt, &b_tcmets_sumEt);
-		chain->SetBranchAddress("tcmets_et_muonCor", &tcmets_et_muonCor, &b_tcmets_et_muonCor);
-		chain->SetBranchAddress("tcmets_phi_muonCor", &tcmets_phi_muonCor, &b_tcmets_phi_muonCor);
-	}
-
-	chain->SetBranchAddress("Nmus", &Nmus, &b_Nmus);
-	chain->SetBranchAddress("mus_energy", &mus_energy, &b_mus_energy);
-	chain->SetBranchAddress("mus_et", &mus_et, &b_mus_et);
-	chain->SetBranchAddress("mus_eta", &mus_eta, &b_mus_eta);
-	chain->SetBranchAddress("mus_phi", &mus_phi, &b_mus_phi);
-	chain->SetBranchAddress("mus_pt", &mus_pt, &b_mus_pt);
-	chain->SetBranchAddress("mus_px", &mus_px, &b_mus_px);
-	chain->SetBranchAddress("mus_py", &mus_py, &b_mus_py);
-	chain->SetBranchAddress("mus_pz", &mus_pz, &b_mus_pz);
-	chain->SetBranchAddress("mus_status", &mus_status, &b_mus_status);
-	chain->SetBranchAddress("mus_theta", &mus_theta, &b_mus_theta);
-	chain->SetBranchAddress("mus_gen_id", &mus_gen_id, &b_mus_gen_id);
-	chain->SetBranchAddress("mus_gen_phi", &mus_gen_phi, &b_mus_gen_phi);
-	chain->SetBranchAddress("mus_gen_pt", &mus_gen_pt, &b_mus_gen_pt);
-	chain->SetBranchAddress("mus_gen_pz", &mus_gen_pz, &b_mus_gen_pz);
-	chain->SetBranchAddress("mus_gen_px", &mus_gen_px, &b_mus_gen_px);
-	chain->SetBranchAddress("mus_gen_py", &mus_gen_py, &b_mus_gen_py);
-	chain->SetBranchAddress("mus_gen_eta", &mus_gen_eta, &b_mus_gen_eta);
-	chain->SetBranchAddress("mus_gen_theta", &mus_gen_theta, &b_mus_gen_theta);
-	chain->SetBranchAddress("mus_gen_et", &mus_gen_et, &b_mus_gen_et);
-	chain->SetBranchAddress("mus_gen_mother_id", &mus_gen_mother_id, &b_mus_gen_mother_id);
-	chain->SetBranchAddress("mus_gen_mother_phi", &mus_gen_mother_phi, &b_mus_gen_mother_phi);
-	chain->SetBranchAddress("mus_gen_mother_pt", &mus_gen_mother_pt, &b_mus_gen_mother_pt);
-	chain->SetBranchAddress("mus_gen_mother_pz", &mus_gen_mother_pz, &b_mus_gen_mother_pz);
-	chain->SetBranchAddress("mus_gen_mother_px", &mus_gen_mother_px, &b_mus_gen_mother_px);
-	chain->SetBranchAddress("mus_gen_mother_py", &mus_gen_mother_py, &b_mus_gen_mother_py);
-	chain->SetBranchAddress("mus_gen_mother_eta", &mus_gen_mother_eta, &b_mus_gen_mother_eta);
-	chain->SetBranchAddress("mus_gen_mother_theta", &mus_gen_mother_theta, &b_mus_gen_mother_theta);
-	chain->SetBranchAddress("mus_gen_mother_et", &mus_gen_mother_et, &b_mus_gen_mother_et);
-	chain->SetBranchAddress("mus_tkHits", &mus_tkHits, &b_mus_tkHits);
-	chain->SetBranchAddress("mus_cIso", &mus_cIso, &b_mus_cIso);
-	chain->SetBranchAddress("mus_tIso", &mus_tIso, &b_mus_tIso);
-	chain->SetBranchAddress("mus_ecalIso", &mus_ecalIso, &b_mus_ecalIso);
-	chain->SetBranchAddress("mus_hcalIso", &mus_hcalIso, &b_mus_hcalIso);
-	chain->SetBranchAddress("mus_ecalvetoDep", &mus_ecalvetoDep, &b_mus_ecalvetoDep);
-	chain->SetBranchAddress("mus_hcalvetoDep", &mus_hcalvetoDep, &b_mus_hcalvetoDep);
-	chain->SetBranchAddress("mus_calEnergyEm", &mus_calEnergyEm, &b_mus_calEnergyEm);
-	chain->SetBranchAddress("mus_calEnergyHad", &mus_calEnergyHad, &b_mus_calEnergyHad);
-	chain->SetBranchAddress("mus_calEnergyHo", &mus_calEnergyHo, &b_mus_calEnergyHo);
-	chain->SetBranchAddress("mus_calEnergyEmS9", &mus_calEnergyEmS9, &b_mus_calEnergyEmS9);
-	chain->SetBranchAddress("mus_calEnergyHadS9", &mus_calEnergyHadS9, &b_mus_calEnergyHadS9);
-	chain->SetBranchAddress("mus_calEnergyHoS9", &mus_calEnergyHoS9, &b_mus_calEnergyHoS9);
-	chain->SetBranchAddress("mus_iso03_sumPt", &mus_iso03_sumPt, &b_mus_iso03_sumPt);
-	chain->SetBranchAddress("mus_iso03_emEt", &mus_iso03_emEt, &b_mus_iso03_emEt);
-	chain->SetBranchAddress("mus_iso03_hadEt", &mus_iso03_hadEt, &b_mus_iso03_hadEt);
-	chain->SetBranchAddress("mus_iso03_hoEt", &mus_iso03_hoEt, &b_mus_iso03_hoEt);
-	chain->SetBranchAddress("mus_iso03_nTracks", &mus_iso03_nTracks, &b_mus_iso03_nTracks);
-	chain->SetBranchAddress("mus_iso05_sumPt", &mus_iso05_sumPt, &b_mus_iso05_sumPt);
-	chain->SetBranchAddress("mus_iso05_emEt", &mus_iso05_emEt, &b_mus_iso05_emEt);
-	chain->SetBranchAddress("mus_iso05_hadEt", &mus_iso05_hadEt, &b_mus_iso05_hadEt);
-	chain->SetBranchAddress("mus_iso05_hoEt", &mus_iso05_hoEt, &b_mus_iso05_hoEt);
-	chain->SetBranchAddress("mus_iso05_nTracks", &mus_iso05_nTracks, &b_mus_iso05_nTracks);
-	chain->SetBranchAddress("mus_charge", &mus_charge, &b_mus_charge);
-	chain->SetBranchAddress("mus_cm_chi2", &mus_cm_chi2, &b_mus_cm_chi2);
-	chain->SetBranchAddress("mus_cm_ndof", &mus_cm_ndof, &b_mus_cm_ndof);
-	chain->SetBranchAddress("mus_cm_chg", &mus_cm_chg, &b_mus_cm_chg);
-	chain->SetBranchAddress("mus_cm_pt", &mus_cm_pt, &b_mus_cm_pt);
-	chain->SetBranchAddress("mus_cm_px", &mus_cm_px, &b_mus_cm_px);
-	chain->SetBranchAddress("mus_cm_py", &mus_cm_py, &b_mus_cm_py);
-	chain->SetBranchAddress("mus_cm_pz", &mus_cm_pz, &b_mus_cm_pz);
-	chain->SetBranchAddress("mus_cm_eta", &mus_cm_eta, &b_mus_cm_eta);
-	chain->SetBranchAddress("mus_cm_phi", &mus_cm_phi, &b_mus_cm_phi);
-	chain->SetBranchAddress("mus_cm_theta", &mus_cm_theta, &b_mus_cm_theta);
-	chain->SetBranchAddress("mus_cm_d0dum", &mus_cm_d0dum, &b_mus_cm_d0dum);
-	chain->SetBranchAddress("mus_cm_dz", &mus_cm_dz, &b_mus_cm_dz);
-	chain->SetBranchAddress("mus_cm_vx", &mus_cm_vx, &b_mus_cm_vx);
-	chain->SetBranchAddress("mus_cm_vy", &mus_cm_vy, &b_mus_cm_vy);
-	chain->SetBranchAddress("mus_cm_vz", &mus_cm_vz, &b_mus_cm_vz);
-	chain->SetBranchAddress("mus_cm_numvalhits", &mus_cm_numvalhits, &b_mus_cm_numvalhits);
-	chain->SetBranchAddress("mus_cm_numlosthits", &mus_cm_numlosthits, &b_mus_cm_numlosthits);
-	chain->SetBranchAddress("mus_cm_d0dumErr", &mus_cm_d0dumErr, &b_mus_cm_d0dumErr);
-	chain->SetBranchAddress("mus_cm_dzErr", &mus_cm_dzErr, &b_mus_cm_dzErr);
-	chain->SetBranchAddress("mus_cm_ptErr", &mus_cm_ptErr, &b_mus_cm_ptErr);
-	chain->SetBranchAddress("mus_cm_etaErr", &mus_cm_etaErr, &b_mus_cm_etaErr);
-	chain->SetBranchAddress("mus_cm_phiErr", &mus_cm_phiErr, &b_mus_cm_phiErr);
-	chain->SetBranchAddress("mus_tk_chi2", &mus_tk_chi2, &b_mus_tk_chi2);
-	chain->SetBranchAddress("mus_tk_ndof", &mus_tk_ndof, &b_mus_tk_ndof);
-	chain->SetBranchAddress("mus_tk_chg", &mus_tk_chg, &b_mus_tk_chg);
-	chain->SetBranchAddress("mus_tk_pt", &mus_tk_pt, &b_mus_tk_pt);
-	chain->SetBranchAddress("mus_tk_px", &mus_tk_px, &b_mus_tk_px);
-	chain->SetBranchAddress("mus_tk_py", &mus_tk_py, &b_mus_tk_py);
-	chain->SetBranchAddress("mus_tk_pz", &mus_tk_pz, &b_mus_tk_pz);
-	chain->SetBranchAddress("mus_tk_eta", &mus_tk_eta, &b_mus_tk_eta);
-	chain->SetBranchAddress("mus_tk_phi", &mus_tk_phi, &b_mus_tk_phi);
-	chain->SetBranchAddress("mus_tk_theta", &mus_tk_theta, &b_mus_tk_theta);
-	chain->SetBranchAddress("mus_tk_d0dum", &mus_tk_d0dum, &b_mus_tk_d0dum);
-	chain->SetBranchAddress("mus_tk_dz", &mus_tk_dz, &b_mus_tk_dz);
-	chain->SetBranchAddress("mus_tk_vx", &mus_tk_vx, &b_mus_tk_vx);
-	chain->SetBranchAddress("mus_tk_vy", &mus_tk_vy, &b_mus_tk_vy);
-	chain->SetBranchAddress("mus_tk_vz", &mus_tk_vz, &b_mus_tk_vz);
-	chain->SetBranchAddress("mus_tk_numvalhits", &mus_tk_numvalhits, &b_mus_tk_numvalhits);
-	chain->SetBranchAddress("mus_tk_numlosthits", &mus_tk_numlosthits, &b_mus_tk_numlosthits);
-	chain->SetBranchAddress("mus_tk_d0dumErr", &mus_tk_d0dumErr, &b_mus_tk_d0dumErr);
-	chain->SetBranchAddress("mus_tk_dzErr", &mus_tk_dzErr, &b_mus_tk_dzErr);
-	chain->SetBranchAddress("mus_tk_ptErr", &mus_tk_ptErr, &b_mus_tk_ptErr);
-	chain->SetBranchAddress("mus_tk_etaErr", &mus_tk_etaErr, &b_mus_tk_etaErr);
-	chain->SetBranchAddress("mus_tk_phiErr", &mus_tk_phiErr, &b_mus_tk_phiErr);
-	chain->SetBranchAddress("mus_stamu_chi2", &mus_stamu_chi2, &b_mus_stamu_chi2);
-	chain->SetBranchAddress("mus_stamu_ndof", &mus_stamu_ndof, &b_mus_stamu_ndof);
-	chain->SetBranchAddress("mus_stamu_chg", &mus_stamu_chg, &b_mus_stamu_chg);
-	chain->SetBranchAddress("mus_stamu_pt", &mus_stamu_pt, &b_mus_stamu_pt);
-	chain->SetBranchAddress("mus_stamu_px", &mus_stamu_px, &b_mus_stamu_px);
-	chain->SetBranchAddress("mus_stamu_py", &mus_stamu_py, &b_mus_stamu_py);
-	chain->SetBranchAddress("mus_stamu_pz", &mus_stamu_pz, &b_mus_stamu_pz);
-	chain->SetBranchAddress("mus_stamu_eta", &mus_stamu_eta, &b_mus_stamu_eta);
-	chain->SetBranchAddress("mus_stamu_phi", &mus_stamu_phi, &b_mus_stamu_phi);
-	chain->SetBranchAddress("mus_stamu_theta", &mus_stamu_theta, &b_mus_stamu_theta);
-	chain->SetBranchAddress("mus_stamu_d0dum", &mus_stamu_d0dum, &b_mus_stamu_d0dum);
-	chain->SetBranchAddress("mus_stamu_dz", &mus_stamu_dz, &b_mus_stamu_dz);
-	chain->SetBranchAddress("mus_stamu_vx", &mus_stamu_vx, &b_mus_stamu_vx);
-	chain->SetBranchAddress("mus_stamu_vy", &mus_stamu_vy, &b_mus_stamu_vy);
-	chain->SetBranchAddress("mus_stamu_vz", &mus_stamu_vz, &b_mus_stamu_vz);
-	chain->SetBranchAddress("mus_stamu_numvalhits", &mus_stamu_numvalhits, &b_mus_stamu_numvalhits);
-	chain->SetBranchAddress("mus_stamu_numlosthits", &mus_stamu_numlosthits, &b_mus_stamu_numlosthits);
-	chain->SetBranchAddress("mus_stamu_d0dumErr", &mus_stamu_d0dumErr, &b_mus_stamu_d0dumErr);
-	chain->SetBranchAddress("mus_stamu_dzErr", &mus_stamu_dzErr, &b_mus_stamu_dzErr);
-	chain->SetBranchAddress("mus_stamu_ptErr", &mus_stamu_ptErr, &b_mus_stamu_ptErr);
-	chain->SetBranchAddress("mus_stamu_etaErr", &mus_stamu_etaErr, &b_mus_stamu_etaErr);
-	chain->SetBranchAddress("mus_stamu_phiErr", &mus_stamu_phiErr, &b_mus_stamu_phiErr);
-	chain->SetBranchAddress("mus_num_matches", &mus_num_matches, &b_mus_num_matches);
-	chain->SetBranchAddress("mus_id_All", &mus_id_All, &b_mus_id_All);
-	chain->SetBranchAddress("mus_id_AllGlobalMuons", &mus_id_AllGlobalMuons, &b_mus_id_AllGlobalMuons);
-	chain->SetBranchAddress("mus_id_AllStandAloneMuons", &mus_id_AllStandAloneMuons, &b_mus_id_AllStandAloneMuons);
-	chain->SetBranchAddress("mus_id_AllTrackerMuons", &mus_id_AllTrackerMuons, &b_mus_id_AllTrackerMuons);
-	chain->SetBranchAddress("mus_id_TrackerMuonArbitrated", &mus_id_TrackerMuonArbitrated, &b_mus_id_TrackerMuonArbitrated);
-	chain->SetBranchAddress("mus_id_AllArbitrated", &mus_id_AllArbitrated, &b_mus_id_AllArbitrated);
-	chain->SetBranchAddress("mus_id_GlobalMuonPromptTight", &mus_id_GlobalMuonPromptTight, &b_mus_id_GlobalMuonPromptTight);
-	chain->SetBranchAddress("mus_id_TMLastStationLoose", &mus_id_TMLastStationLoose, &b_mus_id_TMLastStationLoose);
-	chain->SetBranchAddress("mus_id_TMLastStationTight", &mus_id_TMLastStationTight, &b_mus_id_TMLastStationTight);
-	chain->SetBranchAddress("mus_id_TM2DCompatibilityLoose", &mus_id_TM2DCompatibilityLoose, &b_mus_id_TM2DCompatibilityLoose);
-	chain->SetBranchAddress("mus_id_TM2DCompatibilityTight", &mus_id_TM2DCompatibilityTight, &b_mus_id_TM2DCompatibilityTight);
-	chain->SetBranchAddress("mus_id_TMOneStationLoose", &mus_id_TMOneStationLoose, &b_mus_id_TMOneStationLoose);
-	chain->SetBranchAddress("mus_id_TMOneStationTight", &mus_id_TMOneStationTight, &b_mus_id_TMOneStationTight);
-	chain->SetBranchAddress("mus_id_TMLastStationOptimizedLowPtLoose", &mus_id_TMLastStationOptimizedLowPtLoose,
-			&b_mus_id_TMLastStationOptimizedLowPtLoose);
-	chain->SetBranchAddress("mus_id_TMLastStationOptimizedLowPtTight", &mus_id_TMLastStationOptimizedLowPtTight,
-			&b_mus_id_TMLastStationOptimizedLowPtTight);
-	chain->SetBranchAddress("Nphotons", &Nphotons, &b_Nphotons);
-	chain->SetBranchAddress("photons_energy", &photons_energy, &b_photons_energy);
-	chain->SetBranchAddress("photons_et", &photons_et, &b_photons_et);
-	chain->SetBranchAddress("photons_eta", &photons_eta, &b_photons_eta);
-	chain->SetBranchAddress("photons_phi", &photons_phi, &b_photons_phi);
-	chain->SetBranchAddress("photons_pt", &photons_pt, &b_photons_pt);
-	chain->SetBranchAddress("photons_px", &photons_px, &b_photons_px);
-	chain->SetBranchAddress("photons_py", &photons_py, &b_photons_py);
-	chain->SetBranchAddress("photons_pz", &photons_pz, &b_photons_pz);
-	chain->SetBranchAddress("photons_status", &photons_status, &b_photons_status);
-	chain->SetBranchAddress("photons_theta", &photons_theta, &b_photons_theta);
-	chain->SetBranchAddress("photons_hadOverEM", &photons_hadOverEM, &b_photons_hadOverEM);
-	chain->SetBranchAddress("photons_scEnergy", &photons_scEnergy, &b_photons_scEnergy);
-	chain->SetBranchAddress("photons_scRawEnergy", &photons_scRawEnergy, &b_photons_scRawEnergy);
-	chain->SetBranchAddress("photons_scEta", &photons_scEta, &b_photons_scEta);
-	chain->SetBranchAddress("photons_scPhi", &photons_scPhi, &b_photons_scPhi);
-	chain->SetBranchAddress("photons_scEtaWidth", &photons_scEtaWidth, &b_photons_scEtaWidth);
-	chain->SetBranchAddress("photons_scPhiWidth", &photons_scPhiWidth, &b_photons_scPhiWidth);
-	chain->SetBranchAddress("photons_tIso", &photons_tIso, &b_photons_tIso);
-	chain->SetBranchAddress("photons_ecalIso", &photons_ecalIso, &b_photons_ecalIso);
-	chain->SetBranchAddress("photons_hcalIso", &photons_hcalIso, &b_photons_hcalIso);
-	chain->SetBranchAddress("photons_isoEcalRecHitDR04", &photons_isoEcalRecHitDR04, &b_photons_isoEcalRecHitDR04);
-	chain->SetBranchAddress("photons_isoHcalRecHitDR04", &photons_isoHcalRecHitDR04, &b_photons_isoHcalRecHitDR04);
-	chain->SetBranchAddress("photons_isoSolidTrkConeDR04", &photons_isoSolidTrkConeDR04, &b_photons_isoSolidTrkConeDR04);
-	chain->SetBranchAddress("photons_isoHollowTrkConeDR04", &photons_isoHollowTrkConeDR04, &b_photons_isoHollowTrkConeDR04);
-	chain->SetBranchAddress("photons_nTrkSolidConeDR04", &photons_nTrkSolidConeDR04, &b_photons_nTrkSolidConeDR04);
-	chain->SetBranchAddress("photons_nTrkHollowConeDR04", &photons_nTrkHollowConeDR04, &b_photons_nTrkHollowConeDR04);
-	chain->SetBranchAddress("photons_isoEcalRecHitDR03", &photons_isoEcalRecHitDR03, &b_photons_isoEcalRecHitDR03);
-	chain->SetBranchAddress("photons_isoHcalRecHitDR03", &photons_isoHcalRecHitDR03, &b_photons_isoHcalRecHitDR03);
-	chain->SetBranchAddress("photons_isoSolidTrkConeDR03", &photons_isoSolidTrkConeDR03, &b_photons_isoSolidTrkConeDR03);
-	chain->SetBranchAddress("photons_isoHollowTrkConeDR03", &photons_isoHollowTrkConeDR03, &b_photons_isoHollowTrkConeDR03);
-	chain->SetBranchAddress("photons_nTrkSolidConeDR03", &photons_nTrkSolidConeDR03, &b_photons_nTrkSolidConeDR03);
-	chain->SetBranchAddress("photons_nTrkHollowConeDR03", &photons_nTrkHollowConeDR03, &b_photons_nTrkHollowConeDR03);
-	chain->SetBranchAddress("photons_isAlsoElectron", &photons_isAlsoElectron, &b_photons_isAlsoElectron);
-	chain->SetBranchAddress("photons_hasPixelSeed", &photons_hasPixelSeed, &b_photons_hasPixelSeed);
-	chain->SetBranchAddress("photons_isConverted", &photons_isConverted, &b_photons_isConverted);
-	chain->SetBranchAddress("photons_isEBGap", &photons_isEBGap, &b_photons_isEBGap);
-	chain->SetBranchAddress("photons_isEEGap", &photons_isEEGap, &b_photons_isEEGap);
-	chain->SetBranchAddress("photons_isEBEEGap", &photons_isEBEEGap, &b_photons_isEBEEGap);
-	chain->SetBranchAddress("photons_isEBPho", &photons_isEBPho, &b_photons_isEBPho);
-	chain->SetBranchAddress("photons_isEEPho", &photons_isEEPho, &b_photons_isEEPho);
-	chain->SetBranchAddress("photons_isLoosePhoton", &photons_isLoosePhoton, &b_photons_isLoosePhoton);
-	chain->SetBranchAddress("photons_isTightPhoton", &photons_isTightPhoton, &b_photons_isTightPhoton);
-	chain->SetBranchAddress("photons_r9", &photons_r9, &b_photons_r9);
-	chain->SetBranchAddress("photons_gen_et", &photons_gen_et, &b_photons_gen_et);
-	chain->SetBranchAddress("photons_gen_eta", &photons_gen_eta, &b_photons_gen_eta);
-	chain->SetBranchAddress("photons_gen_phi", &photons_gen_phi, &b_photons_gen_phi);
-	chain->SetBranchAddress("photons_gen_id", &photons_gen_id, &b_photons_gen_id);
-	chain->SetBranchAddress("Npv", &Npv, &b_Npv);
-	chain->SetBranchAddress("pv_x", &pv_x, &b_pv_x);
-	chain->SetBranchAddress("pv_y", &pv_y, &b_pv_y);
-	chain->SetBranchAddress("pv_z", &pv_z, &b_pv_z);
-	chain->SetBranchAddress("pv_xErr", &pv_xErr, &b_pv_xErr);
-	chain->SetBranchAddress("pv_yErr", &pv_yErr, &b_pv_yErr);
-	chain->SetBranchAddress("pv_zErr", &pv_zErr, &b_pv_zErr);
-	chain->SetBranchAddress("Ntracks", &Ntracks, &b_Ntracks);
-	chain->SetBranchAddress("tracks_chi2", &tracks_chi2, &b_tracks_chi2);
-	chain->SetBranchAddress("tracks_ndof", &tracks_ndof, &b_tracks_ndof);
-	chain->SetBranchAddress("tracks_chg", &tracks_chg, &b_tracks_chg);
-	chain->SetBranchAddress("tracks_pt", &tracks_pt, &b_tracks_pt);
-	chain->SetBranchAddress("tracks_px", &tracks_px, &b_tracks_px);
-	chain->SetBranchAddress("tracks_py", &tracks_py, &b_tracks_py);
-	chain->SetBranchAddress("tracks_pz", &tracks_pz, &b_tracks_pz);
-	chain->SetBranchAddress("tracks_eta", &tracks_eta, &b_tracks_eta);
-	chain->SetBranchAddress("tracks_phi", &tracks_phi, &b_tracks_phi);
-	chain->SetBranchAddress("tracks_theta", &tracks_theta, &b_tracks_theta);
-	chain->SetBranchAddress("tracks_d0dum", &tracks_d0dum, &b_tracks_d0dum);
-	chain->SetBranchAddress("tracks_dz", &tracks_dz, &b_tracks_dz);
-	chain->SetBranchAddress("tracks_vx", &tracks_vx, &b_tracks_vx);
-	chain->SetBranchAddress("tracks_vy", &tracks_vy, &b_tracks_vy);
-	chain->SetBranchAddress("tracks_vz", &tracks_vz, &b_tracks_vz);
-	chain->SetBranchAddress("tracks_numvalhits", &tracks_numvalhits, &b_tracks_numvalhits);
-	chain->SetBranchAddress("tracks_numlosthits", &tracks_numlosthits, &b_tracks_numlosthits);
-	chain->SetBranchAddress("tracks_d0dumErr", &tracks_d0dumErr, &b_tracks_d0dumErr);
-	chain->SetBranchAddress("tracks_dzErr", &tracks_dzErr, &b_tracks_dzErr);
-	chain->SetBranchAddress("tracks_ptErr", &tracks_ptErr, &b_tracks_ptErr);
-	chain->SetBranchAddress("tracks_etaErr", &tracks_etaErr, &b_tracks_etaErr);
-	chain->SetBranchAddress("tracks_phiErr", &tracks_phiErr, &b_tracks_phiErr);
-	chain->SetBranchAddress("tracks_Nrechits", &tracks_Nrechits, &b_tracks_Nrechits);
-	chain->SetBranchAddress("tracks_innerHitX", &tracks_innerHitX, &b_tracks_innerHitX);
-	chain->SetBranchAddress("tracks_innerHitY", &tracks_innerHitY, &b_tracks_innerHitY);
-	chain->SetBranchAddress("tracks_innerHitZ", &tracks_innerHitZ, &b_tracks_innerHitZ);
-	chain->SetBranchAddress("tracks_outerHitX", &tracks_outerHitX, &b_tracks_outerHitX);
-	chain->SetBranchAddress("tracks_outerHitY", &tracks_outerHitY, &b_tracks_outerHitY);
-	chain->SetBranchAddress("tracks_outerHitZ", &tracks_outerHitZ, &b_tracks_outerHitZ);
-	chain->SetBranchAddress("tracks_highPurity", &tracks_highPurity, &b_tracks_highPurity);
-	if (m_useMisslayers)
-		chain->SetBranchAddress("tracks_innerLayerMissingHits", &tracks_innerLayerMissingHits, &b_tracks_innerLayerMissingHits);
-	chain->SetBranchAddress("run", &run, &b_run);
-	chain->SetBranchAddress("event", &event, &b_event);
-	chain->SetBranchAddress("lumiBlock", &lumiBlock, &b_lumiBlock);
-
-	// HLT tree (nonIso ele trigger)
-	//chain2->SetBranchAddress("HLT_Ele10_SW_L1R", &HLT_Ele10_SW_L1R, &b_HLT_Ele10_SW_L1R); //(8E29, startup)
-	//cout << "GetTrigger()" << GetTrigger()<< endl;
-	if (GetTrigger()) {
-		if (HLTBit == "HLT_Ele15_LW_L1R")
-			chain2->SetBranchAddress("HLT_Ele15_LW_L1R", &HLT_Ele15_LW_L1R, &b_HLT_Ele15_LW_L1R); //v2 (1E31, ideal)
-		if (HLTBit == "HLT_Ele15_SW_L1R")
-			chain2->SetBranchAddress("HLT_Ele15_SW_L1R", &HLT_Ele15_SW_L1R, &b_HLT_Ele15_SW_L1R);
-	}
-	///------------------------  MC Truth info  ------------------------------------
-	if (!IsData()) {
-		cout << " Set MC branch address" << endl;
-		chain->SetBranchAddress("Nmc_doc", &Nmc_doc, &b_Nmc_doc);
-		chain->SetBranchAddress("mc_doc_id", &mc_doc_id, &b_mc_doc_id);
-		chain->SetBranchAddress("mc_doc_pt", &mc_doc_pt, &b_mc_doc_pt);
-		chain->SetBranchAddress("mc_doc_px", &mc_doc_px, &b_mc_doc_px);
-		chain->SetBranchAddress("mc_doc_py", &mc_doc_py, &b_mc_doc_py);
-		chain->SetBranchAddress("mc_doc_pz", &mc_doc_pz, &b_mc_doc_pz);
-		chain->SetBranchAddress("mc_doc_eta", &mc_doc_eta, &b_mc_doc_eta);
-		chain->SetBranchAddress("mc_doc_phi", &mc_doc_phi, &b_mc_doc_phi);
-		chain->SetBranchAddress("mc_doc_theta", &mc_doc_theta, &b_mc_doc_theta);
-		chain->SetBranchAddress("mc_doc_energy", &mc_doc_energy, &b_mc_doc_energy);
-		chain->SetBranchAddress("mc_doc_status", &mc_doc_status, &b_mc_doc_status);
-		chain->SetBranchAddress("mc_doc_charge", &mc_doc_charge, &b_mc_doc_charge);
-		chain->SetBranchAddress("mc_doc_mother_id", &mc_doc_mother_id, &b_mc_doc_mother_id);
-		chain->SetBranchAddress("mc_doc_grandmother_id", &mc_doc_grandmother_id, &b_mc_doc_grandmother_id);
-		chain->SetBranchAddress("mc_doc_ggrandmother_id", &mc_doc_ggrandmother_id, &b_mc_doc_ggrandmother_id);
-		chain->SetBranchAddress("mc_doc_mother_pt", &mc_doc_mother_pt, &b_mc_doc_mother_pt);
-		chain->SetBranchAddress("mc_doc_vertex_x", &mc_doc_vertex_x, &b_mc_doc_vertex_x);
-		chain->SetBranchAddress("mc_doc_vertex_y", &mc_doc_vertex_y, &b_mc_doc_vertex_y);
-		chain->SetBranchAddress("mc_doc_vertex_z", &mc_doc_vertex_z, &b_mc_doc_vertex_z);
-		chain->SetBranchAddress("mc_doc_mass", &mc_doc_mass, &b_mc_doc_mass);
-		chain->SetBranchAddress("mc_doc_numOfDaughters", &mc_doc_numOfDaughters, &b_mc_doc_numOfDaughters);
-		chain->SetBranchAddress("mc_doc_numOfMothers", &mc_doc_numOfMothers, &b_mc_doc_numOfMothers);
-
-		if (m_studyPDFunc) {
-			cout << "Set PDF branch address" << endl;
-			chain2->SetBranchAddress("PDFWcteq66_0", &PDFWcteq66_0, &b_PDFWcteq66_0);
-			chain2->SetBranchAddress("PDFWcteq66_1", &PDFWcteq66_1, &b_PDFWcteq66_1);
-			chain2->SetBranchAddress("PDFWcteq66_10", &PDFWcteq66_10, &b_PDFWcteq66_10);
-			chain2->SetBranchAddress("PDFWcteq66_11", &PDFWcteq66_11, &b_PDFWcteq66_11);
-			chain2->SetBranchAddress("PDFWcteq66_12", &PDFWcteq66_12, &b_PDFWcteq66_12);
-			chain2->SetBranchAddress("PDFWcteq66_13", &PDFWcteq66_13, &b_PDFWcteq66_13);
-			chain2->SetBranchAddress("PDFWcteq66_14", &PDFWcteq66_14, &b_PDFWcteq66_14);
-			chain2->SetBranchAddress("PDFWcteq66_15", &PDFWcteq66_15, &b_PDFWcteq66_15);
-			chain2->SetBranchAddress("PDFWcteq66_16", &PDFWcteq66_16, &b_PDFWcteq66_16);
-			chain2->SetBranchAddress("PDFWcteq66_17", &PDFWcteq66_17, &b_PDFWcteq66_17);
-			chain2->SetBranchAddress("PDFWcteq66_18", &PDFWcteq66_18, &b_PDFWcteq66_18);
-			chain2->SetBranchAddress("PDFWcteq66_19", &PDFWcteq66_19, &b_PDFWcteq66_19);
-			chain2->SetBranchAddress("PDFWcteq66_2", &PDFWcteq66_2, &b_PDFWcteq66_2);
-			chain2->SetBranchAddress("PDFWcteq66_20", &PDFWcteq66_20, &b_PDFWcteq66_20);
-			chain2->SetBranchAddress("PDFWcteq66_21", &PDFWcteq66_21, &b_PDFWcteq66_21);
-			chain2->SetBranchAddress("PDFWcteq66_22", &PDFWcteq66_22, &b_PDFWcteq66_22);
-			chain2->SetBranchAddress("PDFWcteq66_23", &PDFWcteq66_23, &b_PDFWcteq66_23);
-			chain2->SetBranchAddress("PDFWcteq66_24", &PDFWcteq66_24, &b_PDFWcteq66_24);
-			chain2->SetBranchAddress("PDFWcteq66_25", &PDFWcteq66_25, &b_PDFWcteq66_25);
-			chain2->SetBranchAddress("PDFWcteq66_26", &PDFWcteq66_26, &b_PDFWcteq66_26);
-			chain2->SetBranchAddress("PDFWcteq66_27", &PDFWcteq66_27, &b_PDFWcteq66_27);
-			chain2->SetBranchAddress("PDFWcteq66_28", &PDFWcteq66_28, &b_PDFWcteq66_28);
-			chain2->SetBranchAddress("PDFWcteq66_29", &PDFWcteq66_29, &b_PDFWcteq66_29);
-			chain2->SetBranchAddress("PDFWcteq66_3", &PDFWcteq66_3, &b_PDFWcteq66_3);
-			chain2->SetBranchAddress("PDFWcteq66_30", &PDFWcteq66_30, &b_PDFWcteq66_30);
-			chain2->SetBranchAddress("PDFWcteq66_31", &PDFWcteq66_31, &b_PDFWcteq66_31);
-			chain2->SetBranchAddress("PDFWcteq66_32", &PDFWcteq66_32, &b_PDFWcteq66_32);
-			chain2->SetBranchAddress("PDFWcteq66_33", &PDFWcteq66_33, &b_PDFWcteq66_33);
-			chain2->SetBranchAddress("PDFWcteq66_34", &PDFWcteq66_34, &b_PDFWcteq66_34);
-			chain2->SetBranchAddress("PDFWcteq66_35", &PDFWcteq66_35, &b_PDFWcteq66_35);
-			chain2->SetBranchAddress("PDFWcteq66_36", &PDFWcteq66_36, &b_PDFWcteq66_36);
-			chain2->SetBranchAddress("PDFWcteq66_37", &PDFWcteq66_37, &b_PDFWcteq66_37);
-			chain2->SetBranchAddress("PDFWcteq66_38", &PDFWcteq66_38, &b_PDFWcteq66_38);
-			chain2->SetBranchAddress("PDFWcteq66_39", &PDFWcteq66_39, &b_PDFWcteq66_39);
-			chain2->SetBranchAddress("PDFWcteq66_4", &PDFWcteq66_4, &b_PDFWcteq66_4);
-			chain2->SetBranchAddress("PDFWcteq66_40", &PDFWcteq66_40, &b_PDFWcteq66_40);
-			chain2->SetBranchAddress("PDFWcteq66_41", &PDFWcteq66_41, &b_PDFWcteq66_41);
-			chain2->SetBranchAddress("PDFWcteq66_42", &PDFWcteq66_42, &b_PDFWcteq66_42);
-			chain2->SetBranchAddress("PDFWcteq66_43", &PDFWcteq66_43, &b_PDFWcteq66_43);
-			chain2->SetBranchAddress("PDFWcteq66_44", &PDFWcteq66_44, &b_PDFWcteq66_44);
-			chain2->SetBranchAddress("PDFWcteq66_5", &PDFWcteq66_5, &b_PDFWcteq66_5);
-			chain2->SetBranchAddress("PDFWcteq66_6", &PDFWcteq66_6, &b_PDFWcteq66_6);
-			chain2->SetBranchAddress("PDFWcteq66_7", &PDFWcteq66_7, &b_PDFWcteq66_7);
-			chain2->SetBranchAddress("PDFWcteq66_8", &PDFWcteq66_8, &b_PDFWcteq66_8);
-			chain2->SetBranchAddress("PDFWcteq66_9", &PDFWcteq66_9, &b_PDFWcteq66_9);
-		}
-	}
-	///------------------------  MC Truth info (END) ------------------------------------
-
-}//End Init()
-
 double ana::getTotalEvents(const double nevent[][5][nmctype], short cut, short k_start, short k_end, short njbegin) const {
 	double totalT = 0; //total for a particular mc type
 
@@ -11340,7 +9629,8 @@ double ana::getTotalEvents(const double nevent[][5][nmctype], short cut, short k
 
 vector<TLorentzVector> ana::GetMCTopEvent() {
 	TLorentzVector blep_mc, thad_mc, tlep_mc, bhad_mc, Whad_mc, Wlep_mc, neutrino_mc, electron_mc;
-	short tlepPID(0), thadPID(0), WlepPID(0), WhadPID(0), blepPID(0), bhadPID(0), electronPID(0);
+	vector<TLorentzVector> QsFromW, MCEvent;
+	float tlepPID(0), thadPID(0), WlepPID(0), WhadPID(0), blepPID(0), bhadPID(0), electronPID(0);
 	//use neutrino from W-decay from top-decay as reference particle
 	for (unsigned int x = 0; x < Nmc_doc; x++) {
 		bool isneutrino = fabs(mc_doc_id->at(x)) == 12//electron neutrino
@@ -11351,12 +9641,14 @@ vector<TLorentzVector> ana::GetMCTopEvent() {
 			thadPID = -tlepPID;
 			WlepPID = mc_doc_mother_id->at(x);
 			WhadPID = -WlepPID;
-			blepPID = 5 * (int) (WlepPID / 24);
+			blepPID = 5 * (WlepPID / 24);
 			bhadPID = -blepPID;
-			electronPID = -11 * (int) (mc_doc_id->at(x) / 12); //opposite sign of the electron neutrino
+			electronPID = -11 *(mc_doc_id->at(x) / 12); //opposite sign of the electron neutrino
 			neutrino_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
 		}
 	}
+	if(tlepPID == 0 || thadPID == 0 || WlepPID == 0 || WhadPID == 0 || blepPID == 0 || bhadPID == 0 || electronPID == 0)
+		return MCEvent;
 	for (unsigned int x = 0; x < Nmc_doc; x++) {
 		bool isBlep = mc_doc_id->at(x) == blepPID && mc_doc_grandmother_id->at(x) == tlepPID;
 		bool isBhad = mc_doc_id->at(x) == bhadPID && mc_doc_grandmother_id->at(x) == thadPID;
@@ -11365,6 +9657,7 @@ vector<TLorentzVector> ana::GetMCTopEvent() {
 		bool isWhad = mc_doc_id->at(x) == WhadPID;
 		bool isWlep = mc_doc_id->at(x) == WlepPID;
 		bool isElectron = mc_doc_id->at(x) == electronPID && mc_doc_mother_id->at(x) == WlepPID;
+		bool isQfromW = mc_doc_mother_id->at(x) == WhadPID;
 
 		if (isBlep)
 			blep_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
@@ -11372,58 +9665,55 @@ vector<TLorentzVector> ana::GetMCTopEvent() {
 			bhad_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
 		else if (isThad) {
 			thad_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
-			fasthist_[fastmctype][kmthad_mc2]->Fill(mc_doc_mass->at(x));
 		} else if (isTlep) {
 			tlep_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
-			fasthist_[fastmctype][kmtlep_mc2]->Fill(mc_doc_mass->at(x));
 		} else if (isWhad)
 			Whad_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
 		else if (isWlep)
 			Wlep_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
 		else if (isElectron)
 			electron_mc = TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x));
+		else if (isQfromW)
+			QsFromW.push_back(TLorentzVector(mc_doc_px->at(x), mc_doc_py->at(x), mc_doc_pz->at(x), mc_doc_energy->at(x)));
 	}
-	vector<TLorentzVector> MCEvent;
-	MCEvent.push_back(thad_mc);
-	MCEvent.push_back(tlep_mc);
-	MCEvent.push_back(bhad_mc);
-	MCEvent.push_back(blep_mc);
-	MCEvent.push_back(Whad_mc);
-	MCEvent.push_back(Wlep_mc);
-	MCEvent.push_back(neutrino_mc);
-	MCEvent.push_back(electron_mc);
+
+	MCEvent.resize(kNumMCEventPartons);
+	MCEvent[ktlep] = tlep_mc;
+	MCEvent[kthad] = thad_mc;
+	MCEvent[kblep] = blep_mc;
+	MCEvent[kbhad] = bhad_mc;
+	MCEvent[kWhad] = Whad_mc;
+	MCEvent[kWlep] = Wlep_mc;
+	MCEvent[kq1] = QsFromW[0];
+	MCEvent[kq2] = QsFromW[1];
+	MCEvent[kelectron] = electron_mc;
+	MCEvent[kneutrino] = neutrino_mc;
+	//add quarks from hadronic W decay
+	fasthist_[fastmctype_][kWhadPartons]->Fill(QsFromW.size());
 	return MCEvent;
 
 }
 
 void ana::fillMCTopEventHists() {
-	TLorentzVector blep, thad, tlep, bhad, Whad, Wlep, neutrino, electron;
 	vector<TLorentzVector> MCEvent = GetMCTopEvent();
-	thad = MCEvent[0];
-	tlep = MCEvent[1];
-	bhad = MCEvent[2];
-	blep = MCEvent[3];
-	Whad = MCEvent[4];
-	Wlep = MCEvent[5];
-	neutrino = MCEvent[6];
-	electron = MCEvent[7];
+	if(MCEvent.size() == 0)
+		return;
+	TLorentzVector zprime = TLorentzVector(MCEvent[ktlep] + MCEvent[kthad]);
 
-	TLorentzVector zprime = TLorentzVector(tlep + thad);
+	fasthist_[fastmctype_][kneutrino_pz_mc]->Fill(MCEvent[kneutrino].Pz());
+	fasthist_[fastmctype_][kmtlep_mc]->Fill(MCEvent[ktlep].M());
+	fasthist_[fastmctype_][kmthad_mc]->Fill(MCEvent[kthad].M());
 
-	fasthist_[fastmctype][kneutrino_pz_mc]->Fill(neutrino.Pz());
-	fasthist_[fastmctype][kmtlep_mc]->Fill(tlep.M());
-	fasthist_[fastmctype][kmthad_mc]->Fill(thad.M());
-
-	fasthist_[fastmctype][kRecoWlepmass_mc]->Fill(Wlep.M());
-	fasthist_[fastmctype][kRecoWhadmass_mc]->Fill(Whad.M());
-	fasthist_[fastmctype][kMttbar_mc]->Fill(zprime.M());
-	fasthist_[fastmctype][kthad_pt_mc]->Fill(thad.Pt());
-	fasthist_[fastmctype][ktlep_pt_mc]->Fill(tlep.Pt());
-	if (fastmctype >= Zprime_M500GeV_W5GeV) {
+	fasthist_[fastmctype_][kmWlep_mc]->Fill(MCEvent[kWlep].M());
+	fasthist_[fastmctype_][kmWhad_mc]->Fill(MCEvent[kWhad].M());
+	fasthist_[fastmctype_][kMttbar_mc]->Fill(zprime.M());
+	fasthist_[fastmctype_][kthad_pt_mc]->Fill(MCEvent[kthad].Pt());
+	fasthist_[fastmctype_][ktlep_pt_mc]->Fill(MCEvent[ktlep].Pt());
+	if (fastmctype_ >= Zprime_M500GeV_W5GeV) {
 		for (unsigned int x = 0; x < Nmc_doc; x++) {
 			bool zprime = fabs(mc_doc_id->at(x)) == 32;
 			if (zprime)
-				fasthist_[fastmctype][kMZprime_mc]->Fill(mc_doc_mass->at(x));
+				fasthist_[fastmctype_][kMZprime_mc]->Fill(mc_doc_mass->at(x));
 		}
 
 	}
