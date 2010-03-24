@@ -1478,8 +1478,8 @@ public:
   ana();
   ~ana(){};
     
-
-  bool EventLoop();// the main analysis 
+  bool    Begin(); //init before main analysis
+  bool    EventLoop();// the main analysis 
 
   //Methods to call from anascript.C
   void	  SetInputFile(const char* fname);
@@ -1529,7 +1529,7 @@ public:
   void SetLHCEnergyInTeV(double val)   { m_LHCEnergyInTeV    = val; };
   void SetRunOnSD(bool val)            { m_runOnSD           = val; };
   void SetRunOnMyHLTskim(bool val)     { m_runOnMyHLTskim    = val; };
-
+  void PrintGenParticles(int nevent);
 
   //switch to preclue missing layers as these are not in 314 data samples
   void UseMissLayers(bool val)         { m_useMisslayers     = val; };
@@ -1552,6 +1552,7 @@ private:
   void   CheckAvailableJetMET();
   void   Init(); //initialize tree branches
   void   ReadSelectedBranches() const;
+
 
   //geometry
   float calcDeltaR(const float phi1, const float eta1, const float phi2, const float eta2) const;
@@ -1920,21 +1921,6 @@ private:
   v3D_TH2       h_QCDest_isoVmet_NES_uw;  //[nLevel][7][nmc] unweighted
   v3D_TH2       h_QCDest_isoVmet_NES_uw_barrel;
   v3D_TH2       h_QCDest_isoVmet_NES_uw_endcap;  
-
-  // NB: actually the following plots can be derived from the isoVmet scatter plot using projection,
-  //     but right now keeping them so that we can just plot it without extra macro.
-  // a) reliso: no MET cut
-  v3D_TH1       h_QCDest_iso_NES; //[nLevel=11][nj=7][nmc=16] weighted
-  v3D_TH1       h_QCDest_iso_NES_barrel;
-  v3D_TH1       h_QCDest_iso_NES_endcap;
-  // b) reliso: fail MET cut
-  v3D_TH1       h_QCDest_iso_NES_loMET;
-  v3D_TH1       h_QCDest_iso_NES_loMET_barrel;
-  v3D_TH1       h_QCDest_iso_NES_loMET_endcap;
-  // c) reliso: pass MET cut
-  v3D_TH1       h_QCDest_iso_NES_hiMET;
-  v3D_TH1       h_QCDest_iso_NES_hiMET_barrel;
-  v3D_TH1       h_QCDest_iso_NES_hiMET_endcap;
 
   // AES plan A
   v2D_TH1       h_QCDest_CombRelIso_AES_planA1_e20; //[7][nclass]//no !conv cut

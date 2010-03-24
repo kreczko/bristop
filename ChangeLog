@@ -1,6 +1,12 @@
 //#====================================================#
 //# Last update:
 //
+// 23 Mar 2010: update drive script & HLT skim eff for new MG W/Z+jets samples.
+//              small update in DefineCrossSectionAlpgen7TeV().
+// 20 Mar 2010: add Begin() - call before EventLoop().
+//              add public method to PrintGenParticles(n).
+// 18 Mar 2010: remove 1D reliso NES plots (redundant).
+//              update HLT skim eff for new MG w/z+jets (pending).
 // 17 Mar 2010: small correction (h_QCDest_isoVmet_NES_barrel/endcap not filled).
 // 16 Mar 2010: clean up, small correction.
 // 15 Mar 2010: - take out redundant weight parameter in fillHistoDataAndMC().

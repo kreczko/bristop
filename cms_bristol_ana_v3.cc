@@ -1,6 +1,12 @@
 //#====================================================#
 //# Last update:
 //
+// 23 Mar 2010: update drive script & HLT skim eff for new MG W/Z+jets samples.
+//              small update in DefineCrossSectionAlpgen7TeV().
+// 20 Mar 2010: add Begin() - call before EventLoop().
+//              add public method to PrintGenParticles(n).
+// 18 Mar 2010: remove 1D reliso NES plots (redundant).
+//              update HLT skim eff for new MG w/z+jets (pending).
 // 17 Mar 2010: small correction (h_QCDest_isoVmet_NES_barrel/endcap not filled).
 // 16 Mar 2010: clean up, small correction.
 // 15 Mar 2010: - take out redundant weight parameter in fillHistoDataAndMC().
@@ -482,48 +488,48 @@ void ana::DefineCrossSectionAlpgen7TeV(){
     cout << "      because mctype of 23-27 is used to identify Alpgen tt0j-tt4j, and it clashes" << endl;
     cout << "      with mctype of 1-10 corresponding to the ttbar decay modes." << endl;
     cout << "      Also, the ttbar column in S/B and MC tables is not filled." <<endl;
-    cout << "\n\n  **  Alpgen Et " << signal_Alpgen_matching_threshold << "  **\n\n";
-      
-    vector<double> Alpgen_xsec;
+  }
+  cout << "\n\n  **  Alpgen Et " << signal_Alpgen_matching_threshold << "  **\n\n";
+  vector<double> Alpgen_xsec;
   
-    if (signal_Alpgen_matching_threshold==30) {     // Alpgen, Et30
-      Alpgen_xsec.push_back(  79.5  ); //tt0j
-      Alpgen_xsec.push_back(  58.5  ); //tt1j
-      Alpgen_xsec.push_back(  27.0  ); //tt2j
-      Alpgen_xsec.push_back(   9.17 ); //tt3j
-      Alpgen_xsec.push_back(   2.52 ); //tt4j
-    }
-    else if (signal_Alpgen_matching_threshold==40) {   // Alpgen, Et40
-      Alpgen_xsec.push_back(  79.6   );  //tt0j
-      Alpgen_xsec.push_back(  42.6   );  //tt1j
-      Alpgen_xsec.push_back(  14.8   );  //tt2j
-      Alpgen_xsec.push_back(   3.87  );  //tt3j
-      Alpgen_xsec.push_back(   0.828 );  //tt4j
-    }
-    else if (signal_Alpgen_matching_threshold==50) {    // Alpgen, Et50
-      Alpgen_xsec.push_back(  79.5   );  //tt0j
-      Alpgen_xsec.push_back(  32.5   );  //tt1j
-      Alpgen_xsec.push_back(   8.92  );  //tt2j
-      Alpgen_xsec.push_back(   1.88  );  //tt3j
-      Alpgen_xsec.push_back(   0.327 );  //tt4j
-    }
+  if (signal_Alpgen_matching_threshold==30) {     // Alpgen, Et30
+    Alpgen_xsec.push_back(  79.5  ); //tt0j
+    Alpgen_xsec.push_back(  58.5  ); //tt1j
+    Alpgen_xsec.push_back(  27.0  ); //tt2j
+    Alpgen_xsec.push_back(   9.17 ); //tt3j
+    Alpgen_xsec.push_back(   2.52 ); //tt4j
+  }
+  else if (signal_Alpgen_matching_threshold==40) {   // Alpgen, Et40
+    Alpgen_xsec.push_back(  79.6   );  //tt0j
+    Alpgen_xsec.push_back(  42.6   );  //tt1j
+    Alpgen_xsec.push_back(  14.8   );  //tt2j
+    Alpgen_xsec.push_back(   3.87  );  //tt3j
+    Alpgen_xsec.push_back(   0.828 );  //tt4j
+  }
+  else if (signal_Alpgen_matching_threshold==50) {    // Alpgen, Et50
+    Alpgen_xsec.push_back(  79.5   );  //tt0j
+    Alpgen_xsec.push_back(  32.5   );  //tt1j
+    Alpgen_xsec.push_back(   8.92  );  //tt2j
+    Alpgen_xsec.push_back(   1.88  );  //tt3j
+    Alpgen_xsec.push_back(   0.327 );  //tt4j
+  }
 
-    // compute the total LO cross section
-    double total_alpgen_signal_xsec = 0;
-    for(size_t i=0; i<Alpgen_xsec.size(); i++){
-      cout << "LO xsec( tt" << i << "j ):  " << Alpgen_xsec.at(i) << " pb" << endl;
-      total_alpgen_signal_xsec += Alpgen_xsec.at(i);
-    }
-    cout << endl;
-    // normalize cross section to NLO
-    const double k_factor_alpgen = 165.0 / total_alpgen_signal_xsec;
-      
-    cross_section["tt0j"] = Alpgen_xsec.at(0) * k_factor_alpgen;
-    cross_section["tt1j"] = Alpgen_xsec.at(1) * k_factor_alpgen;
-    cross_section["tt2j"] = Alpgen_xsec.at(2) * k_factor_alpgen;
-    cross_section["tt3j"] = Alpgen_xsec.at(3) * k_factor_alpgen;
-    cross_section["tt4j"] = Alpgen_xsec.at(4) * k_factor_alpgen;
-  }//ttnj alpgen
+  // compute the total LO cross section
+  double total_alpgen_signal_xsec = 0;
+  for(size_t i=0; i<Alpgen_xsec.size(); i++){
+    cout << "LO xsec( tt" << i << "j ):  " << Alpgen_xsec.at(i) << " pb" << endl;
+    total_alpgen_signal_xsec += Alpgen_xsec.at(i);
+  }
+  cout << endl;
+  // normalize cross section to NLO
+  const double k_factor_alpgen = 165.0 / total_alpgen_signal_xsec;
+  
+  // define alpgen signal cross section in map
+  cross_section["tt0j"] = Alpgen_xsec.at(0) * k_factor_alpgen;
+  cross_section["tt1j"] = Alpgen_xsec.at(1) * k_factor_alpgen;
+  cross_section["tt2j"] = Alpgen_xsec.at(2) * k_factor_alpgen;
+  cross_section["tt3j"] = Alpgen_xsec.at(3) * k_factor_alpgen;
+  cross_section["tt4j"] = Alpgen_xsec.at(4) * k_factor_alpgen;
 
 }// DefineCrossSectionAlpgen7TeV
 //-------------------------------------------------------------------------------------------
@@ -627,9 +633,9 @@ void ana::SetEventWeightMap(){ //only if run on MC
      cout << "\nSummer09 7 TeV, Madgraph my HLT skim efficiency:" << endl;
      cout << "(note: nexp = Ninit * w / skim eff)" << endl;
      ///                         N_skim / N_ori    * pres
-     const double skimEff_ttj =  610804 /  983964. ;
-     const double skimEff_wj  = 2081537 / 8109289. ;
-     const double skimEff_zj  =  381190 / 1068735. ;
+     const double skimEff_ttj =   610804 /   983964. ; //old
+     const double skimEff_wj  =  2573745 / 10054895. ; //new
+     const double skimEff_zj  =   385443 /  1084921. ; //new
 
      weightMap["ttjet"] =  weightMap["ttjet"] * skimEff_ttj;
      weightMap["wjet"]  =  weightMap["wjet"]  * skimEff_wj; 
@@ -1492,19 +1498,6 @@ void ana::BookHistograms_QCD(){
      iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_uw_barrel, "QCDest_isoVmet_NES_uw_barrel",	"RelIso v MET (NES uw barrel)", 70,0,1.4, 50,0,50);
      iso_addHisto_nlevel_nj_nmc(h_QCDest_isoVmet_NES_uw_endcap, "QCDest_isoVmet_NES_uw_endcap", "RelIso v MET (NES uw endcap)", 70,0,1.4, 50,0,50);
 
-     // iso plots
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES,              "QCDest_iso_NES",              "RelIso (NES)",              140, 0, 1.4 );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_barrel,       "QCDest_iso_NES_barrel",       "RelIso (NES barrel)",       140, 0, 1.4 );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_endcap,       "QCDest_iso_NES_endcap",       "RelIso (NES endcap)",       140, 0, 1.4 );
-
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET,        "QCDest_iso_NES_hiMET",        "RelIso (NES hiMET)",        140, 0, 1.4 );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET_barrel, "QCDest_iso_NES_hiMET_barrel", "RelIso (NES hiMET barrel)", 140, 0, 1.4 );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_hiMET_endcap, "QCDest_iso_NES_hiMET_endcap", "RelIso (NES hiMET endcap)", 140, 0, 1.4 );
-
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET,        "QCDest_iso_NES_loMET",        "RelIso (NES loMET)",        140, 0, 1.4 );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET_barrel, "QCDest_iso_NES_loMET_barrel", "RelIso (NES loMET barrel)", 140, 0, 1.4 );
-     iso_addHisto_nlevel_nj_nmc(h_QCDest_iso_NES_loMET_endcap, "QCDest_iso_NES_loMET_endcap", "RelIso (NES loMET endcap)", 140, 0, 1.4 );
-
    }//if m_plotRelisoNES
 
 }//end
@@ -1756,18 +1749,8 @@ void ana::BookHistograms_PDFunc(){
 //====================================================================================
 
 
-
-
-
-//====================================================================================
-//
-//                                MAIN   EVENT   LOOP
-//
-//====================================================================================
-bool ana::EventLoop(){ 
-
-
-   if(m_debug) cout << "Starting EventLoop()"<< endl;
+bool ana::Begin(){
+   if(m_debug) cout << "Starting Begin()"<< endl;
 
    if(nfile==0) { cout << "No input file found, stop."<< endl; return false; }
 
@@ -1777,15 +1760,31 @@ bool ana::EventLoop(){
 
    // Get the number of events/entries in the file chain
    Long64_t nEvents = chain->GetEntries(); 
-   Long64_t nEventsAvail = nEvents;
+   //   Long64_t nEventsAvail = nEvents;
    if(nEvents==0) { cout << "No input event found, stop." << endl; return false; }
-
 
    if(GetTrigger()) { chain->AddFriend(chain2); }
 
-
    // Read only selected branches to reduce cpu time
    ReadSelectedBranches();
+
+   return true;
+}//end Begin()
+
+
+
+//====================================================================================
+//
+//                                MAIN   EVENT   LOOP
+//
+//====================================================================================
+bool ana::EventLoop(){ 
+  
+
+   // Get the number of events/entries in the file chain
+   Long64_t nEvents = chain->GetEntries(); 
+   Long64_t nEventsAvail = nEvents;
+   //if(nEvents==0) { cout << "No input event found, stop." << endl; return false; }
 
 
    BookHistograms();
@@ -3341,45 +3340,45 @@ bool ana::EventLoop(){
      if(m_debug) cout << " Applying event selection" << endl;
 
      if(goodrun) { //Event in GOOD run list
-       FillEventCounter(1, ntj, mctype); //TEST
+       FillEventCounter(1, ntj, mctype);
 
        if(fired_single_em) {  //Trigger
-	 FillEventCounter(2, ntj, mctype); //TEST
+	 FillEventCounter(2, ntj, mctype);
 
 	 // Electron checks
 	 if(nGoodEle > 0){
-	   FillEventCounter(3, ntj, mctype); //TEST
+	   FillEventCounter(3, ntj, mctype);
 	   
 	   // Isolated electron
 	   if(nGoodIsoEle > 0){
-	     FillEventCounter(4, ntj, mctype); //TEST
+	     FillEventCounter(4, ntj, mctype);
 	     
 	     if(nGoodIsoEle == 1){
-	       FillEventCounter(5, ntj, mctype); //TEST	     
+	       FillEventCounter(5, ntj, mctype);
   
 	       if(!isMuon){ // Muon Veto 
-		 FillEventCounter(6, ntj, mctype); //TEST
+		 FillEventCounter(6, ntj, mctype);
 
 		 if( this_met > METCUT ){  // MET
-		   FillEventCounter(7, ntj, mctype); //TEST
+		   FillEventCounter(7, ntj, mctype);
 
 		   if(!isZ){ // Z Veto
-		     FillEventCounter(8, ntj, mctype); //TEST
+		     FillEventCounter(8, ntj, mctype);
 
 		     if(!isConversion){  //Conversion Veto
-		       FillEventCounter(9, ntj, mctype); //TEST
+		       FillEventCounter(9, ntj, mctype);
 
 		       if( ( m_rejectEndcapEle==false && !isDifferentInteraction ) ||  // PV check (DIFFZ)
 			   ( m_rejectEndcapEle==true  && isBarrel ) ) {     // ele eta cut
 
-			 FillEventCounter(10, ntj, mctype); //TEST		 
+			 FillEventCounter(10, ntj, mctype);
 			 e_plus_jet_pass = true;
 
 			 if(m_nbtag_SSV >= 1){ //at least one +tag
-			   FillEventCounter(11, ntj, mctype); //TEST
+			   FillEventCounter(11, ntj, mctype);
 
 			   if(m_nbtag_SSV >= 2){ //at least two +tag			     
-			     FillEventCounter(12, ntj, mctype); //TEST
+			     FillEventCounter(12, ntj, mctype);
 			   }
 			   /*
 			   if(ntaggable > 0){ // taggable
@@ -4501,8 +4500,6 @@ bool ana::EventLoop(){
 
      // Break down table for QCD
      if( mc_sample_has_QCD ) {
-       //       DrawQCDTable( "QCD Table (weighted)  ", ve );
-       //       DrawQCDTable( "QCD Table (unweighted)", ve );
        DrawQCDTable( "QCD Table (unweighted)" );
        DrawQCDTable( "QCD Table (weighted)  " );
 
@@ -5230,8 +5227,6 @@ pair<double,double> ana::estimateQCD_assign_pos_neg_estimate( const double est, 
 //========================================================================================
 
 
-
-
 //----- method to add a set of TH1 histograms (for each type of MC when running on MC) ------
 void ana::addHistoDataAndMC( vector<TH1*>& h, 
 			     const string& name, const string& title,
@@ -5492,37 +5487,16 @@ void ana::iso_fillHisto_NES( const int& ilevel, const float& iso, const float& m
 
   iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES[ilevel],    iso, met, this_weight ); //weighted
   iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_uw[ilevel], iso, met, 1           ); //unweighted
-  iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES[ilevel],        iso );
-
-  if(pass_met) {   iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_hiMET[ilevel], iso ); }
-  else{            iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_loMET[ilevel], iso ); }  
 
   if(inBarrel) {
     /// BARREL
     iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_barrel[ilevel],    iso, met, this_weight ); //w
     iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_uw_barrel[ilevel], iso, met, 1           ); //uw
-
-    iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_barrel[ilevel], iso );
-    if(pass_met) {
-      //cout << "fill hiMET barrel"<< endl;
-      iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_hiMET_barrel[ilevel], iso );
-    }else{
-      //cout << "fill loMET barrel"<< endl;
-      iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_loMET_barrel[ilevel], iso );
-    }
   } else {
     /// ENDCAP
     iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_endcap[ilevel],    iso, met, this_weight ); //w
     iso_fillHisto_nlevel_nj_nmc( h_QCDest_isoVmet_NES_uw_endcap[ilevel], iso, met, 1           ); //uw
 
-    iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_endcap[ilevel], iso );
-    if(pass_met) {
-      //cout << "fill hiMET endcap"<< endl;
-      iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_hiMET_endcap[ilevel], iso );
-    }else{
-      //cout << "fill loMET endcap"<< endl;
-      iso_fillHisto_nlevel_nj_nmc( h_QCDest_iso_NES_loMET_endcap[ilevel], iso );
-    }
   }//barrel/endcap
   if(m_debug) cout << "\n++ End of << iso_fillHist_NES >>" << endl;
 }
@@ -5570,14 +5544,8 @@ void ana::iso_fillHisto_nlevel_nj_nmc(const v2D_TH2& h, const float& v1, const f
 
 
 
-
-
-
-
 //----------------------------------------------------------------------------------------
 //81FB 
-//void ana::valid_mkHisto_cut_njet(TH1F* h[][7], const string name, const string title,
-//                                 const int nbin, const float xlow, const float xup ){
 void ana::valid_mkHisto_cut_njet(v2D_TH1& h, const string& name, const string& title,
                                  const int& nbin, const float& xlow, const float& xup ){
 
@@ -5598,8 +5566,6 @@ void ana::valid_mkHisto_cut_njet(v2D_TH1& h, const string& name, const string& t
 }
 //----------------------------------------------------------------------------------------
 
-
-//void ana::valid_fillHisto(TH1F* h[][7], const bool cuts[8], int nj, double value) const {
 void ana::valid_fillHisto(v2D_TH1& h, const bool cuts[8], const double& value) const {
 
   for(int i=0; i<9; ++i){ //cut
@@ -5613,7 +5579,6 @@ void ana::valid_fillHisto(v2D_TH1& h, const bool cuts[8], const double& value) c
 }
 //81FB end
 //----------------------------------------------------------------------------------------
-
 
 
 
@@ -8789,12 +8754,8 @@ void ana::SetHistoLabelCutNjet( TH2D *this_njetsVcuts, const vector<string>& ve 
 //---------------------------------------------------------------------------------------------
 
 
-//void ana::SetHistoLabelEleID( vector<TH1*>& eid ) const {
 void ana::SetHistoLabelEleID( const vector<TH1*>& eid ) const {
   
-  //  int nhisto = 1; //data
-  //  if(!IsData()) nhisto = 16; //MC
-  // ntype = nhisto
   for (int i=0; i<ntype; ++i){
     if( i>0 && is_mc_present(i)==false ) continue;
     eid[i]->GetXaxis()->SetBinLabel(1,"allEle");
@@ -8916,7 +8877,24 @@ float ana::compute_mtw ( const TVector2& e, const TVector2& miss ) const {
 }//end compute_mtw
 //---------------------------------------------------------------------------------------------
 
+// public
+void ana::PrintGenParticles(int nevent) {
+  
+  for (int ev=0; ev<nevent; ++ev) {
+    // NB: LoadTree will complain (harmlessly) about unknown branch if SetBranchAddress  
+    //     was called for a branch not present in the ntuple
+    Long64_t lflag = chain->LoadTree(ev);
+    if (lflag < 0) break;
+        
+    chain->GetEntry(ev); //read in this event    
+    PrintGenParticles(); //print MC table
+  }
+}
+//-----------------------------------------------------------------------------------------------
+
+// private
 void ana::PrintGenParticles() const {
+
   cout << setfill('-') << setw(105) << "" << setfill(' ') << endl;
   cout << setw(3) << ""
        << setw(8) << "PDG id"
