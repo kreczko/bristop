@@ -70,6 +70,8 @@ public:
    vector<float>   *els_closestCtfTrackRef;
    vector<float>   *els_isEcalDriven;
    vector<float>   *els_isTrackerDriven;
+   vector<float>   *els_dr03TkSumPt;//add
+   vector<float>   *els_dr04TkSumPt;
    vector<float>   *els_dr03EcalRecHitSumEt;
    vector<float>   *els_dr04EcalRecHitSumEt;
    vector<float>   *els_dr03HcalTowerSumEt;
@@ -741,6 +743,8 @@ public:
    TBranch        *b_els_closestCtfTrackRef;   //!
    TBranch        *b_els_isEcalDriven;   //!
    TBranch        *b_els_isTrackerDriven;   //!
+   TBranch        *b_els_dr03TkSumPt;   //!
+   TBranch        *b_els_dr04TkSumPt;   //!
    TBranch        *b_els_dr03EcalRecHitSumEt;   //!
    TBranch        *b_els_dr04EcalRecHitSumEt;   //!
    TBranch        *b_els_dr03HcalTowerSumEt;   //!
@@ -1497,6 +1501,7 @@ public:
   void    EstimateWjets();       // run W+jets estimation
   bool    EstimateWjets(const string data, const string mc=""); // run W+jets estimation
   void    SetNtoyForM3Fit( int val ) { m_ntoy = val; } ; //number of toy exp to run for m3
+  void    SetIntLumiForM3(double val) { m_intlumiForM3 = val; }; //scale factor = intlumi wanted / original run
 
   void    SetEleETcut(float);
   void    SetMuonPTcut(float);
@@ -1527,6 +1532,7 @@ public:
   void SetJetAlgo(string val)          { m_jetAlgo           = val; };
   void SetMETAlgo(string val)          { m_metAlgo           = val; };
   void SetLHCEnergyInTeV(double val)   { m_LHCEnergyInTeV    = val; };
+  void SetIntLuminosity(double val)    { m_intlumi           = val; };
   void SetRunOnSD(bool val)            { m_runOnSD           = val; };
   void SetRunOnMyHLTskim(bool val)     { m_runOnMyHLTskim    = val; };
   void PrintGenParticles(int nevent);
@@ -1573,10 +1579,14 @@ private:
   void Set_Reliso_bin_width(float bw) { m_QCDest_reliso_bin_width = bw; };
   float Get_Reliso_bin_width() const { return m_QCDest_reliso_bin_width; };
 
+  void WriteHeaderInfo();
+
   // Histograms
   void BookHistograms();
   void BookHistograms_valid();
   void BookHistograms_basicKin();
+  void BookHistograms_electron();
+  void BookHistograms_muon();
   void BookHistograms_explore();
   void BookHistograms_nEle();
   void BookHistograms_eid();
@@ -1719,11 +1729,13 @@ private:
   string m_jetAlgo;
   string m_metAlgo;
   double m_LHCEnergyInTeV;
+  double m_intlumi;  // integrated luminosity assumed
   bool   m_runOnSD;
   bool   m_runOnMyHLTskim;
   bool   m_useMisslayers;
   short  m_muonCutNum;
   int    m_ntoy;
+  double m_intlumiForM3;
   int    m_nbtag_TCHE;
   int    m_nbtag_TCHP;
   int    m_nbtag_SSV;
@@ -1749,7 +1761,6 @@ private:
   float AES_HT_cut;
   float AES_MET_cut;
   bool  AES_useSimpleZveto;
-  float intlumi;   // integrated luminosity assumed
   bool  useNewReliso;
 
   string doSystematics;
@@ -1789,7 +1800,6 @@ private:
   v2D_TH1     valid_trackPt;      //[9][7]
 
   // basic
-  //v2D_TH1F h_ele_ET2;//[4][nclass];
   // - ele
   vector<TH1*>  h_nele;    //[nclass];
   v2D_TH1       h_ele_ET;  //[4][nclass];
@@ -1804,6 +1814,54 @@ private:
   // - met
   vector<TH1*>  h_metAlone;     //[nclass]; //per MC type
   vector<TH1*>  h_metAlone_phi; //[nclass];
+
+
+  // electron variables
+
+  vector<TH1*>  h_ele_hadOverEm_barrel;
+  vector<TH1*>  h_ele_hadOverEm_endcap;
+
+  vector<TH1*>  h_ele_dEtaIn_barrel;
+  vector<TH1*>  h_ele_dEtaIn_endcap;
+
+  vector<TH1*>  h_ele_dPhiIn_barrel;
+  vector<TH1*>  h_ele_dPhiIn_endcap;
+
+  vector<TH1*>  h_ele_sigmaIEtaIEta_barrel;
+  vector<TH1*>  h_ele_sigmaIEtaIEta_endcap;
+
+  vector<TH1*>  h_ele_EoverPIn_barrel;
+  vector<TH1*>  h_ele_EoverPIn_endcap;
+
+  vector<TH1*>  h_ele_tIso_barrel; //tk iso Default
+  vector<TH1*>  h_ele_tIso_endcap;
+  vector<TH1*>  h_ele_cIso_barrel; //calo iso Default
+  vector<TH1*>  h_ele_cIso_endcap;
+
+  vector<TH1*>  h_ele_tIso_dr03_barrel; //tk iso DR=0.3
+  vector<TH1*>  h_ele_tIso_dr03_endcap;
+  vector<TH1*>  h_ele_tIso_dr04_barrel; //tk iso DR=0.4
+  vector<TH1*>  h_ele_tIso_dr04_endcap;
+
+  vector<TH1*>  h_ele_cIso_dr03_barrel; //calo iso
+  vector<TH1*>  h_ele_cIso_dr03_endcap;
+  vector<TH1*>  h_ele_cIso_dr04_barrel;
+  vector<TH1*>  h_ele_cIso_dr04_endcap;
+
+  vector<TH1*>  h_ele_eIso_dr03_barrel; //Ecal iso
+  vector<TH1*>  h_ele_eIso_dr03_endcap;
+  vector<TH1*>  h_ele_eIso_dr04_barrel;
+  vector<TH1*>  h_ele_eIso_dr04_endcap;
+
+  vector<TH1*>  h_ele_hIso_dr03_barrel; //Hcal iso
+  vector<TH1*>  h_ele_hIso_dr03_endcap;
+  vector<TH1*>  h_ele_hIso_dr04_barrel;
+  vector<TH1*>  h_ele_hIso_dr04_endcap;
+
+  // muon variables
+  vector<TH1*>  h_muon_normchi2;
+  vector<TH1*>  h_muon_d0;
+  vector<TH1*>  h_muon_tkHits;
 
   // explore
   vector<TH1*>  h_exp_ele_et;     //[nclass];  // selected ele et
@@ -2116,6 +2174,8 @@ void ana::Init(){
    els_closestCtfTrackRef = 0;
    els_isEcalDriven = 0;
    els_isTrackerDriven = 0;
+   els_dr03TkSumPt = 0;
+   els_dr04TkSumPt = 0;
    els_dr03EcalRecHitSumEt = 0;
    els_dr04EcalRecHitSumEt = 0;
    els_dr03HcalTowerSumEt = 0;
@@ -2769,6 +2829,8 @@ void ana::Init(){
    chain->SetBranchAddress("els_closestCtfTrackRef", &els_closestCtfTrackRef, &b_els_closestCtfTrackRef);
    chain->SetBranchAddress("els_isEcalDriven", &els_isEcalDriven, &b_els_isEcalDriven);
    chain->SetBranchAddress("els_isTrackerDriven", &els_isTrackerDriven, &b_els_isTrackerDriven);
+   chain->SetBranchAddress("els_dr03TkSumPt", &els_dr03TkSumPt, &b_els_dr03TkSumPt);
+   chain->SetBranchAddress("els_dr04TkSumPt", &els_dr04TkSumPt, &b_els_dr04TkSumPt);
    chain->SetBranchAddress("els_dr03EcalRecHitSumEt", &els_dr03EcalRecHitSumEt, &b_els_dr03EcalRecHitSumEt);
    chain->SetBranchAddress("els_dr04EcalRecHitSumEt", &els_dr04EcalRecHitSumEt, &b_els_dr04EcalRecHitSumEt);
    chain->SetBranchAddress("els_dr03HcalTowerSumEt", &els_dr03HcalTowerSumEt, &b_els_dr03HcalTowerSumEt);

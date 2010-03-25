@@ -1,8 +1,14 @@
 //#====================================================#
 //# Last update:
 //
-// 23 Mar 2010: update drive script & HLT skim eff for new MG W/Z+jets samples.
-//              small update in DefineCrossSectionAlpgen7TeV().
+// 25 Mar 2010: revise eid and muon plots.
+// 24 Mar 2010: - add public method SetIntLuminosity(), replaced intlumi with m_intlumi.
+//              - changed default int lumi from 20/pb to 10/pb.
+//              - add public method SetIntLumiForM3(m_intlumiForM3).
+//              - write some info to file.
+//              - revise m3 fit.
+// 23 Mar 2010: - update drive script & HLT skim eff for new MG W/Z+jets samples.
+//              - small update in DefineCrossSectionAlpgen7TeV().
 // 20 Mar 2010: add Begin() - call before EventLoop().
 //              add public method to PrintGenParticles(n).
 // 18 Mar 2010: remove 1D reliso NES plots (redundant).
@@ -237,7 +243,7 @@ void ana::SetOutputFirstName(const string name) {
 	 << setw(18) << "N(events)"  
 	 << setw(12) << "weight"
 	 << setw(15) << "xsec"
-	 << setw(14) << "Nexp (L=" << intlumi<< "/pb)";
+	 << setw(14) << "Nexp (L=" << m_intlumi<< "/pb)";
     cout << "\n--------------------------------------------------------------------------------------------\n";
     for(size_t i=0; i<mc_names.size(); ++i){
 
@@ -251,7 +257,7 @@ void ana::SetOutputFirstName(const string name) {
 
       // print out cross-sections
       cout << setw(14) << GetCrossSection(mc_names.at(i)) << " pb";
-      cout << setw(14) << GetCrossSection(mc_names.at(i))*intlumi << endl;      
+      cout << setw(14) << GetCrossSection(mc_names.at(i))*m_intlumi << endl;      
       cout << setprecision(6);
     }
     cout << "--------------------------------------------------------------------------------------------\n";
@@ -331,6 +337,7 @@ void ana::PrintCuts() const {
   else         cout << " This run uses   MONTE CARLO   Data\n\n";
   cout << "***********************************************\n\n";
   cout << "  LHC c.o.m Energy :  "<< m_LHCEnergyInTeV << " TeV\n" << endl;
+  cout << "  Int. luminosity for normalization:  "<< m_intlumi << " pb-1\n" << endl;
   cout << "***********************************************\n" << endl;
   if(checkTrig) cout << "  Trigger required :   " << HLTBit << endl;
   else          cout << "  Trigger not required" << endl;
@@ -547,7 +554,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
    for(size_t i=0 ; i<mc_names.size(); ++i){
      long n = GetNinit( mc_names.at(i) ) ;
      if( n>0 )
-       weightMap[ mc_names.at(i) ] = GetCrossSection( mc_names.at(i) ) * intlumi / n;
+       weightMap[ mc_names.at(i) ] = GetCrossSection( mc_names.at(i) ) * m_intlumi / n;
      else
        weightMap[ mc_names.at(i) ] = 0;
    }
@@ -692,10 +699,12 @@ ana::ana(){
    m_jetAlgo                 = "Default";
    m_metAlgo                 = "calojet_mujes";
    m_LHCEnergyInTeV          = 7.0; //Default is 7 TeV
+   m_intlumi                 = 10.0; // integrated luminosity pb-1
    m_runOnSD                 = false;
    m_runOnMyHLTskim          = false;
    m_useMisslayers           = false;
    m_ntoy                    = 2;
+   m_intlumiForM3            = 10.0; //pb-1
    m_muonCutNum              = 0;
    // pass flag
    pass_met                  = false;
@@ -714,8 +723,6 @@ ana::ana(){
    AES_useSimpleZveto       = true;
    m_eID                    = robustTight; //enum
 
-   // integrated luminosity
-   intlumi                 = 20.0; //pb-1
    useNewReliso            = true;
    doSystematics           = "";
    sysSample               = "";
@@ -796,6 +803,11 @@ void ana::ReadSelectedBranches() const {
    chain->SetBranchStatus("els_dPhiIn",1);
    chain->SetBranchStatus("els_eOverPIn",1);
    chain->SetBranchStatus("els_tIso",1);
+   chain->SetBranchStatus("els_cIso",1);
+   chain->SetBranchStatus("els_dr03TkSumPt",1);
+   chain->SetBranchStatus("els_dr03EcalRecHitSumEt",1);
+   chain->SetBranchStatus("els_dr03HcalTowerSumEt",1);
+   chain->SetBranchStatus("els_dr04TkSumPt",1);
    chain->SetBranchStatus("els_dr04EcalRecHitSumEt",1);
    chain->SetBranchStatus("els_dr04HcalTowerSumEt",1);
    chain->SetBranchStatus("els_d0dum",1);
@@ -1000,6 +1012,26 @@ void ana::CheckAvailableJetMET(){
 
 
 
+void ana::WriteHeaderInfo(){
+  // write some useful header info to file
+  TString myinfo( Form("IsData=%d, Ecm=%.1f TeV, intlumi=%.1f/pb", 
+		       datafile, m_LHCEnergyInTeV, m_intlumi ) 
+		  );
+  histf->WriteObject( &myinfo,  myinfo );
+
+  TH1D *info = new TH1D("info","header info: isData, Ecm, intlumi",3,0,3);
+  info->SetBinContent( 1, datafile         );
+  info->SetBinContent( 2, m_LHCEnergyInTeV );
+  info->SetBinContent( 3, m_intlumi        );
+  info->GetXaxis()->SetBinLabel(1,"IsData");
+  info->GetXaxis()->SetBinLabel(2,"Ecm (TeV)");
+  info->GetXaxis()->SetBinLabel(3,"intlumi (/pb)");
+  info->SetOption("h text0");
+  info->SetMarkerSize(2);
+  info->SetStats(0);
+  info->Write();
+  delete info;
+}
 
 
 //====================================================================================
@@ -1014,9 +1046,10 @@ void ana::BookHistograms(){
 
   if(m_doValidation) BookHistograms_valid();
   BookHistograms_basicKin();
+  BookHistograms_electron();
+  BookHistograms_muon();
   BookHistograms_explore();
   BookHistograms_nEle();
-  //  BookHistograms_nEle_eid();
   BookHistograms_ed0();
   if(m_studyZveto) BookHistograms_zVeto();
   BookHistograms_met();
@@ -1146,6 +1179,88 @@ void ana::BookHistograms_basicKin(){
    addHistoDataAndMC( h_metAlone_phi, "metAlone_phi", "MET #phi (no cut)",   50,-3.2,3.2);   
   
 }//end BookHistogram_basic()
+//--------------------------------------------------------------------------------------
+
+void ana::BookHistograms_electron(){
+  //========================
+  //
+  //   Electron variables
+  //
+  //========================
+  if(m_debug) cout << "Starting BookHistograms_electron()"<< endl;
+
+  TDirectory *dir_ele = histf->mkdir("electron","Electron ID and isol variables (pass et,eta)");
+  dir_ele->cd();
+
+  addHistoDataAndMC( h_ele_hadOverEm_barrel, "ele_hadOverEm_barrel", "H/E Barrel",       50, 0, 0.1 );
+  addHistoDataAndMC( h_ele_hadOverEm_endcap, "ele_hadOverEm_endcap", "H/E Endcap",       50, 0, 0.1 );
+
+  addHistoDataAndMC( h_ele_dEtaIn_barrel, "ele_dEtaIn_barrel", "|#Delta#eta_{in}| Barrel",   50, 0, 0.02 );
+  addHistoDataAndMC( h_ele_dEtaIn_endcap, "ele_dEtaIn_endcap", "|#Delta#eta_{in}| Endcap",   50, 0, 0.02 );
+
+  addHistoDataAndMC( h_ele_dPhiIn_barrel, "ele_dPhiIn_barrel", "|#Delta#Phi_{in}| Barrel",   50, 0, 0.1 );
+  addHistoDataAndMC( h_ele_dPhiIn_endcap, "ele_dPhiIn_endcap", "|#Delta#Phi_{in}| Endcap",   50, 0, 0.1 );
+
+  addHistoDataAndMC( h_ele_sigmaIEtaIEta_barrel, "ele_sigmaIEtaIEta_barrel", "#sigma_{i#etai#eta} Barrel",  50, 0, 0.06 );
+  addHistoDataAndMC( h_ele_sigmaIEtaIEta_endcap, "ele_sigmaIEtaIEta_endcap", "#sigma_{i#etai#eta} Endcap",  50, 0, 0.06 );
+
+  addHistoDataAndMC( h_ele_EoverPIn_barrel, "ele_EoverPIn_barrel", "E/P_{in} Barrel",    50, 0, 10 );
+  addHistoDataAndMC( h_ele_EoverPIn_endcap, "ele_EoverPIn_endcap", "E/P_{in} Endcap",    50, 0, 10 );
+
+  // for 35X ntuples
+  //  addHistoDataAndMC( h_ele_fBrem_barrel, "ele_fBrem_barrel", "fBrem Barrel",    100, 0, 10 );
+  //  addHistoDataAndMC( h_ele_fBrem_endcap, "ele_fBrem_endcap", "fBrem Endcap",    100, 0, 10 );
+
+  // tk iso (Default)
+  addHistoDataAndMC( h_ele_tIso_barrel, "ele_tIso_barrel", "Trk Iso Barrel",    52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_tIso_endcap, "ele_tIso_endcap", "Trk Iso Endcap",    52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_cIso_barrel, "ele_cIso_barrel", "Calo Iso Barrel",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_cIso_endcap, "ele_cIso_endcap", "Calo Iso Endcap",   52, -0.8, 20 );
+
+  // tk iso
+  addHistoDataAndMC( h_ele_tIso_dr03_barrel, "ele_tIso_dr03_barrel", "Trk Iso dR03 Barrel",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_tIso_dr03_endcap, "ele_tIso_dr03_endcap", "Trk Iso dR03 Endcap",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_tIso_dr04_barrel, "ele_tIso_dr04_barrel", "Trk Iso dR04 Barrel",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_tIso_dr04_endcap, "ele_tIso_dr04_endcap", "Trk Iso dR04 Endcap",   52, -0.8, 20 );
+
+  // calo = ecal+hcal
+  addHistoDataAndMC( h_ele_cIso_dr03_barrel, "ele_cIso_dr03_barrel", "Calo Iso dR03 Barrel",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_cIso_dr03_endcap, "ele_cIso_dr03_endcap", "Calo Iso dR03 Endcap",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_cIso_dr04_barrel, "ele_cIso_dr04_barrel", "Calo Iso dR04 Barrel",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_cIso_dr04_endcap, "ele_cIso_dr04_endcap", "Calo Iso dR04 Endcap",   52, -0.8, 20 );
+
+  //ecal
+  addHistoDataAndMC( h_ele_eIso_dr03_barrel, "ele_eIso_dr03_barrel", "Ecal Iso dR03 Barrel",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_eIso_dr03_endcap, "ele_eIso_dr03_endcap", "Ecal Iso dR03 Endcap",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_eIso_dr04_barrel, "ele_eIso_dr04_barrel", "Ecal Iso dR04 Barrel",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_eIso_dr04_endcap, "ele_eIso_dr04_endcap", "Ecal Iso dR04 Endcap",   52, -0.8, 20 );
+
+  //hcal
+  addHistoDataAndMC( h_ele_hIso_dr03_barrel, "ele_hIso_dr03_barrel", "Hcal Iso dR03 Barrel",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_hIso_dr03_endcap, "ele_hIso_dr03_endcap", "Hcal Iso dR03 Endcap",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_hIso_dr04_barrel, "ele_hIso_dr04_barrel", "Hcal Iso dR04 Barrel",   52, -0.8, 20 );
+  addHistoDataAndMC( h_ele_hIso_dr04_endcap, "ele_hIso_dr04_endcap", "Hcal Iso dR04 Endcap",   52, -0.8, 20 );
+
+}//end BookHistograms_ele_var()
+//--------------------------------------------------------------------------------------
+
+
+void ana::BookHistograms_muon(){
+  //=======================
+  //
+  //   Muon variables
+  //
+  //=======================
+  if(m_debug) cout << "Starting BookHistograms_muon()"<< endl;
+
+  TDirectory *dir_muon = histf->mkdir("muon","Muon variables");
+  dir_muon->cd();
+  
+  addHistoDataAndMC( h_muon_normchi2,  "muon_normchi2",  "muon chi2/ndf (GM pass pt/eta)",    50,   0,  20 );
+  addHistoDataAndMC( h_muon_d0,        "muon_d0",        "muon d0 (BS) (GM pass pt/eta)",     50,   0, 0.5 );
+  addHistoDataAndMC( h_muon_tkHits,    "muon_tkHits",    "muon tk hits (GM pass pt/eta)",     40,   0,  40 );
+  
+}//end muon
 //--------------------------------------------------------------------------------------
 
 
@@ -1784,8 +1899,9 @@ bool ana::EventLoop(){
    // Get the number of events/entries in the file chain
    Long64_t nEvents = chain->GetEntries(); 
    Long64_t nEventsAvail = nEvents;
-   //if(nEvents==0) { cout << "No input event found, stop." << endl; return false; }
 
+
+   WriteHeaderInfo();
 
    BookHistograms();
 
@@ -1796,51 +1912,13 @@ bool ana::EventLoop(){
 
 //////// Plots below to be reviewed
 
-
    //ttbar decay code from PDG codes
    TH1F *sig_all_mctype   = new TH1F("sig_all_mctype","signal decay modes (all, unweighted)",10,1,11);
-   //signal_acceptance  = new TH1F("signal_acceptance","signal acceptance (unweighted) ttbar decay modes",10,1,11);
-
-   //Electron Plots
-   TH1F *h_hadOverEm_barrel = new TH1F("h_hadOverEm_barrel","H/E - Barrel",            100, 0, 0.5);
-   TH1F *h_EOverPIn_barrel  = new TH1F("h_EOverPIn_barrel", "E/P (In) - Barrel",       100, 0, 10.0);
-   TH1F *h_dEtaIn_barrel    = new TH1F("h_dEtaIn_barrel",   "Delta Eta (In) - Barrel", 100, -0.05, 0.05);
-   TH1F *h_dPhiIn_barrel    = new TH1F("h_dPhiIn_barrel",   "Delta Phi (In) - Barrel", 100, -0.2, 0.2);
-   TH1F *h_hadOverEm_endcap = new TH1F("h_hadOverEm_endcap","H/E - Endcap",            100, 0, 0.5);
-   TH1F *h_EOverPIn_endcap  = new TH1F("h_EOverPIn_endcap", "E/P (In) - Endcap",       100, 0, 10.0);
-   TH1F *h_dEtaIn_endcap    = new TH1F("h_dEtaIn_endcap",   "Delta Eta (In) - Endcap", 100, -0.05, 0.05);
-   TH1F *h_dPhiIn_endcap    = new TH1F("h_dPhiIn_endcap",   "Delta Phi (In) - Endcap", 100, -0.2, 0.2);
-   TH1F *h_cIso_barrel = new TH1F("h_cIso_barrel","Cal Iso - Barrel",20,0,10);
-   TH1F *h_tIso_barrel = new TH1F("h_tIso_barrel","Trk Iso - Barrel",20,0,10);
-   TH1F *h_cIso_endcap = new TH1F("h_cIso_endcap","Cal Iso - Endcap",20,0,10);
-   TH1F *h_tIso_endcap = new TH1F("h_tIso_endcap","Trk Iso - Endcap",20,0,10);
-   h_hadOverEm_barrel->Sumw2();
-   h_EOverPIn_barrel ->Sumw2();
-   h_dEtaIn_barrel   ->Sumw2();
-   h_dPhiIn_barrel   ->Sumw2();
-   h_hadOverEm_endcap->Sumw2();
-   h_EOverPIn_endcap ->Sumw2();
-   h_dEtaIn_endcap   ->Sumw2();
-   h_dPhiIn_endcap   ->Sumw2();
-   h_cIso_barrel->Sumw2();
-   h_tIso_barrel->Sumw2();
-   h_cIso_endcap->Sumw2();
-   h_tIso_endcap->Sumw2();
-
-
-   //Muon Plots
-   TH1F *h_muon_chi2 = new TH1F("h_muon_chi2","muon chi2 (normalized) (pass pt,eta cut)",100,0,20);
-   TH1F *h_muon_d0_unCor = new TH1F("h_muon_d0_unCor",  "muon d0 (uncorrected )(pass pt,eta cut) ",  1000,-0.5, 0.5);
-   TH1F *h_muon_d0   = new TH1F("h_muon_d0",  "muon d0 (corrected using BeamSpot) (pass pt,eta cut)", 1000,-0.5, 0.5);
-   TH1F *h_muon_hits = new TH1F("h_muon_hits","muon hits (pass pt,eta cut)",40,0,40);
-   h_muon_chi2->Sumw2();
-   h_muon_d0_unCor->Sumw2();
-   h_muon_d0  ->Sumw2();
-   h_muon_hits->Sumw2();
-
 
    // Histogram to store signal eff.acc
    TH1D *SignalVars = new TH1D("SignalVars","Signal acceptance and efficiency",4,0,4);
+
+//////// Plots above to be reviewed
 
 
 
@@ -2461,21 +2539,32 @@ bool ana::EventLoop(){
 	   //Separate into endcap and barrel
 	   	   
 	   if (fabs(els_eta->at(i)) < 1.442) { //Barrel
+	     
+	     // Plot electron ID quantities
+	     // NEW 25-3-2010 (after ET cut, in barrel)
+	     fillHistoDataAndMC( h_ele_hadOverEm_barrel,      els_hadOverEm->at(i)           );
+	     fillHistoDataAndMC( h_ele_dEtaIn_barrel,         fabs(els_dEtaIn->at(i))        );
+	     fillHistoDataAndMC( h_ele_dPhiIn_barrel,         fabs(els_dPhiIn->at(i))        );
+	     fillHistoDataAndMC( h_ele_sigmaIEtaIEta_barrel,  els_sigmaIEtaIEta->at(i)       );
+	     fillHistoDataAndMC( h_ele_EoverPIn_barrel,       els_eOverPIn->at(i)            );
 
-	     //Find out what isolation looks like (out of the box)
-	     h_cIso_barrel->Fill(els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i), this_weight); //<-- add weight
-	     h_tIso_barrel->Fill(els_tIso->at(i), this_weight);
-	     
-	     //Plot electron ID quantities	 
-	     h_hadOverEm_barrel->Fill(els_hadOverEm->at(i), this_weight);
-	     h_EOverPIn_barrel->Fill(els_eOverPIn->at(i), this_weight);
-	     h_dEtaIn_barrel->Fill(els_dEtaIn->at(i), this_weight);
-	     h_dPhiIn_barrel->Fill(els_dPhiIn->at(i), this_weight);
-	   
+	     fillHistoDataAndMC( h_ele_tIso_barrel,           els_tIso->at(i)                ); //Def
+	     fillHistoDataAndMC( h_ele_cIso_barrel,           els_cIso->at(i)                ); //Def
+
+	     fillHistoDataAndMC( h_ele_tIso_dr03_barrel,      els_dr03TkSumPt->at(i)         );
+	     fillHistoDataAndMC( h_ele_eIso_dr03_barrel,      els_dr03EcalRecHitSumEt->at(i) );
+	     fillHistoDataAndMC( h_ele_hIso_dr03_barrel,      els_dr03HcalTowerSumEt->at(i)  );
+	     fillHistoDataAndMC( h_ele_cIso_dr03_barrel,     (els_dr03EcalRecHitSumEt->at(i) + els_dr03HcalTowerSumEt->at(i)) );
+
+	     fillHistoDataAndMC( h_ele_tIso_dr04_barrel,      els_dr04TkSumPt->at(i)         );
+	     fillHistoDataAndMC( h_ele_eIso_dr04_barrel,      els_dr04EcalRecHitSumEt->at(i) );
+	     fillHistoDataAndMC( h_ele_hIso_dr04_barrel,      els_dr04HcalTowerSumEt->at(i)  );
+	     fillHistoDataAndMC( h_ele_cIso_dr04_barrel,     (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i)) );
+
+
+
 	     //Apply "Robust Tight" Electron ID
-	     
-	     //	     if (els_robustTightId->at(i) == true){
-	     if ( passEleID(i) ) {
+	     if( passEleID(i) ) {
 	       
 
 	       //Store 4 vector for "good" electron and increment counters
@@ -2506,18 +2595,31 @@ bool ana::EventLoop(){
 
 	     }	     
 	   }// end barrel
+
 	   else if (fabs(els_eta->at(i)) > 1.560 && fabs(els_eta->at(i)) < 2.5) { //Endcap
 
-	     //Find out what isolation looks like (out of the box)
-	     h_cIso_endcap->Fill(els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i), this_weight);
-	     h_tIso_endcap->Fill(els_tIso->at(i), this_weight);
-	       
-	     //Plot electron ID quantities	 
-	     h_hadOverEm_endcap->Fill(els_hadOverEm->at(i), this_weight);
-	     h_EOverPIn_endcap->Fill(els_eOverPIn->at(i), this_weight);
-	     h_dEtaIn_endcap->Fill(els_dEtaIn->at(i), this_weight);
-	     h_dPhiIn_endcap->Fill(els_dPhiIn->at(i), this_weight);
-	     
+	     // Plot electron ID quantities
+	     // NEW 25-3-2010 (after ET cut, in endcap)
+	     fillHistoDataAndMC( h_ele_hadOverEm_endcap,      els_hadOverEm->at(i)           );
+	     fillHistoDataAndMC( h_ele_dEtaIn_endcap,         fabs(els_dEtaIn->at(i))        );
+	     fillHistoDataAndMC( h_ele_dPhiIn_endcap,         fabs(els_dPhiIn->at(i))        );
+	     fillHistoDataAndMC( h_ele_sigmaIEtaIEta_endcap,  els_sigmaIEtaIEta->at(i)       );
+	     fillHistoDataAndMC( h_ele_EoverPIn_endcap,       els_eOverPIn->at(i)            );
+
+	     fillHistoDataAndMC( h_ele_tIso_endcap,           els_tIso->at(i)                );
+	     fillHistoDataAndMC( h_ele_cIso_endcap,           els_cIso->at(i)                );
+
+	     fillHistoDataAndMC( h_ele_tIso_dr03_endcap,      els_dr03TkSumPt->at(i)         );
+	     fillHistoDataAndMC( h_ele_eIso_dr03_endcap,      els_dr03EcalRecHitSumEt->at(i) );
+	     fillHistoDataAndMC( h_ele_hIso_dr03_endcap,      els_dr03HcalTowerSumEt->at(i)  );
+	     fillHistoDataAndMC( h_ele_cIso_dr03_endcap,     (els_dr03EcalRecHitSumEt->at(i) + els_dr03HcalTowerSumEt->at(i)) );
+
+	     fillHistoDataAndMC( h_ele_tIso_dr04_endcap,      els_dr04TkSumPt->at(i)         );
+	     fillHistoDataAndMC( h_ele_eIso_dr04_endcap,      els_dr04EcalRecHitSumEt->at(i) );
+	     fillHistoDataAndMC( h_ele_hIso_dr04_endcap,      els_dr04HcalTowerSumEt->at(i)  );
+	     fillHistoDataAndMC( h_ele_cIso_dr04_endcap,     (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i)) );
+
+
 	     //Apply "Robust Tight" Electron ID	       
 	     // if (els_robustTightId->at(i) > 0 ) {
 	     if ( passEleID(i) ) {
@@ -2663,17 +2765,19 @@ bool ana::EventLoop(){
 
 
 	 //Plot Muon ID quantities	 
-	 h_muon_chi2->Fill( mus_cm_chi2->at(i)/mus_cm_ndof->at(i), this_weight);  // "cm" means combinedMuon
-	 h_muon_d0_unCor->Fill(mus_cm_d0dum->at(i), this_weight );
-	 h_muon_d0->Fill(     mu_d0_corrected,   this_weight );
-	 h_muon_hits->Fill(   mus_tkHits->at(i), this_weight );
-	   
+	 // NEW 25-3-2010
+	 fillHistoDataAndMC( h_muon_normchi2, mus_cm_chi2->at(i)/mus_cm_ndof->at(i) );
+	 fillHistoDataAndMC( h_muon_d0,       mu_d0_corrected                       );
+	 fillHistoDataAndMC( h_muon_tkHits,   mus_tkHits->at(i)                     );
+
+
+
 	 //Apply V+jets Muon ID (consider only Global Muons)
 	 if ( (mus_cm_chi2->at(i)/mus_cm_ndof->at(i)) < 10 &&
 	      fabs(mu_d0_corrected) < 0.02 &&
 	      mus_tkHits->at(i) >= 11 &&
 	      mus_hcalvetoDep->at(i) < 6.0 &&  // veto cone energy
-	      mus_ecalvetoDep->at(i) < 4.0 ) {  //what else?
+	      mus_ecalvetoDep->at(i) < 4.0 ) {
 
 	   //Store 4 vector for "good" muon and increment counters
 	   TLorentzVector muo(mus_cm_px->at(i),mus_cm_py->at(i),mus_cm_pz->at(i),mus_energy->at(i)); //global muon
@@ -4451,7 +4555,7 @@ bool ana::EventLoop(){
    cout << "                             Summary Information";
    cout << "\n%------------------------------------------------------------------------------------\n";
 
-   cout << "Integrated luminosity assumed = " << intlumi << "/pb" << endl;
+   cout << "Integrated luminosity assumed = " << m_intlumi << "/pb" << endl;
    if( GetTrigger() ) cout << "Applied HLT trigger: " << HLTBit << endl;
    cout << " Electron ET cut =  " << ELE_ETCUT << "  GeV" << endl;
    cout << "     Muon PT cut =  " << MU_PTCUT  << "  GeV" << endl;
@@ -4539,7 +4643,7 @@ bool ana::EventLoop(){
      if (mc_sample_has_QCD){
        const int QCD_bc = 2;
        cout << "\n QCD" << endl;
-       cout << " New RelIso  mc" << setw(10) << intlumi <<"/pb" << endl;
+       cout << " New RelIso  mc" << setw(10) << m_intlumi <<"/pb" << endl;
        cout << "   1j" 
 	    << setw(10) << h_QCDest_CombRelIso[1][QCD_bc]->GetEntries() 
 	    << setw(10) << h_QCDest_CombRelIso[1][QCD_bc]->Integral() << endl;       
@@ -4991,7 +5095,7 @@ bool ana::EstimateQCD( const string inputFile ) {
     }// end nj loop: 0 to 4 jets
 
     cout << "-----------------------------------------------"<< endl;
-    cout << "  " << intlumi << "/pb     rb      True    Estimate     Diff" << endl;
+    cout << "  " << m_intlumi << "/pb     rb      True    Estimate     Diff" << endl;
     printf("   1 jet:   %2d %10.1f  %10.1f  %6.1f %%\n", rebin[0], nqcd_actual_sig[i][0], n_extrap[i][0], (n_extrap[i][0]/nqcd_actual_sig[i][0]-1)*100 );
     printf("   2 jet:   %2d %10.1f  %10.1f  %6.1f %%\n", rebin[1], nqcd_actual_sig[i][1], n_extrap[i][1], (n_extrap[i][1]/nqcd_actual_sig[i][1]-1)*100 ); 
     printf("   3 jet:   %2d %10.1f  %10.1f  %6.1f %%\n", rebin[2], nqcd_actual_sig[i][2], n_extrap[i][2], (n_extrap[i][2]/nqcd_actual_sig[i][2]-1)*100 );
@@ -5029,7 +5133,7 @@ bool ana::EstimateQCD( const string inputFile ) {
   fprintf(outfile, "         &   True &     True &  True (All) &  True (QCD) & True");
   fprintf(outfile, " & Estimate & Diff & $\\chi^2$/dof & Function & Range & Bin\\\\\n");
   fprintf(outfile, "         & (MC) & (%2.0f/pb) & (%2.0f/pb) & (%2.0f/pb) & (%2.0f/pb) & (%2.0f/pb) &&&&&width \\\\ \\hline\n",
-	  intlumi,intlumi,intlumi,intlumi,intlumi);
+	  m_intlumi,m_intlumi,m_intlumi,m_intlumi,m_intlumi);
 
   for (int i=0; i<nrange; ++i) { //range
 
@@ -6757,25 +6861,34 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   if (IsData()) nfit = 1;
   //----------------------------------------
 
+
+  //  TH2D *DataEvents      = (TH2D*)fdata->Get("Data_njetsVcuts"); //Data count
+
   //-----------------------------------------------------
   // true value: expected signal and bgnd events from MC
-
-  TH2D *SigEvents   = (TH2D*)fmc->Get("Signal_njetsVcuts");
-  TH2D *WjetsEvents = (TH2D*)fmc->Get("Wjets_njetsVcuts");
-  TH2D *ZjetsEvents = (TH2D*)fmc->Get("Zjets_njetsVcuts");
-  TH2D *QCDEvents   = (TH2D*)fmc->Get("QCD_njetsVcuts");
+  TH2D *SigEvents       = (TH2D*)fmc->Get("Signal_njetsVcuts");
+  TH2D *WjetsEvents     = (TH2D*)fmc->Get("Wjets_njetsVcuts");
+  TH2D *ZjetsEvents     = (TH2D*)fmc->Get("Zjets_njetsVcuts");
+  TH2D *QCDEvents       = (TH2D*)fmc->Get("QCD_njetsVcuts");
   TH2D *SingleTopEvents = (TH2D*)fmc->Get("SingleTop_njetsVcuts");
 
-  /*  
-  // use only when redoing m3 fit for 200/pb using 20/pb hist file
-  if(1){ //multiply by 10
-    SigEvents->Scale(10);
-    WjetsEvents->Scale(10);
-    ZjetsEvents->Scale(10);
-    QCDEvents->Scale(10);
-    SingleTopEvents->Scale(10);
+  
+  // use when redoing m3 fit (eg for 200/pb using 20/pb hist file (then scale by 10))
+  //  double intlumi_assumed = ((TH1D*)fdata->Get("info"))->GetBinContent(3);
+  double intlumi_assumed = m_intlumi;
+  double sf = 1.0;
+  if( m_intlumiForM3 != intlumi_assumed ) {
+    sf = m_intlumiForM3/intlumi_assumed;
+    cout << "\nm_intlumiForM3/intlumi_assumed: " << m_intlumiForM3 << " / "<< intlumi_assumed << endl;
+    cout << "scale factor: " << sf << endl << endl;
+    //DataEvents->Scale(sf);
+    SigEvents->Scale(sf);
+    WjetsEvents->Scale(sf);
+    ZjetsEvents->Scale(sf);
+    QCDEvents->Scale(sf);
+    SingleTopEvents->Scale(sf);
   }
-  */
+  
 
 
 
@@ -6807,15 +6920,21 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   }
 
 
-  double ntt_true  = SigEvents->GetBinContent(5,5); //180.70
-  double nwj_true  = WjetsEvents->GetBinContent(5,5);
-  double nzj_true  = ZjetsEvents->GetBinContent(5,5);
-  double nqcd_true = QCDEvents->GetBinContent(5,5);
-  double nstop_true = SingleTopEvents->GetBinContent(5,5);
+  int kstage = 4; //D=conv
+  if(m_rejectEndcapEle) kstage = 3; //BARREL
+
+  //  double ndata      =      DataEvents->GetBinContent(5,kstage);
+
+  double ntt_true   =       SigEvents->GetBinContent(5,kstage);
+  double nwj_true   =     WjetsEvents->GetBinContent(5,kstage);
+  double nzj_true   =     ZjetsEvents->GetBinContent(5,kstage);
+  double nqcd_true  =       QCDEvents->GetBinContent(5,kstage);
+  double nstop_true = SingleTopEvents->GetBinContent(5,kstage);
+
+
   /*
   ntt_true = 180.7; // pythia
   cout << "\n NOTE: normalize n(signal) to " << ntt_true << endl;
-
   */
 
 
@@ -6983,21 +7102,37 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   //  TFile *fout = new TFile("m3_out.root","recreate");
   //------------------------------------------------
   
-  // Book histograms to store fit results
-  TH1D *h_ntt_fit     = new TH1D("h_ntt_fit",  "n(tt) fit",  100, 0, 500*intlumi/20);
-  TH1D *h_nwj_fit     = new TH1D("h_nwj_fit",  "n(wj) fit",  100, -100, 450*intlumi/20);
-  TH1D *h_nqcd_fit    = new TH1D("h_nqcd_fit", "n(qcd) fit", 100, 0*intlumi/20, 80*intlumi/20); //rescale (20)
-  TH1D *h_nstop_fit   = new TH1D("h_nstop_fit", "n(singletop) fit", 1000, 0, 20*intlumi/20);
-  // good fit only
-  TH1D *h_ntt_goodfit   = new TH1D("h_ntt_goodfit",  "n(tt) goodfit",  100, 0, 500*intlumi/20);
-  TH1D *h_nwj_goodfit   = new TH1D("h_nwj_goodfit",  "n(wj) goodfit",  100, -100, 450*intlumi/20);
-  TH1D *h_nqcd_goodfit  = new TH1D("h_nqcd_goodfit", "n(qcd) goodfit", 100, 0*intlumi/20, 80*intlumi/20);
-  TH1D *h_nstop_goodfit = new TH1D("h_nstop_goodfit", "n(singletop) goodfit", 1000, 0, 20*intlumi/20);
 
-  TH1D *h_ntt_fiterr  = new TH1D("h_ntt_fiterr",  "error of n(ntt) fit",  1000, 0, 200);
-  TH1D *h_nwj_fiterr  = new TH1D("h_nwj_fiterr",  "error of n(wj) fit",   1000, 0, 200);
-  TH1D *h_nqcd_fiterr = new TH1D("h_nqcd_fiterr", "error of n(qcd) fit",  1000, 0, 200);//mod
-  TH1D *h_nstop_fiterr = new TH1D("h_nstop_fiterr", "error of n(singletop) fit",  1000, 0, 200);
+  // Total pseudo-event observed (ie generated)
+  TH1D *h_nevent_obs  = new TH1D("nevent_obs",   "n(event) observed",  1000, 0, 1000 );
+
+
+  // Book histograms to store fit results
+  // numbers assumed 20/pb.  amituofo
+  TH1D *h_ntt_fit     = new TH1D("ntt_fit",   "n(tt) fit",         100, -40*sf, 240*sf );
+ 
+  //  TH1D *h_ntt_fit     = new TH1D("ntt_fit",   "n(tt) fit",         100, -3*sqrt(ndata), ndata + 3*sqrt(ndata) );
+
+  TH1D *h_nwj_fit     = new TH1D("nwj_fit",   "n(wj) fit",         100, -80*sf, 200*sf );
+  TH1D *h_nqcd_fit    = new TH1D("nqcd_fit",  "n(qcd) fit",       1000,      0,  10*sf ); //expect 2 QCD for 10/pb
+  TH1D *h_nstop_fit   = new TH1D("nstop_fit", "n(singletop) fit", 1000,      0,  10*sf ); //expect 2 QCD for 10/pb
+
+
+  // good fit only
+  //  TH1D *h_ntt_goodfit   = new TH1D("ntt_goodfit",   "n(tt) goodfit",         100, 0, 500*m_intlumi/20);
+  //  TH1D *h_nwj_goodfit   = new TH1D("nwj_goodfit",   "n(wj) goodfit",         100, -100, 450*m_intlumi/20);
+  //  TH1D *h_nqcd_goodfit  = new TH1D("nqcd_goodfit",  "n(qcd) goodfit",        100, 0*m_intlumi/20, 80*m_intlumi/20);
+  //  TH1D *h_nstop_goodfit = new TH1D("nstop_goodfit", "n(singletop) goodfit", 1000, 0, 20*m_intlumi/20);
+
+  TH1D *h_ntt_goodfit   = new TH1D("ntt_goodfit",   "n(tt) goodfit",         100,  -40*sf, 240*sf );
+  TH1D *h_nwj_goodfit   = new TH1D("nwj_goodfit",   "n(wj) goodfit",         100,  -60*sf, 160*sf );
+  TH1D *h_nqcd_goodfit  = new TH1D("nqcd_goodfit",  "n(qcd) goodfit",       1000,       0,  10*sf );
+  TH1D *h_nstop_goodfit = new TH1D("nstop_goodfit", "n(singletop) goodfit", 1000,       0,  10*sf );
+
+  TH1D *h_ntt_fiterr   = new TH1D("ntt_fiterr",   "error of n(ntt) fit",        1000, 0, 200);
+  TH1D *h_nwj_fiterr   = new TH1D("nwj_fiterr",   "error of n(wj) fit",         1000, 0, 200);
+  TH1D *h_nqcd_fiterr  = new TH1D("nqcd_fiterr",  "error of n(qcd) fit",        1000, 0, 200);
+  TH1D *h_nstop_fiterr = new TH1D("nstop_fiterr", "error of n(singletop) fit",  1000, 0, 200);
 
   // Declare histograms to store number of generated (Poisson-fluctuated) events 
   // (when running on MC).
@@ -7017,22 +7152,25 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 
 
   if ( IsData()==false ) {
-    h_ntt_fluc  = new TH1D("h_ntt_fluc", "generated number of tt events (Poisson)", 100,0,1000);
-    h_nwj_fluc  = new TH1D("h_nwj_fluc", "generated number of wj events (Poisson)", 100,0,500);
-    h_nzj_fluc  = new TH1D("h_nzj_fluc", "generated number of zj events (Poisson)", 100,0,500);
-    h_nqcd_fluc = new TH1D("h_nqcd_fluc","generated number of qcd events (Poisson)", 100,0,200); //rescale (20)
-    h_nstop_fluc = new TH1D("h_nstop_fluc","generated number of singletop events (Poisson)", 100,0,100);
+    const double len_tt = 3*sqrt(ntt_true); //histo bound: [N-3sigma, N+3sigma], sigma=sqrt(N)
+    const double len_wj = 3*sqrt(nwj_true);
+
+    h_ntt_fluc   = new TH1D("ntt_fluc",  "generated number of tt events (Poisson)",        100, ntt_true-len_tt, ntt_true+len_tt );
+    h_nwj_fluc   = new TH1D("nwj_fluc",  "generated number of wj events (Poisson)",        100, nwj_true-len_wj, nwj_true+len_wj );
+    h_nzj_fluc   = new TH1D("nzj_fluc",  "generated number of zj events (Poisson)",        100, 0,  50*sf );
+    h_nqcd_fluc  = new TH1D("nqcd_fluc", "generated number of qcd events (Poisson)",       100, 0,  10*sf );
+    h_nstop_fluc = new TH1D("nstop_fluc","generated number of singletop events (Poisson)", 100, 0,  10*sf );
 
     // pull
-    h_ntt_pull  = new TH1D("h_ntt_pull",  "pull of n(tt)",  100, -5, 5);
-    h_nwj_pull  = new TH1D("h_nwj_pull",  "pull of n(wj)",  100, -5, 5);
-    h_nqcd_pull = new TH1D("h_nqcd_pull", "pull of n(qcd)", 1200, -7, 5);
-    h_nstop_pull = new TH1D("h_nstop_pull", "pull of n(singletop)", 1000, -5, 5);
+    h_ntt_pull   = new TH1D("ntt_pull",   "pull of n(tt)",         100, -5, 5 );
+    h_nwj_pull   = new TH1D("nwj_pull",   "pull of n(wj)",         100, -5, 5 );
+    h_nqcd_pull  = new TH1D("nqcd_pull",  "pull of n(qcd)",       1200, -7, 5 );
+    h_nstop_pull = new TH1D("nstop_pull", "pull of n(singletop)", 1000, -5, 5 );
 
-    h_ntt_goodpull  = new TH1D("h_ntt_goodpull",  "pull of n(tt) good",  100, -5, 5);
-    h_nwj_goodpull  = new TH1D("h_nwj_goodpull",  "pull of n(wj) good",  100, -5, 5);
-    h_nqcd_goodpull = new TH1D("h_nqcd_goodpull", "pull of n(qcd) good", 1200, -7, 5);
-    h_nstop_goodpull = new TH1D("h_nstop_goodpull", "pull of n(singletop) good", 1000, -5, 5);
+    h_ntt_goodpull   = new TH1D("ntt_goodpull",   "pull of n(tt) good",         100, -5, 5 );
+    h_nwj_goodpull   = new TH1D("nwj_goodpull",   "pull of n(wj) good",         100, -5, 5 );
+    h_nqcd_goodpull  = new TH1D("nqcd_goodpull",  "pull of n(qcd) good",       1200, -7, 5 );
+    h_nstop_goodpull = new TH1D("nstop_goodpull", "pull of n(singletop) good", 1000, -5, 5 );
 
   }
   // keep a few set of pseudo-data
@@ -7078,7 +7216,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 
 
     if (n>20) printText = false;
-    cout << "Fits carried out: " << n+1 << " of " << nfit << endl;
+    cout << "\nFits carried out: " << n+1 << " of " << nfit << endl;
     if( (n+1)%100 == 1 || (n+1)==nfit ){
       printText = true;
     }
@@ -7198,7 +7336,8 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 
     // number of event observed in data (either real or fake)
     const double n_event_obs = h_m3_data->GetEntries();
-    
+    cout << "n_event_obs: "<< n_event_obs << endl;
+    h_nevent_obs->Fill(n_event_obs);
 
     // export generated m3 histogram (pseudo-data) to RooDataHist object
     RooRealVar m3("m3","m3",0,960); //changed from 1000 to 960
@@ -7209,30 +7348,53 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
     //  2)      f i t
     //------------------------
     // signal and background histograms to make PDFs
-    RooDataHist rh_tt("rh_tt",   "tt",  m3, temp_tt);
-    RooDataHist rh_wj("rh_wj",   "wj",  m3, temp_wj);
-    RooDataHist rh_stop("rh_stop",  "singletop",  m3, temp_stop);
-    RooDataHist rh_qcd("rh_qcd", "qcd",  m3, temp_qcd);
-
+    RooDataHist rh_tt(  "rh_tt",   "tt",         m3, temp_tt   );
+    RooDataHist rh_wj(  "rh_wj",   "wj",         m3, temp_wj   );
+    RooDataHist rh_qcd( "rh_qcd",  "qcd",        m3, temp_qcd  );
+    RooDataHist rh_stop("rh_stop", "singletop",  m3, temp_stop );
     
 
     // use 0-th order interpolation
-    RooHistPdf pdf_tt ("pdf_tt",  "Signal pdf",    m3, rh_tt,  0);
-    RooHistPdf pdf_wj ("pdf_wj",  "W+jets pdf",   m3, rh_wj,  0);
-    RooHistPdf pdf_qcd( "pdf_qcd", "QCD pdf ",    m3, rh_qcd, 0);
-    RooHistPdf pdf_singletop( "pdf_singletop", "single top pdf", m3, rh_stop, 0);
+    RooHistPdf pdf_tt ( "pdf_tt",   "Signal pdf",     m3, rh_tt,   0 );
+    RooHistPdf pdf_wj ( "pdf_wj",   "W+jets pdf",     m3, rh_wj,   0 );
+    RooHistPdf pdf_qcd( "pdf_qcd",  "QCD pdf ",       m3, rh_qcd,  0 );
+    RooHistPdf pdf_stop("pdf_stop", "single top pdf", m3, rh_stop, 0 );
 
 
     // create fit model and parameters                       min    max   unit
     // limit on each parameter is 0 -- total number of observed events
-    RooRealVar ntt ("ntt",  "number of tt signal events",   -150, 2*n_event_obs, "event");
-    RooRealVar nwj ("nwj",  "number of W+jets bgnd events", -150, 2*n_event_obs, "event");
+    // set lower limit of tt and wj to: -n_event_obs
 
-    //RooRealVar ntt ("ntt",  "number of tt signal events",   -150, n_event_obs, "event");
+    // set limit to ( 0-5 sigma, N+5sigma ), sigma=sqrt(N)
+    const double lowerBound =  -10*sqrt(n_event_obs); 
+    const double upperBound = n_event_obs + 10*sqrt(n_event_obs);
+    const double n_init     =  n_event_obs/2.;
+    //    const double lowerBound =  -1*n_event_obs;
+    //    const double upperBound =   2*n_event_obs;
+
+
+    // TRY
+    RooRealVar ntt ("ntt",  "number of tt signal events",   n_init, lowerBound, upperBound, "event");
+    RooRealVar nwj ("nwj",  "number of W+jets bgnd events", n_init, lowerBound, upperBound, "event");
+
+    //    RooRealVar ntt ("ntt",  "number of tt signal events",   -1*n_event_obs, 2*n_event_obs, "event");
+    //    RooRealVar nwj ("nwj",  "number of W+jets bgnd events", -1*n_event_obs, 2*n_event_obs, "event");
+
+
+    //    RooRealVar ntt ("ntt",  "number of tt signal events",   -150, 2*n_event_obs, "event");
+    //    RooRealVar nwj ("nwj",  "number of W+jets bgnd events", -150, 2*n_event_obs, "event");
+
+    //RooRealVar ntt (" ntt",  "number of tt signal events",   -150, n_event_obs, "event");
     //RooRealVar nwj ("nwj",  "number of W+jets bgnd events", -150, n_event_obs, "event");
 
-    RooRealVar nqcd("nqcd", "number of QCD bgnd events",  nqcd_est, 0, n_event_obs, "event");
-    RooRealVar nstop("nstop", "number of single top bgnd events", nstop_exp, 0, n_event_obs, "event");
+    //// QCD and single top
+    //    RooRealVar nqcd("nqcd", "number of QCD bgnd events",           nqcd_est, 0, n_event_obs, "event");
+    //    RooRealVar nstop("nstop", "number of single top bgnd events", nstop_exp, 0, n_event_obs, "event");
+
+
+    // TRY
+    RooRealVar nqcd("nqcd",   "number of QCD bgnd events",         nqcd_est, lowerBound, upperBound, "event");
+    RooRealVar nstop("nstop", "number of single top bgnd events", nstop_exp, lowerBound, upperBound, "event");
     
    
     // add constrain to QCD PDF
@@ -7252,17 +7414,17 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
     RooGaussian nstop_constraint("nstop_constraint","nstop_constraint", 
 				 nstop, singletop_exp, singletop_exp_unc );
     // Multiply constraint with single top PDF                                      
-    RooProdPdf pdf_singletop_constraint("pdf_singletop_constraint","constrained single top pdf",
-					RooArgSet(pdf_singletop, nstop_constraint) );
+    RooProdPdf pdf_stop_constraint("pdf_stop_constraint","constrained single top pdf",
+				   RooArgSet(pdf_stop, nstop_constraint) );
 
 
 
     // Create a model with constrained QCD and single top
-    //----------------
+    //----------------------------------------------------
     if(printText) cout << " ---> Create data model" << endl;
-    RooAddPdf model2("model2", "sig+wj+qcd+stop",      
-		     RooArgList( pdf_tt, pdf_wj,  pdf_qcd_constraint, pdf_singletop_constraint ),    
-		     RooArgList(    ntt,    nwj,                nqcd,            nstop ) ) ;  
+    RooAddPdf model("model", "sig+wj+qcd+stop",      
+		    RooArgList( pdf_tt, pdf_wj,  pdf_qcd_constraint, pdf_stop_constraint ),    
+		    RooArgList(    ntt,    nwj,                nqcd,            nstop ) ) ;  
     
     
 
@@ -7270,7 +7432,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
     // Fit model to data  (with internal constraint on nqcd and nstop)
     //--------------------
     if(printText) cout << " ---> Perform RooFit" << endl;
-    model2.fitTo(data, Extended(kTRUE), Constrain( RooArgList(nqcd,nstop) ), PrintLevel(-1) );
+    model.fitTo(data, Extended(kTRUE), Constrain( RooArgList(nqcd,nstop) ), PrintLevel(-1) );
 
 
 
@@ -7314,15 +7476,15 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
       pdf_qcd_constraint.plotOn( m3frame7 );
             
       data.plotOn(m3frame8, MarkerSize(1)); //plot pseudo-data
-      model2.plotOn(m3frame8); //plot composite pdf (s+b model)
-      model2.plotOn(m3frame8,Components(pdf_tt), LineStyle(kDashed), LineColor(kBlue+1));
-      model2.plotOn(m3frame8,Components(pdf_wj), LineStyle(kDashed), LineColor(kRed+1));
-      model2.plotOn(m3frame8,Components(pdf_qcd_constraint), LineStyle(kDashed), LineColor(kOrange-6));
+      model.plotOn(m3frame8); //plot composite pdf (s+b model)
+      model.plotOn(m3frame8,Components(pdf_tt), LineStyle(kDashed), LineColor(kBlue+1));
+      model.plotOn(m3frame8,Components(pdf_wj), LineStyle(kDashed), LineColor(kRed+1));
+      model.plotOn(m3frame8,Components(pdf_qcd_constraint), LineStyle(kDashed), LineColor(kOrange-6));
       
       // single top plots
       rh_stop.plotOn( m3frame9, MarkerSize(1), DataError(etype) );
-      pdf_singletop.plotOn( m3frame10 );
-      pdf_singletop_constraint.plotOn( m3frame11 );
+      pdf_stop.plotOn( m3frame10 );
+      pdf_stop_constraint.plotOn( m3frame11 );
     }
       
     // QCD pdf
@@ -7492,6 +7654,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 
 
   // write histo to root file
+  h_nevent_obs->Write();
   h_m3_data_keep->Write();
   h_m3_data_control_keep->SetTitle("m3 (data in control reg, used as QCD template)");
   h_m3_data_control_keep->Write();
@@ -7623,7 +7786,7 @@ void ana::DrawEventPerNjetTable() const {
   }
   else {
     //  cout << "\n TEST: uses e_plus_jet (vector)\n" << endl;
-    cout << "Normalized for " << intlumi << " pb$^{-1}$" << endl;
+    cout << "Normalized for " << m_intlumi << " pb$^{-1}$" << endl;
   }
   cout << setw(23) 
        << " &" << setw(13) << "0-jet"
@@ -7672,7 +7835,7 @@ void ana::DrawMCTypeTable( const string title ) const {
   }
   cout << "\\multicolumn{7}{|l|}";
   if(first_time) cout << "{Actual number of MC events passing selection}";
-  else           cout << "{Expected number of events for " << intlumi << "/pb}";
+  else           cout << "{Expected number of events for " << m_intlumi << "/pb}";
   cout << "\\\\\\hline" << endl;
 
   cout << "           Cut       "
@@ -7743,7 +7906,7 @@ void ana::DrawMCTypeTable( const string title ) const {
 void ana::DrawSignalBGTable() const {
 
   cout << "\n%---------------------------------------------------------------------\n";
-  cout << "       Expected Signal and Background for " << intlumi << "/pb";
+  cout << "       Expected Signal and Background for " << m_intlumi << "/pb";
   cout << "\n%---------------------------------------------------------------------\n\n";
 
   cout << "\\begin{tabular}{|l|r|rr|r|}\\hline" << endl;
@@ -7816,7 +7979,7 @@ void ana::DrawQCDTable(const string QCDtitle) const {
   }
   cout << "\\multicolumn{8}{|l|}";
   if(first_time) cout << "{Break down of actual number of QCD events passing selection}";
-  else           cout << "{Break down of expected QCD events for " << intlumi << "/pb}";
+  else           cout << "{Break down of expected QCD events for " << m_intlumi << "/pb}";
   cout << "\\\\\n\\hline" << endl;
 
   cout << "           Cut       ";
@@ -7879,7 +8042,7 @@ void ana::DrawSingleTopTable( const string title ) const {
   }
   cout << "\\multicolumn{5}{|l|}";
   if(first_time) cout << "{Break down of actual number of single top events passing selection}";
-  else           cout << "{Break down of expected single top events for " << intlumi << "/pb}";
+  else           cout << "{Break down of expected single top events for " << m_intlumi << "/pb}";
   cout << "\\\\\n\\hline" << endl;
 
   cout << "          Cut        ";
@@ -7939,7 +8102,7 @@ void ana::DrawTTnjetTable( const string title ) const {
   }
   cout << "\\multicolumn{7}{|l|}";
   if(first_time) cout << "{Break down of actual number of tt+j events passing selection}";
-  else           cout << "{Break down of expected tt+j events for " << intlumi << "/pb}";
+  else           cout << "{Break down of expected tt+j events for " << m_intlumi << "/pb}";
   cout << "\\\\\n\\hline" << endl;
   cout << "          Cut        ";
   cout << " &" << setw(13) << "tt0j";
@@ -8132,7 +8295,7 @@ void ana::PrintErrorTables(vector<string> ve) const {
 	}
 
 	//e_plus_jet_errors[i][j][k] = e_plus_jet_effic_unc[i][j][k]*weightMap[kIndexmcNames[k]]*GetNinit(kIndexmcNames[k]);
-	e_plus_jet_errors[i][j][k] = e_plus_jet_effic_unc[i][j][k]*GetCrossSection(kIndexmcNames[k])*intlumi; //TL 21-8-09 (ask FB to check)
+	e_plus_jet_errors[i][j][k] = e_plus_jet_effic_unc[i][j][k]*GetCrossSection(kIndexmcNames[k])*m_intlumi; //TL 21-8-09 (ask FB to check)
 	//----------------------
 
       }//end of k loop
@@ -8143,7 +8306,7 @@ void ana::PrintErrorTables(vector<string> ve) const {
       }
       e_plus_jet_effic_unc[i][j][23] = sqrt(e_plus_jet_effic[i][j][23]*(1-e_plus_jet_effic[i][j][23])/GetNinit(ttsample));
       //e_plus_jet_errors[i][j][23] =  e_plus_jet_effic_unc[i][j][23]*weightMap[ttsample]*GetNinit(ttsample);
-      e_plus_jet_errors[i][j][23] =  e_plus_jet_effic_unc[i][j][23]*GetCrossSection(ttsample)*intlumi; //TL 21-8-09 (ask FB to check)
+      e_plus_jet_errors[i][j][23] =  e_plus_jet_effic_unc[i][j][23]*GetCrossSection(ttsample)*m_intlumi; //TL 21-8-09 (ask FB to check)
 
     }
   }
@@ -8474,7 +8637,7 @@ void ana::PrintErrorTables(vector<string> ve) const {
   myfile << "\\begin{tabular}{|l|rrr|r|}" << endl;
   myfile << "\\hline" << endl;
   myfile << "\\multicolumn{5}{|l|}";
-  myfile << "{Break down of expected single top events for " << (int)intlumi << "/pb}";
+  myfile << "{Break down of expected single top events for " << (int)m_intlumi << "/pb}";
   myfile << "\\\\\n\\hline" << endl;
 
   myfile << "            Cut      ";
@@ -8527,7 +8690,7 @@ void ana::PrintErrorTables(vector<string> ve) const {
   myfile << "\\begin{tabular}{|l|cccccc|c|}" << endl;
   myfile << "\\hline" << endl;
   myfile << "\\multicolumn{8}{|l|}";
-  myfile << "{Break down of expected QCD events for " << intlumi << "/pb}";
+  myfile << "{Break down of expected QCD events for " << m_intlumi << "/pb}";
   myfile << "\\\\\n\\hline" << endl;
   
   myfile << "            Cut      ";
@@ -8585,7 +8748,7 @@ void ana::PrintErrorTables(vector<string> ve) const {
 
 
   myfile << "\n%---------------------------------------------------------------------\n";
-  myfile << "       Expected Signal and Background for " << intlumi << "/pb";
+  myfile << "       Expected Signal and Background for " << m_intlumi << "/pb";
   myfile << "\n%---------------------------------------------------------------------\n\n";
   myfile << "\\begin{tabular}{|l|r|rr|r|}\\hline" << endl;
   myfile << "          Cut        "

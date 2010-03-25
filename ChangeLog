@@ -1,6 +1,12 @@
 //#====================================================#
 //# Last update:
 //
+// 25 Mar 2010: revise eid and muon plots.
+// 24 Mar 2010: - add public method SetIntLuminosity(), replaced intlumi with m_intlumi.
+//              - changed default int lumi from 20/pb to 10/pb.
+//              - add public method SetIntLumiForM3(m_intlumiForM3).
+//              - write some info to file.
+//              - revise m3 fit.
 // 23 Mar 2010: update drive script & HLT skim eff for new MG W/Z+jets samples.
 //              small update in DefineCrossSectionAlpgen7TeV().
 // 20 Mar 2010: add Begin() - call before EventLoop().

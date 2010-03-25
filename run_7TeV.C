@@ -16,6 +16,7 @@
 	myana->SetData(0); //1 for data, 0 for MC
 	myana->SetGoodRuns(0); //0 for all runs, 1 for good runs
         myana->SetLHCEnergyInTeV( 7 ); //LHC E_cm
+        myana->SetIntLuminosity( 10.0 ); //intlumi in pb-1
 
 	myana->CheckTrigger(1); //0 for no trigger check, 1 for single electron trigger
 	//myana->CheckTrigger(1,"HLT_Ele15_SW_L1R"); //use non-default trigger
