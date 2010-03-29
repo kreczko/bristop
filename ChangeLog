@@ -1,6 +1,24 @@
 //#====================================================#
 //# Last update:
 //
+// 28 Mar 2010: - clean up, re-order .hh
+//              - rename: SetMCFlag() -> SetGlobalMCFlag()
+//              - add ResetLocalMCFlags()
+//              - add IdentifyMcEventTypeFromFilePath()
+//              - add SetLocalMCFlagAndType()
+//              - add StudyRelisoNESatEachStage()
+//              - move some variables to private (see hh)
+//              - remove one calcDeltaR()
+//
+// 27 Mar 2010: - global replace: TH1F->TH1D, TH2F->TH2D.
+//              - clean up m3 plots.
+//              - moved QCD AES plan A/B out of EventLoop.
+//              - m_nGoodJet -> nGoodJet.
+//
+// 26 Mar 2010: - change SetJetETcut() to SetJetPTcut().
+//              - add study_mjj (mass of W->jj), add this_m3 and ii_which_3j_m3 (private).
+//              - add pass flags, replace isBarrel with pass_barrel, make goodrun, fired_single_em private.
+//
 // 25 Mar 2010: revise eid and muon plots.
 // 24 Mar 2010: - add public method SetIntLuminosity(), replaced intlumi with m_intlumi.
 //              - changed default int lumi from 20/pb to 10/pb.

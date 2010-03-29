@@ -38,7 +38,7 @@
         // Set cuts
         myana->SetEleETcut( 30.0 );
         myana->SetMuonPTcut( 20.0 );
-        myana->SetJetETcut( 30.0 );
+        myana->SetJetPTcut( 30.0 );
         myana->SetMETcut( 30.0 ); //<-----
 
 	// valid options: robustTight (Def), robustLoose, loose, tight, none

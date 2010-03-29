@@ -1491,7 +1491,7 @@ public:
   void	  SetOutputHistFile(const string name, const string mode="RECREATE");
   void	  SetOutputTextFile(const string name, const string mode="w");
 
-  void	  SetGoodRuns(bool f) { keepgood = f; };   // use all runs or just good runs?
+  void	  SetGoodRuns(bool f) { usegoodrun = f; };   // use all runs or just good runs?
   void	  SetData(bool f)     { datafile = f; };   // is this a data file
   void    CheckTrigger(bool);  // check trigger fired?  time-consuming...
   void    CheckTrigger(bool, const string hlt);
@@ -1505,7 +1505,7 @@ public:
 
   void    SetEleETcut(float);
   void    SetMuonPTcut(float);
-  void    SetJetETcut(float);
+  void    SetJetPTcut(float);
   void    SetMETcut(float);
   void    SetHTcut(float);
 
@@ -1548,7 +1548,11 @@ private:
   //-----------------
   // Intenal methods
   //-----------------
-  bool	 KeepGoodRuns()       const { return keepgood; }
+
+
+  //--------------------------
+  //  Before main loop
+  //--------------------------
   bool	 IsData()             const { return datafile; };
   bool   GetTrigger()         const { return checkTrig; };
   int    GetLimit()           const { return numlimit; };
@@ -1559,27 +1563,15 @@ private:
   void   Init(); //initialize tree branches
   void   ReadSelectedBranches() const;
 
+  void   DefineCrossSection();
+  void   DefineCrossSectionAlpgen7TeV();
+  double GetCrossSection(const string) const;
+  void   SetEventWeightMap();
+  double GetWeight(const string) const;
+  long   GetNinit(const string) const;
+  void   SetGlobalMCFlag();
 
-  //geometry
-  float calcDeltaR(const float phi1, const float eta1, const float phi2, const float eta2) const;
-  float calcDeltaR(const TLorentzVector& p1,const TLorentzVector& p2) const;
-
-  float calcDeltaEta(const TLorentzVector& p1,const TLorentzVector& p2) const;
-  float calcDeltaPhi(const TLorentzVector& p1,const TLorentzVector& p2) const;
-
-  bool  ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele);
-  bool  ConversionFinder2(const TLorentzVector& e1, int mctype, int index_selected_ele);
-  void  ConversionMCMatching(const TLorentzVector& e1, int mctype, bool isthisConversion);
-  float MCTruthMatch(float eta, float phi);
-
-  // QCD estimation
-  pair<double,double> estimateQCD_computeFitResultUncertainty( const double est, TF1* f ) const;
-  double estimateQCD_newEstimateByVaryingFitFunction( const double p1, const double p2, const double p3 ) const;
-  pair<double,double> estimateQCD_assign_pos_neg_estimate( const double est, const double new_est[2] ) const;
-  void Set_Reliso_bin_width(float bw) { m_QCDest_reliso_bin_width = bw; };
-  float Get_Reliso_bin_width() const { return m_QCDest_reliso_bin_width; };
-
-  void WriteHeaderInfo();
+  void   WriteHeaderInfo();
 
   // Histograms
   void BookHistograms();
@@ -1606,7 +1598,6 @@ private:
   void BookHistograms_event_table();
   void BookHistograms_btag();
   void BookHistograms_PDFunc();
-
 
   // Helper methods to make/fill histograms (vectors)
   typedef vector<vector<TH1*> > v2D_TH1; //TH1[][]
@@ -1635,23 +1626,69 @@ private:
   void iso_fillHisto_nlevel_nj_nmc( const v2D_TH2& h, const float&, const float&, const double& w ) const ;
 
   void fillHisto_event_tables();
-  void fillHisto_PDF_weights( TH1F* h );
-
-
-  // W+jets estimation
-  void reco_hadronicTop_highestTopPT( const std::vector<TLorentzVector>&, const int nGoodIsoEle );
-  pair<double,double> compute_M3(const std::vector<TLorentzVector>&) const;
+  void fillHisto_PDF_weights( TH1D* h );
 
   void SetHistoLabelCutNjet( TH2D *this_njetVcuts, const vector<string>& ve ) const;
   void SetHistoLabelEleID( const vector<TH1*>& h ) const;
+  // helper function for histo filling
+  bool is_mc_present(const int&) const;
 
-  void   DefineCrossSection();
-  void   DefineCrossSectionAlpgen7TeV();
-  double GetCrossSection(const string) const;
-  void   SetEventWeightMap();
-  double GetWeight(const string) const;
-  long   GetNinit(const string) const;
 
+  //--------------------
+  //  Main Analysis
+  //--------------------
+  //geometry
+  float calcDeltaR(const float& phi1, const float& eta1, const float& phi2, const float& eta2) const;
+  //float calcDeltaR(const TLorentzVector& p1,const TLorentzVector& p2) const;
+
+  float calcDeltaEta(const TLorentzVector& p1,const TLorentzVector& p2) const;
+  float calcDeltaPhi(const TLorentzVector& p1,const TLorentzVector& p2) const;
+
+  void   ResetLocalMCFlags();
+  void   IdentifyMcEventTypeFromFilePath();
+  void   IdentifyMcEventTypeFromMcTruth();  // new (to run on mixed MC) (not currently needed)
+  void   SetLocalMCFlagAndType();
+  void   PrintGenParticles() const;
+
+  float  compute_d0(const string&, const int&) const;
+  float  compute_mtw(const TVector2&, const TVector2&) const;
+  float  getRelIso(const unsigned int&) const; 
+  bool   passEleID(const unsigned int&) const;
+  bool   passHLT() const;
+  string printTimeNow() const;
+
+  // conversion
+  bool  ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele);
+  bool  ConversionFinder2(const TLorentzVector& e1, int mctype, int index_selected_ele);
+  void  ConversionMCMatching(const TLorentzVector& e1, int mctype, bool isthisConversion);
+  float MCTruthMatch(float eta, float phi);
+
+
+  // m3 (for W+jets estimation)
+  void  reco_hadronicTop_highestTopPT( const vector<TLorentzVector>&, const int& nGoodIsoEle );
+  pair<double,double> compute_M3(const vector<TLorentzVector>&);
+  void  study_mjj(const vector<TLorentzVector>&);
+
+
+  // QCD estimation
+  pair<double,double> estimateQCD_computeFitResultUncertainty( const double est, TF1* f ) const;
+  double estimateQCD_newEstimateByVaryingFitFunction( const double p1, const double p2, const double p3 ) const;
+  pair<double,double> estimateQCD_assign_pos_neg_estimate( const double est, const double new_est[2] ) const;
+  void  Set_Reliso_bin_width(float bw) { m_QCDest_reliso_bin_width = bw; };
+  float Get_Reliso_bin_width() const { return m_QCDest_reliso_bin_width; };
+
+
+  // analysis
+  void  StudyRelisoNESatEachStage();
+  void  StudyQCDControlRegion_planA();
+  void  StudyQCDControlRegion_planB();
+  void  DoBTagging(const vector<TLorentzVector>&);
+  bool  jetNotNearElectron(const TLorentzVector& j, const vector<TLorentzVector>& e) const; //used by DoBTagging
+
+
+  //-------------------
+  //  After main loop
+  //-------------------
   // event-count tables
   void FillEventCounter(const int, const int&, const int&);
   void DrawEventPerNjetTable() const;
@@ -1671,13 +1708,8 @@ private:
   double GetBayesUncertainty(int Ninitial) const;
   string ScrNum(double num) const;
   void printLine(ofstream &myfile, const double, const double) const;
-  bool ScientificNotation;
 
-  bool  is_mc_present(const int&) const;
-  float compute_d0(const string&, const int&) const;
-  float compute_mtw(const TVector2&, const TVector2&) const;
 
-  void  PrintGenParticles() const;
 
   // conversion
   bool   DoConversionStudies()       { return m_ConversionStudies; };
@@ -1686,10 +1718,6 @@ private:
   int ConversionArray[23][2][6];
   void OptimiseConversionFinder(const TLorentzVector& e1, int mctype);  
 
-//   TH2D *Conv_Opti[2];
-//   TH2D *Conv_Optis[2];
-//   TH2D *Conv_OptiL[2];
-//   TH2D *Conv_Opti_extragran[2];
   vector<TH2D*> Conv_Opti;  //[2];
   vector<TH2D*> Conv_Optis; //[2];
   vector<TH2D*> Conv_OptiL; //[2];
@@ -1697,29 +1725,23 @@ private:
   TH1D *Conv_CheckDelR_GSFTk_ctfTk;
   int mycounter;
 
-  // new (to run on mixed MC) (not currently needed)
-  string CheckEventTypeFromMcTruth() const;
 
-  float  getRelIso(const unsigned int&) const; 
-  bool   passEleID(const unsigned int&) const;
-  bool   passHLT() const;
-  string printTimeNow() const;
-  void   DoBTagging(const vector<TLorentzVector>&);
-  bool   jetNotNearElectron(const TLorentzVector& j, const vector<TLorentzVector>& e) const;
+
 
   //--------------------
   // private variables
   //--------------------
+  // (1) analysis configuration
   bool   datafile;
-  bool   keepgood;
+  double m_LHCEnergyInTeV;
+  double m_intlumi;  // integrated luminosity assumed
+  bool   usegoodrun;
   bool   checkTrig;
   string HLTBit;
   int    numlimit;
   int    nfile;
   string outputHistFileName;
   string outputTextFileName;
-  double this_weight;    // current event weight  
-  int    m_nGoodJet;  //number of cleaned, good jets
   float  m_QCDest_reliso_bin_width;
   bool   m_doValidation;
   bool   m_studyZveto;
@@ -1728,20 +1750,70 @@ private:
   bool   m_ConversionStudies;
   string m_jetAlgo;
   string m_metAlgo;
-  double m_LHCEnergyInTeV;
-  double m_intlumi;  // integrated luminosity assumed
+  bool   m_applyMETcut;
+  bool   m_rejectEndcapEle;
   bool   m_runOnSD;
   bool   m_runOnMyHLTskim;
   bool   m_useMisslayers;
-  short  m_muonCutNum;
+  int    m_muonCutNum;
   int    m_ntoy;
   double m_intlumiForM3;
+  bool   useNewReliso;
+  string doSystematics;
+  string sysSample;
+  bool   m_studyPDFunc;
+  bool   ScientificNotation;
+
+  // (2) cuts
+  float  ELE_ETCUT;
+  float  MU_PTCUT;
+  float  JET_PTCUT;
+  float  METCUT;
+  float  HTCUT;
+  int    nCutSetInScript;
+  eID    m_eID;
+  float  AES_HT_cut;
+  float  AES_MET_cut;
+  bool   AES_useSimpleZveto;
+
+
+  // (3) per-event quantity
+  double this_weight;  // event weight  
+  double this_met;
+  double this_m3;
+  string this_mc;
+  int    nGoodEle;
+  int    nGoodJet;  //number of cleaned, good jets
+  int    mctype;
   int    m_nbtag_TCHE;
   int    m_nbtag_TCHP;
   int    m_nbtag_SSV;
-  // pass flag
-  bool   pass_met;
-  // event counts
+  double CombRelIso; //min reliso of GoodEle
+
+  vector<TLorentzVector> electrons;
+  vector<TLorentzVector> jets;
+  vector<unsigned int>   ii_electrons; //index of GoodEle
+  int                    ii_GoodEle_mostIso; //index of GoodEle (smallest isol)
+  vector<unsigned int>   ii_which_3j_m3;//index of clean jet chosen by m3
+  
+  // (4) per-event pass flag
+  bool   goodrun;                //1  OK
+  bool   fired_single_em;        //2  OK  ie pass_trigger
+  bool   pass_goodele;           //3  OK
+  bool   pass_isoele;            //4  OK
+  bool   pass_only1_isoele;      //5  OK
+  bool   isMuon;                 //6  false=pass_mu_veto
+  bool   isZ;                    //7  false=pass_z_veto
+  bool   pass_4jets;             //8
+  bool   pass_met;               //9  OK
+  bool   isConversion;           //10 a false=pass_conv_veto
+  bool   pass_barrel;            //10 b
+  bool   isDifferentInteraction; //11  false=pass_vertex_z
+  bool   pass_1btag;             //12
+  bool   pass_2btag;             //13
+
+
+  // (5) event counts
   //double e_plus_jet[nstage][ntjet][nmctype];
   vector<vector<vector<int> > >    e_plus_jet; //3D
   vector<vector<vector<double> > > e_plus_jet_weighted; //3D
@@ -1749,27 +1821,54 @@ private:
   // cuts
   vector<string> ve; //list of cuts (excl nj)
   vector<string> ve2; //list of cuts (incl nj)
-  float ELE_ETCUT;
-  float MU_PTCUT;
-  float JET_PTCUT;
-  float METCUT;
-  float HTCUT;
-  int   nCutSetInScript;
-  bool  m_applyMETcut;
-  bool  m_rejectEndcapEle;
-  eID   m_eID;
-  float AES_HT_cut;
-  float AES_MET_cut;
-  bool  AES_useSimpleZveto;
-  bool  useNewReliso;
 
-  string doSystematics;
-  string sysSample;
-  bool   m_studyPDFunc;
-
+  // MC Setup
   map<string,double> cross_section;
   map<string,long>   nInitialEventMC; //initial number of event, used to compute event weight
   map<string,double> weightMap;
+
+  // Global MC flag
+  vector<string> mc_names;
+  bool mc_sample_has_ttbar;
+  bool mc_sample_has_Wjet;
+  bool mc_sample_has_Zjet;
+  bool mc_sample_has_QCD;
+  bool mc_sample_has_enri1;
+  bool mc_sample_has_enri2;
+  bool mc_sample_has_enri3;
+  bool mc_sample_has_bce1;
+  bool mc_sample_has_bce2;
+  bool mc_sample_has_bce3;
+  bool mc_sample_has_VQQ;
+  bool mc_sample_has_singleTop;
+  bool mc_sample_has_tW;
+  bool mc_sample_has_tchan;
+  bool mc_sample_has_schan;
+
+  // Per-event flag: MC type of this event
+  bool isTTbar;
+  bool isWjets;
+  bool isZjets;
+  bool isQCD;
+  bool isEnri1;
+  bool isEnri2;
+  bool isEnri3;
+  bool isBce1;
+  bool isBce2;
+  bool isBce3;
+  bool isVQQ;
+  bool isSingleTop;
+  bool isTW; 
+  bool isTchan;
+  bool isSchan;
+
+  bool signal_is_Alpgen;
+  int  signal_Alpgen_matching_threshold;
+
+  // z studies
+  bool isZee, isZmm, isZtt;
+  vector<TLorentzVector> Zele;
+
 
   // Histograms
   //------------
@@ -1873,6 +1972,10 @@ private:
   vector<TH1*>  h_exp_DRjj;       //[nclass];  // DR(j0,j1)
   vector<TH1*>  h_exp_DPhijj;     //[nclass];  // DPhi(j0,j1)
   vector<TH2*>  h_exp_met_v_eeta; //[nclass];  // met:ele_eta
+  vector<TH1*>  h_exp_mjj_3j;        //[nclass];  // mjj
+  vector<TH1*>  h_exp_mjj_3j_best;   //[nclass];  // mjj
+  vector<TH1*>  h_exp_mjj_4j;        //[nclass];  // mjj
+  vector<TH1*>  h_exp_mjj_4j_best;   //[nclass];  // mjj
 
   // ele count
   v2D_TH1       h_nEle_all; //[7][nclass];
@@ -1891,16 +1994,16 @@ private:
   vector<TH1*>  h_ed0_pass; //[nclass] w.r.t beam spot
 
   // z veto
-  TH1F         *h_nGenBasicEle_Zee_allj;
-  TH1F         *h_Zee_eta;
-  TH1F         *h_Zee_pt;
-  TH1F         *h_Z_photon_eta;
-  TH1F         *h_Z_photon_et;
-  TH1F         *h_Zee_photon_eta;
-  TH1F         *h_Zee_photon_et;
-  TH2F         *h_Zee_photon_eteta_2D;			
-  TH1F         *h_Z_Nphotons;
-  TH1F         *h_Zee_Nphotons;
+  TH1D         *h_nGenBasicEle_Zee_allj;
+  TH1D         *h_Zee_eta;
+  TH1D         *h_Zee_pt;
+  TH1D         *h_Z_photon_eta;
+  TH1D         *h_Z_photon_et;
+  TH1D         *h_Zee_photon_eta;
+  TH1D         *h_Zee_photon_et;
+  TH2D         *h_Zee_photon_eteta_2D;			
+  TH1D         *h_Z_Nphotons;
+  TH1D         *h_Zee_Nphotons;
   vector<TH1*>  h_mass_diele;            //[nclass];
   vector<TH1*>  h_mass_diele_new;        //[nclass];
   vector<TH1*>  h_mass_diele_lowMet_1j;  //[nclass];
@@ -2014,41 +2117,12 @@ private:
   TH1D *h_hadTop_maxPT_pt_4j;
   TH1D *h_hadTop_maxPT_mass_nonIso_4j;
   TH1D *h_hadTop_maxPT_pt_nonIso_4j;
-  TH1D *h_m3_tt;
-  TH1D *h_m3_wj;
-  TH1D *h_m3_zj;
-  TH1D *h_m3_qcd;
-  TH1D *h_m3_vqq;
-  TH1D *h_m3_singletop;
-  TH1D *h_m3_bce[3];
-  TH1D *h_m3_enri[3];
-  TH1D *h_m3_tt_control;
-  TH1D *h_m3_wj_control;
-  TH1D *h_m3_zj_control;
-  TH1D *h_m3_qcd_control;
-  TH1D *h_m3_vqq_control;
-  TH1D *h_m3_singletop_control;
-  TH1D *h_m3_bce_control[3];
-  TH1D *h_m3_enri_control[3];
-  // 1000 bins (0-1000)
   TH1D *h_hadTop_maxPT_mass_4j_1000;
   TH1D *h_hadTop_maxPT_mass_nonIso_4j_1000;
-  TH1D *h_m3_tt_1000;
-  TH1D *h_m3_wj_1000;
-  TH1D *h_m3_zj_1000;
-  TH1D *h_m3_qcd_1000;
-  TH1D *h_m3_vqq_1000;
-  TH1D *h_m3_singletop_1000;
-  TH1D *h_m3_bce_1000[3];
-  TH1D *h_m3_enri_1000[3];
-  TH1D *h_m3_tt_control_1000;
-  TH1D *h_m3_wj_control_1000;
-  TH1D *h_m3_zj_control_1000;
-  TH1D *h_m3_qcd_control_1000;
-  TH1D *h_m3_vqq_control_1000;
-  TH1D *h_m3_singletop_control_1000;
-  TH1D *h_m3_bce_control_1000[3];
-  TH1D *h_m3_enri_control_1000[3];
+  vector<TH1*> h_m3;
+  vector<TH1*> h_m3_control;
+  vector<TH1*> h_m3_1000;
+  vector<TH1*> h_m3_control_1000;
 
   // event table
   TH2D *Signal_njetsVcuts;
@@ -2065,54 +2139,9 @@ private:
   vector<TH1*> h_nbtag_SSV;  //[nclass]
 
   // signal PDF unc
-  TH1F *h_pdf_total;
-  TH1F *h_pdf_pass;
-  TH1F *h_pdf_eff;
-
-
-
-  // MC flag
-  void SetMCFlag();
-  vector<string> mc_names;
-  bool mc_sample_has_ttbar;
-  bool mc_sample_has_Wjet;
-  bool mc_sample_has_Zjet;
-  bool mc_sample_has_QCD;
-  bool mc_sample_has_enri1;
-  bool mc_sample_has_enri2;
-  bool mc_sample_has_enri3;
-  bool mc_sample_has_bce1;
-  bool mc_sample_has_bce2;
-  bool mc_sample_has_bce3;
-  bool mc_sample_has_VQQ;
-  bool mc_sample_has_singleTop;
-  bool mc_sample_has_tW;
-  bool mc_sample_has_tchan;
-  bool mc_sample_has_schan;
-
-  // MC type of this event
-  bool isTTbar;
-  bool isWjets;
-  bool isZjets;
-  bool isQCD;
-  bool isEnri1;
-  bool isEnri2;
-  bool isEnri3;
-  bool isBce1;
-  bool isBce2;
-  bool isBce3;
-  bool isVQQ;
-  bool isSingleTop;
-  bool isTW; 
-  bool isTchan;
-  bool isSchan;
-
-  // z studies
-  bool isZee, isZmm, isZtt;
-  vector<TLorentzVector> Zele;
-
-  bool signal_is_Alpgen;
-  unsigned int signal_Alpgen_matching_threshold;
+  TH1D *h_pdf_total;
+  TH1D *h_pdf_pass;
+  TH1D *h_pdf_eff;
 
 };
 
