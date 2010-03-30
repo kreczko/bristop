@@ -11,6 +11,7 @@
 #include <vector>
 #include <iostream>
 #include <map>
+//FIXME: remove using namespace from header file
 using namespace std;
 typedef unsigned short ushort;
 
@@ -39,12 +40,13 @@ const string mclabel[] = { "data", "signal", "QCD", "enri1", "enri2", "enri3", "
 		"Zprime_M1500GeV_W150GeV", "Zprime_M2TeV_W20GeV", "Zprime_M2TeV_W200GeV", "Zprime_M3TeV_W30GeV", "Zprime_M3TeV_W300GeV",
 		"Zprime_M4TeV_W40GeV", "Zprime_M4TeV_W400GeV" };
 //make static in order to avoid ld duplication
-static const char* histnames[] = { "neutrino_pz", "neutrino_pz_mc", "mttbar", "mttbar_mc", "mZprime_mc", "mWlep", "mWlep_mc",
-		"mWhad", "mWhad_mc", "minDeltaR_ele_Jet", "ptRel_ele_jet", "mtlep", "mtlep_mc", "mthad", "mthad_mc",
-		"thad_pt", "thad_pt_mc", "tlep_pt", "tlep_pt_mc", "angle_b_ele", "ptratio", "pttbar", "htsystem",
-		"angle_b_ele_matched", "mtlep_matched", "mthad_matched", "mWlep_matched", "mWhad_matched", "ptratio_matched",
-		"pttbar_matched", "htsystem_matched", "WhadPartons" };
-static const char* histnames2D[] = { "kptRel_vs_deltaRmin" };
+//static const char* histnames[] = { "neutrino_pz", "neutrino_pz_mc", "mttbar", "mttbar_mc", "mZprime_mc", "mWlep", "mWlep_mc",
+//		"mWhad", "mWhad_mc", "minDeltaR_ele_Jet", "ptRel_ele_jet", "mtlep", "mtlep_mc", "mthad", "mthad_mc", "thad_pt",
+//		"thad_pt_mc", "tlep_pt", "tlep_pt_mc", "angle_b_ele", "ptratio", "pttbar", "htsystem", "angle_b_ele_matched",
+//		"mtlep_matched", "mthad_matched", "mWlep_matched", "mWhad_matched", "ptratio_matched", "pttbar_matched",
+//		"htsystem_matched", "WhadPartons", "Chi2Leptonic", "Chi2Leptonic_matched", "Chi2Hadronic", "Chi2Hadronic_matched",
+//		"Chi2Global", "Chi2Global_matched", "Chi2Total", "Chi2Total_matched" };
+//static const char* histnames2D[] = { "kptRel_vs_deltaRmin" };
 const short int mcsize = sizeof(mcname) / sizeof(mcname[0]);
 const int nmctype(mcsize + 7); //extend to include wj, zj, QCD, VQQ, single top
 const int nstage(mcsize + 8); //add >=1Tele
@@ -60,9 +62,9 @@ public:
 	FILE* outfile;
 
 	ana();
-	~ana() {
-	}
-	;
+	~ana();
+
+	void End();
 
 	bool EventLoop();// the main analysis
 
@@ -102,7 +104,9 @@ public:
 	enum eID {
 		robustTight, robustLoose, loose, tight, robustHighenergy, none
 	};
-
+	/**
+	 * Enum for MC types
+	 */
 	enum MCType {
 		kdata, ksignal, kQCD, kenri1, kenri2, kenri3, kbce1, kbce2, kbce3, kWjets, kZjets, kVQQ, ksingleTop, ktW, ktchan, kschan,
 		Zprime_M500GeV_W5GeV, Zprime_M500GeV_W50GeV, Zprime_M750GeV_W7500MeV, Zprime_M1TeV_W10GeV, Zprime_M1TeV_W100GeV,
@@ -110,25 +114,69 @@ public:
 		Zprime_M3TeV_W30GeV, Zprime_M3TeV_W300GeV, Zprime_M4TeV_W40GeV, Zprime_M4TeV_W400GeV, kNumMCTypes
 	};
 
+	/**
+	 * Enum for 1-D histograms
+	 */
 	enum EHist {
 		kneutrino_pz, kneutrino_pz_mc, kMttbar, kMttbar_mc, kMZprime_mc, kmWlep, kmWlep_mc, kmWhad, kmWhad_mc,
-		kminDeltaR_ele_Jet, kptRel_ele_jet, kmtlep, kmtlep_mc,
-		kmthad, kmthad_mc, kthad_pt, kthad_pt_mc, ktlep_pt, ktlep_pt_mc,
+		kminDeltaR_ele_Jet, kptRel_ele_jet, kmtlep, kmtlep_mc, kmthad, kmthad_mc, kthad_pt, kthad_pt_mc, ktlep_pt, ktlep_pt_mc,
 		kangle_b_ele, kptratio, kpttbar, khtsystem, kangle_b_ele_matched, kmtlep_matched, kmthad_matched, kmWhad_matched,
-		kmWlep_matched, kptratio_matched, kpttbar_matched, khtsystem_matched,kWhadPartons, kNumHists
+		kmWlep_matched, kptratio_matched, kpttbar_matched, khtsystem_matched, kWhadPartons, kChi2Leptonic, kChi2Leptonic_matched,
+		kChi2Hadronic, kChi2Hadronic_matched, kChi2Global, kChi2Global_matched, kChi2Total, kChi2Total_matched, ktlep_pt_matched,
+		kthad_pt_matched, kangle_b_ele_mc, kptratio_mc, kpttbar_mc, khtsystem_mc, kChi2Leptonic_mc, kChi2Hadronic_mc,
+		kChi2Global_mc, kChi2Total_mc, kNumHists
 	};
 
+	/**
+	 * Enum for 2-D histograms
+	 */
 	enum E2DHist {
-		kptRel_vs_deltaRmin, kNum2DHists
+		k2D_ptRel_vs_deltaRmin, k2D_NumHists
 	};
 
+	/**
+	 * Enum for MC ttbar event partons
+	 */
 	enum MCEventPartons {
 		kthad, ktlep, kelectron, kneutrino, kbhad, kblep, kWhad, kWlep, kq1, kq2, kNumMCEventPartons
 	};
 
+	/**
+	 * vector for 1D histograms
+	 */
 	vector<vector<TH1F*> > fasthist_;
+	/**
+	 * vector for 2D histograms
+	 */
 	vector<vector<TH2F*> > fasthist2D_;
+	/**
+	 * 1D histogram names
+	 */
+	vector<string> histnames_;
+	/**
+	 * 1D histogram names (const char*) for histogram creation
+	 */
+	vector<const char*> histnames_c_;
+	/**
+	 * 2D histograms names
+	 */
+	vector<string> histnames2D_;
+	/**
+	 * 2D histograms names (const char*) for histogram creation
+	 */
+	vector<const char*> histnames2D_c;
+	/**
+	 * MC type flag
+	 */
 	MCType fastmctype_;
+	/**
+	 * Flag if MC type is present in dataset
+	 */
+	vector<bool> isMCTypePresent_;
+	/**
+	 * Set electron ID
+	 * @param val new electron ID
+	 */
 	void SetEleID(eID val) {
 		m_eID = val;
 	}
@@ -241,6 +289,8 @@ private:
 	void ConversionMCMatching(const TLorentzVector& e1, int mctype, bool isthisConversion);
 	float MCTruthMatch(float eta, float phi);
 	short match(TLorentzVector, vector<TLorentzVector> );
+	void CreateHistogramNames();
+	void Create2DHistogramNames();
 
 	// QCD estimation
 	pair<double, double> estimateQCD_computeFitResultUncertainty(const double est, TF1* f) const;
@@ -274,7 +324,6 @@ private:
 	void fillHistoDataAndMC(TH1F* h[], const float value, const double weight) const;
 	void fillHistoDataAndMC(TH2F* h[], const float v1, const float v2, const double weight) const;
 
-	//FIXME: changed from 16 to 17 to [] tp 30
 	void addHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const string, const string, const int, const float, const float);
 	void fillHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const float value, const double w);
 
@@ -284,14 +333,12 @@ private:
 	// W+jets estimation
 	void reco_hadronicTop_highestTopPT(const std::vector<TLorentzVector>&, const int nGoodIsoEle);
 	pair<double, double> compute_M3(const std::vector<TLorentzVector>&) const;
-	pair<vector<double> , vector<unsigned int> > compute_M3_modified(const std::vector<TLorentzVector>&) const;
-	void reco_mttbar(const std::vector<TLorentzVector>&, const std::vector<TLorentzVector>&, const std::vector<TLorentzVector>&,
-			const int nGoodIsoEle);
-	void reco_Mttbar(const std::vector<TLorentzVector>&, const std::vector<TLorentzVector>&, const std::vector<TLorentzVector>&);
+	void reco_Mttbar(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
+	void reco_Mttbar_matched(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
 	TLorentzVector reconstruct_neutrino(const TLorentzVector&, const TLorentzVector&);
-	pair<unsigned short, unsigned short> reco_hadronic_W(const std::vector<TLorentzVector>& jets, short ommit_blep_id) const;
-	unsigned int findClosest(const std::vector<TLorentzVector>&, const TLorentzVector&);
-	//  double sumDeltaR(const TLorentzVector&, const TLorentzVector&, const TLorentzVector&, const TLorentzVector&, const TLorentzVector&);
+	pair<TLorentzVector, TLorentzVector> reconstruct_neutrinos(const TLorentzVector&, const TLorentzVector&);
+	pair<ushort, ushort> reco_hadronic_W(const std::vector<TLorentzVector>& jets, short ommit_blep_id) const;
+	short findClosest(const std::vector<TLorentzVector>&, const TLorentzVector&);
 
 	vector<TLorentzVector> GetMCTopEvent();
 	void SetHistoLabelCutNjet(TH2D *this_njetVcuts, vector<string>& ve) const;
@@ -322,6 +369,10 @@ private:
 			vector<string> ve) const;
 	void PrintError_NjetVcut(ofstream&, const double[][5][nmctype], const double[][5][nstage], vector<string>&) const;
 	double GetBayesUncertainty(int Ninitial) const;
+	double GetChi2Leptonic(double Wmass, double tmass, double angle);
+	double GetChi2Hadronic(double Wmass, double tmass, double ptratio);
+	double GetChi2Global(double pttbar, double htsystem);
+	double GetHT(const std::vector<TLorentzVector>& jets, ushort N);
 	string ScrNum(double num) const;
 	void printLine(ofstream &myfile, const double, const double) const;
 	bool ScientificNotation;
@@ -330,8 +381,6 @@ private:
 	float compute_d0(const string, const int) const;
 	float compute_mtw(const TVector2&, const TVector2&) const;
 	pair<double, double> compute_neutrino_momentum_z(double met, const TLorentzVector& electron);
-	//  pair<double, double> compute_neutrino_momentum_z2(const TLorentzVector& met, const TLorentzVector& electron);
-	double neutrino_constrain(double nu_z_momentum, const TLorentzVector& met, const TLorentzVector& electron);
 	void PrintGenParticles() const;
 
 	// validation plots
@@ -371,7 +420,8 @@ private:
 	bool passHLT() const;
 	string printTimeNow() const;
 	void bookHistograms();
-	void bookChi2MatchedHists(unsigned short);
+	void bookChi2MatchedHists(ushort type);
+	void bookMCHists(ushort type);
 
 	//--------------------
 	// private variables

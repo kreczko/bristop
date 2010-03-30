@@ -13,11 +13,15 @@
 #include <vector>
 #include <iostream>
 
-#ifdef __MAKECINT__
-#pragma link C++ class vector<vector<float> >+;
-#endif
+//#ifdef __MAKECINT__
+//#pragma link C++ class std::vector<float>+;
+//#endif
 
 using namespace std;
+/*
+ * Class to read the Ntuples from the ROOT file.
+ * Includes several flags to minimize the amount of data loaded
+ */
 class NTupleReader {
 public:
 	NTupleReader();
@@ -25,11 +29,28 @@ public:
 	}
 	;
 
+	/**
+	 * @return the debug flag
+	 */
 	bool GetDebug() const;
+
+	/**
+	 * Set the debug flag
+	 * @param val new value
+	 */
 	void SetDebug(bool);
 
+	/**
+	 * Get the trigger flag
+	 * @return the trigger flag
+	 */
 	bool GetTrigger() const;
-	void SetTrigger(bool);
+
+	/**
+	 * Set the trigger flag
+	 * @param val new value
+	 */
+	void SetTrigger(bool val);
 	void SetTrigger(bool, const string);
 
 	bool GetMissLayersFlag();
@@ -44,7 +65,13 @@ public:
 
 protected:
 	// chain = list of root files containing the same tree
+	/**
+	 * Main TChain holding all variables
+	 */
 	TChain* chain;
+	/**
+	 * Secondary TChain holding HLT information.
+	 */
 	TChain* chain2;
 
 	// Declaration of leaf types
