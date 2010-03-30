@@ -1,0 +1,228 @@
+//#====================================================#
+//# Last update:
+//
+// 23 Mar 2010: update drive script & HLT skim eff for new MG W/Z+jets samples.
+//              small update in DefineCrossSectionAlpgen7TeV().
+// 20 Mar 2010: add Begin() - call before EventLoop().
+//              add public method to PrintGenParticles(n).
+// 18 Mar 2010: remove 1D reliso NES plots (redundant).
+//              update HLT skim eff for new MG w/z+jets (pending).
+// 17 Mar 2010: small correction (h_QCDest_isoVmet_NES_barrel/endcap not filled).
+// 16 Mar 2010: clean up, small correction.
+// 15 Mar 2010: - take out redundant weight parameter in fillHistoDataAndMC().
+//              - revise. review QCD plot making.
+// 14 Mar 2010: - change histo array to vector. Add BookHistograms() suite.
+//              - Revert all short to int to optimize code.
+//              - remove doValidaion(), replaced with m_doValidation.
+//              - add switch StudyZveto (D=on).
+//
+// 12 Mar 2010: fix small bug.
+// 11 Mar 2010: replace 3D arrays (e_plus_jet & e_plus_jets_weighted) with 
+//              private vectors. Simplify and imporve codes.
+//
+//  9 Mar 2010: - Adapt to accommodate tt0j-tt4j alpgen signal samples. 
+//              - Add methods: DefineCrossSectionAlpgen7TeV, DrawTTnjetTable.
+//              - Consistent use of GetNinit() & GetCrossSection().
+//              - Remove old logs, keep only this year's.
+//
+//  3 Mar 2010: add DPhiMetJet, genMET plots.
+// 25 Feb 2010: add Data_njetsVcuts TH2.
+// 23 Feb 2010: fix nstage (16->13).
+// 22 Feb 2010: add barrel/endcap plots for iso-met scatter plot (in NES).
+// 17 Feb 2010: fix btag plot. Replace nGoodJet & Njet() with m_nGoodJet.
+// 16 Feb 2010: Add SC6 and KT7. Add btag plots. Take out HT cut. Fix ("nfile =" -> "nfile +=").
+//
+// 15 Feb 2010: - MCTruthMAtch, change iniital value of ii from -1 to 0. 
+//              - Small update in DrawSignalBGTable. Add global const ncutshown.
+//
+// 12 Feb 2010: - Add PDF weights. Add method to set HLT bit from script. Clean up.
+//              - Remove unused mc_electron and mc_muons from branch list.
+//              - Remove debug(),jetAlgo() etc (replaced with m_debug etc).
+//              - Add method CheckAvailableJetMET().
+//              - Update 7 TeV cross section.
+//        
+// 03 Feb 2010: Add function to check MC truth of reco particle MCTruthMatch(double, double)
+//              and extended conversion study table to include charged pions
+//
+// 29 Jan 2010: Added reliso histo for trial control region.
+// 26 Jan 2010: Added met plot for barrel-ele only.
+//
+// 22 Jan 2010: Added option ApplyMETcut() and RejectEndcapEle(), to replace SetRunPlanB().
+// 20 Jan 2010: minor update.
+// 19 Jan 2010: fix single top cross sections at 7 TeV.
+// 15 Jan 2010: a) Added single-top xsec at 7 TeV. NB: s-chan NLO value not available.
+//              b) Moved Init() into header.
+//              c) Changed m3 histo to 0-960 & 960 bins; Added a copy of m3 with 0-1000 & 1000-bins.
+//              d) Added skim eff for my summer09-7TeV-madgraph HLT skims.
+//         
+// 06 Jan 2010: a) Updated conversion algorithm routine. Separated out conversion study section in a separate function
+//              b) Added in an additional electron ID option of "none" i.e. no ID applied
+// 
+// 15 Dec 09: a) change nbin of m3 from 100 to 800.
+//            b) added Init() function for setting branch address to protect against running on data, ie do not 
+//               read MC branches. Also do not read extra jet/met collections if not available.
+//
+// 4 Dec 09: ensure control sample (plan B) is exclusive of signal sample (add !e_plus_jet_pass cut). 
+//           Add more trials for control sample.
+// 3 Dec 09: fix bug of plan A/B switch.
+// 2 Dec 09: Revisit Z veto. Cut on M(RL,RL) instead of M(RT,RL)?
+//           QCD planB: add more histo for new control samples (fail RL,cL,cT).
+//           Add options for RunPlanB, SetEleID.
+//
+// 11 Nov 09: Add getRelIso() function.
+// Temporary change 10 Nov 09: replace DIFFZ cut with EETA<1.5 (Plan B). Add trial AES definitions.
+// ---
+// 6 Nob 09: Fix DRjj, add DPhijj, add met:ele_eta scatter plot. Add a fillHisto function.
+//           Add conter_pass.
+// 5 Nov 09: Print out file name of selected events in log, print a list at the end.
+//           Add jets_emf>0.01 minimal cut as recommended by jetMET (for caloJets only).
+// 4 Nov 09: add met option "calomet_muL2" for L2RelJet + muon MET.
+//           add new variables after all but met cuts: ele_eta, ele_et, j0_pt, j1_pt
+//           DR(e,j), DPhi(e,j), DR(j,j).
+// 3 Nov 09: expand MET histo for diff njet bins.
+// 2 Nov 09: correct for histo-filling.
+// 30 Oct 09: Added mtw plot (transverse mass of W->lnu) & Delta Phi(e,met).
+// 29 Oct 09: minor update.
+// 28 Oct 09: Added luminosity block info.
+//
+// 24 Oct 09: Adapted to run correctly for 7TeV SD.
+//
+// 20 Oct 09: Added ability to use caloMET mu+JES corrected.
+//
+// 16 Oct 09: Added ability to use PFjet and PFmet.
+//
+// 15 OCt 09: Added options: SetAESHTcut(), SetAESMETcut(), RunOnSD().
+//            Added option to use tcMET: SetMETAlgo().
+//
+// 14 Oct 09: added option SetLHCEnergyInTeV() and cross sections for 7 TeV.
+//
+// 12 Oct 09: corrected prescale for Zee (100).
+//
+// 9 Oct 09: Small change: in compute_d0() for muon, use values from tracker fit, not global fit.
+//
+// 7 OCt 09: Fix problem: signal column empty when there is no MC info in ntuple.
+//
+// 6 Oct 09: Added check on Nmc_doc when doing conversion studies. Some slight changes/clean-up.
+//
+// 5 Oct 09: Adapted nInitialEventMC calculattion to run on Secondary Datasts for October exercise.
+//
+// 2 Oct 09: a) small bug fix in fillHistoNjet_DataAndMC().
+//           b) replace els_cIso with the recommended els_dr04EcalRecHitSumEt + els_dr04HcalTowerSumEt.
+//
+// 30 Sep 09: Preparation for OctoberX. Adapt code to run on "soup", ie mixture of signal and bg events.
+//            Added "wenu" and "zee" cross sections. Fill histos as "Wjets", "Zjets" respectively.
+//            Added SetJetAlgo switch to use different jet collection (for SC5 only so far).
+//
+// 28 Sep 09: Add vector to keep track of index of GoodEle. To avoid the need of matching the most 
+//            isolated GoodEle later.
+//
+// xx Sep 09: <Frankie, please write something about the update on conversion algo here, thanks. :)>
+//
+// 17,18 Sep 09: Added plot DR(e,mu), and counter for events with DR(e,mu) < 0.1.
+//
+// 16 Sep 09: Added reference to CTF track in conversion algorithm, and corrected muon d0 bug
+//
+// 14,15 Sep 09: Update branch list for /summer09_2/ ntuple (siscone)
+//
+// 10 Sep 09: bug fix: use consistent CombRelIso calculation: (tk+cal)/et. Changed 1e-4 back to 1-e6.
+//
+//  9 Sep 09: bug fix: change matching of ii_GoodEle_mostIso criterium from 1e-6 to 1e-4.
+//
+//  8 Sep 09: bug fix: AES histo, default flag_AES_pass_tighterZveto_mee/mep is false, should be true.
+//            Added optimization of conversion.
+//
+//  4 Sep 09: Added code to print conversion matches.
+//
+// 28 Aug 09: small bug fix for label on error table. 
+// 27 Aug 09: Adapt to latest ntuple format.
+//            Changed mets to use only-muon-corrected MET.
+//
+// 26 Aug 09: Insert ">=1T ele" validation plots.
+//
+// 25-26 Aug 09: Insert ">=1T ele" (at least 1 GoodEle) in cut-flow table before ">=1TISO".
+//
+// 24 Aug 09: Added switch for "Valid" and "QCD_estimation/NES" plots.
+//            Added "Setdebug()" switch.
+//
+// 24 Aug 09: Added "validation" plots, plotting various quantites as a function of 
+//            njets and cutflow. Search for 81FB  
+//
+// 21 Aug 09: Change JET_ETCUT to JET_PTCUT.
+//
+// 19-20 Aug 09: clean-up and revise z veto code. Add function PrintGenParticles().
+// 18 Aug 09: Revise /electron_count/, study of z veto. Remove m_ephoton.
+//
+// 17 Aug 09: a) Take beam spot from ntuple branch.
+//            b) consider only global muon:  add "mus_id_AllGlobalMuons->at(i)" before pt,eta cut.
+//
+// 15-17 Aug 09: clean up, consolidate code. 
+// 14 Aug 09: first adaptation for v3 ntuple (312).
+//            a) add start/finsih date/time.
+//            b) add /basic/ dir: basic plots:
+//               - et,eta,phi,reliso of electrons
+//               - pt,eta,phi of jets
+//               - met-phi
+//            c) move "metAlone" histo to /basic/
+//----------
+//
+//# 15 Jun 09: adapt to do ttjet scale/threshold systematics.
+//#            add more histo: reliso-met corrlation: separate barrel and endcap.
+//# 10 Jun 09: add levels L1b and L2 to study reliso-met correlation in QCD events (TL)
+//#  9 Jun 09: add more histo to study reliso-met correlation in QCD events (TL)
+//#  8 Jun 09: add n-1 AES histograms (TL)
+//#  6 May 09: - Correcting beam spot to 0.0332,
+//#            - adding MET plots, lines 1389, 2740, 2885 
+//#            - adding PrintErrors function
+//#            - Adding JES lines - lines 4847
+//#  Apr 09: - adapt code to do systematic uncertainty for M3 shape
+//#          - add "ttjet" to mc_names 
+//#  17 Apr 09: Get working version from Frankie (0 pull)  
+//#  18 Mar 09: Bug found: t-chan and s-chan sample is only t->blnu (e,mu,tau). This
+//#             is why the m3 plot for single top is diffent than last time.  
+//#             Correct this by multiplying the cross section with Br(t->blnu) = 3 x 10.8% (from PDG)
+//#              = 32.4%.
+//#  18 Mar 09: changes to m3 fit: for QCD shape, current code gets it from the MC histogram,
+//#             no fluctuation. Should be generating pseudo-data in control region like 
+//#             signal region.
+//#  17 Mar 09: Add M(ee) window (76-106) into baseline selection, but not M(e,photon).
+//#  13 Mar 09: Modify Z veto to try to reject more Z events. Add M(ee) cut window 76-106
+//#  11 Mar 09: add more plots: iso with low MET for individual QCD MC samples.
+//#  6 Mar 09: - include other backgrounds (z+jets, single top, vqq) in m3 fit.
+//#            - change d0 cut on electron from 500 to 200 micron (recommended by V+j)..
+//#  5 Mar 09: make kinematic cut configurable in driver scripts. There are defaults
+//#            values. Warning messages are printed out if one does not set the cuts
+//#            in scripts.
+//#            - small bug fix (when filling VQQ_njetsVcuts histogram).                           
+//#  4 Mar 09: add histogram: new reliso for low MET, allEvents and QCD only.
+//#  4 Mar 09: correct d0 in the conversion finder.
+//#  3 Mar 09: correction: t-channel single top cross section is 130 pb, not 110 pb.
+//# <-- New release v1.7: 2 Mar09 -->
+//#  2 Mar 09: - correct d0 of electrons and muons using beam spot position.
+//#  27 Feb 09: - tweak QCD estimation code, instead of fixing MPV, fit 1,2 jet bins
+//#               and use the 2 fitted MPV values to set limit on the range of MPV in 
+//#               the fit for 3, >=4 jet bins. Fit landau in range of 0.2 to 1.0.
+//#  26 Feb 09: - improve QCD estimate by fixing MPV parameter to 0.28.
+//#             - formatting of plot for QCD fit.
+//#             - use 2nd Loose isolated ele veto (can also use Tight, doesn't matter).
+//#  24/25 Feb0 9: - add S/B table.
+//#                - add latex formatting on tables so that we can quickly produce tables
+//#                  in pdf without much manual formatting.
+//#  23 Feb 09: - adapt code to calculate error on QCD estimate for landau function.
+//#  21 Feb 09: - add more plots: HT and met for each MC type.
+//#             - add d0 cut on electron: |d0| < 0.05cm (=500 micron).
+//#  20 Feb 09: - add more plots for electron d0 and ID.
+//#             - add new helper functions to add and fill histograms.
+//#  19,20 Feb 09: add switch to use old or new reliso.
+//#  19 Feb 09: extend code to include VQQ and single top backgrounds.
+//#  18 Feb 09: read in only selected branches to save running time 
+//#  17 Feb 09: small bug fix in making reliso plots for the case 
+//#             where there are  more than 1 good electrons.
+//#  13 Feb 09: 
+//#  - update cuts in conversion code
+//#  - update QCD code (best fit: gaus with different ranges)
+//#  - apply k-factor of 1.14 to W/Z+jets cross sections
+//#  - in m3 fit, if QCD estimate error is larger than the estimate, assume error is 100% 
+//# Prev update: 11 Feb 09 
+//# - Fix small bug: muon chi2 -> should be normalized chi2 = chi2/ndof
+//# 
+//#====================================================#
