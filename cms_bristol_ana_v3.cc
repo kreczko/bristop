@@ -8,6 +8,10 @@
 //#====================================================#
 //# Last update:
 //
+// 30 Mar 2010: - clean up old z veto code (NES)
+// 29 Mar 2010: - fix bug: reliso AES, isConversionMIGE.
+//              - add 2D plot m3Vmjj
+//
 // 28 Mar 2010: - clean up, re-order .hh
 //              - rename: SetMCFlag() -> SetGlobalMCFlag()
 //              - add ResetLocalMCFlags()
@@ -141,7 +145,6 @@ const int myprec(1); //no of decimal point for weighted nEvent
 const int ncutshown(13); //11:BARREL, 12:1BTag, 13:2BTag (incl 4j)
 const int nbm3 = 960;
 const bool m3_use_1000_bins = false;
-const bool use_old_Z_veto = false; //TEMPORARY
 
 const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
 const string jetlabel[7] = {"0j","1j","2j","3j","4j", ">=4j","allj"};
@@ -389,8 +392,6 @@ void ana::PrintCuts() const {
   cout << "\n***********************************************" << endl;
   cout << "\n Jet collection:  " << m_jetAlgo << endl;
   cout << "\n MET collection:  " << m_metAlgo << endl;
-  cout << "\n***********************************************" << endl;
-  cout << "\n use_old_Z_veto : "<<  use_old_Z_veto << endl;
   cout << "\n***********************************************" << endl;
   if( !m_applyMETcut && m_rejectEndcapEle ) {
     cout << "\n  Run with Plan B:  MET is not used, add Eta(e) <1.442 as last cut" << endl;
@@ -1320,9 +1321,14 @@ void ana::BookHistograms_explore(){
    addHistoDataAndMC( h_exp_met_v_eeta,  "met_v_eeta", "met v #eta(e)", 50, 0, 100, 50, -2.5, 2.5 );
    // mjj
    addHistoDataAndMC( h_exp_mjj_3j,      "mjj_3j",       "mjj (W mass) 3j all 3 jets combinations",       50, 0, 180 );
-   addHistoDataAndMC( h_exp_mjj_3j_best, "mjj_3j_best",  "mjj (W mass) 3j closet to 80.4 GeV",            50, 0, 180 );
+   addHistoDataAndMC( h_exp_mjj_3j_best, "mjj_3j_best",  "mjj (W mass) 3j closest to 80.4 GeV",            50, 0, 180 );
    addHistoDataAndMC( h_exp_mjj_4j,      "mjj_4j",       "mjj (W mass) #geq4j all 3 jets combinations of m3", 50, 0, 180 );
-   addHistoDataAndMC( h_exp_mjj_4j_best, "mjj_4j_best",  "mjj (W mass) #geq4j closet to 80.4 GeV",            50, 0, 180 );
+   addHistoDataAndMC( h_exp_mjj_4j_best, "mjj_4j_best",  "mjj (W mass) #geq4j closest to 80.4 GeV",            50, 0, 180 );
+   // m3 vs mjj (x vs y)
+   addHistoDataAndMC( h_exp_m3Vmjj_3j,      "m3Vmjj_3j",      "m3 v mjj, 3j, all 3 combinations (wgt)",  50, 0, 400, 50, 0, 180 );
+   addHistoDataAndMC( h_exp_m3Vmjj_4j,      "m3Vmjj_4j",      "m3 v mjj, #geq4j, all 3 combinations (wgt)",  50, 0, 400, 50, 0, 180 );
+   addHistoDataAndMC( h_exp_m3Vmjj_3j_best, "m3Vmjj_3j_best", "m3 v mjj, 3j, closest to 80.4 GeV (wgt)",  50, 0, 400, 50, 0, 180 );
+   addHistoDataAndMC( h_exp_m3Vmjj_4j_best, "m3Vmjj_4j_best", "m3 v mjj, #geq4j, closest to 80.4 GeV (wgt)",  50, 0, 400, 50, 0, 180 );
 
 }//end BookHistograms_explore
 //------------------------------------------------------------------------------------
@@ -1934,8 +1940,8 @@ bool ana::EventLoop(){
    unsigned int index_selected_ele = 0;   //index of the selected isolated electron
 
 
-   int nZ_TEST = 0; //TEST
-   int nZ_ORIG = 0; //TEST
+   //   int nZ_TEST = 0; //TEST
+   //   int nZ_ORIG = 0; //TEST
 
 
 
@@ -2000,8 +2006,6 @@ bool ana::EventLoop(){
 
    // record list of "interesting" files that contain selected events
    set<string> interestingFiles;
-
-
 
 
 
@@ -2084,6 +2088,8 @@ bool ana::EventLoop(){
 //      }
 
 
+
+
      if(m_debug || ev<10 || ev%5000==0) {
        if(m_debug||ev<10) cout << "\nBegin processing event no. " << ev+1;
        else   	 cout << "\nBegin processing event no. " << (ev+1)/1000 << " k";
@@ -2096,7 +2102,9 @@ bool ana::EventLoop(){
 	    << ", EvtSize " << nbytes << endl;
      }
      
+     //-------------------
      // 2- Check Trigger 
+     //-------------------
      if(m_debug) cout << "Checking Trigger"<< endl;
 
      if( GetTrigger() ){
@@ -2112,8 +2120,9 @@ bool ana::EventLoop(){
      }//check trig
      
 
-
+     //-------------------
      // Identify MC type 
+     //-------------------
      if(m_debug) cout << "Identify MC type"<< endl;
 
      if ( IsData()==false ) {
@@ -2285,7 +2294,10 @@ bool ana::EventLoop(){
      }//if m_studyZveto
      
 
+
+     //---------------------
      // 2b - Get Beam Spot
+     //---------------------
 //      if(m_debug) cout << " Get Beam Spot" << endl;
 //      //     cout << "number of beam spot = " << NbeamSpot << endl;
 //      const float bsx = beamSpot_x->at(0);
@@ -2317,8 +2329,6 @@ bool ana::EventLoop(){
      int nTightEle = 0;
      int nRobustLooseEle = 0;
    
-
-     //cout << "\n==> There are  " << Nels << "  reco-electrons in this event."<<endl;
 
      // basic
      fillHistoDataAndMC( h_nele, Nels );
@@ -2399,7 +2409,7 @@ bool ana::EventLoop(){
 	   float vpt = TMath::Hypot(vpx, vpy);
 	   float d0_corrected = - (-(vx - 0.0322)*vpy + vy*vpx) / vpt ; //d0 = -dxy
 	   //cout << "ele d0:  uncorrected = " << els_d0->at(i) << "  corrected = "<< d0_corrected << endl;
-	   */
+	 */
 	 float d0_corrected = compute_d0("electron",i); 
 
 
@@ -2715,14 +2725,17 @@ bool ana::EventLoop(){
 
      
 
+     //-------------------------
      // 3C - Set muon veto flag
+     //-------------------------
      if(m_debug) cout << " Starting MUON Veto section"<< endl;
      //     isMuon = false;
      if (nGoodIsoMu > 0)  isMuon = true;
 
      
-
-     // 3 D - Set conversion veto flag
+     //-------------------------------
+     // 3D - Set conversion veto flag
+     //-------------------------------
      if(m_debug) cout << " Starting CONVERSION Veto section"<< endl;
      //bool isConversion = false;
      if (nGoodIsoEle == 1) { // If 1 electron only, check if this electron is a conversion ... if more than one ignore (will be rejected anyawy)
@@ -2733,150 +2746,17 @@ bool ana::EventLoop(){
 
 
 
-     // Set barrel ele flag (Is the fist isolated electron in Barrel?)
-     //bool isBarrel = false; //changed to pass_barrel
+     //-----------------------------------------
+     // 3E - Set barrel ele flag (1st iso ele)
+     //-----------------------------------------
      if( iso_electrons.size()>0 && fabs(iso_electrons.at(0).Eta())<1.442  ) pass_barrel = true;
-
-
-     //-----------------------------------------------------------------------------------
-     //  Z veto (normal selection)
-     //-----------------------------------------------------------------------------------
-     // Two components:
-     //  (1) If event contain 2 or more isolated electrons, flag as Z.
-     //  (2) If event has just 1 isolated electron, plus a robustLoose electron with 20 GeV,
-     //      and if the di-electron invariant mass falls in window 75-106 GeV, flag as Z.
-     //-----------------------------------------------------------------------------------
-     if(m_debug) cout << " Starting Z Veto section"<< endl;
-
-     // Component (1)
-     bool isZ_twoE = false;
-     if (nGoodIsoEle >= 2) {
-       isZ_twoE = true;       
-       if (nGoodIsoEle >= 3) cout << "*** Multilepton (>=3) Event!!! ***" << endl;
-     }
-     
-
-     // Component (2)
-     bool isZ_mee_NEW = false;
-
-     if ( nGoodIsoEle==1 && Nels > 1  ) {
-
-       //cout << "TEST: N(e) = " << Nels << endl;
-       for (unsigned int j=0; j<Nels; ++j){ //e loop
-	 
-	 if(j==index_selected_ele) continue;
-	   
-	 //consider only 2nd electron with ET>20 GeV, eta<2.5, d0<200um, RobustLoose
-	 if( els_et->at(j) < 20.0 ) continue;
-	 if( fabs( els_eta->at(j) ) > 2.5 ) continue;
-	 if( fabs(compute_d0("electron",j)) > 0.02 ) continue;
-	 if( els_robustLooseId->at(j) < 1 ) continue;
-	 
-	 TLorentzVector loose(els_px->at(j),els_py->at(j),els_pz->at(j),els_energy->at(j));
-	 float mass = ( iso_electrons.at(0) + loose ).M();
-	 //cout << "   m(e,e) = " << mass << endl;
-	 if(m_studyZveto) fillHistoDataAndMC( h_mass_diele_new, mass );
-	 if ( mass > 76  &&  mass < 106 ) isZ_mee_NEW = true; //within window, flag
-	 
-       }//e loop
-
-     }//if more than 2 electron
-     
-     if(isZ_mee_NEW==true) nZ_TEST++;
-     
-
-
-
-
-     
-     //-----------------------------------------------------------------------------------
-     //  Z veto (normal selection)   [ Original ]
-     //-----------------------------------------------------------------------------------
-     // 13 Mar 09: ask for 1 robustTight electron ("good"), plus a reco-electron (not cut)
-     // ie ask for 2 reco-el, and then require one to be tight (also pass et,eta,d0 cuts)
-     //-----------------------------------------------------------------------------------
-
-     if(m_debug) cout << " Apply Z veto" << endl;
-
-     bool isZ_mee_ORI = false; //mee = mass(e,e)   
-     float mass_ee = -1;
-
-     
-     if ( nGoodIsoEle==1  &&  Nels > 1 ) { //better (because there are Z events with 3 ele, one is low pt (243evts/32995 
-
-       // (a) if there are only 1 RT electron, take another electron (most energetic one if there 
-       //     are more than one.
-       if ( nGoodEle==1 ) {
-	 // check index of the RT electron	 
-	 TLorentzVector e1(electrons.at(0)); //RT
-	 int index = -1;
-	 for (unsigned int i=0; i<Nels; ++i){ //e loop
-	   if( fabs(e1.Px() - els_px->at(i)) < 1e-6 ) index = i;//match
-	 }
-	 if(index<0) { 
-	   cout << "WARNING: cannot find index of the RobustTight electron!"<<endl;
-	 }
-	 if(m_debug) { 
-	   cout << "electrons.size = " << electrons.size() << endl;
-	   cout << "electrons.at(0) px py pz E = " 
-		<< electrons.at(0).Px() << ", "
-		<< electrons.at(0).Py() << ", "
-		<< electrons.at(0).Pz() << ", "
-		<< electrons.at(0).E() << endl;
-	   cout << "e1.px py pz E = " << e1.Px() << ", "<< e1.Py() << ", "<< e1.Pz() <<", "<< e1.E() << endl;
-	   for (unsigned int i=0; i<Nels; ++i){ //e loop
-	     cout <<  "   els_px(py,pz,E)->at(" << i << ") = " <<els_px->at(i) ;
-	     cout << ", " << els_py->at(i) << ", " << els_pz->at(i) << ", " << els_energy->at(i) << endl;
-	   }
-	 }
-	 vector<TLorentzVector> loose_electrons;
-	 if(index>=0) { //bug-fix Z veto (Aug09)
-	   //find 2nd electron passing ET>20, |eta|<2.5, d0, RobustLoose
-	   for(unsigned int i=0; i<Nels; ++i){
-	     if( (i-index)==0 ) continue; //skip the Good Electron
-	     if( els_et->at(i) > 20  &&  fabs(els_eta->at(i)) < 2.5  &&
-                 fabs(compute_d0("electron",i)) < 0.02 &&
-		 els_robustLooseId->at(i)==true ) {
-	       loose_electrons.push_back(TLorentzVector(els_px->at(i),els_py->at(i),els_pz->at(i),els_energy->at(i)));
-	     }
-	   }
-	 }
-	 if( loose_electrons.size()>0 ) {
-	   float mass = (e1 + loose_electrons.at(0) ).M();
-	   mass_ee = mass;
-	 }
-       }
-
-       // (b) if there are >=2 RT electrons, use them to calculate inv mass(e,e)
-       //     - if there are more than 2, use the first 2.
-       else if ( nGoodEle>=2 ) {
-	 float mass = ( electrons.at(0) + electrons.at(1) ).M();
-	 mass_ee = mass;
-       }
-     }// 2 reco-e, of which 1 is RT
-     if(mass_ee>0 && m_studyZveto) fillHistoDataAndMC( h_mass_diele, mass_ee );
-     if( mass_ee > 76  &&  mass_ee < 106 ) isZ_mee_ORI = true;
-     //if(isZ_mee) isZ = true;
-     
-     if(isZ_mee_ORI) nZ_ORIG++;
-
-
-     //---------------------------
-     // Choose which Z-veto to use
-     //----------------------------
-     bool isZ_mee ;
-     if( use_old_Z_veto ) isZ_mee = isZ_mee_ORI; //old
-     else                 isZ_mee = isZ_mee_NEW; //new     
-     
-     isZ = isZ_twoE || isZ_mee;
-     //pass_z_veto = !isZ;
 
 
 
 
 
      //---------------------------------------------
-     // 3D - Find number of good Primary Vertices
+     // 3F - Find number of good Primary Vertices
      //---------------------------------------------
      // Ignore for now...    
      // ---->  Add PV here?
@@ -2891,7 +2771,7 @@ bool ana::EventLoop(){
        
 
      //---------------------------
-     // 3E - Find number of jets
+     // 3G - Find number of jets
      //---------------------------
      if(m_debug) cout << " Starting JET section"<< endl;
      nGoodJet = 0; //reset
@@ -2974,7 +2854,9 @@ bool ana::EventLoop(){
 
 
 
-     // 3F - Do "jet cleaning"
+     //-------------------------
+     // 3H - Do "jet cleaning"
+     //-------------------------
      if(m_debug) cout << " Do jet cleaning" << endl;
 	
      float delR_jet_ele = 9999;
@@ -3001,12 +2883,12 @@ bool ana::EventLoop(){
      }// end jets loop
 	
 
+     if(nGoodJet>=4) pass_4jets = true;
+
      // (TL) NEW: 14 Aug 09
      // basic plot: jet collection after cleaning
      fillHistoDataAndMC( h_njet, float(nGoodJet) );
 
-     //nGoodJet = nGoodJet; //set private var for this event
-     // if( Njet()<0 ) { cout << "ERROR!!! negative njet: " << Njet() << endl; }
 
 
      for(unsigned int i=0; i < jets.size(); ++i) {
@@ -3022,44 +2904,12 @@ bool ana::EventLoop(){
      }
 
 
-     // fill electron-counting histo
-     fillHisto_Njet_DataAndMC( h_nEle_all,        Nels,            1.0 ); //all e
-     fillHisto_Njet_DataAndMC( h_nEle_s1,         nBasicEle,       1.0 ); //pass et,eta
-     fillHisto_Njet_DataAndMC( h_nEle_s2,         nBasicD0Ele,     1.0 ); //also pass d0
-     fillHisto_Njet_DataAndMC( h_nEle_s3_idLoose, nLooseEle,       1.0 ); //also pass eidL
-     fillHisto_Njet_DataAndMC( h_nEle_s3_idTight, nTightEle,       1.0 ); //also pass eidT
-     fillHisto_Njet_DataAndMC( h_nEle_s3_idRL,    nRobustLooseEle, 1.0 ); //also pass eidRL
-     fillHisto_Njet_DataAndMC( h_nEle_s3_idRT,    nGoodEle,        1.0 ); //also pass eidRT
 
-
-
-     // 3G - Order jets in Et
-	
-     // IGNORE FOR NOW - not necessary
-	
-     // 3H - Check z of lepton within to z of PV (within 2cm)?
-	
-     // IGNORE FOR NOW - no PV info in ntuples
-     
-     isDifferentInteraction = false;
-	
-
-     //-----------------------------------------------
-     // 4 - Find numbers of taggable and tagged jets  
-     //-----------------------------------------------
-     if(m_debug) cout << " Starting BTAG section" << endl;
-
-     //int ntaggable = 0;
-     //int nbtagP    = 0;
-     //int nbtagN    = 0;  
-     DoBTagging(electrons); //ele needed for jet-cleaning
-     if( m_nbtag_SSV > 0 )  pass_1btag = true;
-     if( m_nbtag_SSV > 1 )  pass_2btag = true;
 
 
 	
      //--------------
-     // 5 - Get MET
+     // 3I - Get MET
      //--------------
      if(m_debug) cout << " Starting MET section" << endl;
 
@@ -3142,7 +2992,133 @@ bool ana::EventLoop(){
      //cout  << "pass_met: "<< pass_met <<endl;
 
 
-     // 6 - Calculate some kinematic variables
+
+     // fill electron-counting histo
+     fillHisto_Njet_DataAndMC( h_nEle_all,        Nels,            1.0 ); //all e
+     fillHisto_Njet_DataAndMC( h_nEle_s1,         nBasicEle,       1.0 ); //pass et,eta
+     fillHisto_Njet_DataAndMC( h_nEle_s2,         nBasicD0Ele,     1.0 ); //also pass d0
+     fillHisto_Njet_DataAndMC( h_nEle_s3_idLoose, nLooseEle,       1.0 ); //also pass eidL
+     fillHisto_Njet_DataAndMC( h_nEle_s3_idTight, nTightEle,       1.0 ); //also pass eidT
+     fillHisto_Njet_DataAndMC( h_nEle_s3_idRL,    nRobustLooseEle, 1.0 ); //also pass eidRL
+     fillHisto_Njet_DataAndMC( h_nEle_s3_idRT,    nGoodEle,        1.0 ); //also pass eidRT
+
+
+
+
+
+
+     //--------------------------
+     // 3J - Order jets in PT
+     //--------------------------
+     // IGNORE FOR NOW - not necessary
+	
+
+
+
+
+
+
+
+     //-----------------------------------------------------------------------------------
+     // 3K - Z veto (normal selection)
+     //-----------------------------------------------------------------------------------
+     // Two components:
+     //  (1) If event contain 2 or more isolated electrons, flag as Z.
+     //  (2) Look for 2 identified electrons (any ID), ET>20, |eta|<2.5, |d0|<200 micron,
+     //      For each pair, calculate invariant mass, if it is withiin 76-106, flag as Z events.
+     //-----------------------------------------------------------------------------------
+     if(m_debug) cout << " Starting Z Veto section"<< endl;
+
+     // Component (1)
+     bool isZ_twoIE = false;
+     if (nGoodIsoEle >= 2) {
+       isZ_twoIE = true;
+       if (nGoodIsoEle >= 3) cout << "\n*** Multilepton (>=3) Event!!! ***\n" << endl;
+     }
+     
+     
+     // Component (2)
+     // Do Z veto for ACCEPTED events only....
+     bool isZ_mee = false;
+
+     if( fired_single_em  &&  pass_only1_isoele  &&  !isMuon  &&  pass_4jets  &&  pass_met ) {
+
+       if ( Nels > 1  ) {
+
+	 // i) Collect RL ele
+	 //cout << "TEST: N(e) = " << Nels << endl;
+	 vector<TLorentzVector> myIDele; //pass any ID (L,T,RL,RT)
+
+	 for (unsigned int j=0; j<Nels; ++j) { //e loop
+
+	   if( els_et->at(j) < 20.0 ) continue;
+	   if( fabs( els_eta->at(j) ) > 2.5 ) continue;
+	   if( fabs(compute_d0("electron",j)) > 0.02 ) continue;
+	   // If pass any eID, collect this ele
+	   if( els_robustLooseId->at(j) > 0  ||
+	       els_robustTightId->at(j) > 0  ||
+	       els_looseId->at(j)       > 0  ||
+	       els_tightId->at(j)       > 0 ) {
+	     TLorentzVector loose(els_px->at(j),els_py->at(j),els_pz->at(j),els_energy->at(j));
+	     myIDele.push_back(loose);
+	   }
+	 }
+
+	 // ii) if there are two RL, then compute m(e,e)
+	 //cout << "myIDele.size(): "<< myIDele.size() << endl;
+	 if( myIDele.size()>1 ) {
+
+	   for (unsigned int i=0; i<myIDele.size()-1; ++i){ //1st RL ele
+	     for (unsigned int j=i+1; j<myIDele.size(); ++j){ //2nd RL ele
+
+	       float invmass = (myIDele.at(i) + myIDele.at(j)).M();
+	       if(m_studyZveto) fillHistoDataAndMC( h_mass_diele_new, invmass );
+	       if(invmass>76.0 && invmass<106.0) isZ_mee = true;
+	       //cout <<"invmass: " << invmass << endl;
+	     }
+	   }
+	 }//RLele loop
+       
+       }//if more than 1 reco-electron
+       
+     }//pass cuts prior to Z veto
+
+     isZ = isZ_twoIE || isZ_mee;
+   
+
+
+
+
+
+
+
+     //--------------------------------------------------------	
+     // 3L - Check z of lepton within to z of PV (within 2cm)?
+     //--------------------------------------------------------	
+     // IGNORE FOR NOW - no PV info in ntuples
+     
+     isDifferentInteraction = false;
+     
+
+
+
+     //-----------------------------------------------
+     // 3M - Find numbers of taggable and tagged jets  
+     //-----------------------------------------------
+     if(m_debug) cout << " Starting BTAG section" << endl;
+
+     //int ntaggable = 0;
+     //int nbtagP    = 0;
+     //int nbtagN    = 0;  
+     DoBTagging(electrons); //ele needed for jet-cleaning
+     if( m_nbtag_SSV > 0 )  pass_1btag = true;
+     if( m_nbtag_SSV > 1 )  pass_2btag = true;
+
+
+
+
+     //----------------------------------------
+     // 4 - Calculate some kinematic variables
      //----------------------------------------
      if(m_debug) cout << " Starting HT calculation section" << endl;
 
@@ -3174,24 +3150,8 @@ bool ana::EventLoop(){
        fillHistoDataAndMC( h_mtw_mu_incl, this_mu_mtw );
        fillHistoDataAndMC( h_mtw_t1_incl, this_t1_mtw ); 
 
-       /*
-       cout << "\n\nele:     px = " << e2v.X()  << ",  py = " << e2v.Y() << ",  phi = " << e2v.Phi()<< endl;
-       cout << "miss (mu): px = " << met2v_mu.X() << ",  py = " << met2v_mu.Y() << ",  phi = " << met2v_mu.Phi() << endl;
-       float dphi = e2v.Phi() - met2v_mu.Phi() ;
-       cout << "phi(ele) - phi(miss) = " << dphi << endl;
-       if(fabs(dphi) > TMath::Pi() ) dphi = 2*TMath::Pi() - fabs(dphi);
-       cout << " correct = " << dphi << endl;
-       */
-       //       TVector2 eee(iso_electrons.at(0).P() ;
-
        this_mu_DPhiEmet = ( e2v ).DeltaPhi( met2v_mu );
        this_t1_DPhiEmet = ( e2v ).DeltaPhi( met2v_t1 );
-       /*
-       cout  << "\nthis_mu_DPhiEmet = " << this_mu_DPhiEmet << endl;
-       cout  << " ele phi = " << iso_electrons.at(0).Phi() << endl;
-       cout  << " miss phi (mu) = "<< met2v_mu.Phi() << endl;
-       cout  << " miss phi (t1) = "<< met2v_t1.Phi() << endl;
-       */
        fillHistoDataAndMC( h_DPhiEmet_mu_incl, this_mu_DPhiEmet );
        fillHistoDataAndMC( h_DPhiEmet_t1_incl, this_t1_DPhiEmet );
 
@@ -3204,7 +3164,7 @@ bool ana::EventLoop(){
 
 
      //------------------------------------------------------------------------------------
-     //81FB  produce validation plots
+     // 5 -  produce validation plots
      //-------------------------------
      if( m_doValidation ) {
        if(m_debug) cout << " Produce validation plots" << endl;
@@ -3407,7 +3367,6 @@ bool ana::EventLoop(){
      }
 
 
-
      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      //+++++++++++++++++++++++++  Analysis!  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -3445,15 +3404,16 @@ bool ana::EventLoop(){
      //---------------------------------------
      // Add m3 plots for W+jets estimation
      //---------------------------------------
-     // Plot for event with 4 or more jets only
+     // Compute m3 for events with 3 jets or more, but 
+     // only plot m3 for event with at least 4 jets.
      // Require at least 3 jest to reconstruct t->jjj
 
      if(m_debug) cout << "[EvLoop]  compute m3" << endl;
 
      // notes: all cuts except ISO
-     if ( goodrun  &&  fired_single_em  &&  nGoodEle>0  &&  pass_met &&
-	  !isMuon  &&  !isZ  &&  !isConversion  &&  !isDifferentInteraction  &&  ht >= HTCUT &&
-	  nGoodJet >=4 ) { 
+     if ( goodrun  &&  fired_single_em  &&  nGoodEle>0  &&  pass_met  &&
+	  !isMuon  &&  !isZ  &&  !isConversion  &&  !isDifferentInteraction  &&
+	  nGoodJet >=3 ) {
        reco_hadronicTop_highestTopPT( jets, nGoodIsoEle );
      }
 
@@ -3602,8 +3562,7 @@ bool ana::EventLoop(){
      
      // NEW 27-3: changed isConversion hereafter to isConversionGE to avoid 
      //           confusion with previous setting of isConversion flag.
-
-     bool isConversionMIGE; //M.I.G.E. = 'Most Isolated Good Electron'
+     bool isConversionMIGE = isConversion; //M.I.G.E. = 'Most Isolated Good Electron'
      if(CombRelIso>0.1 && nGoodEle>0 ){
        //cout <<"ii_GoodEle_mostIso = "<< ii_GoodEle_mostIso  << endl;
        TLorentzVector eles_temp(els_px->at(ii_GoodEle_mostIso),els_py->at(ii_GoodEle_mostIso),els_pz->at(ii_GoodEle_mostIso),els_energy->at(ii_GoodEle_mostIso));
@@ -3675,8 +3634,10 @@ bool ana::EventLoop(){
 
        //======================================
        //  M(e,e): di-electron inv mass [AES]
+       //        e1: 30 GeV, RobustTight, d0
+       //        e2: 20 GeV, RobustLoose, d0
        //======================================
-
+       float mass_ee = -1;
        if ( AES_useSimpleZveto==false  &&  nGoodEle > 0  &&  Nels > 1 ) {
 
 	 flag_AES_pass_tighterZveto_mee = false;
@@ -3692,7 +3653,7 @@ bool ana::EventLoop(){
 	       fabs( els_eta->at(i) ) < 1.56 ) continue; //ignore gap
 	   if( fabs(compute_d0("electron",i)) > 0.02 ) continue;
 	   //if( els_robustTightId->at(i) < 1 ) continue;
-	   if ( passEleID(i) ==false )  continue;
+	   if ( passEleID(i) == false )  continue;
 
 	   for (unsigned int j=0; j<Nels; ++j){ //2nd e loop
 	     if(j==i) continue;
@@ -3710,6 +3671,7 @@ bool ana::EventLoop(){
 	     //cout << "   m(e,e) = " << mass << endl;
 	     // if fall in the window, flag as Z
 	     if ( mass < 65. || mass > 106. )  flag_AES_pass_tighterZveto_mee = true; // not Z, keep event
+	     mass_ee = mass;
 	   
 	   }//2nd e loop
 	 }//1st e loop
@@ -4026,12 +3988,6 @@ bool ana::EventLoop(){
 
    
 
-
-   if(!IsData()){
-     cout << "\n (num of event flagged as Z, di-e inv mass)" << endl;
-     cout << " nZ_ORIG (old) = " << nZ_ORIG << endl;
-     cout << " nZ_TEST (new) = " << nZ_TEST << endl << endl;
-   }
 
 
    const bool study_z_veto = false;
@@ -6607,6 +6563,11 @@ void ana::study_mjj( const vector<TLorentzVector>& j ){ //reference to jets
     fillHistoDataAndMC( h_exp_mjj_3j, mjj_3 );
     // 'best' one
     fillHistoDataAndMC( h_exp_mjj_3j_best, hadW_mass );
+    // 2D
+    fillHistoDataAndMC( h_exp_m3Vmjj_3j,      this_m3,     mjj_1, this_weight );
+    fillHistoDataAndMC( h_exp_m3Vmjj_3j,      this_m3,     mjj_2, this_weight );
+    fillHistoDataAndMC( h_exp_m3Vmjj_3j,      this_m3,     mjj_3, this_weight );
+    fillHistoDataAndMC( h_exp_m3Vmjj_3j_best, this_m3, hadW_mass, this_weight );
   }
   else if ( j.size()>=4 ) {
     //all 3 comb
@@ -6615,6 +6576,11 @@ void ana::study_mjj( const vector<TLorentzVector>& j ){ //reference to jets
     fillHistoDataAndMC( h_exp_mjj_4j, mjj_3 );
     // 'best' one
     fillHistoDataAndMC( h_exp_mjj_4j_best, hadW_mass );
+    // 2D
+    fillHistoDataAndMC( h_exp_m3Vmjj_4j,      this_m3,     mjj_1, this_weight );
+    fillHistoDataAndMC( h_exp_m3Vmjj_4j,      this_m3,     mjj_2, this_weight );
+    fillHistoDataAndMC( h_exp_m3Vmjj_4j,      this_m3,     mjj_3, this_weight );
+    fillHistoDataAndMC( h_exp_m3Vmjj_4j_best, this_m3, hadW_mass, this_weight );
   }
 
 }//end study_mjj

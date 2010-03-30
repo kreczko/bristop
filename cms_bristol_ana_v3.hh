@@ -1976,6 +1976,11 @@ private:
   vector<TH1*>  h_exp_mjj_3j_best;   //[nclass];  // mjj
   vector<TH1*>  h_exp_mjj_4j;        //[nclass];  // mjj
   vector<TH1*>  h_exp_mjj_4j_best;   //[nclass];  // mjj
+  vector<TH2*>  h_exp_m3Vmjj_3j;   //[nclass];  // m3 v mjj
+  vector<TH2*>  h_exp_m3Vmjj_4j;   //[nclass];  // m3 v mjj
+  vector<TH2*>  h_exp_m3Vmjj_3j_best;   //[nclass];  // m3 v mjj
+  vector<TH2*>  h_exp_m3Vmjj_4j_best;   //[nclass];  // m3 v mjj
+
 
   // ele count
   v2D_TH1       h_nEle_all; //[7][nclass];
