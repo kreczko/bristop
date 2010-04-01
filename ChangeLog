@@ -1,6 +1,16 @@
 //#====================================================#
 //# Last update:
 //
+//  1 Apr 2010: - continue revision of error table code.
+//              - add PrintErrorTable_MC(); move variables to private.
+//              - add PrintErrorTable_NjetVcut_Data() for data mode.
+//              - remove log older than 1 Mar.
+// 
+// 31 Mar 2010: - review and fix bug in PrintErrorTable, add getTotalEvents(),
+//              - add PrintTableError_QCD(), PrintTableError_SingleTop(),PrintTableError_SignalBG().
+//              - add skimEffMap to account for skim eff when calculating error. 
+//              - add PrintEventCounter().
+//
 // 30 Mar 2010: - clean up old z veto code (NES)
 // 29 Mar 2010: - fix bug: reliso AES, isConversionMIGE.
 //              - add 2D plot m3Vmjj

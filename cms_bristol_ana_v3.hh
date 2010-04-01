@@ -1565,10 +1565,12 @@ private:
 
   void   DefineCrossSection();
   void   DefineCrossSectionAlpgen7TeV();
-  double GetCrossSection(const string) const;
   void   SetEventWeightMap();
-  double GetWeight(const string) const;
-  long   GetNinit(const string) const;
+  double GetCrossSection(const string&) const;
+  long   GetNinit(const string&) const;
+  double GetWeight(const string&) const;
+  double GetSkimEff(const string&) const;
+  long   GetNinitBeforeSkim(const string&) const;
   void   SetGlobalMCFlag();
 
   void   WriteHeaderInfo();
@@ -1690,25 +1692,40 @@ private:
   //  After main loop
   //-------------------
   // event-count tables
-  void FillEventCounter(const int, const int&, const int&);
+  void FillEventCounter(const int&, const int&, const int&);
+  void PrintEventCounter() const;
   void DrawEventPerNjetTable() const;
   void DrawSignalBGTable() const;
-  void DrawMCTypeTable(    const string title ) const;
-  void DrawQCDTable(       const string title ) const;
-  void DrawSingleTopTable( const string title ) const;
-  void DrawTTnjetTable(    const string title ) const;
+  void DrawMCTypeTable(    const string& title ) const;
+  void DrawQCDTable(       const string& title ) const;
+  void DrawSingleTopTable( const string& title ) const;
+  void DrawTTnjetTable(    const string& title ) const;
   void DrawSignalAcceptanceTable( vector<string> ve) const;
   void printCutStage(const int&,const string&) const;
   void printCutStage(ofstream& os,const int&,const string&) const;
 
-  // print event-count tables (with errors)
-  void PrintErrorTables( vector<string> ve ) const;
-  void PrintError_NjetVcut(ofstream&, const double [][5][24] ) const;
+  typedef vector<vector<vector<int> > >    v3D_int; //int[][][]
+  typedef vector<vector<vector<double> > > v3D_double; //double[][][]
+  int    getTotalEvents( const v3D_int& nev, const int& cut, const int& k_start, const int& k_end, const int& njbegin) const;
+  double getTotalEvents( const v3D_double& nev, const int& cut, const int& k_start, const int& k_end, const int& njbegin) const;
 
-  double GetBayesUncertainty(int Ninitial) const;
+  // print event-count tables (with errors)
+  //  void PrintErrorTables( vector<string> ve ) const;
+  void PrintErrorTables() ;
+  void PrintErrorTable_NjetVcut(ofstream&) const;
+  void PrintErrorTable_NjetVcut_Data(ofstream&) const;//TEMP
+  void PrintErrorTable_SignalBG( ofstream&) const;
+  void PrintErrorTable_MC(       ofstream&) ;
+  void PrintErrorTable_QCD(      ofstream&) const;//, double [][5], double [][5] ) const;
+  void PrintErrorTable_SingleTop(ofstream&) const;//, double [][5] ) const; //use unc_pos only
+  //void PrintErrorTable_TTnjet(ofstream&, const double [][5][24] ) const;//not yet implemented
+
+
+  double GetBinomialUncertainty(const double& eff,const int& Ninitial) const;
+  double GetBayesUncertainty(const int& Ninitial) const;
   string ScrNum(double num) const;
   void printLine(ofstream &myfile, const double, const double) const;
-
+  string asymErr(const double& pos2, const double& neg2) const;
 
 
   // conversion
@@ -1814,11 +1831,48 @@ private:
 
 
   // (5) event counts
-  //double e_plus_jet[nstage][ntjet][nmctype];
-  vector<vector<vector<int> > >    e_plus_jet; //3D
-  vector<vector<vector<double> > > e_plus_jet_weighted; //3D
+  v3D_int      e_plus_jet;          //int    e_plus_jet[nstage][ntjet][nmctype];
+  v3D_double   e_plus_jet_weighted; //double e_plus_jet_weighted[nstage][ntjet][nmctype];
+  v3D_double   epj_errors;          //renamed from e_plus_jet_errors
+  int          counter;             //total number of events processed
 
-  // cuts
+  typedef vector<vector<double> >  v2D_double; //double[][]
+
+  // signal sum
+  v2D_double  sig_weighted; //[nstage][ntjet]
+  v2D_double  sig_errors;   //[nstage][ntjet]
+
+  //  QCD sum
+  //v2D_double QCD_Sum_Effic2;       //[nstage][ntjet] //not-used
+  v2D_double QCD_Sum_pass_weighted2; //[nstage][ntjet] //why call weighted2?
+  v2D_double QCD_Sum_Effic_unc_pos;  //[nstage][ntjet]
+  v2D_double QCD_Sum_Effic_unc_neg;  //[nstage][ntjet]
+
+  //  Single Top sum
+  //v2D_double Stop_Sum_Effic2;       //[nstage][ntjet] //not-used
+  v2D_double Stop_Sum_pass_weighted2; //[nstage][ntjet]
+  v2D_double Stop_Sum_Effic_unc_pos;  //[nstage][ntjet]
+  v2D_double Stop_Sum_Effic_unc_neg;  //[nstage][ntjet]
+
+  //  Signal TTnj sum
+  //v2D_double TTnj_Sum_pass_weighted2; //[nstage][ntjet]
+  //v2D_double TTnj_Sum_Effic_unc_pos;  //[nstage][ntjet]
+  //v2D_double TTnj_Sum_Effic_unc_neg;  //[nstage][ntjet]
+
+  vector<double> Allevents;         //[ncut]  total number of events, N=S+B
+  vector<double> AlleventsUncPos;   //[ncut]  +ve unc on N
+  vector<double> AlleventsUncNeg;   //[ncut]  -ve unc on N
+
+  vector<double> JustSignal;        //[ncut]  Nsig (S)
+  vector<double> JustSignalUnc;  //[ncut]  -ve unc of Nsig
+
+  vector<double> JustBG;            //[ncut]  Nbg (B)
+  vector<double> JustBGUncPos;      //[ncut]  +ve unc of Nbg
+  vector<double> JustBGUncNeg;      //[ncut]  -ve unc of Nbg
+  
+
+
+  // (6) cuts
   vector<string> ve; //list of cuts (excl nj)
   vector<string> ve2; //list of cuts (incl nj)
 
@@ -1826,6 +1880,7 @@ private:
   map<string,double> cross_section;
   map<string,long>   nInitialEventMC; //initial number of event, used to compute event weight
   map<string,double> weightMap;
+  map<string,double> skimEffMap;
 
   // Global MC flag
   vector<string> mc_names;
