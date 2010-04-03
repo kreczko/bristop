@@ -8,10 +8,13 @@
 //#====================================================#
 //# Last update:
 //
+//  2 Apr 2010: - investigating glibc memory error. Fixed.
+//
 //  1 Apr 2010: - continue revision of error table code.
 //              - add PrintErrorTable_MC(); move variables to private.
 //              - add PrintErrorTable_NjetVcut_Data() for data mode.
 //              - remove log older than 1 Mar.
+//              - fix typo (bc3->bce3).
 // 
 // 31 Mar 2010: - review and fix bug in PrintErrorTable, add getTotalEvents(),
 //              - add PrintTableError_QCD(), PrintTableError_SingleTop(),PrintTableError_SignalBG().
@@ -123,7 +126,7 @@ const string mymcname[nmctype] = {"data",
 				  "wj",   //11
 				  "zj",   //12
 				  "enri1","enri2","enri3",
-				  "bce1", "bce2", "bc3",
+				  "bce1", "bce2", "bce3",
 				  "vqq",
 				  "stop(tW)","stop(tchan)","stop(schan)",
 				  "tt0j","tt1j","tt2j","tt3j","tt4j"
@@ -738,7 +741,7 @@ double ana::GetSkimEff(const string& mc) const {
 long ana::GetNinitBeforeSkim(const string& mc) const {
 
   // Note: if no events in ntuple, get 0;
-  return (GetNinit(mc)/GetSkimEff(mc) + 0.5);
+  return long(GetNinit(mc)/GetSkimEff(mc) + 0.5);
 }
 //---------------------------------------------------------------------------------------------
 
@@ -4254,10 +4257,12 @@ bool ana::EventLoop(){
    }//end MC
 
 
+
+
    //---------------------------------
    // Print content of e_plus_jet (MC)
    //---------------------------------
-   if(!IsData()) PrintEventCounter();
+   if(IsData()==false) PrintEventCounter();
 
 
    //--------------------------------
@@ -4265,17 +4270,42 @@ bool ana::EventLoop(){
    //--------------------------------
    cout.precision(myprec); //reset precision
    
-   //   PrintErrorTables( ve );
+
+
+
+   //!!! Get memory corruption error when calling CalculateErrors and PrintErrorTables once.
+   // Fine when just doing: open file, write something & close
+   
+
+
+   if(m_debug) cout << "[EvLoop] Calling CalculateErrors()"<< endl;
+   CalculateErrors();
+
+
+
+   if(m_debug) cout << "[EvLoop] Opening myfile"<< endl;
+   myfile.open("Analyzeroutput.txt",ios::app);
+
+
+   
+   if(m_debug) cout << "[EvLoop] Calling PrintErrorTable()"<< endl;
    PrintErrorTables();
- 
+   
+
    //Print event tables with errors, but without applying scientific notation
    ScientificNotation = false;
+   if(m_debug) cout << "[EvLoop] Calling PrintErrorTable() again"<< endl;
    PrintErrorTables();
 
+   if(m_debug) cout << "[EvLoop] Calling TESTPrintErrorTable()"<< endl;
+   TESTPrintErrorTables();
+   
 
-   // Close the histogram file
-   histf->Write();
-   histf->Close();
+   if(m_debug) cout << "[EvLoop] Closing myfile"<< endl;
+   myfile.close();
+
+
+   
 
    //check histo vector (is it worth clearing the histo vectors???)
    //cout << "h_nEle_all.size(): "<< h_nEle_all.size() << endl;
@@ -4285,12 +4315,17 @@ bool ana::EventLoop(){
 
 
 
-
-
-
    //856
    if( DoConversionStudies() ) {PrintConversionTable();}
    //end 856
+
+
+   // Close the histogram file
+   if(m_debug) cout << "Closing output root file..." << endl;
+
+   histf->Write();
+   histf->Close();
+
 
    cout << "\n***********************************************************************";
    cout << "\n*                                                                     *";
@@ -7916,6 +7951,8 @@ void ana::FillEventCounter(const int& istage, const int& ntj, const int& mctype)
 //---------------------------------------------------------------------------------------------
 void ana::PrintEventCounter() const {
 
+  if(m_debug) cout << "Starting << PrintEventCounter >>" << endl;
+
   for(int i=0; i < nstage; ++i){
 
     cout << "\n CUT " << i << ":  " << ve.at(i) << endl;
@@ -7941,6 +7978,8 @@ void ana::PrintEventCounter() const {
     }//mc
     cout << endl;
   }//stage
+
+  if(m_debug) cout << "End of << PrintEventCounter >>" << endl;
 
 }//end CheckEventCounter
 //---------------------------------------------------------------------------------------------
@@ -8442,8 +8481,9 @@ void ana::DrawSignalAcceptanceTable( vector<string> ve ) const {
 // second time using scientific notation. May be we can do something to avoid this
 // repetition?
 
-void ana::PrintErrorTables() {
-
+void ana::CalculateErrors() {
+  
+  if(m_debug) cout << "Starting << CalculateErorrs >>" << endl;
 
   // The following 3D arrays are replaced by vectors. Majority of code should remain unchanged.
   // rename all e_plus_jet_[errors] etc to epj_errors etc to make it easier to read.
@@ -8515,7 +8555,7 @@ void ana::PrintErrorTables() {
 
     for(int j=0; j<5; ++j){
 
-      for(int k=1; k<23; ++k){
+      for(int k=1; k<nmctype; ++k){ //mc
 	
 	//	const long ni = GetNinit( kIndexmcNames[k] );
 	// ni is Nread before any cuts. If running on skim ntuples, then get the number before skimming.
@@ -8637,18 +8677,18 @@ void ana::PrintErrorTables() {
 //       printf("sig eff:  %.3f\n", sig_effic[i][j]);
 //       printf("sig eff unc:  %.3f\n", sig_effic_unc[i][j]);
 //       printf("sig error:  %.3f\n", sig_errors[i][j]);
-
-      
+     
     }//nj
+
   }//cut
 
 
 
 
-
-  //
+  
+  //------------------------------------------------
   // Calculate the sums for signal, QCD, single top
-  //
+  //------------------------------------------------
   for(int i=0; i<ncutshown; ++i){
 
     for(int j=0; j<5; ++j){
@@ -8691,34 +8731,45 @@ void ana::PrintErrorTables() {
 
   }//stage
 
+  if(m_debug) cout << "End of << CalculateErorrs >>" << endl;
 
+}//end CalculateErrors
+//---------------------------------------------------------------------------------------------
+
+// works
+void ana::TESTPrintErrorTables() {
+  myfile << "TEST TEST 123..." << endl;
+}
+
+
+void ana::PrintErrorTables() {
+
+  if(m_debug) cout << "Starting << PrintErorrTables >>" << endl;
 
   //---------------------------------
   //
   // Ready to write out error table
   //
   //---------------------------------
-  ofstream myfile;
-  myfile.open("Analyzeroutput.txt",ios::app);
-
   myfile.setf(ios::fixed,ios::floatfield);
 
 
-  myfile << endl;
-  myfile << endl;
-  myfile << endl;
-  myfile << "data & time: " << printTimeNow() << endl;
-  myfile << endl;
-  myfile << endl;
-  myfile << endl;
+  myfile << "\n\n\n\n\n\n\n";
+  myfile << "date & time: " << printTimeNow() << endl;
+  myfile << "scientific notation: ";
+  if(ScientificNotation) myfile << "on" << endl;
+  else                   myfile << "off" << endl;
+  myfile << "\n\n\n\n\n";
 
 
 
   //---------------------------------
   //  Njet v Cut table (with errors)
   //---------------------------------
-  if(IsData())   PrintErrorTable_NjetVcut_Data(myfile); //uses e_plus_jet, counter
-  else           PrintErrorTable_NjetVcut(myfile); //uses e_plus_jet_weighted, epj_errors
+  //  if(IsData())   PrintErrorTable_NjetVcut_Data(myfile); //uses e_plus_jet, counter
+  //  else           PrintErrorTable_NjetVcut(myfile); //uses e_plus_jet_weighted, epj_errors
+  if(IsData())   PrintErrorTable_NjetVcut_Data(); //uses e_plus_jet, counter
+  else           PrintErrorTable_NjetVcut(); //uses e_plus_jet_weighted, epj_errors
 
 
 
@@ -8729,22 +8780,28 @@ void ana::PrintErrorTables() {
 
     // Main MC Summary table (with errors)
     //-----------------------------------    
-    PrintErrorTable_MC(myfile);
+    //    PrintErrorTable_MC(myfile);
+    PrintErrorTable_MC(); //this need to be the 1st as it compute some sums
 
     // Expected Signal & BG (with errors)
     //-----------------------------------
-    PrintErrorTable_SignalBG(myfile);
+    //    PrintErrorTable_SignalBG(myfile);
+    PrintErrorTable_SignalBG();
     
     // Breakdown of QCD (with erros)
     //-------------------------------
-    PrintErrorTable_QCD( myfile );//, QCD_Sum_Effic_unc_pos, QCD_Sum_Effic_unc_neg );
+    //    PrintErrorTable_QCD(myfile);
+    PrintErrorTable_QCD( );
     
     // Breakdown of Single Top (with errors)
     //----------------------------------------
-    PrintErrorTable_SingleTop( myfile );//, Stop_Sum_Effic_unc_pos ); //NB: use unc_pos only
+    //    PrintErrorTable_SingleTop( myfile );//, Stop_Sum_Effic_unc_pos ); //NB: use unc_pos only
+    PrintErrorTable_SingleTop();
   }
 
-  myfile.close();
+  //if(m_debug) cout << "Closing myfile" << endl;
+
+  if(m_debug) cout << "End of << PrintErrorTables >>" << endl;
 
 }//end PrintErrorTables
 //---------------------------------------------------------------------------------------------
@@ -8805,7 +8862,8 @@ string ana::ScrNum(double num) const{
 // NOTE: This function needs to be reviwed, because at the moment, when running
 // in data mode, the values in error table are all zero.
 //
-void ana::PrintErrorTable_NjetVcut(ofstream& myfile) const {
+//void ana::PrintErrorTable_NjetVcut(ofstream& myfile) const {
+void ana::PrintErrorTable_NjetVcut() {
 
   if(m_debug) cout << "Starting << PrintErrorTable_NjetVcut >>" << endl;
 
@@ -8824,7 +8882,7 @@ void ana::PrintErrorTable_NjetVcut(ofstream& myfile) const {
 	 << " &" << setw(26) << "$\\ge$4-jets "
 	 << " &" << setw(36) << "Total   \\\\\n\\hline\n";
 
-  for(int i=0; i<11; ++i) { //nstage
+  for(int i=0; i < ncutshown; ++i) { //nstage (w/o 4j)
 
     printCutStage(myfile,i,ve.at(i));
 
@@ -8838,7 +8896,7 @@ void ana::PrintErrorTable_NjetVcut(ofstream& myfile) const {
       double myPosErr = 0;
       double myNegError = 0;
 
-      for(int k=1;k<23;++k){
+      for(int k=1; k<23; ++k){
 	if(k==19) continue;//skip vqq
 	myTotal  += e_plus_jet_weighted[i][j][k];
 	myPosErr += TMath::Power( epj_errors[i][j][k], 2 );
@@ -8846,7 +8904,7 @@ void ana::PrintErrorTable_NjetVcut(ofstream& myfile) const {
       }
       myfile << " & " << setw(12) << ScrNum(myTotal) << "$\\pm$"<< setw(8) << left << ScrNum(sqrt(myPosErr)) << right;
       total    += myTotal;
-      PosError += myPosErr;  //??? is this correct? looks like c=a+b, Del(c) = Dec(a) + Del(b) ???
+      PosError += myPosErr;
       NegError += myNegError;
     }//loop jets
 
@@ -8864,7 +8922,8 @@ void ana::PrintErrorTable_NjetVcut(ofstream& myfile) const {
 //   varians(f) = varians(A)+varians(B) ,  varians = std deviation^2 = error^2
 // so f_err = sqrt( A_err^2 + B_err^2 )
 //
-void ana::PrintErrorTable_NjetVcut_Data(ofstream& myfile) const {
+//void ana::PrintErrorTable_NjetVcut_Data(ofstream& myfile) const {
+void ana::PrintErrorTable_NjetVcut_Data()  {
 
   if(m_debug) cout << "Starting << PrintErrorTable_NjetVcut >>" << endl;
 
@@ -8873,8 +8932,8 @@ void ana::PrintErrorTable_NjetVcut_Data(ofstream& myfile) const {
   myfile << "            NjetVcut table (Data)"<< endl;
   myfile << "%---------------------------------------\n"<< endl;
 
-  myfile<<"\\begin{tabular}{|c|ccccc|c|}"<<endl;
-  myfile<<"\\hline"<<endl;
+  myfile << "\\begin{tabular}{|c|ccccc|c|}"<<endl;
+  myfile << "\\hline" << endl;
     
   myfile << setw(21) << "Cut  "
 	 << " &" << setw(26) << "0-jet "
@@ -8884,27 +8943,22 @@ void ana::PrintErrorTable_NjetVcut_Data(ofstream& myfile) const {
 	 << " &" << setw(26) << "$\\ge$4-jets "
 	 << " &" << setw(36) << "Total   \\\\\n\\hline\n";
 
-  for(int i=0; i<11; ++i) { //nstage
+  for(int i=0; i < ncutshown; ++i) { //nstage (w/o 4j)
 
     printCutStage(myfile,i,ve.at(i));
 
     double total = 0;
     double PosError2 = 0;
-    //  double NegError = 0;
 
     for(int j=0; j<ntjet; ++j){
 
-      //double myTotal = 0;
-      //double myPosErr = 0;
-      //double myNegError = 0;
-
       // For unweighted "data" events:
       //    Unc(N_pass) = sqrt[ N_pass * ( 1- N_pass/ N_0) ]
-      double N_0    = (double)counter;
-      double N_pass = (double)e_plus_jet[i][j][0]; //"data"
+      int N_0    = counter;
+      int N_pass = e_plus_jet[i][j][0]; //"data"
       double N_pass_err;
       if(N_pass > 0) {//binomial error
-	N_pass_err = sqrt( N_pass * (1 - N_pass/N_0) );
+	N_pass_err = sqrt( (double)N_pass * (1 - (double)N_pass/N_0) ); //sigh...
       } else {
 	N_pass_err = GetBayesUncertainty( N_0 );
       }
@@ -8932,19 +8986,20 @@ void ana::PrintErrorTable_NjetVcut_Data(ofstream& myfile) const {
 
 
 
-void ana::PrintErrorTable_MC(ofstream& myfile){
+//void ana::PrintErrorTable_MC(ofstream& myfile){
+void ana::PrintErrorTable_MC(){
 
 
-  Allevents.resize(ncutshown);
-  AlleventsUncPos.resize(ncutshown);
-  AlleventsUncNeg.resize(ncutshown);
+  Allevents.resize(nstage+1); //incl 4j
+  AlleventsUncPos.resize(nstage+1);
+  AlleventsUncNeg.resize(nstage+1);
 
-  JustSignal.resize(ncutshown);
-  JustSignalUnc.resize(ncutshown);
+  JustSignal.resize(nstage+1);
+  JustSignalUnc.resize(nstage+1);
 
-  JustBG.resize(ncutshown);
-  JustBGUncPos.resize(ncutshown);
-  JustBGUncNeg.resize(ncutshown);
+  JustBG.resize(nstage+1);
+  JustBGUncPos.resize(nstage+1);
+  JustBGUncNeg.resize(nstage+1);
 
 
   myfile << "%------------------------------------------\n";
@@ -9197,11 +9252,11 @@ void ana::PrintErrorTable_MC(ofstream& myfile){
     
     printLine(myfile, TotalEvents, sqrt(TotalErrorPos) );
     myfile << " \\\\" << endl;
-  }
+
+  }//cut: from 4mj
 
   myfile <<"  \\hline"<<endl<<"\\end{tabular}"<<endl;
   myfile << endl << endl << endl;
-
 
 
 }//end PrintErrorTable_MC
@@ -9209,7 +9264,8 @@ void ana::PrintErrorTable_MC(ofstream& myfile){
 
 
 
-void ana::PrintErrorTable_SignalBG(ofstream& myfile) const {
+//void ana::PrintErrorTable_SignalBG(ofstream& myfile) const {
+void ana::PrintErrorTable_SignalBG()  {
 
   if(m_debug) cout << "Starting << PrintErrorTable_SignalBG >>" << endl;
 
@@ -9224,7 +9280,7 @@ void ana::PrintErrorTable_SignalBG(ofstream& myfile) const {
 	 << " &  " << setw(20) << "S/B   \\\\\n\\hline" << endl;
   
 
-  for(int i=0; i <= 11; ++i){ //loop over cuts (up to DIFFZ/BARREL)
+  for(int i=0; i<ncutshown+1; ++i){ //cut stage (incl nj)
 
     printCutStage(myfile, i, ve2.at(i));
     
@@ -9257,10 +9313,8 @@ void ana::PrintErrorTable_SignalBG(ofstream& myfile) const {
 
 // QCD BREAKDOWN ERRO TABLE
 //-------------------------
-void ana::PrintErrorTable_QCD( ofstream& myfile//, 
-			       //			       double QCD_Sum_Effic_unc_pos[][5],
-			       //			       double QCD_Sum_Effic_unc_neg[][5] ) 
-			       ) const {
+//void ana::PrintErrorTable_QCD( ofstream& myfile//, 
+void ana::PrintErrorTable_QCD()  {
 
   if(m_debug) cout << "Starting << PrintErrorTable_QCD >>" << endl;
 
@@ -9286,7 +9340,7 @@ void ana::PrintErrorTable_QCD( ofstream& myfile//,
   int njbegin = 0;
   int p=0;
 
-  for(int i=0; i<11; ++i){ //cut stage
+  for(int i=0; i<ncutshown; ++i){ //cut stage
 
     double totalAllQCD = 0;
     double totalAllQCDErPos = 0;
@@ -9332,8 +9386,9 @@ void ana::PrintErrorTable_QCD( ofstream& myfile//,
 
 
 
-void ana::PrintErrorTable_SingleTop(ofstream& myfile) const {
-  //				     double Stop_Sum_Effic_unc_pos[][5] ) const {
+//void ana::PrintErrorTable_SingleTop(ofstream& myfile) const {
+void ana::PrintErrorTable_SingleTop()  {
+
 
   if(m_debug) cout << "Starting << PrintErrorTable_SingleTop >>" << endl;
 
@@ -9357,7 +9412,7 @@ void ana::PrintErrorTable_SingleTop(ofstream& myfile) const {
   int njbegin = 0;
   int p=0;
 
-  for(int i=0; i<11; ++i){ //cut stage
+  for(int i=0; i<ncutshown; ++i){ //cut stage
 
     double allSingleTop = 0;
     double allSingleTopEr = 0;
@@ -9391,6 +9446,7 @@ void ana::PrintErrorTable_SingleTop(ofstream& myfile) const {
   myfile << "\\end{tabular}\\\\[5mm]" << endl;
   myfile << endl << endl;
 
+  if(m_debug) cout << " End"<< endl;
 }//end PrintErrorTable_SingleTop
 
 //---------------------------------------------------------------------------------------------

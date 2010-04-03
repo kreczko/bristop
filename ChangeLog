@@ -1,6 +1,8 @@
 //#====================================================#
 //# Last update:
 //
+//  2 Apr 2010: - investigating glibc memory error. Fixed.
+//
 //  1 Apr 2010: - continue revision of error table code.
 //              - add PrintErrorTable_MC(); move variables to private.
 //              - add PrintErrorTable_NjetVcut_Data() for data mode.

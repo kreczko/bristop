@@ -1711,7 +1711,11 @@ private:
 
   // print event-count tables (with errors)
   //  void PrintErrorTables( vector<string> ve ) const;
+  ofstream myfile;
+  void CalculateErrors() ;
+  void TESTPrintErrorTables() ;//TEST debug
   void PrintErrorTables() ;
+  /*
   void PrintErrorTable_NjetVcut(ofstream&) const;
   void PrintErrorTable_NjetVcut_Data(ofstream&) const;//TEMP
   void PrintErrorTable_SignalBG( ofstream&) const;
@@ -1719,6 +1723,15 @@ private:
   void PrintErrorTable_QCD(      ofstream&) const;//, double [][5], double [][5] ) const;
   void PrintErrorTable_SingleTop(ofstream&) const;//, double [][5] ) const; //use unc_pos only
   //void PrintErrorTable_TTnjet(ofstream&, const double [][5][24] ) const;//not yet implemented
+  */
+  void PrintErrorTable_NjetVcut() ;
+  void PrintErrorTable_NjetVcut_Data();//TEMP
+  void PrintErrorTable_SignalBG() ;
+  void PrintErrorTable_MC() ;
+  void PrintErrorTable_QCD() ;//, double [][5], double [][5] ) const;
+  void PrintErrorTable_SingleTop() ;//, double [][5] ) const; //use unc_pos only
+
+
 
 
   double GetBinomialUncertainty(const double& eff,const int& Ninitial) const;
