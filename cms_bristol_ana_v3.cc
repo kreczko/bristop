@@ -8,6 +8,8 @@
 //#====================================================#
 //# Last update:
 //
+//  7 Apr 2010: switch to new ttjets MG ntuples, update skim eff.
+//
 //  2 Apr 2010: - investigating glibc memory error. Fixed.
 //
 //  1 Apr 2010: - continue revision of error table code.
@@ -668,7 +670,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
 
    // for summer09 7TeV madgraph HLTskim
    if( m_runOnMyHLTskim ) {
-     cout << "\nSummer09 7 TeV, Madgraph my HLT skim efficiency:" << endl;
+     cout << "\nSummer09 7 TeV, Madgraph, our HLT skim efficiency:" << endl;
      cout << "(note: nexp = Ninit * w / skim eff)" << endl;
      ///                         N_skim / N_ori    * pres
      //     const double skimEff_ttj =   610804 /   983964. ; //old
@@ -676,7 +678,8 @@ void ana::SetEventWeightMap(){ //only if run on MC
      //     const double skimEff_zj  =   385443 /  1084921. ; //new
 
      // Define
-     skimEffMap["ttjet"] =    610804 /   983964. ; //old
+     // skimEffMap["ttjet"] =    610804 /   983964. ; //old
+     skimEffMap["ttjet"] =    912700 /  1477769. ; //new 7 Apr 2010
      skimEffMap["wjet"]  =   2573745 / 10054895. ;
      skimEffMap["zjet"]  =    385443 /  1084921. ;
 
@@ -684,8 +687,6 @@ void ana::SetEventWeightMap(){ //only if run on MC
      weightMap["ttjet"] *= GetSkimEff("ttjet");
      weightMap["wjet"]  *= GetSkimEff("wjet"); 
      weightMap["zjet"]  *= GetSkimEff("zjet"); 
-     //     weightMap["wjet"]  =  weightMap["wjet"]  * GetSkimEff("wjet"); 
-     //     weightMap["zjet"]  =  weightMap["zjet"]  * GetSkimEff("zjet");
 
      cout << "  skim eff    ttjet      " << GetSkimEff("ttjet") << endl;
      cout << "  skim eff    wjet       " << GetSkimEff("wjet")  << endl;

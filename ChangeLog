@@ -1,6 +1,8 @@
 //#====================================================#
 //# Last update:
 //
+//  7 Apr 2010: switch to new ttjets MG ntuples, update skim eff.
+//
 //  2 Apr 2010: - investigating glibc memory error. Fixed.
 //
 //  1 Apr 2010: - continue revision of error table code.
