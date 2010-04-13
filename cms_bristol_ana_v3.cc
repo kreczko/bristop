@@ -8,7 +8,9 @@
 //#====================================================#
 //# Last update:
 //
-//  7 Apr 2010: switch to new ttjets MG ntuples, update skim eff.
+//  12 Apr 2010: - Added this_weight initialization
+//
+//  10 Apr 2010: - Updated OptimiseConversionFinder code, added ML distributions.
 //
 //  2 Apr 2010: - investigating glibc memory error. Fixed.
 //
@@ -113,7 +115,6 @@ using namespace std;
 using namespace RooFit;
 
 #include "cms_bristol_ana_v3.hh" // defines ana class, including branches and leaves for tree
-
 
 // Global variables/constants
 //-----------------------------
@@ -670,7 +671,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
 
    // for summer09 7TeV madgraph HLTskim
    if( m_runOnMyHLTskim ) {
-     cout << "\nSummer09 7 TeV, Madgraph, our HLT skim efficiency:" << endl;
+     cout << "\nSummer09 7 TeV, Madgraph my HLT skim efficiency:" << endl;
      cout << "(note: nexp = Ninit * w / skim eff)" << endl;
      ///                         N_skim / N_ori    * pres
      //     const double skimEff_ttj =   610804 /   983964. ; //old
@@ -678,8 +679,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
      //     const double skimEff_zj  =   385443 /  1084921. ; //new
 
      // Define
-     // skimEffMap["ttjet"] =    610804 /   983964. ; //old
-     skimEffMap["ttjet"] =    912700 /  1477769. ; //new 7 Apr 2010
+     skimEffMap["ttjet"] =    610804 /   983964. ; //old
      skimEffMap["wjet"]  =   2573745 / 10054895. ;
      skimEffMap["zjet"]  =    385443 /  1084921. ;
 
@@ -687,6 +687,8 @@ void ana::SetEventWeightMap(){ //only if run on MC
      weightMap["ttjet"] *= GetSkimEff("ttjet");
      weightMap["wjet"]  *= GetSkimEff("wjet"); 
      weightMap["zjet"]  *= GetSkimEff("zjet"); 
+     //     weightMap["wjet"]  =  weightMap["wjet"]  * GetSkimEff("wjet"); 
+     //     weightMap["zjet"]  =  weightMap["zjet"]  * GetSkimEff("zjet");
 
      cout << "  skim eff    ttjet      " << GetSkimEff("ttjet") << endl;
      cout << "  skim eff    wjet       " << GetSkimEff("wjet")  << endl;
@@ -801,7 +803,7 @@ ana::ana(){
    sysSample               = "";
    m_studyPDFunc           = false;
    ScientificNotation      = true;
-
+   this_weight             = 1.0;
 
    // Default values of kinematic cuts
    ELE_ETCUT                = 30.0;
@@ -1631,19 +1633,25 @@ void ana::BookHistograms_conv(){
    dir_conv->cd();
    //81FB
    Conv_Opti.reserve(2);
-   Conv_OptiL.reserve(2);
    Conv_Optis.reserve(2);
-   Conv_Opti_extragran.reserve(2);
+   Conv_Opti_extragran[0].reserve(2);
+   Conv_Opti_extragran[1].reserve(2);
+   Conv_Opti_extragran[2].reserve(2);
    Conv_Opti[0]  = new TH2D("ConvOptimization_ttbar",  "ConvOptimization_ttbar",  100,  -1,  1, 100,  -1,  1);
-   Conv_OptiL[0] = new TH2D("ConvOptimization_ttbar_l","ConvOptimization_ttbar_l",100, -10, 10, 100, -10, 10);
    Conv_Optis[0] = new TH2D("ConvOptimization_ttbar_s","ConvOptimization_ttbar_s",100,-0.1,0.1, 100,-0.1,0.1);
    Conv_Opti[1]  = new TH2D("ConvOptimization_enri3",  "ConvOptimization_enri3",  100,  -1,  1, 100,  -1,  1);
-   Conv_OptiL[1] = new TH2D("ConvOptimization_enri3_l","ConvOptimization_enri3_l",100, -10, 10, 100, -10, 10);
    Conv_Optis[1] = new TH2D("ConvOptimization_enri3_s","ConvOptimization_enri3_s",100,-0.1,0.1, 100,-0.1,0.1);
-   Conv_Opti_extragran[0] = new TH2D("ConvOptimization_ttbar_eg","ConvOptimization_ttbar_eg",2000,-0.2,0.2,2000,-0.2,0.2);
-   Conv_Opti_extragran[1] = new TH2D("ConvOptimization_enri3_eg","ConvOptimization_enri3_eg",2000,-0.2,0.2,2000,-0.2,0.2);
+   Conv_Opti_extragran[0][0] = new TH2D("ConvOptimization_ttbar_eg_ML0","ConvOptimization_ttbar_eg_ML0",2000,-0.2,0.2,2000,-0.2,0.2);
+   Conv_Opti_extragran[0][1] = new TH2D("ConvOptimization_enri3_eg_ML0","ConvOptimization_enri3_eg_ML0",2000,-0.2,0.2,2000,-0.2,0.2);
+   Conv_Opti_extragran[1][0] = new TH2D("ConvOptimization_ttbar_eg_ML1","ConvOptimization_ttbar_eg_ML1",2000,-0.2,0.2,2000,-0.2,0.2);
+   Conv_Opti_extragran[1][1] = new TH2D("ConvOptimization_enri3_eg_ML1","ConvOptimization_enri3_eg_ML1",2000,-0.2,0.2,2000,-0.2,0.2);
+   Conv_Opti_extragran[2][0] = new TH2D("ConvOptimization_ttbar_eg_ML2","ConvOptimization_ttbar_eg_ML2",2000,-0.2,0.2,2000,-0.2,0.2);
+   Conv_Opti_extragran[2][1] = new TH2D("ConvOptimization_enri3_eg_ML2","ConvOptimization_enri3_eg_ML2",2000,-0.2,0.2,2000,-0.2,0.2);
 
    //Conv_CheckDelR_GSFTk_ctfTk = new TH1D("Conv_CheckDelR_GSFTk_ctfTk","Conv_CheckDelR_GSFTk_ctfTk",1000,0,10);
+   Converted_ML[0] = new TH1F("Converted_ML_preAlgo","Converted_ML_preAlgo",10,-0.5,9.5);
+   Converted_ML[1] = new TH1F("Converted_ML_Flagged","Converted_ML_Flagged",10,-0.5,9.5);
+   Converted_ML[2] = new TH1F("Converted_ML_nonFlagged","Converted_ML_nonFlagged",10,-0.5,9.5);
 }
 //---------------------------------------------------------------------------------------------
 
@@ -2019,7 +2027,7 @@ bool ana::EventLoop(){
    // MC information (declared before event loop)
    //   string this_mc = "data"; //default
    this_mc = "data"; //default
-   mctype = 0;
+   mctype = 1;
 
 
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2800,10 +2808,16 @@ bool ana::EventLoop(){
      //bool isConversion = false;
      if (nGoodIsoEle == 1) { // If 1 electron only, check if this electron is a conversion ... if more than one ignore (will be rejected anyawy)
        isConversion = ConversionFinder(iso_electrons.at(0), mctype, index_selected_ele);
-       if( DoConversionStudies() ){ConversionMCMatching(iso_electrons.at(0), mctype, isConversion);}
-       //OptimiseConversionFinder(iso_electrons.at(0), mctype);
+       if( DoConversionStudies() ){ConversionMCMatching(iso_electrons.at(0), mctype, isConversion);
+	 //OptimiseConversionFinder(iso_electrons.at(0), mctype,index_selected_ele);
+	 if(m_useMisslayers) {
+	   Converted_ML[0]->Fill(  els_innerLayerMissingHits->at(index_selected_ele)  );
+	   if(isConversion) Converted_ML[1]->Fill(  els_innerLayerMissingHits->at(index_selected_ele)  );
+	   if(!isConversion) Converted_ML[2]->Fill(  els_innerLayerMissingHits->at(index_selected_ele)  );
+	 }
+       }
      }
-
+     
 
 
      //-----------------------------------------
@@ -4338,7 +4352,6 @@ bool ana::EventLoop(){
    cout << "\n*   Processed events:  " << left << setw(47) << counter      << "*";
    cout << "\n*   Passed events:     " << left << setw(47) << counter_pass << "*";
    cout << "\n***********************************************************************\n";
-
    // Print current time
    TDatime now;
    cout << endl << "Current local ";
@@ -6187,7 +6200,7 @@ bool ana::ConversionFinder(const TLorentzVector& e1, int mctype, int index_selec
   bool isthisConversion = false;
 
   //if the electron has 3 or more missing layers, declare it a conversion
-  if(m_useMisslayers) { if( els_innerLayerMissingHits->at(index_selected_ele) > 2 ) return true; }
+  if(m_useMisslayers) { if( els_innerLayerMissingHits->at(index_selected_ele) > 0 ) return true; }
   //else, continue the routine. Note, we may want to apply this separately to the routine. For now, leave it here (07-01-10)
 
 
@@ -6348,130 +6361,147 @@ void ana::ConversionMCMatching(const TLorentzVector& e1, int mctype, bool isthis
 
 
 
-// 06-01-10: Should remove this or at least change it - the algo is obsolete. 
+
 //856
-void ana::OptimiseConversionFinder(const TLorentzVector& e1, int mctype){
+void ana::OptimiseConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele){
 
-  //  bool isthisConversion = false;
-
+  int mytrackref  = static_cast<int>( els_closestCtfTrackRef->at(index_selected_ele) );
   const float bfield=3.8;
+  float phi_ie = els_phi->at(index_selected_ele);//e1.Phi();
+  float eta_ie = els_eta->at(index_selected_ele);//e1.PseudoRapidity();
 
-  float phi_ie = e1.Phi();
-  float eta_ie = e1.PseudoRapidity();
+  float genMatch = MCTruthMatch(eta_ie, phi_ie);
 
-  float mc_phi;
-  float mc_eta;
-  int ii=0;
-  float tempDelR = 100;
+  //if particle doesn't match a photon and isn't ttbar, return. For ttbar, want all 
+  if( genMatch != 22 && genMatch != 111 && mctype >10){return;}
 
-  for(unsigned int i=0;i<Nmc_doc;++i){
-    mc_phi = mc_doc_phi->at(i);
+
+  float Mindist = 100;
+  float Mindcot = 100;
+  float min_didc = 1000;
+
+  float phi1,eta1,phi2,eta2;
+  float tk1Curvature,tk2Curvature;
+  float tk1r,tk2r;
+  float d0,d02;
+  float tk1x,tk1y,tk2x,tk2y;
+  float distmag,dist,dcot;
+  float EleTrackDelR,theta1,charge1;
+  float NumMissLayers = -1;
+
+
+
+  if(mytrackref>=0 && els_shFracInnerHits->at(index_selected_ele) > 0.45){//use CTF params                                                                
+    phi1 = tracks_phi->at(mytrackref);
+    eta1 = tracks_eta->at(mytrackref);
+    charge1 = tracks_chg->at(mytrackref);
+    d0 = compute_d0("track",mytrackref);
+    tk1Curvature = -0.3*bfield*charge1/( 100*( tracks_pt->at(mytrackref) ) );
+    theta1 = tracks_theta->at(mytrackref);
+    if(m_useMisslayers) NumMissLayers = tracks_innerLayerMissingHits->at(mytrackref);
+  }
+  else{//use GSF params                                                                                                                                   
+    phi1 = els_tk_phi->at(index_selected_ele);
+    eta1 = els_tk_eta->at(index_selected_ele);
+    charge1 = els_tk_charge->at(index_selected_ele);
+    d0 = compute_d0("electron",index_selected_ele);
+    tk1Curvature = -0.3*bfield*charge1/( 100*( els_tk_pt->at(index_selected_ele) ) );
+    theta1 = els_tk_theta->at(index_selected_ele);
+    if(m_useMisslayers) NumMissLayers = els_innerLayerMissingHits->at(index_selected_ele);
+  }
+
+
+  //float mc_phi;
+  //float mc_eta;
+  //int ii=0;
+  //float tempDelR = 100;
+
+  /*  for(unsigned int i=0;i<Nmc_doc;++i){
+   mc_phi = mc_doc_phi->at(i);
     mc_eta = mc_doc_eta->at(i);
     float empDelR = calcDeltaR( mc_phi, mc_eta, phi_ie, eta_ie);
     if(empDelR > 0.3) continue;
 
     if(empDelR < tempDelR){tempDelR = empDelR;ii=i;}
-  }//end mc particle loop                                                          
+  }//end mc particle loop  
+  */
+
   
-  //if particle doesn't match a photon and isn't ttbar, return. For ttbar, want all 
-  if( fabs( mc_doc_id->at(ii) ) != 22 && fabs( mc_doc_id->at(ii) ) != 111 && mctype >10){return;}
+
+  //list of cut values subject to possible optimisation:                                                                            
+  // 1) EleTrackDelR > 0.3                                                                                                          
+  // 2) Dist                                                                                                                        
+  // 3) Dcot                                                                                                                        
+  // 4) Bool opposite track charges - required or not.                                                                              
+  // 5) EleTrackDelR between both tracks < 0.3       
 
 
-  //declare track variables     
-  float phi1;
-  float eta1;
-  float phi2;
-  float eta2;
-  float tk1Curvature;
-  float tk2Curvature;
-  float tk1r;
-  float tk2r;
-  float d0;
-  float d02;
-  float tk1x;
-  float tk1y;
-  float tk2x;
-  float tk2y;
-  float distmag;
-  float dist;
-  float dcot;
 
-  float Mindist = 100;
-  float Mindcot = 100;
-  float min_didc = 1000;
- 
-  //first loop over tracks, trying to match to the electron                      
-  for (unsigned int i=0; i<Ntracks; ++i){
+  tk1r = fabs(1/tk1Curvature);
+  tk1x = ((1/tk1Curvature) - d0)*cos(phi1);
+  tk1y = ((1/tk1Curvature) - d0)*sin(phi1);
 
-    phi1 = tracks_phi->at(i);
-    eta1 = tracks_eta->at(i);
 
-    float EleTrackDelR = calcDeltaR( phi1, eta1, phi_ie, eta_ie);
+  for (unsigned int j=0; j<Ntracks; ++j){//loop over the track collection                                                           
 
-    //consider only tracks that fall within a small cone around electron         
+    if( (abs(mytrackref)-j)==0 ) continue;//works if trackref is valid or not (invalid it will be less than zero, which j is not)   
+    phi2 = tracks_phi->at(j);
+    eta2 = tracks_eta->at(j);
+
+    //require difference in gsf and ctf charges to be different                                                                     
+    if(charge1*tracks_chg->at(j) > 0.0) continue;
+
+    EleTrackDelR = calcDeltaR(phi1, eta1, phi2, eta2);
     if(EleTrackDelR > 0.3) continue;
 
-    //calculate curvature and radius of track                                    
-    tk1Curvature = -0.3*bfield*tracks_chg->at(i)/( 100*( tracks_pt->at(i) ) );
-    tk1r = fabs(1/tk1Curvature);
+    tk2Curvature = -0.3*bfield*tracks_chg->at(j)/( 100*( tracks_pt->at(j) ) );
+    tk2r = fabs(1/tk2Curvature);
 
-    d0 = compute_d0("track",i);
-
-    //calculate coordinates of centre of track "circle"                            
-    tk1x = ((1/tk1Curvature) - d0)*cos(phi1);
-    tk1y = ((1/tk1Curvature) - d0)*sin(phi1);
-
-    //loop over the tracks again, try to find other track in a conversion          
-    for (unsigned int j=0; j<Ntracks; ++j){
-      //avoid using the same track:                                                
-      if(i==j) continue;
-
-      phi2 = tracks_phi->at(j);
-      eta2 = tracks_eta->at(j);
-
-      //check the tracks have opposite charges                                     
-      if(tracks_chg->at(i)*tracks_chg->at(j) > 0.0) continue;
+    d02 = compute_d0("track",j);
 
 
-      tk2Curvature = -0.3*bfield*tracks_chg->at(j)/( 100*( tracks_pt->at(j) ) );
-      tk2r = fabs(1/tk2Curvature);
+    tk2x = ((1/tk2Curvature) - d02)*cos(phi2);
+    tk2y = ((1/tk2Curvature) - d02)*sin(phi2);
 
-      d02 = compute_d0("track",j);
+    distmag = (tk2x - tk1x)*(tk2x -tk1x) + (tk2y -tk1y)*(tk2y-tk1y);
+    distmag = sqrt(distmag);
+    dist = distmag-(tk1r+tk2r);
+    dcot = 1/tan(theta1) - 1/tan(tracks_theta->at(j));
 
-
-      tk2x = ((1/tk2Curvature) - d02)*cos(phi2);
-      tk2y = ((1/tk2Curvature) - d02)*sin(phi2);
-
-      //calculate distance between curves                                      
-      distmag = (tk2x - tk1x)*(tk2x -tk1x) + (tk2y -tk1y)*(tk2y-tk1y);
-      distmag = sqrt(distmag);
-      dist = distmag-(tk1r+tk2r);
-      dcot = 1/tan(tracks_theta->at(i)) - 1/tan(tracks_theta->at(j));
-
-      //float temp_mindidc = sqrt(dist*dist/(3.2*3.2) + dcot*dcot/(2.7*2.7));
-      float temp_mindidc = sqrt(dist*dist + dcot*dcot);
-
-      if(temp_mindidc < min_didc){min_didc = temp_mindidc;Mindist = dist; Mindcot = dcot;}
+ 
+    
+    float temp_mindidc = sqrt(dist*dist + dcot*dcot);
+    
+    if(temp_mindidc < min_didc){min_didc = temp_mindidc;Mindist = dist; Mindcot = dcot;}
 
       //if(mctype<11){ Conv_Opti[0]->Fill(dist,dcot);Conv_Optis[0]->Fill(dist,dcot);}
       //if(mctype==15){Conv_Opti[1]->Fill(dist,dcot);Conv_Optis[1]->Fill(dist,dcot);}
-
-      // if( dist > -0.04 && dist < 0.04 && fabs(dcot) < 0.03)
-      //{
-          //cout <<"Found a Conversion!"<< endl;                      
-      //  isthisConversion = true;
-	  //    break;
-      //}
-
-    }//end of second track loop                                                
-    //   if(isthisConversion) break;
-  }//end of first track loop                                                   
+  }//end of track loop                                                   
 
   //  return isthisConversion;
-  if(mctype<11){ Conv_Opti[0]->Fill(Mindist,Mindcot);Conv_Optis[0]->Fill(Mindist,Mindcot);Conv_Opti_extragran[0]->Fill(Mindist,Mindcot);}
-  if(mctype==15){Conv_Opti[1]->Fill(Mindist,Mindcot);Conv_Optis[1]->Fill(Mindist,Mindcot);Conv_Opti_extragran[1]->Fill(Mindist,Mindcot);}
+ 
+  if(mctype<11){ Conv_Opti[0]->Fill(Mindist,Mindcot);Conv_Optis[0]->Fill(Mindist,Mindcot);
+    if(m_useMisslayers){
+      int MLele = static_cast<int>(els_innerLayerMissingHits->at(index_selected_ele));
+      if(MLele==0) Conv_Opti_extragran[0][0]->Fill(Mindist,Mindcot);
+      else if(MLele==1) Conv_Opti_extragran[1][0]->Fill(Mindist,Mindcot);
+      else if(MLele>=2) Conv_Opti_extragran[2][0]->Fill(Mindist,Mindcot);
+    }
+    else{Conv_Opti_extragran[0][0]->Fill(Mindist,Mindcot);}
+  }
 
-}
+  if(mctype==15){Conv_Opti[1]->Fill(Mindist,Mindcot);Conv_Optis[1]->Fill(Mindist,Mindcot);
+    if(m_useMisslayers){
+      int MLele = static_cast<int>(els_innerLayerMissingHits->at(index_selected_ele));
+      if(MLele==0) Conv_Opti_extragran[0][1]->Fill(Mindist,Mindcot);
+      else if(MLele==1) Conv_Opti_extragran[1][1]->Fill(Mindist,Mindcot);
+      else if(MLele>=2) Conv_Opti_extragran[2][1]->Fill(Mindist,Mindcot);
+    }
+    else{Conv_Opti_extragran[0][1]->Fill(Mindist,Mindcot);}
+  }
+
+  return;
+}//OptimiseConversionFinder
 
 
 

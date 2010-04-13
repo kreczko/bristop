@@ -1746,15 +1746,14 @@ private:
   void PrintConversionTable();
   int ConversionCounter;
   int ConversionArray[23][2][6];
-  void OptimiseConversionFinder(const TLorentzVector& e1, int mctype);  
+  void OptimiseConversionFinder(const TLorentzVector& e1, int mctype,int index_selected_ele);  
 
   vector<TH2D*> Conv_Opti;  //[2];
   vector<TH2D*> Conv_Optis; //[2];
-  vector<TH2D*> Conv_OptiL; //[2];
-  vector<TH2D*> Conv_Opti_extragran;//[2];
+  vector<TH2D*> Conv_Opti_extragran[3];//[2];
   TH1D *Conv_CheckDelR_GSFTk_ctfTk;
   int mycounter;
-
+  TH1F *Converted_ML[3];
 
 
 
