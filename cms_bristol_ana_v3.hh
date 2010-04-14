@@ -636,6 +636,12 @@ public:
    vector<float>   *pv_xErr;
    vector<float>   *pv_yErr;
    vector<float>   *pv_zErr;
+   vector<float>   *pv_chi2;
+   vector<float>   *pv_ndof;
+   vector<float>   *pv_normalizedChi2;
+   vector<float>   *pv_tracksSize;
+   vector<float>   *pv_isValid;
+   vector<float>   *pv_isFake;
    UInt_t          Ntcmets;
    vector<float>   *tcmets_et;
    vector<float>   *tcmets_phi;
@@ -1315,6 +1321,12 @@ public:
    TBranch        *b_pv_xErr;   //!
    TBranch        *b_pv_yErr;   //!
    TBranch        *b_pv_zErr;   //!
+   TBranch        *b_pv_chi2;   //!
+   TBranch        *b_pv_ndof;   //!
+   TBranch        *b_pv_normalizedChi2;   //!
+   TBranch        *b_pv_tracksSize;   //!
+   TBranch        *b_pv_isValid;   //!
+   TBranch        *b_pv_isFake;   //!
    TBranch        *b_Ntcmets;   //!
    TBranch        *b_tcmets_et;   //!
    TBranch        *b_tcmets_phi;   //!
@@ -1535,6 +1547,7 @@ public:
   void SetIntLuminosity(double val)    { m_intlumi           = val; };
   void SetRunOnSD(bool val)            { m_runOnSD           = val; };
   void SetRunOnMyHLTskim(bool val)     { m_runOnMyHLTskim    = val; };
+  void SetRunOnMy35XNtuples(bool val)  { m_runOn35Xntuples   = val; };
   void PrintGenParticles(int nevent);
 
   //switch to preclue missing layers as these are not in 314 data samples
@@ -1575,6 +1588,9 @@ private:
 
   void   WriteHeaderInfo();
 
+  bool   NoScrapingFilter() const;
+  bool   PrimaryVertexFilter() const;
+
   // Histograms
   void BookHistograms();
   void BookHistograms_valid();
@@ -1586,6 +1602,7 @@ private:
   void BookHistograms_eid();
   void BookHistograms_ed0();
   void BookHistograms_zVeto();
+  void BookHistograms_jet();
   void BookHistograms_met();
   void BookHistograms_HT();
   void BookHistograms_mtw();
@@ -1783,6 +1800,7 @@ private:
   bool   m_rejectEndcapEle;
   bool   m_runOnSD;
   bool   m_runOnMyHLTskim;
+  bool   m_runOn35Xntuples;
   bool   m_useMisslayers;
   int    m_muonCutNum;
   int    m_ntoy;
@@ -1941,13 +1959,13 @@ private:
   //------------
   // validation
   v2D_TH1     valid_HT;         //[9][7]
-  v2D_TH1     valid_jetsEt;     //[9][7]
+  v2D_TH1     valid_jetsPt;     //[9][7]
   v2D_TH1     valid_jetsEta;    //[9][7]
   v2D_TH1     valid_jetsPhi;    //[9][7]
-  v2D_TH1     valid_jets1stEt;  //[9][7]
-  v2D_TH1     valid_jets2ndEt;  //[9][7]
-  v2D_TH1     valid_jets3rdEt;  //[9][7]
-  v2D_TH1     valid_jets4thEt;  //[9][7]
+  v2D_TH1     valid_jets1stPt;  //[9][7]
+  v2D_TH1     valid_jets2ndPt;  //[9][7]
+  v2D_TH1     valid_jets3rdPt;  //[9][7]
+  v2D_TH1     valid_jets4thPt;  //[9][7]
   v2D_TH1     valid_eleEt;      //[9][7]
   v2D_TH1     valid_eleEta;     //[9][7]
   v2D_TH1     valid_elePhi;     //[9][7]
@@ -1964,6 +1982,8 @@ private:
   v2D_TH1     valid_recoM3_PTMax; //[9][7]
   v2D_TH1     valid_numberTracks; //[9][7]
   v2D_TH1     valid_trackPt;      //[9][7]
+  v2D_TH1     valid_metEx;
+  v2D_TH1     valid_metEy;
 
   // basic
   // - ele
@@ -2086,6 +2106,10 @@ private:
   vector<TH1*>  h_photon_et_lowMet_1j;   //[nclass];
   vector<TH1*>  h_photon1_eta_lowMet_1j; //[nclass];
   vector<TH1*>  h_photon1_et_lowMet_1j;  //[nclass];
+
+  // Jets (kachanon)
+  vector<TH1*>  h_JetCleaningEfficiency; //[nclass]
+  vector<TH1*>  h_njet_pass;             //[nclass]
 
   // MET
   v2D_TH1       h_met;                  //[7][nclass]; //user-chosen MET
@@ -2826,6 +2850,12 @@ void ana::Init(){
    pv_xErr = 0;
    pv_yErr = 0;
    pv_zErr = 0;
+   pv_chi2 = 0;
+   pv_ndof = 0;
+   pv_normalizedChi2 = 0;
+   pv_tracksSize = 0;
+   pv_isValid = 0;
+   pv_isFake = 0;
    tcmets_et = 0;
    tcmets_phi = 0;
    tcmets_ex = 0;
@@ -3497,6 +3527,14 @@ void ana::Init(){
    chain->SetBranchAddress("pv_xErr", &pv_xErr, &b_pv_xErr);
    chain->SetBranchAddress("pv_yErr", &pv_yErr, &b_pv_yErr);
    chain->SetBranchAddress("pv_zErr", &pv_zErr, &b_pv_zErr);
+   if(m_runOn35Xntuples){
+     chain->SetBranchAddress("pv_chi2", &pv_chi2, &b_pv_chi2);
+     chain->SetBranchAddress("pv_ndof", &pv_ndof, &b_pv_ndof);
+     chain->SetBranchAddress("pv_normalizedChi2", &pv_normalizedChi2, &b_pv_normalizedChi2);
+     chain->SetBranchAddress("pv_tracksSize", &pv_tracksSize, &b_pv_tracksSize);
+     chain->SetBranchAddress("pv_isValid", &pv_isValid, &b_pv_isValid);
+     chain->SetBranchAddress("pv_isFake", &pv_isFake, &b_pv_isFake);
+   }
    chain->SetBranchAddress("Ntracks", &Ntracks, &b_Ntracks);
    chain->SetBranchAddress("tracks_chi2", &tracks_chi2, &b_tracks_chi2);
    chain->SetBranchAddress("tracks_ndof", &tracks_ndof, &b_tracks_ndof);

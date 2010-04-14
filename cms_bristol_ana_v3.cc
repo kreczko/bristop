@@ -1,12 +1,15 @@
 //
-// To Do: 1) clean up m3 histo. change all TH1F to TH1D. (DONE)
-//        2) clean up m3 plots. (DONE)
-//        3) clean up codes after all cuts (WORK IN PROGRESS)
-//        4) clean up, revise z veto code. (DONE)
-//        5) fix and revise error table code. (WORK IN PROGRESS)
-//        6) add WW,ZZ,WZ
+// To Do: 1) validate error table code.
+//        2) add WW,ZZ,WZ.
+//        3) adapt cut to conform to Reference Selection of Top Lepton+Jets
 //#====================================================#
 //# Last update:
+//
+//  13 Apr 2010: - Added met_ex and met_ey to validation code. Applied filtering requirements for validation.
+//
+//  13 Apr 2010: - Updated skim efficiency for new ttjets MG ntuples (31X).
+//               - Added Kachanon's plots (jet cleaning eff, njet_pass).
+//               - Added NoScrapingFilter() and PrimaryVertexFilter().
 //
 //  12 Apr 2010: - Added this_weight initialization
 //
@@ -115,6 +118,7 @@ using namespace std;
 using namespace RooFit;
 
 #include "cms_bristol_ana_v3.hh" // defines ana class, including branches and leaves for tree
+
 
 // Global variables/constants
 //-----------------------------
@@ -591,14 +595,6 @@ void ana::SetEventWeightMap(){ //only if run on MC
        skimEff_ttbar  =       3270 /   529750. * 100;
        skimEff_wenu   =      87514 /  2142960. * 20;
        skimEff_zee    =      15092 /  2682355. * 100;
-       /*
-       const double skimEff_enri1  =    6242601 / 33638282. ;
-       const double skimEff_enri2  =   10792435 / 38360886. ;
-       const double skimEff_enri3  =    2538711 /  5729547. ;
-       const double skimEff_bce1   =     393019 /  2383833. ;
-       const double skimEff_bce2   =     769808 /  2035108. ;
-       const double skimEff_bce3   =     641522 /  1038080. ;
-       */
 
        // Note: not doing the same for ttbar, wenu, zee as the prescale factors
        //       need to exclude from skimEff.
@@ -625,14 +621,6 @@ void ana::SetEventWeightMap(){ //only if run on MC
        skimEff_ttbar  =      3841 /   626610. * 100 ;
        skimEff_wenu   =     85505 /  2078361. * 20  ;
        skimEff_zee    =     14683 /  2538855. * 100 ;
-       /*
-       const double skimEff_enri1  =   6169999 / 33505929. ;
-       const double skimEff_enri2  =   9054696 / 32168675. ;
-       const double skimEff_enri3  =   2463429 /  5551386. ;
-       const double skimEff_bce1   =    432380 /  2752942. ;
-       const double skimEff_bce2   =    840100 /  2261916. ; 
-       const double skimEff_bce3   =    682720 /  1097829. ;
-       */
 
        //skimEffMap["ttbar"]  =      3841 /   626610. * 100 ;
        //skimEffMap["wenu"]   =     85505 /  2078361. * 20  ;
@@ -673,13 +661,10 @@ void ana::SetEventWeightMap(){ //only if run on MC
    if( m_runOnMyHLTskim ) {
      cout << "\nSummer09 7 TeV, Madgraph my HLT skim efficiency:" << endl;
      cout << "(note: nexp = Ninit * w / skim eff)" << endl;
-     ///                         N_skim / N_ori    * pres
-     //     const double skimEff_ttj =   610804 /   983964. ; //old
-     //     const double skimEff_wj  =  2573745 / 10054895. ; //new
-     //     const double skimEff_zj  =   385443 /  1084921. ; //new
 
-     // Define
-     skimEffMap["ttjet"] =    610804 /   983964. ; //old
+     /// Define                   N_skim / N_ori    * pres     
+     // skimEffMap["ttjet"] =    610804 /   983964. ; //old
+     skimEffMap["ttjet"] =    912700 /  1477769. ; //new 7 Apr 2010
      skimEffMap["wjet"]  =   2573745 / 10054895. ;
      skimEffMap["zjet"]  =    385443 /  1084921. ;
 
@@ -687,8 +672,6 @@ void ana::SetEventWeightMap(){ //only if run on MC
      weightMap["ttjet"] *= GetSkimEff("ttjet");
      weightMap["wjet"]  *= GetSkimEff("wjet"); 
      weightMap["zjet"]  *= GetSkimEff("zjet"); 
-     //     weightMap["wjet"]  =  weightMap["wjet"]  * GetSkimEff("wjet"); 
-     //     weightMap["zjet"]  =  weightMap["zjet"]  * GetSkimEff("zjet");
 
      cout << "  skim eff    ttjet      " << GetSkimEff("ttjet") << endl;
      cout << "  skim eff    wjet       " << GetSkimEff("wjet")  << endl;
@@ -794,6 +777,7 @@ ana::ana(){
    m_rejectEndcapEle         = true;
    m_runOnSD                 = true;
    m_runOnMyHLTskim          = true;
+   m_runOn35Xntuples         = false;
    m_useMisslayers           = false;
    m_muonCutNum              = 0;
    m_ntoy                    = 2;
@@ -984,6 +968,8 @@ void ana::ReadSelectedBranches() const {
    chain->SetBranchStatus("mets_phi",1);
    chain->SetBranchStatus("mets_gen_et",1);
    chain->SetBranchStatus("mets_gen_phi",1);
+   chain->SetBranchStatus("mets_ex",1);
+   chain->SetBranchStatus("mets_ey",1);
    /*
    if(m_metAlgo=="Default") { //muCor caloMET
      chain->SetBranchStatus("Nmets",1);
@@ -1022,6 +1008,7 @@ void ana::ReadSelectedBranches() const {
    chain->SetBranchStatus("tracks_vy",1);
    chain->SetBranchStatus("tracks_px",1);
    chain->SetBranchStatus("tracks_py",1);
+   chain->SetBranchStatus("tracks_highPurity",1);
    if(m_useMisslayers) chain->SetBranchStatus("tracks_innerLayerMissingHits",1);
 
    chain->SetBranchStatus("Nphotons",1); //z study
@@ -1061,7 +1048,16 @@ void ana::ReadSelectedBranches() const {
      //chain->SetBranchStatus("HLT_Ele15_LW_L1R",1); //trigger (8e29)
      //chain->SetBranchStatus("HLT_Ele10_SW_L1R",1); //trigger (1e30)
      chain->SetBranchStatus(HLTBit.c_str(),1);
-   }   
+   }
+
+   if(m_runOn35Xntuples){
+     chain->SetBranchStatus("Npv",1);
+     chain->SetBranchStatus("pv_z",1);
+     chain->SetBranchStatus("pv_isFake",1);
+     chain->SetBranchStatus("pv_ndof",1);
+     //chain->SetBranchStatus("pv_rho",1);//missing rho
+   }
+
 }//end ReadSelectedBranches
 //---------------------------------------------------------------------------------------------
 
@@ -1132,6 +1128,39 @@ void ana::WriteHeaderInfo(){
   info->Write();
   delete info;
 }
+//---------------------------------------------------------------------------------------------
+
+bool ana::PrimaryVertexFilter() const {
+  
+  bool goodpv = false;
+  for(unsigned int i=0; i<Npv; ++i){
+    if(    pv_isFake->at(i)==0 
+	   && pv_ndof->at(i) > 4  
+	   && fabs(pv_z->at(i)) <= 15 
+	   // &&      fabs(pv_rho->at(i) < 2 
+	   ) { goodpv = true;
+    }
+  }
+  return goodpv;
+}
+//---------------------------------------------------------------------------------------------
+
+// In events with >10 tracks, require min 25% to be of high purity
+bool ana::NoScrapingFilter() const {
+
+  if(Ntracks>10) {
+
+    int ntkHP = 0;
+    for(unsigned int i=0; i<Ntracks; ++i){
+      if( tracks_highPurity->at(i) > 0 ) ntkHP++;
+    }
+    if( (ntkHP/(float)Ntracks) > 0.25 ) return true;
+    else return false;
+  }else{
+    return true;
+  }
+}
+//---------------------------------------------------------------------------------------------
 
 
 //=============================================================================================
@@ -1152,6 +1181,7 @@ void ana::BookHistograms(){
   BookHistograms_nEle();
   BookHistograms_ed0();
   if(m_studyZveto)    BookHistograms_zVeto();
+  BookHistograms_jet();
   BookHistograms_met();
   BookHistograms_HT();
   BookHistograms_mtw();
@@ -1183,13 +1213,13 @@ void ana::BookHistograms_valid() {
    TDirectory *dir_Valid = histf->mkdir("Valid","Validation plots");
    dir_Valid->cd();
    valid_mkHisto_cut_njet(valid_HT,        "ht",       "ht",            1000, 0, 1000);
-   valid_mkHisto_cut_njet(valid_jetsEt,    "jetsEt",   "all_jetsEt",    1000, 0 ,1000);
+   valid_mkHisto_cut_njet(valid_jetsPt,    "jetsPt",   "all_jetsPt",    1000, 0 ,1000);
    valid_mkHisto_cut_njet(valid_jetsEta,   "jetsEta",  "all_jetsEta",   1000, -5, 5);
    valid_mkHisto_cut_njet(valid_jetsPhi,   "jetsPhi",  "all_jetsPhi",   1000, -5, 5);
-   valid_mkHisto_cut_njet(valid_jets1stEt, "jets1st",  "clean_jets1st", 1000, 0, 1000);
-   valid_mkHisto_cut_njet(valid_jets2ndEt, "jets2nd",  "clean_jets2nd", 1000, 0, 1000);
-   valid_mkHisto_cut_njet(valid_jets3rdEt, "jets3rd",  "clean_jets3rd", 1000, 0, 1000);
-   valid_mkHisto_cut_njet(valid_jets4thEt, "jets4th",  "clean_jets4th", 1000, 0, 1000);
+   valid_mkHisto_cut_njet(valid_jets1stPt, "jets1st",  "clean_jets1st", 1000, 0, 1000);
+   valid_mkHisto_cut_njet(valid_jets2ndPt, "jets2nd",  "clean_jets2nd", 1000, 0, 1000);
+   valid_mkHisto_cut_njet(valid_jets3rdPt, "jets3rd",  "clean_jets3rd", 1000, 0, 1000);
+   valid_mkHisto_cut_njet(valid_jets4thPt, "jets4th",  "clean_jets4th", 1000, 0, 1000);
    valid_mkHisto_cut_njet(valid_eleEt,     "eleEt",    "eleEt",         1000, 0, 1000);
    valid_mkHisto_cut_njet(valid_eleEta,    "eleEta",   "eleEta",        1000, -5, 5);
    valid_mkHisto_cut_njet(valid_elePhi,    "elePhi",   "elePhi",        1000, -5, 5);
@@ -1205,7 +1235,10 @@ void ana::BookHistograms_valid() {
    valid_mkHisto_cut_njet(valid_mass_ee,   "mass_ee",  "mass_ee",       1000, 0, 500);
    valid_mkHisto_cut_njet(valid_recoM3_PTMax, "recoM3_PTMax","recoM3_PTMax",1000, 0, 1000);
    valid_mkHisto_cut_njet(valid_numberTracks, "numberTracks","numberTracks", 500, 0, 500); 
-   valid_mkHisto_cut_njet(valid_trackPt, "  trackPt",  "trackPt",        500, 0,500); 
+   valid_mkHisto_cut_njet(valid_trackPt, "trackPt",  "trackPt",        500, 0,500); 
+   valid_mkHisto_cut_njet(valid_metEx, "metEx",  "metEx",        1000, -500,500); 
+   valid_mkHisto_cut_njet(valid_metEy, "metEy",  "metEy",        1000, -500,500); 
+
 
 }//end BookHistograms_valid()
 //---------------------------------------------------------------------------------------------
@@ -1460,6 +1493,21 @@ void ana::BookHistograms_ed0() {
    histf->cd();
 
 }//end BookHistograms_ed0()
+//---------------------------------------------------------------------------------------------
+
+
+void ana::BookHistograms_jet(){
+  //-------------------------------
+  //  Jet plots by Kachanon
+  //-------------------------------
+  TDirectory *dir_jet = histf->mkdir("jets", "jet cleaning eff, njet_pass");
+  dir_jet->cd();
+
+  addHistoDataAndMC( h_JetCleaningEfficiency, "JetCleaningEfficiency", "Jet Cleaning Efficiency", 100, 0, 1.1);
+  // Jet Multiplicity plots after applying all the cut (except nj).
+  addHistoDataAndMC( h_njet_pass, "njet_pass", "jet multiplicity (passing all but nj cuts)", 10,0,10);
+  histf->cd();
+}
 //---------------------------------------------------------------------------------------------
 
 
@@ -2027,7 +2075,7 @@ bool ana::EventLoop(){
    // MC information (declared before event loop)
    //   string this_mc = "data"; //default
    this_mc = "data"; //default
-   mctype = 1;
+   mctype = 0;
 
 
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2104,7 +2152,6 @@ bool ana::EventLoop(){
 
 
 
-
      //------------------------------------------------------------
      //                RESET  (in for *this* event)
      //------------------------------------------------------------
@@ -2169,11 +2216,19 @@ bool ana::EventLoop(){
 	    << ", file " << chain->GetCurrentFile()->GetName() 
 	    << ", EvtSize " << nbytes << endl;
      }
+
+     //Apply PV filter and No scraping event requirement. Commented out for now.
+     //if(!PrimaryVertexFilter() || !NoScrapingFilter() ) continue;
+
+
      
      //-------------------
      // 2- Check Trigger 
      //-------------------
      if(m_debug) cout << "Checking Trigger"<< endl;
+
+
+
 
      if( GetTrigger() ){
 
@@ -2404,6 +2459,7 @@ bool ana::EventLoop(){
 
      for (unsigned int i=0; i<Nels; ++i) {
 
+       if(els_sigmaIEtaIEta->at(i) < 0.002) continue;
        //cout << "\n--> electron no." << i+1 << endl;
        //cout << "  this electron ET/eta = " << els_et->at(i) << " / " << els_eta->at(i) << endl;
 
@@ -2935,6 +2991,9 @@ bool ana::EventLoop(){
 	
      float delR_jet_ele = 9999;
 	
+     float jetCleaningEff = -1.0;
+     float nJet_beforeCleaning = nGoodJet;
+
      //Loop over selected jets
      for(unsigned int i = 0 ; i < jets.size(); ++i) {
 
@@ -2958,6 +3017,15 @@ bool ana::EventLoop(){
 	
 
      if(nGoodJet>=4) pass_4jets = true;
+
+
+     // calculate jet cleaning efficiency (13 Apr 2010)
+     float nJet_afterCleaning = nGoodJet;
+     if( nJet_beforeCleaning != 0.0 ) {
+       jetCleaningEff = nJet_afterCleaning/nJet_beforeCleaning;
+     }
+     fillHistoDataAndMC( h_JetCleaningEfficiency, jetCleaningEff );
+
 
      // (TL) NEW: 14 Aug 09
      // basic plot: jet collection after cleaning
@@ -3249,15 +3317,15 @@ bool ana::EventLoop(){
        valid_fillHisto(valid_HT, Boolcuts, ht);
        
        for(unsigned int i = 0 ; i < jets.size(); ++i) {
-	 valid_fillHisto(valid_jetsEt,  Boolcuts, jets.at(i).Et());	
+	 valid_fillHisto(valid_jetsPt,  Boolcuts, jets.at(i).Pt());	
 	 valid_fillHisto(valid_jetsEta, Boolcuts, jets.at(i).Phi());
 	 valid_fillHisto(valid_jetsPhi, Boolcuts, jets.at(i).Eta());
        }
               
-       if(ntj>0) valid_fillHisto(valid_jets1stEt, Boolcuts, jets.at(0).Et());
-       if(ntj>1) valid_fillHisto(valid_jets2ndEt, Boolcuts, jets.at(1).Et());
-       if(ntj>2) valid_fillHisto(valid_jets3rdEt, Boolcuts, jets.at(2).Et());
-       if(ntj>3) valid_fillHisto(valid_jets4thEt, Boolcuts, jets.at(3).Et());
+       if(ntj>0) valid_fillHisto(valid_jets1stPt, Boolcuts, jets.at(0).Pt());
+       if(ntj>1) valid_fillHisto(valid_jets2ndPt, Boolcuts, jets.at(1).Pt());
+       if(ntj>2) valid_fillHisto(valid_jets3rdPt, Boolcuts, jets.at(2).Pt());
+       if(ntj>3) valid_fillHisto(valid_jets4thPt, Boolcuts, jets.at(3).Pt());
        
 
        
@@ -3296,6 +3364,9 @@ bool ana::EventLoop(){
 
        valid_fillHisto(valid_metEt,  Boolcuts,  this_met );
        valid_fillHisto(valid_metPhi, Boolcuts,  this_met_phi );
+       valid_fillHisto(valid_metEt,  Boolcuts,  this_met );
+       valid_fillHisto(valid_metEx,  Boolcuts,  mets_ex->at(0) );
+       valid_fillHisto(valid_metEy,  Boolcuts,  mets_ey->at(0) );
 
        valid_fillHisto(valid_numberTracks, Boolcuts, Ntracks);
        for(unsigned int i=0; i<Ntracks; ++i){
@@ -3454,6 +3525,12 @@ bool ana::EventLoop(){
        fillHistoDataAndMC( h_met_ante_ISO_mu, met2v_mu.Mod() );
        fillHistoDataAndMC( h_met_ante_ISO_t1, met2v_t1.Mod() );
      }
+
+
+     // Kachanon adds this
+     if(e_plus_jet_pass) fillHistoDataAndMC( h_njet_pass, float(nGoodJet) );
+
+
 
      //E+jets Analysis
      if(e_plus_jet_pass && nGoodJet >= 4) {
@@ -4352,6 +4429,7 @@ bool ana::EventLoop(){
    cout << "\n*   Processed events:  " << left << setw(47) << counter      << "*";
    cout << "\n*   Passed events:     " << left << setw(47) << counter_pass << "*";
    cout << "\n***********************************************************************\n";
+
    // Print current time
    TDatime now;
    cout << endl << "Current local ";
@@ -4819,7 +4897,7 @@ void ana::StudyQCDControlRegion_planB(){
 	     
       const double this_iso = getRelIso(0);
 	   
-      if ( els_robustTightId->at(0)  > 0 ) { //pass RT ID
+      if ( els_robustTightId->at(0)  > 0  ) { //pass RT ID
 	     
 	// Definition B1:  lowered EleET cut
 	//------------------------------------
