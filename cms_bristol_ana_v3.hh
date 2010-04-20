@@ -29,16 +29,23 @@ const bool run_on_octX_skim = 0; // <---- set temporary swith here
 const bool use_old_Z_veto = false; //TEMPORARY
 //TODO: remove one of the two. Reason: they have the same information
 //FIXME: 01st step to new sample - add mcname and mclabel
-const string mcname[] = { "data", "ttbar", "QCD", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3", "wj", "zj", "vqq",
-		"singleTop", "tW", "tchan", "schan", "Zprime_M500GeV_W5GeV", "Zprime_M500GeV_W50GeV", "Zprime_M750GeV_W7500MeV",
+const string mcname[] = { "data", "ttbar", "ttjet", "wj", "zj", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3", "vqq", "tW",
+		"tchan", "schan", "Zprime_M500GeV_W5GeV", "Zprime_M500GeV_W50GeV", "Zprime_M750GeV_W7500MeV", "Zprime_M1TeV_W10GeV",
+		"Zprime_M1TeV_W100GeV", "Zprime_M1250GeV_W12500MeV", "Zprime_M1500GeV_W15GeV", "Zprime_M1500GeV_W150GeV",
+		"Zprime_M2TeV_W20GeV", "Zprime_M2TeV_W200GeV", "Zprime_M3TeV_W30GeV", "Zprime_M3TeV_W300GeV", "Zprime_M4TeV_W40GeV",
+		"Zprime_M4TeV_W400GeV", "QCD", "singleTop" };
+
+const string mcfiles[] = { "data", "ttbar", "ttjet", "wjet", "zjet", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3", "vqq",
+		"tW", "tchan", "schan", "Zprime_M500GeV_W5GeV", "Zprime_M500GeV_W50GeV", "Zprime_M750GeV_W7500MeV",
 		"Zprime_M1TeV_W10GeV", "Zprime_M1TeV_W100GeV", "Zprime_M1250GeV_W12500MeV", "Zprime_M1500GeV_W15GeV",
 		"Zprime_M1500GeV_W150GeV", "Zprime_M2TeV_W20GeV", "Zprime_M2TeV_W200GeV", "Zprime_M3TeV_W30GeV", "Zprime_M3TeV_W300GeV",
-		"Zprime_M4TeV_W40GeV", "Zprime_M4TeV_W400GeV" };
-const string mclabel[] = { "data", "signal", "QCD", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3", "W+jets", "Z+jets", "VQQ",
-		"singleTop", "tW", "t-chan", "s-chan", "Zprime_M500GeV_W5GeV", "Zprime_M500GeV_W50GeV", "Zprime_M750GeV_W7500MeV",
+		"Zprime_M4TeV_W40GeV", "Zprime_M4TeV_W400GeV", "QCD", "singleTop" };
+
+const string mclabel[] = { "data", "signal", "signalJ", "W+jets", "Z+jets", "enri1", "enri2", "enri3", "bce1", "bce2", "bce3",
+		"VQQ", "tW", "t-chan", "s-chan", "Zprime_M500GeV_W5GeV", "Zprime_M500GeV_W50GeV", "Zprime_M750GeV_W7500MeV",
 		"Zprime_M1TeV_W10GeV", "Zprime_M1TeV_W100GeV", "Zprime_M1250GeV_W12500MeV", "Zprime_M1500GeV_W15GeV",
 		"Zprime_M1500GeV_W150GeV", "Zprime_M2TeV_W20GeV", "Zprime_M2TeV_W200GeV", "Zprime_M3TeV_W30GeV", "Zprime_M3TeV_W300GeV",
-		"Zprime_M4TeV_W40GeV", "Zprime_M4TeV_W400GeV" };
+		"Zprime_M4TeV_W40GeV", "Zprime_M4TeV_W400GeV", "QCD", "singleTop" };
 //make static in order to avoid ld duplication
 //static const char* histnames[] = { "neutrino_pz", "neutrino_pz_mc", "mttbar", "mttbar_mc", "mZprime_mc", "mWlep", "mWlep_mc",
 //		"mWhad", "mWhad_mc", "minDeltaR_ele_Jet", "ptRel_ele_jet", "mtlep", "mtlep_mc", "mthad", "mthad_mc", "thad_pt",
@@ -48,7 +55,7 @@ const string mclabel[] = { "data", "signal", "QCD", "enri1", "enri2", "enri3", "
 //		"Chi2Global", "Chi2Global_matched", "Chi2Total", "Chi2Total_matched" };
 //static const char* histnames2D[] = { "kptRel_vs_deltaRmin" };
 const short int mcsize = sizeof(mcname) / sizeof(mcname[0]);
-const int nmctype(mcsize + 7); //extend to include wj, zj, QCD, VQQ, single top
+const int nmctype(mcsize + 8); //extend to include wj, zj, QCD, VQQ, single top
 const int nstage(mcsize + 8); //add >=1Tele
 
 
@@ -108,30 +115,68 @@ public:
 	 * Enum for MC types
 	 */
 	enum MCType {
-		kdata, ksignal, kQCD, kenri1, kenri2, kenri3, kbce1, kbce2, kbce3, kWjets, kZjets, kVQQ, ksingleTop, ktW, ktchan, kschan,
-		Zprime_M500GeV_W5GeV, Zprime_M500GeV_W50GeV, Zprime_M750GeV_W7500MeV, Zprime_M1TeV_W10GeV, Zprime_M1TeV_W100GeV,
-		Zprime_M1250GeV_W12500MeV, Zprime_M1500GeV_W15GeV, Zprime_M1500GeV_W150GeV, Zprime_M2TeV_W20GeV, Zprime_M2TeV_W200GeV,
-		Zprime_M3TeV_W30GeV, Zprime_M3TeV_W300GeV, Zprime_M4TeV_W40GeV, Zprime_M4TeV_W400GeV, kNumMCTypes
+		kdata, kttbar, kttjet, kWjets, kZjets, kenri1, kenri2, kenri3, kbce1, kbce2, kbce3, kVQQ, ktW, ktchan, kschan,//0-14
+		Zprime_M500GeV_W5GeV, Zprime_M500GeV_W50GeV, Zprime_M750GeV_W7500MeV, Zprime_M1TeV_W10GeV, Zprime_M1TeV_W100GeV,//15-19
+		Zprime_M1250GeV_W12500MeV, Zprime_M1500GeV_W15GeV, Zprime_M1500GeV_W150GeV, Zprime_M2TeV_W20GeV, Zprime_M2TeV_W200GeV,//24
+		Zprime_M3TeV_W30GeV, Zprime_M3TeV_W300GeV, Zprime_M4TeV_W40GeV, Zprime_M4TeV_W400GeV, kQCD, ksingleTop/*30*/, kNumMCTypes
 	};
 
 	/**
 	 * Enum for 1-D histograms
 	 */
 	enum EHist {
-		kneutrino_pz, kneutrino_pz_mc, kMttbar, kMttbar_mc, kMZprime_mc, kmWlep, kmWlep_mc, kmWhad, kmWhad_mc,
-		kminDeltaR_ele_Jet, kptRel_ele_jet, kmtlep, kmtlep_mc, kmthad, kmthad_mc, kthad_pt, kthad_pt_mc, ktlep_pt, ktlep_pt_mc,
-		kangle_b_ele, kptratio, kpttbar, khtsystem, kangle_b_ele_matched, kmtlep_matched, kmthad_matched, kmWhad_matched,
-		kmWlep_matched, kptratio_matched, kpttbar_matched, khtsystem_matched, kWhadPartons, kChi2Leptonic, kChi2Leptonic_matched,
-		kChi2Hadronic, kChi2Hadronic_matched, kChi2Global, kChi2Global_matched, kChi2Total, kChi2Total_matched, ktlep_pt_matched,
-		kthad_pt_matched, kangle_b_ele_mc, kptratio_mc, kpttbar_mc, khtsystem_mc, kChi2Leptonic_mc, kChi2Hadronic_mc,
-		kChi2Global_mc, kChi2Total_mc, kNumHists
+		kneutrino_pz, kneutrino_pz_mc, kMttbar, kMttbar_btagged, kMttbar_mc, kMZprime_mc, kmWlep, kmWlep_btagged, kmWlep_mc,
+		kmWhad, kmWhad_btagged, kmWhad_mc, kminDeltaR_ele_Jet, kptRel_ele_jet, kmtlep, kmtlep_btagged, kmtlep_mc, kmthad,
+		kmthad_btagged, kmthad_mc, kthad_pt, kthad_pt_mc, ktlep_pt, ktlep_pt_mc, kangle_b_ele, kptratio, kpttbar, khtsystem,
+		kangle_b_ele_matched, kmtlep_matched, kmthad_matched, kmWhad_matched, kmWlep_matched, kptratio_matched, kpttbar_matched,
+		khtsystem_matched, kWhadPartons, kChi2Leptonic, kChi2Leptonic_matched, kChi2Hadronic, kChi2Hadronic_matched, kChi2Global,
+		kChi2Global_matched, kChi2Total, kChi2Total_matched, ktlep_pt_matched, kthad_pt_matched, kangle_b_ele_mc, kptratio_mc,
+		kpttbar_mc, khtsystem_mc, kChi2Leptonic_mc, kChi2Hadronic_mc, kChi2Global_mc, kChi2Total_mc, knele, kele_ET_all,
+		kele_ET_1, kele_ET_2, kele_ET_3, kele_eta_all, kele_eta_1, kele_eta_2, kele_eta_3, kele_phi_all, kele_phi_1, kele_phi_2,
+		kele_phi_3, kele_iso_all, kele_iso_1, kele_iso_2, kele_iso_3, knele_cuts, knjets, kjet_pt_all, kjet_pt_1, kjet_pt_2,
+		kjet_pt_3, kjet_pt_4, kjet_eta_all, kjet_eta_1, kjet_eta_2, kjet_eta_3, kjet_eta_4, kjet_phi_all, kjet_phi_1, kjet_phi_2,
+		kjet_phi_3, kjet_phi_4, kmetAlone, kmetAlone_phi, h_DRemu_selE_GoodMu, h_DRemu_selE_GoodMu_pass, h_exp_ele_et,
+		h_exp_ele_eta, h_exp_j0_pt, h_exp_j1_pt, h_exp_DRej, h_exp_DPhiej, h_exp_DRjj, h_exp_DPhijj, h_nGenBasicEle_Zee_allj,
+		h_Zee_eta, h_Zee_pt, h_Z_photon_eta, h_Z_photon_et, h_Zee_photon_eta, h_Zee_photon_et, h_Z_Nphotons, h_Zee_Nphotons,//109
+		h_mass_diele, h_mass_diele_new, h_mass_diele_lowMet_1j, h_mass_ephoton_lowMet_1j, h_Nele_lowMet_1j, h_Nphoton_lowMet_1j,//115
+		h_photon_eta_lowMet_1j, h_photon_et_lowMet_1j, h_photon1_eta_lowMet_1j, h_photon1_et_lowMet_1j, h_ed0_unCor, h_ed0,//121
+		h_ed0_pass, h_muon_chi2, h_muon_d0_unCor, h_muon_d0, h_muon_hits, h_met_ante_ISO, h_met_ante_ISO_mu, h_met_ante_ISO_t1,//129
+		h_mtw_mu_incl, h_mtw_t1_incl, h_DPhiEmet_mu_incl, h_DPhiEmet_t1_incl, kNumHists
+	//134
 	};
 
+	/**
+	 * Enum for 1-D njet binned histograms
+	 */
+	enum EJbinHist {
+		h_nEle_all, h_nEle_s1, h_nEle_s2, h_nEle_s3_idLoose, h_nEle_s3_idTight, h_nEle_s3_idRL, h_nEle_s3_idRT, h_ht, h_met,//9
+		h_met_mu, h_met_t1, h_met_BA, h_met_mu_BA, h_met_t1_BA, h_mtw_mu, h_mtw_t1, h_DPhiEmet_mu, h_DPhiEmet_t1,
+		h_QCDest_CombRelIso, h_QCDest_CombRelIso_AES, h_QCDest_CombRelIso_AES_minusMET, h_QCDest_CombRelIso_AES_minusHT,
+		h_QCDest_CombRelIso_AES_minusTighterZ, h_QCDest_CombRelIso_AES_before, h_QCDest_CombRelIso_AES_justMET,
+		h_QCDest_CombRelIso_AES_justHighMET, h_QCDest_CombRelIso_AES_justHT, h_QCDest_CombRelIso_AES_justZ,
+		h_QCDest_CombRelIso_AES_planA1_e20, h_QCDest_CombRelIso_AES_planA1_e30, h_QCDest_CombRelIso_AES_planA2_e20,
+		h_QCDest_CombRelIso_AES_planA2_e30, h_QCDest_CombRelIso_AES_planA3_e20, h_QCDest_CombRelIso_AES_planA3_e30,
+		h_QCDest_CombRelIso_AES_planB1_e20, h_QCDest_CombRelIso_AES_planB1_e30, h_QCDest_CombRelIso_AES_planB2_e20,
+		h_QCDest_CombRelIso_AES_planB2_e30, h_QCDest_CombRelIso_AES_planB3_e20, h_QCDest_CombRelIso_AES_planB3_e30,
+		h_QCDest_CombRelIso_AES_planB3b_e20, h_QCDest_CombRelIso_AES_planB3b_e30, h_QCDest_CombRelIso_AES_planB4_e20,
+		h_QCDest_CombRelIso_AES_planB4_e30, h_QCDest_CombRelIso_AES_planB5_e20, h_QCDest_CombRelIso_AES_planB5_e30,
+		h_QCDest_CombRelIso_AES_planB6_e20, h_QCDest_CombRelIso_AES_planB6_e30, h_QCDest_CombRelIso_AES_planB7_e20,
+		h_QCDest_CombRelIso_AES_planB7_e30, h_QCDest_CombRelIso_AES_planB8_e20, h_QCDest_CombRelIso_AES_planB8_e30, knumJbinHists
+	};
 	/**
 	 * Enum for 2-D histograms
 	 */
 	enum E2DHist {
-		k2D_ptRel_vs_deltaRmin, k2D_NumHists
+		k2D_ptRel_vs_deltaRmin, k2D_mWhad_vs_mthad, k2D_mWhad_vs_mthad_btagged, k2D_mWlep_vs_mtlep, k2D_mWlep_vs_mtlep_btagged,
+		h_exp_met_v_eeta, h_Zee_photon_eteta_2D, k2D_NumHists
+	};
+
+	enum Ejetbins {
+		Nojet, OneJet, TwoJets, ThreeJets, FourJets, MoreThan4Jets, Alljets, kNumjetbins
+	};
+
+	enum ECuts {
+		kNumCuts
 	};
 
 	/**
@@ -141,10 +186,19 @@ public:
 		kthad, ktlep, kelectron, kneutrino, kbhad, kblep, kWhad, kWlep, kq1, kq2, kNumMCEventPartons
 	};
 
+	enum MCDecayBranch {
+		evqq, mvqq, tvqq, evev, mvmv, tvtv, evmv, evtv, mvtv, qqqq, kNumDecayBranches
+	};
+private:
+	vector<string> mc_names;
 	/**
 	 * vector for 1D histograms
 	 */
 	vector<vector<TH1F*> > fasthist_;
+	/**
+	 * vector for 1D histograms
+	 */
+	vector<vector<vector<TH1F*> > > fasthist_jetbinned_;
 	/**
 	 * vector for 2D histograms
 	 */
@@ -156,7 +210,7 @@ public:
 	/**
 	 * 1D histogram names (const char*) for histogram creation
 	 */
-	vector<const char*> histnames_c_;
+	vector<const char*> c_histnames;
 	/**
 	 * 2D histograms names
 	 */
@@ -164,19 +218,35 @@ public:
 	/**
 	 * 2D histograms names (const char*) for histogram creation
 	 */
-	vector<const char*> histnames2D_c;
+	vector<const char*> c_histnames2D;
 	/**
 	 * MC type flag
 	 */
 	MCType fastmctype_;
 	/**
 	 * Flag if MC type is present in dataset
+	 * @deprecated use isMCPresent(MCType) instead
 	 */
 	vector<bool> isMCTypePresent_;
+
+	/**
+	 * Initial number of events per MCType
+	 */
+	vector<long> nInitialEventMC_;
+	/**
+	 * Cross sections for different MCTypes
+	 */
+	vector<double> cross_section_;
+
+	/**
+	 * Events weights for different MCTypes
+	 */
+	vector<double> fastWeight_;
 	/**
 	 * Set electron ID
 	 * @param val new electron ID
 	 */
+public:
 	void SetEleID(eID val) {
 		m_eID = val;
 	}
@@ -279,9 +349,21 @@ private:
 
 	//geometry
 	float calcDeltaR(const float phi1, const float eta1, const float phi2, const float eta2) const;
+	/**
+	 * @deprecated
+	 * @param p1
+	 * @param p2
+	 * @return
+	 */
 	float calcDeltaR(const TLorentzVector& p1, const TLorentzVector& p2) const;
 
 	float calcDeltaEta(const TLorentzVector& p1, const TLorentzVector& p2) const;
+	/**
+	 * @deprecated
+	 * @param p1
+	 * @param p2
+	 * @return
+	 */
 	float calcDeltaPhi(const TLorentzVector& p1, const TLorentzVector& p2) const;
 
 	bool ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele);
@@ -309,31 +391,46 @@ private:
 	void addHistoNjet(TH1F* h[], const string, const string, const string, const int, const float, const float);
 	void addHistoNjet(TH2F* h[], const string, const string, const string, const int, const float, const float, const int,
 			const float, const float);
-	void fillHistoNjet(TH1F* h[], const float value, const double weight);
-	void fillHistoNjet(TH2F* h[], const float value, const float value2, const double weight);
+	//	void addHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const string, const string, const int, const float, const float);
+	void addHisto_Njet_DataAndMC(ushort, ushort, string, string, const int, const float, const float);
+	//	void addHistoDataAndMC(TH1F* h[], const string, const string, const int, const float, const float) const;
+	//	void addHistoDataAndMC(TH2F* h[], const string, const string, const int, const float, const float, const int, const float,
+	//			const float) const;
 
-	void fillHistoNjet_DataAndMC(const string hname, const float value, const double weight);
-	void fillHistoNjet_DataAndMC(const string hname, const float v1, const float v2, const double weight);
+	void bookHistograms();
+	void bookExoticTopHistograms(ushort type);
+	void bookExoticTopMatchedHistograms(ushort type);
+	void bookExoticTopMCHistograms(ushort type);
+	void bookBasicHistograms(ushort type);
+	void bookDRemuHistograms(ushort type);
+	void bookExploreHistograms(ushort type);
+	void bookZvetoHistograms(ushort type, TDirectory *parent);
+	void bookElectronCountHistograms(ushort type);
+	void bookNewKinematicHistograms(ushort type);
+	void bookQCDEstimationHistograms(ushort type, TDirectory *parent);
 
-	void fillHistoNjet2D(TH1F* h[][mcsize], const int ec, const float value, const double weight);
+	const char* dynTitle(string title, ushort type);
+	const char* jbinHName(string name, ushort jbin);
+	const char* jbinHTitle(string title, ushort jbin, ushort type);
 
 	// Helper methods to fill histograms for data and each type of MC
-	void addHistoDataAndMC(TH1F* h[], const string, const string, const int, const float, const float) const;
-	void addHistoDataAndMC(TH2F* h[], const string, const string, const int, const float, const float, const int, const float,
-			const float) const;
-	void fillHistoDataAndMC(TH1F* h[], const float value, const double weight) const;
-	void fillHistoDataAndMC(TH2F* h[], const float v1, const float v2, const double weight) const;
-
-	void addHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const string, const string, const int, const float, const float);
-	void fillHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const float value, const double w);
-
+	//	void fillHistoDataAndMC(TH1F* h[], const float value, const double weight) const;
+	//	void fillHistoDataAndMC(TH2F* h[], const float v1, const float v2, const double weight) const;
+	//	void fillHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const float value, const double w);
+	void fillHisto_Njet_DataAndMC(ushort hist, const float value, const double w);
 	void fillHisto_PDF_weights(TH1F* h);
 	void fillMCTopEventHists();
+	void fillHistoNjet(TH1F* h[], const float value, const double weight);
+	void fillHistoNjet(TH2F* h[], const float value, const float value2, const double weight);
+	void fillHistoNjet_DataAndMC(const string hname, const float value, const double weight);
+	void fillHistoNjet_DataAndMC(const string hname, const float v1, const float v2, const double weight);
+	void fillHistoNjet2D(TH1F* h[][mcsize], const int ec, const float value, const double weight);
 
 	// W+jets estimation
 	void reco_hadronicTop_highestTopPT(const std::vector<TLorentzVector>&, const int nGoodIsoEle);
 	pair<double, double> compute_M3(const std::vector<TLorentzVector>&) const;
 	void reco_Mttbar(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
+	void reco_Mttbar_btagged(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
 	void reco_Mttbar_matched(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
 	TLorentzVector reconstruct_neutrino(const TLorentzVector&, const TLorentzVector&);
 	pair<TLorentzVector, TLorentzVector> reconstruct_neutrinos(const TLorentzVector&, const TLorentzVector&);
@@ -345,12 +442,11 @@ private:
 	void SetHistoLabelEleID(TH1F *eid[]) const;
 
 	void DefineCrossSection();
-	double GetCrossSection(const string) const;
-	void SetEventWeightMap();
+	double GetCrossSection(const ushort) const;
 	void SetWeights();
-	double GetWeight(const string) const;
+	//	double GetWeight(const string) const;
 	double GetWeight(const short) const;
-	long GetNinit(const string) const;
+	long GetNinit(const ushort) const;
 
 	// print event-count tables
 	void DrawEventPerNjetTable(const double nevt[][5][nmctype], const vector<string>& ve) const;
@@ -377,7 +473,7 @@ private:
 	void printLine(ofstream &myfile, const double, const double) const;
 	bool ScientificNotation;
 
-	bool is_mc_present(const int) const;
+	//	bool is_mc_present(const int) const;
 	float compute_d0(const string, const int) const;
 	float compute_mtw(const TVector2&, const TVector2&) const;
 	pair<double, double> compute_neutrino_momentum_z(double met, const TLorentzVector& electron);
@@ -419,9 +515,6 @@ private:
 	bool passEleID(unsigned int) const;
 	bool passHLT() const;
 	string printTimeNow() const;
-	void bookHistograms();
-	void bookChi2MatchedHists(ushort type);
-	void bookMCHists(ushort type);
 
 	//--------------------
 	// private variables
@@ -468,10 +561,9 @@ private:
 	string sysSample;
 	bool m_studyPDFunc;
 
-	map<string, double> cross_section;
-	map<string, long> nInitialEventMC; //initial number of event, used to compute event weight
-	map<string, double> weightMap;
-	vector<double> fastWeight;
+	//	map<string, double> cross_section;
+	//	map<string, long> nInitialEventMC; //initial number of event, used to compute event weight
+	//	map<string, double> weightMap;
 	// Wjet estimation
 	TH1D *h_hadTop_maxPT_mass_4j; // 960 bins (0-960)
 	TH1D *h_hadTop_maxPT_pt_4j;
@@ -515,51 +607,52 @@ private:
 	int m_ntoy;
 
 	// MC flag
-	void SetMCFlag();
-	vector<string> mc_names;
-	bool mc_sample_has_ttbar;
-	bool mc_sample_has_Wjet;
-	bool mc_sample_has_Zjet;
-	bool mc_sample_has_QCD;
-	bool mc_sample_has_enri1;
-	bool mc_sample_has_enri2;
-	bool mc_sample_has_enri3;
-	bool mc_sample_has_bce1;
-	bool mc_sample_has_bce2;
-	bool mc_sample_has_bce3;
-	bool mc_sample_has_VQQ;
-	bool mc_sample_has_singleTop;
-	bool mc_sample_has_tW;
-	bool mc_sample_has_tchan;
-	bool mc_sample_has_schan;
-	//FIXME: 02nd step to new sample - declare mc_sample_has*
-	bool mc_sample_has_Zprime_M500GeV_W5GeV, mc_sample_has_Zprime_M500GeV_W50GeV, mc_sample_has_Zprime_M750GeV_W7500MeV,
-			mc_sample_has_Zprime_M1TeV_W10GeV, mc_sample_has_Zprime_M1TeV_W100GeV, mc_sample_has_Zprime_M1250GeV_W12500MeV,
-			mc_sample_has_Zprime_M1500GeV_W15GeV, mc_sample_has_Zprime_M1500GeV_W150GeV, mc_sample_has_Zprime_M2TeV_W20GeV,
-			mc_sample_has_Zprime_M2TeV_W200GeV, mc_sample_has_Zprime_M3TeV_W30GeV, mc_sample_has_Zprime_M3TeV_W300GeV,
-			mc_sample_has_Zprime_M4TeV_W40GeV, mc_sample_has_Zprime_M4TeV_W400GeV;
+	bool hasSampleMC(const ushort mc) const;
+	bool isMCType(const ushort mc) const;
+	//	void SetMCFlag();
+	//	bool mc_sample_has_ttbar;
+	//	bool mc_sample_has_Wjet;
+	//	bool mc_sample_has_Zjet;
+	//	bool mc_sample_has_QCD;
+	//	bool mc_sample_has_enri1;
+	//	bool mc_sample_has_enri2;
+	//	bool mc_sample_has_enri3;
+	//	bool mc_sample_has_bce1;
+	//	bool mc_sample_has_bce2;
+	//	bool mc_sample_has_bce3;
+	//	bool mc_sample_has_VQQ;
+	//	bool mc_sample_has_singleTop;
+	//	bool mc_sample_has_tW;
+	//	bool mc_sample_has_tchan;
+	//	bool mc_sample_has_schan;
+	//	//FIXME: 02nd step to new sample - declare mc_sample_has*
+	//	bool mc_sample_has_Zprime_M500GeV_W5GeV, mc_sample_has_Zprime_M500GeV_W50GeV, mc_sample_has_Zprime_M750GeV_W7500MeV,
+	//			mc_sample_has_Zprime_M1TeV_W10GeV, mc_sample_has_Zprime_M1TeV_W100GeV, mc_sample_has_Zprime_M1250GeV_W12500MeV,
+	//			mc_sample_has_Zprime_M1500GeV_W15GeV, mc_sample_has_Zprime_M1500GeV_W150GeV, mc_sample_has_Zprime_M2TeV_W20GeV,
+	//			mc_sample_has_Zprime_M2TeV_W200GeV, mc_sample_has_Zprime_M3TeV_W30GeV, mc_sample_has_Zprime_M3TeV_W300GeV,
+	//			mc_sample_has_Zprime_M4TeV_W40GeV, mc_sample_has_Zprime_M4TeV_W400GeV;
 
 	// MC type of this event
-	bool isTTbar;
-	bool isWjets;
-	bool isZjets;
-	bool isQCD;
-	bool isEnri1;
-	bool isEnri2;
-	bool isEnri3;
-	bool isBce1;
-	bool isBce2;
-	bool isBce3;
-	bool isVQQ;
-	bool isSingleTop;
-	bool isTW;
-	bool isTchan;
-	bool isSchan;
-	//FIXME: 03rd step to new sample - declare isMCtype
-	bool isZprime_M500GeV_W5GeV, isZprime_M500GeV_W50GeV, isZprime_M750GeV_W7500MeV, isZprime_M1TeV_W10GeV,
-			isZprime_M1TeV_W100GeV, isZprime_M1250GeV_W12500MeV, isZprime_M1500GeV_W15GeV, isZprime_M1500GeV_W150GeV,
-			isZprime_M2TeV_W20GeV, isZprime_M2TeV_W200GeV, isZprime_M3TeV_W30GeV, isZprime_M3TeV_W300GeV, isZprime_M4TeV_W40GeV,
-			isZprime_M4TeV_W400GeV;
+	//	bool isTTbar;
+	//	bool isWjets;
+	//	bool isZjets;
+	//	bool isQCD;
+	//	bool isEnri1;
+	//	bool isEnri2;
+	//	bool isEnri3;
+	//	bool isBce1;
+	//	bool isBce2;
+	//	bool isBce3;
+	//	bool isVQQ;
+	//	bool isSingleTop;
+	//	bool isTW;
+	//	bool isTchan;
+	//	bool isSchan;
+	//	//FIXME: 03rd step to new sample - declare isMCtype
+	//	bool isZprime_M500GeV_W5GeV, isZprime_M500GeV_W50GeV, isZprime_M750GeV_W7500MeV, isZprime_M1TeV_W10GeV,
+	//			isZprime_M1TeV_W100GeV, isZprime_M1250GeV_W12500MeV, isZprime_M1500GeV_W15GeV, isZprime_M1500GeV_W150GeV,
+	//			isZprime_M2TeV_W20GeV, isZprime_M2TeV_W200GeV, isZprime_M3TeV_W30GeV, isZprime_M3TeV_W300GeV, isZprime_M4TeV_W40GeV,
+	//			isZprime_M4TeV_W400GeV;
 
 };
 
