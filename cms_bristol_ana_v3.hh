@@ -115,33 +115,36 @@ public:
 	 * Enum for MC types
 	 */
 	enum MCType {
-		kdata, kttbar, kttjet, kWjets, kZjets, kenri1, kenri2, kenri3, kbce1, kbce2, kbce3, kVQQ, ktW, ktchan, kschan,//0-14
-		Zprime_M500GeV_W5GeV, Zprime_M500GeV_W50GeV, Zprime_M750GeV_W7500MeV, Zprime_M1TeV_W10GeV, Zprime_M1TeV_W100GeV,//15-19
-		Zprime_M1250GeV_W12500MeV, Zprime_M1500GeV_W15GeV, Zprime_M1500GeV_W150GeV, Zprime_M2TeV_W20GeV, Zprime_M2TeV_W200GeV,//24
-		Zprime_M3TeV_W30GeV, Zprime_M3TeV_W300GeV, Zprime_M4TeV_W40GeV, Zprime_M4TeV_W400GeV, kQCD, ksingleTop/*30*/, kNumMCTypes
+		kdata, kttbar, kttjet, kWjets, kZjets, kenri1, kenri2, kenri3, kbce1, kbce2, kbce3, kVQQ, ktW, ktchan, kschan,
+		Zprime_M500GeV_W5GeV, Zprime_M500GeV_W50GeV, Zprime_M750GeV_W7500MeV, Zprime_M1TeV_W10GeV, Zprime_M1TeV_W100GeV,
+		Zprime_M1250GeV_W12500MeV, Zprime_M1500GeV_W15GeV, Zprime_M1500GeV_W150GeV, Zprime_M2TeV_W20GeV, Zprime_M2TeV_W200GeV,
+		Zprime_M3TeV_W30GeV, Zprime_M3TeV_W300GeV, Zprime_M4TeV_W40GeV, Zprime_M4TeV_W400GeV, kQCD, ksingleTop/*30*/,
+		NUMBER_OF_MC_TYPES
 	};
 
 	/**
 	 * Enum for 1-D histograms
 	 */
 	enum EHist {
-		kneutrino_pz, kneutrino_pz_mc, kMttbar, kMttbar_btagged, kMttbar_mc, kMZprime_mc, kmWlep, kmWlep_btagged, kmWlep_mc,
-		kmWhad, kmWhad_btagged, kmWhad_mc, kminDeltaR_ele_Jet, kptRel_ele_jet, kmtlep, kmtlep_btagged, kmtlep_mc, kmthad,
-		kmthad_btagged, kmthad_mc, kthad_pt, kthad_pt_mc, ktlep_pt, ktlep_pt_mc, kangle_b_ele, kptratio, kpttbar, khtsystem,
-		kangle_b_ele_matched, kmtlep_matched, kmthad_matched, kmWhad_matched, kmWlep_matched, kptratio_matched, kpttbar_matched,
-		khtsystem_matched, kWhadPartons, kChi2Leptonic, kChi2Leptonic_matched, kChi2Hadronic, kChi2Hadronic_matched, kChi2Global,
+		kneutrino_pz, kneutrino_pz_mc, kMttbar, kMttbar_btagged, kMttbar_matched, kMttbar_mc, kMttbar_mc_smeared,
+		kMttbar_diff_reco_and_mc, kMZprime_mc, kmWlep, kmWlep_btagged, kmWlep_mc, kmWhad, kmWhad_btagged, kmWhad_mc,
+		kminDeltaR_ele_Jet, kptRel_ele_jet, kmtlep, kmtlep_btagged, kmtlep_mc, kmthad, kmthad_btagged, kmthad_mc, kthad_pt,
+		kthad_pt_mc, ktlep_pt, ktlep_pt_mc, kangle_b_ele, kptratio, kpttbar, khtsystem, kangle_b_ele_matched, kmtlep_matched,
+		kmthad_matched, kmWhad_matched, kmWlep_matched, kptratio_matched, kptratio2_matched, kptratio2_mc, kpttbar_matched,
+		khtsystem_matched, kChi2Leptonic, kChi2Leptonic_matched, kChi2Hadronic, kChi2Hadronic_matched, kChi2Global,
 		kChi2Global_matched, kChi2Total, kChi2Total_matched, ktlep_pt_matched, kthad_pt_matched, kangle_b_ele_mc, kptratio_mc,
-		kpttbar_mc, khtsystem_mc, kChi2Leptonic_mc, kChi2Hadronic_mc, kChi2Global_mc, kChi2Total_mc, knele, kele_ET_all,
+		kpttbar_mc, khtsystem_mc, kChi2Leptonic_mc, kChi2Hadronic_mc, kChi2Global_mc, kChi2Total_mc, knele, h_ele_ET_all,
 		kele_ET_1, kele_ET_2, kele_ET_3, kele_eta_all, kele_eta_1, kele_eta_2, kele_eta_3, kele_phi_all, kele_phi_1, kele_phi_2,
-		kele_phi_3, kele_iso_all, kele_iso_1, kele_iso_2, kele_iso_3, knele_cuts, knjets, kjet_pt_all, kjet_pt_1, kjet_pt_2,
-		kjet_pt_3, kjet_pt_4, kjet_eta_all, kjet_eta_1, kjet_eta_2, kjet_eta_3, kjet_eta_4, kjet_phi_all, kjet_phi_1, kjet_phi_2,
-		kjet_phi_3, kjet_phi_4, kmetAlone, kmetAlone_phi, h_DRemu_selE_GoodMu, h_DRemu_selE_GoodMu_pass, h_exp_ele_et,
-		h_exp_ele_eta, h_exp_j0_pt, h_exp_j1_pt, h_exp_DRej, h_exp_DPhiej, h_exp_DRjj, h_exp_DPhijj, h_nGenBasicEle_Zee_allj,
-		h_Zee_eta, h_Zee_pt, h_Z_photon_eta, h_Z_photon_et, h_Zee_photon_eta, h_Zee_photon_et, h_Z_Nphotons, h_Zee_Nphotons,//109
+		kele_phi_3, kele_iso_all, kele_iso_1, kele_iso_2, kele_iso_3, knele_cuts, h_eid, knjets, kjet_pt_all, kjet_pt_1,
+		kjet_pt_2, kjet_pt_3, kjet_pt_4, kjet_eta_all, kjet_eta_1, kjet_eta_2, kjet_eta_3, kjet_eta_4, kjet_phi_all, kjet_phi_1,
+		kjet_phi_2, kjet_phi_3, kjet_phi_4, kmetAlone, kmetAlone_phi, h_DRemu_selE_GoodMu, h_DRemu_selE_GoodMu_pass,
+		h_exp_ele_et, h_exp_ele_eta, h_exp_j0_pt, h_exp_j1_pt, h_exp_DRej, h_exp_DPhiej, h_exp_DRjj, h_exp_DPhijj,
+		h_nGenBasicEle_Zee_allj, h_Zee_eta, h_Zee_pt, h_Z_photon_eta, h_Z_photon_et, h_Zee_photon_eta, h_Zee_photon_et,
+		h_Z_Nphotons, h_Zee_Nphotons,//109
 		h_mass_diele, h_mass_diele_new, h_mass_diele_lowMet_1j, h_mass_ephoton_lowMet_1j, h_Nele_lowMet_1j, h_Nphoton_lowMet_1j,//115
 		h_photon_eta_lowMet_1j, h_photon_et_lowMet_1j, h_photon1_eta_lowMet_1j, h_photon1_et_lowMet_1j, h_ed0_unCor, h_ed0,//121
 		h_ed0_pass, h_muon_chi2, h_muon_d0_unCor, h_muon_d0, h_muon_hits, h_met_ante_ISO, h_met_ante_ISO_mu, h_met_ante_ISO_t1,//129
-		h_mtw_mu_incl, h_mtw_t1_incl, h_DPhiEmet_mu_incl, h_DPhiEmet_t1_incl, kNumHists
+		h_mtw_mu_incl, h_mtw_t1_incl, h_DPhiEmet_mu_incl, h_DPhiEmet_t1_incl, NUMBER_OF_1D_HISTOGRAMS
 	//134
 	};
 
@@ -149,7 +152,7 @@ public:
 	 * Enum for 1-D njet binned histograms
 	 */
 	enum EJbinHist {
-		h_nEle_all, h_nEle_s1, h_nEle_s2, h_nEle_s3_idLoose, h_nEle_s3_idTight, h_nEle_s3_idRL, h_nEle_s3_idRT, h_ht, h_met,//9
+		h_nEle_all, h_nEle_s1, h_nEle_s2, h_nEle_s3_idLoose, h_nEle_s3_idTight, h_nEle_s3_idRL, h_nEle_s3_idRT, h_ht, h_met,
 		h_met_mu, h_met_t1, h_met_BA, h_met_mu_BA, h_met_t1_BA, h_mtw_mu, h_mtw_t1, h_DPhiEmet_mu, h_DPhiEmet_t1,
 		h_QCDest_CombRelIso, h_QCDest_CombRelIso_AES, h_QCDest_CombRelIso_AES_minusMET, h_QCDest_CombRelIso_AES_minusHT,
 		h_QCDest_CombRelIso_AES_minusTighterZ, h_QCDest_CombRelIso_AES_before, h_QCDest_CombRelIso_AES_justMET,
@@ -161,18 +164,32 @@ public:
 		h_QCDest_CombRelIso_AES_planB3b_e20, h_QCDest_CombRelIso_AES_planB3b_e30, h_QCDest_CombRelIso_AES_planB4_e20,
 		h_QCDest_CombRelIso_AES_planB4_e30, h_QCDest_CombRelIso_AES_planB5_e20, h_QCDest_CombRelIso_AES_planB5_e30,
 		h_QCDest_CombRelIso_AES_planB6_e20, h_QCDest_CombRelIso_AES_planB6_e30, h_QCDest_CombRelIso_AES_planB7_e20,
-		h_QCDest_CombRelIso_AES_planB7_e30, h_QCDest_CombRelIso_AES_planB8_e20, h_QCDest_CombRelIso_AES_planB8_e30, knumJbinHists
+		h_QCDest_CombRelIso_AES_planB7_e30, h_QCDest_CombRelIso_AES_planB8_e20, h_QCDest_CombRelIso_AES_planB8_e30,
+		NUMBER_OF_JETBINNED_HISTOGRAMS
 	};
+
+	enum ENlevelJbinned2DHists {
+		h_QCDest_isoVmet_NES, h_QCDest_isoVmet_NES_barrel, h_QCDest_isoVmet_NES_endcap, h_QCDest_isoVmet_NES_uw,
+		h_QCDest_isoVmet_NES_uw_barrel, h_QCDest_isoVmet_NES_uw_endcap, NUMBER_OF_NLEVEL_JBINNED_2D_HISTOGRAMS
+	};
+
+	enum ENlevelJbinned1DHists {
+		h_QCDest_CombRelIso_NES, h_QCDest_CombRelIso_NES_barrel, h_QCDest_CombRelIso_NES_endcap, h_QCDest_CombRelIso_NES_loMET,
+		h_QCDest_CombRelIso_NES_loMET_barrel, h_QCDest_CombRelIso_NES_loMET_endcap, h_QCDest_CombRelIso_NES_hiMET,
+		h_QCDest_CombRelIso_NES_hiMET_barrel, h_QCDest_CombRelIso_NES_hiMET_endcap, NUMBER_OF_NLEVEL_JBINNED_1D_HISTOGRAMS
+	};
+
 	/**
 	 * Enum for 2-D histograms
 	 */
 	enum E2DHist {
 		k2D_ptRel_vs_deltaRmin, k2D_mWhad_vs_mthad, k2D_mWhad_vs_mthad_btagged, k2D_mWlep_vs_mtlep, k2D_mWlep_vs_mtlep_btagged,
-		h_exp_met_v_eeta, h_Zee_photon_eteta_2D, k2D_NumHists
+		h_exp_met_v_eeta, h_Zee_photon_eteta_2D, h_ptratio_vs_mttbar, h_htsystem_vs_mttbar, h_pttbar_vs_mttbar,
+		h_angle_b_e_vs_mttbar, NUMBER_OF_2D_HISTOGRAMS
 	};
 
 	enum Ejetbins {
-		Nojet, OneJet, TwoJets, ThreeJets, FourJets, MoreThan4Jets, Alljets, kNumjetbins
+		Nojet, OneJet, TwoJets, ThreeJets, FourJets, FourOrMoreJets, Alljets, NUMBER_OF_JETBINS
 	};
 
 	enum ECuts {
@@ -183,11 +200,16 @@ public:
 	 * Enum for MC ttbar event partons
 	 */
 	enum MCEventPartons {
-		kthad, ktlep, kelectron, kneutrino, kbhad, kblep, kWhad, kWlep, kq1, kq2, kNumMCEventPartons
+		kthad, ktlep, kelectron, kneutrino, kbhad, kblep, kWhad, kWlep, kq1, kq2, NUMBER_OF_EVENT_PARTONS
 	};
 
 	enum MCDecayBranch {
-		evqq, mvqq, tvqq, evev, mvmv, tvtv, evmv, evtv, mvtv, qqqq, kNumDecayBranches
+		evqq, mvqq, tvqq, evev, mvmv, tvtv, evmv, evtv, mvtv, qqqq, NUMBER_OF_DECAY_BRANCHES
+	};
+
+	enum ELevel {
+		Level_1, Level_1b, Level_1c, Level_1d1, Level_1d2, Level_1d3, Level_1d4, Level_1d5, Level_2, Level_3, Level_4,
+		NUMBER_OF_LEVELS
 	};
 private:
 	vector<string> mc_names;
@@ -203,22 +225,9 @@ private:
 	 * vector for 2D histograms
 	 */
 	vector<vector<TH2F*> > fasthist2D_;
-	/**
-	 * 1D histogram names
-	 */
-	vector<string> histnames_;
-	/**
-	 * 1D histogram names (const char*) for histogram creation
-	 */
-	vector<const char*> c_histnames;
-	/**
-	 * 2D histograms names
-	 */
-	vector<string> histnames2D_;
-	/**
-	 * 2D histograms names (const char*) for histogram creation
-	 */
-	vector<const char*> c_histnames2D;
+	//mctype, level, jetbin, hist
+	vector<vector<vector<vector<TH1D*> > > > fasthistNlevel1D_;
+	vector<vector<vector<vector<TH2D*> > > > fasthistNlevel2D_;
 	/**
 	 * MC type flag
 	 */
@@ -332,6 +341,8 @@ private:
 		return datafile;
 	}
 	;
+
+	double smearValueWithGaus(double value, double gaus_width);
 	//	;
 	int GetLimit() const {
 		return numlimit;
@@ -371,8 +382,6 @@ private:
 	void ConversionMCMatching(const TLorentzVector& e1, int mctype, bool isthisConversion);
 	float MCTruthMatch(float eta, float phi);
 	short match(TLorentzVector, vector<TLorentzVector> );
-	void CreateHistogramNames();
-	void Create2DHistogramNames();
 
 	// QCD estimation
 	pair<double, double> estimateQCD_computeFitResultUncertainty(const double est, TF1* f) const;
@@ -388,14 +397,17 @@ private:
 	;
 
 	// Histograms
-	void addHistoNjet(TH1F* h[], const string, const string, const string, const int, const float, const float);
-	void addHistoNjet(TH2F* h[], const string, const string, const string, const int, const float, const float, const int,
-			const float, const float);
+	//	void addHistoNjet(TH1F* h[], const string, const string, const string, const int, const float, const float);
+	//	void addHistoNjet(TH2F* h[], const string, const string, const string, const int, const float, const float, const int,
+	//			const float, const float);
 	//	void addHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const string, const string, const int, const float, const float);
-	void addHisto_Njet_DataAndMC(ushort, ushort, string, string, const int, const float, const float);
-	//	void addHistoDataAndMC(TH1F* h[], const string, const string, const int, const float, const float) const;
-	//	void addHistoDataAndMC(TH2F* h[], const string, const string, const int, const float, const float, const int, const float,
-	//			const float) const;
+	void addHisto_Njet_DataAndMC(ushort, ushort, const string, const string, const int, const float, const float);
+	void addHistoDataAndMC(ushort, ushort, const string, const string, const int, const float, const float);
+	void addHistoDataAndMC(ushort, ushort, const string, const string, const int, const float, const float, const int,
+			const float, const float);
+	void iso_addHisto_nlevel_nj_nmc(ushort, ushort, const string, const string, const int, const float, const float);
+	void iso_addHisto_nlevel_nj_nmc(ushort, ushort, const string, const string, const int, const float, const float, const int,
+			const float, const float);
 
 	void bookHistograms();
 	void bookExoticTopHistograms(ushort type);
@@ -409,22 +421,26 @@ private:
 	void bookNewKinematicHistograms(ushort type);
 	void bookQCDEstimationHistograms(ushort type, TDirectory *parent);
 
-	const char* dynTitle(string title, ushort type);
-	const char* jbinHName(string name, ushort jbin);
-	const char* jbinHTitle(string title, ushort jbin, ushort type);
+	//	const char* dynTitle(string title, ushort type);
+	//	const char* jbinHName(string name, ushort jbin);
+	//	const char* jbinHTitle(string title, ushort jbin, ushort type);
 
 	// Helper methods to fill histograms for data and each type of MC
 	//	void fillHistoDataAndMC(TH1F* h[], const float value, const double weight) const;
+	void fillHistoDataAndMC(ushort hist, const float value, const double weight);
+	void fillHistoDataAndMC(ushort hist, const float Xvalue, const float Yvalue, const double weight);
+	void iso_fillHisto_nlevel_nj_nmc(const ushort hist, ushort level, const float value, const float weight);
+	void iso_fillHisto_nlevel_nj_nmc(const ushort hist, ushort level, const float valueX, const float valueY, const float weight);
 	//	void fillHistoDataAndMC(TH2F* h[], const float v1, const float v2, const double weight) const;
 	//	void fillHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const float value, const double w);
 	void fillHisto_Njet_DataAndMC(ushort hist, const float value, const double w);
 	void fillHisto_PDF_weights(TH1F* h);
-	void fillMCTopEventHists();
-	void fillHistoNjet(TH1F* h[], const float value, const double weight);
-	void fillHistoNjet(TH2F* h[], const float value, const float value2, const double weight);
-	void fillHistoNjet_DataAndMC(const string hname, const float value, const double weight);
-	void fillHistoNjet_DataAndMC(const string hname, const float v1, const float v2, const double weight);
-	void fillHistoNjet2D(TH1F* h[][mcsize], const int ec, const float value, const double weight);
+	void fillMCTopEventHists(double reco_mttbar);
+	//	void fillHistoNjet(TH1F* h[], const float value, const double weight);
+	//	void fillHistoNjet(TH2F* h[], const float value, const float value2, const double weight);
+	//	void fillHistoNjet_DataAndMC(const string hname, const float value, const double weight);
+	//	void fillHistoNjet_DataAndMC(const string hname, const float v1, const float v2, const double weight);
+	//	void fillHistoNjet2D(TH1F* h[][mcsize], const int ec, const float value, const double weight);
 
 	// W+jets estimation
 	void reco_hadronicTop_highestTopPT(const std::vector<TLorentzVector>&, const int nGoodIsoEle);
@@ -476,7 +492,7 @@ private:
 	//	bool is_mc_present(const int) const;
 	float compute_d0(const string, const int) const;
 	float compute_mtw(const TVector2&, const TVector2&) const;
-	pair<double, double> compute_neutrino_momentum_z(double met, const TLorentzVector& electron);
+	pair<double, double> compute_neutrino_momentum_z(const TLorentzVector& met, const TLorentzVector& electron);
 	void PrintGenParticles() const;
 
 	// validation plots
@@ -609,50 +625,6 @@ private:
 	// MC flag
 	bool hasSampleMC(const ushort mc) const;
 	bool isMCType(const ushort mc) const;
-	//	void SetMCFlag();
-	//	bool mc_sample_has_ttbar;
-	//	bool mc_sample_has_Wjet;
-	//	bool mc_sample_has_Zjet;
-	//	bool mc_sample_has_QCD;
-	//	bool mc_sample_has_enri1;
-	//	bool mc_sample_has_enri2;
-	//	bool mc_sample_has_enri3;
-	//	bool mc_sample_has_bce1;
-	//	bool mc_sample_has_bce2;
-	//	bool mc_sample_has_bce3;
-	//	bool mc_sample_has_VQQ;
-	//	bool mc_sample_has_singleTop;
-	//	bool mc_sample_has_tW;
-	//	bool mc_sample_has_tchan;
-	//	bool mc_sample_has_schan;
-	//	//FIXME: 02nd step to new sample - declare mc_sample_has*
-	//	bool mc_sample_has_Zprime_M500GeV_W5GeV, mc_sample_has_Zprime_M500GeV_W50GeV, mc_sample_has_Zprime_M750GeV_W7500MeV,
-	//			mc_sample_has_Zprime_M1TeV_W10GeV, mc_sample_has_Zprime_M1TeV_W100GeV, mc_sample_has_Zprime_M1250GeV_W12500MeV,
-	//			mc_sample_has_Zprime_M1500GeV_W15GeV, mc_sample_has_Zprime_M1500GeV_W150GeV, mc_sample_has_Zprime_M2TeV_W20GeV,
-	//			mc_sample_has_Zprime_M2TeV_W200GeV, mc_sample_has_Zprime_M3TeV_W30GeV, mc_sample_has_Zprime_M3TeV_W300GeV,
-	//			mc_sample_has_Zprime_M4TeV_W40GeV, mc_sample_has_Zprime_M4TeV_W400GeV;
-
-	// MC type of this event
-	//	bool isTTbar;
-	//	bool isWjets;
-	//	bool isZjets;
-	//	bool isQCD;
-	//	bool isEnri1;
-	//	bool isEnri2;
-	//	bool isEnri3;
-	//	bool isBce1;
-	//	bool isBce2;
-	//	bool isBce3;
-	//	bool isVQQ;
-	//	bool isSingleTop;
-	//	bool isTW;
-	//	bool isTchan;
-	//	bool isSchan;
-	//	//FIXME: 03rd step to new sample - declare isMCtype
-	//	bool isZprime_M500GeV_W5GeV, isZprime_M500GeV_W50GeV, isZprime_M750GeV_W7500MeV, isZprime_M1TeV_W10GeV,
-	//			isZprime_M1TeV_W100GeV, isZprime_M1250GeV_W12500MeV, isZprime_M1500GeV_W15GeV, isZprime_M1500GeV_W150GeV,
-	//			isZprime_M2TeV_W20GeV, isZprime_M2TeV_W200GeV, isZprime_M3TeV_W30GeV, isZprime_M3TeV_W300GeV, isZprime_M4TeV_W40GeV,
-	//			isZprime_M4TeV_W400GeV;
 
 };
 
