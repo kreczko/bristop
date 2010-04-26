@@ -8880,8 +8880,8 @@ void ana::reco_Mttbar(const vector<TLorentzVector>& jets, const TLorentzVector& 
 
 					double ptratio = TMath::Log(thad.Pt() / Whad.Pt());
 					double angle = blepjet.Angle(electron.Vect());
-					double chi2lep_1 = GetChi2Leptonic(Wlep1.M(), tlep1.M(), angle);
-					double chi2lep_2 = GetChi2Leptonic(Wlep2.M(), tlep2.M(), angle);
+					double chi2lep_1 = GetChi2Leptonic(tlep1.M(), angle);
+					double chi2lep_2 = GetChi2Leptonic(tlep2.M(), angle);
 
 					double chi2had = GetChi2Hadronic(Whad.M(), thad.M(), ptratio);
 
@@ -8953,7 +8953,7 @@ void ana::reco_Mttbar(const vector<TLorentzVector>& jets, const TLorentzVector& 
 	double costheta = blepjet.Dot(electron) / electron.P() / blepjet.P();
 	double sintheta = TMath::Sqrt(1 - costheta * costheta);
 	double ptrel = sintheta * electron.P();
-	double chi2lep = GetChi2Leptonic(Wlep.M(), tlep.M(), blepjet.Angle(electron.Vect()));
+	double chi2lep = GetChi2Leptonic(tlep.M(), blepjet.Angle(electron.Vect()));
 	double chi2had = GetChi2Hadronic(Whad.M(), thad.M(), TMath::Log(thad.Pt() / Whad.Pt()));
 	double chi2global = GetChi2Global(ttbar.Pt() / ht, htsystem);
 	double angle = blepjet.Angle(electron.Vect());
@@ -9058,8 +9058,8 @@ void ana::reco_Mttbar_btagged(const vector<TLorentzVector>& jets, const TLorentz
 			double ptratio = TMath::Log(thad.Pt() / Whad.Pt());
 			double angle = blepjet.Angle(electron.Vect());
 
-			double chi2lep_1 = GetChi2Leptonic(Wlep1.M(), tlep1.M(), angle);
-			double chi2lep_2 = GetChi2Leptonic(Wlep2.M(), tlep2.M(), angle);
+			double chi2lep_1 = GetChi2Leptonic(tlep1.M(), angle);
+			double chi2lep_2 = GetChi2Leptonic(tlep2.M(), angle);
 
 			double chi2had = GetChi2Hadronic(Whad.M(), thad.M(), ptratio);
 
@@ -9188,7 +9188,7 @@ void ana::reco_Mttbar_matched(const vector<TLorentzVector>& jets, const TLorentz
 		fillHistoDataAndMC(khtsystem_matched, htsystem, this_weight);
 		TLorentzVector temp = TLorentzVector(tlep + thad);
 		double pttbar = temp.Pt() / ht;
-		double chi2lep = GetChi2Leptonic(Wlep.M(), tlep.M(), blepjet.Angle(electron.Vect()));
+		double chi2lep = GetChi2Leptonic(tlep.M(), blepjet.Angle(electron.Vect()));
 		double chi2had = GetChi2Hadronic(Whad.M(), thad.M(), TMath::Log(thad.Pt() / Whad.Pt()));
 		double chi2global = GetChi2Global(temp.Pt() / ht, htsystem);
 		double chi2Tot = chi2lep + chi2had + chi2global;
@@ -9453,19 +9453,15 @@ void ana::fillMCTopEventHists(double reco_mttbar) {
  * @param angle angle between
  * @return
  */
-double ana::GetChi2Leptonic(double Wmass, double tmass, double angle) {
+double ana::GetChi2Leptonic(double tmass, double angle) {
 	const double angle_mc = 1.0972;
 	const double angle_sigma = 0.86786;
 	const double tmass_mc = 166.134;
 	const double tmass_sigma = 52.743;
-	//const double Wmass_mc = 90.067;//83.59
-	//const double Wmass_sigma = 12.74;//29.74
 
 	double an = TMath::Power(angle - angle_mc, 2) / (2 * angle_sigma * angle_sigma);
-	//double wm = TMath::Power(Wmass - Wmass_mc, 2) / (2 * Wmass_sigma * Wmass_sigma);
 	double tm = TMath::Power(tmass - tmass_mc, 2) / (2 * tmass_sigma * tmass_sigma);
 	return 1 / TMath::Sqrt(2) * (an + tm);
-	//	return 1 / TMath::Sqrt(3) * (wm + an + tm);
 }
 
 double ana::GetChi2Hadronic(double Wmass, double tmass, double ptratio) {

@@ -481,7 +481,7 @@ private:
 			vector<string> ve) const;
 	void PrintError_NjetVcut(ofstream&, const double[][5][nmctype], const double[][5][nstage], vector<string>&) const;
 	double GetBayesUncertainty(int Ninitial) const;
-	double GetChi2Leptonic(double Wmass, double tmass, double angle);
+	double GetChi2Leptonic(double tmass, double angle);
 	double GetChi2Hadronic(double Wmass, double tmass, double ptratio);
 	double GetChi2Global(double pttbar, double htsystem);
 	double GetHT(const std::vector<TLorentzVector>& jets, ushort N);
