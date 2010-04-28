@@ -120,13 +120,13 @@ public:
 	 */
 	enum EHist {
 		h_neutrino_pz, h_neutrino_pz_mc, h_mttbar, h_mttbar_btag_fake, h_mttbar_matched, h_mttbar_mc, h_mttbar_mc_smeared,
-		h_mttbar_diff_reco_and_mc, h_mZprime_mc, h_mWlep, h_mWlep_btag_fake, kmWlep_mc, kmWhad, kmWhad_btag_fake, kmWhad_mc,
-		kminDeltaR_ele_Jet, kptRel_ele_jet, kmtlep, kmtlep_btag_fake, kmtlep_mc, kmthad, kmthad_btag_fake, kmthad_mc, kthad_pt,
-		kthad_pt_mc, ktlep_pt, ktlep_pt_mc, kangle_b_ele, kptratio, kpttbar, khtsystem, kangle_b_ele_matched, kmtlep_matched,
-		kmthad_matched, kmWhad_matched, kmWlep_matched, kptratio_matched, kptratio2_matched, kptratio2_mc, kpttbar_matched,
-		khtsystem_matched, kChi2Leptonic, kChi2Leptonic_matched, kChi2Hadronic, kChi2Hadronic_matched, kChi2Global,
-		kChi2Global_matched, kChi2Total, kChi2Total_matched, ktlep_pt_matched, kthad_pt_matched, kangle_b_ele_mc, kptratio_mc,
-		kpttbar_mc, khtsystem_mc, h_Chi2Leptonic_mc, h_Chi2Hadronic_mc, h_Chi2Global_mc, h_Chi2Total_mc,/*end of exotic top*/
+		h_mttbar_diff_reco_and_mc, h_mZprime_mc, h_mWlep, h_mWlep_btag_fake, h_mWlep_mc, h_mWhad, h_mWhad_btag_fake, h_mWhad_mc,
+		h_minDeltaR_ele_Jet, h_ptRel_ele_jet, h_mtlep, h_mtlep_btag_fake, h_mtlep_mc, h_mthad, h_mthad_btag_fake, h_mthad_mc, h_thad_pt,
+		h_thad_pt_mc, h_tlep_pt, h_tlep_pt_mc, h_angle_b_ele, h_ptratio, h_pttbar, h_htsystem, h_angle_b_ele_matched, h_mtlep_matched,
+		h_mthad_matched, h_mWhad_matched, h_mWlep_matched, h_ptratio_matched, h_ptratio2_matched, h_ptratio2_mc, h_pttbar_matched,
+		h_htsystem_matched, h_Chi2Leptonic, h_Chi2Leptonic_matched, h_Chi2Hadronic, h_Chi2Hadronic_matched, h_Chi2Global,
+		h_Chi2Global_matched, h_Chi2Total, h_Chi2Total_matched, h_tlep_pt_matched, h_thad_pt_matched, h_angle_b_ele_mc, h_ptratio_mc,
+		h_pttbar_mc, h_htsystem_mc, h_Chi2Leptonic_mc, h_Chi2Hadronic_mc, h_Chi2Global_mc, h_Chi2Total_mc,/*end of exotic top*/
 		h_nele, h_ele_ET_all, kele_ET_1, kele_ET_2, kele_ET_3, kele_eta_all, kele_eta_1, kele_eta_2, kele_eta_3, kele_phi_all,
 		kele_phi_1, kele_phi_2, kele_phi_3, kele_iso_all, kele_iso_1, kele_iso_2, kele_iso_3, knele_cuts, h_eid,/*electrons*/
 		knjets, kjet_pt_all, kjet_pt_1, kjet_pt_2, kjet_pt_3, kjet_pt_4, kjet_eta_all, kjet_eta_1, kjet_eta_2, kjet_eta_3,
@@ -187,7 +187,7 @@ public:
 	};
 
 	enum Ejetbins {
-		Nojet, OneJet, TwoJets, ThreeJets, FourJets, FourOrMoreJets, Alljets, NUMBER_OF_JETBINS
+		NoJet, OneJet, TwoJets, ThreeJets, FourJets, FourOrMoreJets, AllJets, NUMBER_OF_JETBINS
 	};
 
 	enum ECuts {

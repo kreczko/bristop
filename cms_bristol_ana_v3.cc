@@ -3690,7 +3690,7 @@ bool ana::EventLoop() {
 		muons.clear();
 		iso_muons.clear();
 		goodJets.clear();
-		for(ushort btag = 0; btag < NUMBER_OF_BTAGS; ++ btag){
+		for (ushort btag = 0; btag < NUMBER_OF_BTAGS; ++btag) {
 			btag_information[btag].clear();
 		}
 
@@ -3759,15 +3759,15 @@ bool ana::EventLoop() {
 		cout << "       |-> subset: et,eta,d0,idRL      = " << nEvent_Z_eteta_d0_RL << endl;
 		cout << "       |-> subset: et,eta,d0,idRT      = " << nEvent_Z_eteta_d0_RT << endl;
 		cout << "|-> true Z, reco-ele, pass et,eta:" << endl;
-		cout << "    nEvent     |-> 0 reco-e            = " << fasthist_jetbinned_[kZjets][Alljets][h_nEle_s1]->GetBinContent(1)
+		cout << "    nEvent     |-> 0 reco-e            = " << fasthist_jetbinned_[kZjets][AllJets][h_nEle_s1]->GetBinContent(1)
 				<< endl; //allj
-		cout << "               |-> 1 reco-e            = " << fasthist_jetbinned_[kZjets][Alljets][h_nEle_s1]->GetBinContent(2)
+		cout << "               |-> 1 reco-e            = " << fasthist_jetbinned_[kZjets][AllJets][h_nEle_s1]->GetBinContent(2)
 				<< endl;
-		cout << "               |-> 2 reco-e            = " << fasthist_jetbinned_[kZjets][Alljets][h_nEle_s1]->GetBinContent(3)
+		cout << "               |-> 2 reco-e            = " << fasthist_jetbinned_[kZjets][AllJets][h_nEle_s1]->GetBinContent(3)
 				<< endl;
-		cout << "               |-> 3 reco-e            = " << fasthist_jetbinned_[kZjets][Alljets][h_nEle_s1]->GetBinContent(4)
+		cout << "               |-> 3 reco-e            = " << fasthist_jetbinned_[kZjets][AllJets][h_nEle_s1]->GetBinContent(4)
 				<< endl;
-		cout << "               |-> 4 reco-e            = " << fasthist_jetbinned_[kZjets][Alljets][h_nEle_s1]->GetBinContent(5)
+		cout << "               |-> 4 reco-e            = " << fasthist_jetbinned_[kZjets][AllJets][h_nEle_s1]->GetBinContent(5)
 				<< endl;
 		cout << "|-> true Z->ee, GenEle pass et,eta:" << endl;
 		cout << "    nEvent     |-> 0 gen-e             = " << fasthist_[fastmctype_][h_nGenBasicEle_Zee_allj]->GetBinContent(1)
@@ -5325,13 +5325,13 @@ void ana::iso_fillHisto_nlevel_nj_nmc(const ushort hist, ushort level, const flo
 				fasthistNlevel1D_[ksingleTop][level][FourOrMoreJets][hist]->Fill(value, weight);
 		}
 
-		fasthistNlevel1D_[fastmctype_][level][Alljets][hist]->Fill(value, weight);
+		fasthistNlevel1D_[fastmctype_][level][AllJets][hist]->Fill(value, weight);
 		if (fastmctype_ != kdata)
-			fasthistNlevel1D_[kdata][level][Alljets][hist]->Fill(value, weight);
+			fasthistNlevel1D_[kdata][level][AllJets][hist]->Fill(value, weight);
 		if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
-			fasthistNlevel1D_[kQCD][level][Alljets][hist]->Fill(value, weight);
+			fasthistNlevel1D_[kQCD][level][AllJets][hist]->Fill(value, weight);
 		if (fastmctype_ >= ktW && fastmctype_ <= kschan)
-			fasthistNlevel1D_[ksingleTop][level][Alljets][hist]->Fill(value, weight);
+			fasthistNlevel1D_[ksingleTop][level][AllJets][hist]->Fill(value, weight);
 		//		} else
 		//			cout << "Trying to fill not initiated histogram" << endl;
 	}
@@ -5359,13 +5359,13 @@ void ana::iso_fillHisto_nlevel_nj_nmc(const ushort hist, ushort level, const flo
 			fasthistNlevel2D_[ksingleTop][level][FourOrMoreJets][hist]->Fill(valueX, valueY, weight);
 	}
 
-	fasthistNlevel2D_[fastmctype_][level][Alljets][hist]->Fill(valueX, valueY, weight);
+	fasthistNlevel2D_[fastmctype_][level][AllJets][hist]->Fill(valueX, valueY, weight);
 	if (fastmctype_ != kdata)
-		fasthistNlevel2D_[kdata][level][Alljets][hist]->Fill(valueX, valueY, weight);
+		fasthistNlevel2D_[kdata][level][AllJets][hist]->Fill(valueX, valueY, weight);
 	if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
-		fasthistNlevel2D_[kQCD][level][Alljets][hist]->Fill(valueX, valueY, weight);
+		fasthistNlevel2D_[kQCD][level][AllJets][hist]->Fill(valueX, valueY, weight);
 	if (fastmctype_ >= ktW && fastmctype_ <= kschan)
-		fasthistNlevel2D_[ksingleTop][level][Alljets][hist]->Fill(valueX, valueY, weight);
+		fasthistNlevel2D_[ksingleTop][level][AllJets][hist]->Fill(valueX, valueY, weight);
 	//		} else
 	//			cout << "Trying to fill not initiated histogram" << endl;
 }
@@ -5443,14 +5443,14 @@ void ana::fillHisto_Njet_DataAndMC(ushort hist, const float value, const double 
 		if (fastmctype_ >= ktW && fastmctype_ <= kschan)
 			fasthist_jetbinned_[ksingleTop][FourOrMoreJets][hist]->Fill(value, w);
 	}
-	fasthist_jetbinned_[fastmctype_][Alljets][h_nEle_all]->Fill(value, w);
+	fasthist_jetbinned_[fastmctype_][AllJets][h_nEle_all]->Fill(value, w);
 
 	if (fastmctype_ != kdata)
-		fasthist_jetbinned_[kdata][Alljets][h_nEle_all]->Fill(value, w);
+		fasthist_jetbinned_[kdata][AllJets][h_nEle_all]->Fill(value, w);
 	if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
-		fasthist_jetbinned_[kQCD][Alljets][hist]->Fill(value, w);
+		fasthist_jetbinned_[kQCD][AllJets][hist]->Fill(value, w);
 	if (fastmctype_ >= ktW && fastmctype_ <= kschan)
-		fasthist_jetbinned_[ksingleTop][Alljets][hist]->Fill(value, w);
+		fasthist_jetbinned_[ksingleTop][AllJets][hist]->Fill(value, w);
 
 	if (m_debug)
 		cout << "End of << fillHisto_Njet_DataAndMC >>" << endl;
@@ -8443,17 +8443,17 @@ void ana::bookExoticTopHistograms(ushort type) {
 	addHistoDataAndMC(type, h_neutrino_pz, "neutrino_pz", "reconstructed p_z(#nu)", 50, -500, 500);
 	addHistoDataAndMC(type, h_mttbar, "mttbar", "reconstructed M_{ttbar}", 10000, 0, 10000);
 	addHistoDataAndMC(type, h_mWlep, "mWlep", "reconstructed leptonic W mass", 500, 0, 500);
-	addHistoDataAndMC(type, kmWhad, "mWhad", "reconstructed hadronic W mass", 500, 0, 500);
-	addHistoDataAndMC(type, kptRel_ele_jet, "ptRel_ele_jet", "relative p_{T} electron - closest jet", 2000, 0, 2000);
-	addHistoDataAndMC(type, kminDeltaR_ele_Jet, "minDeltaR_ele_Jet", "min. #Delta R(electron, jet)", 200, 0, 2);
-	addHistoDataAndMC(type, kmtlep, "mtlep", "reconstructed leptonic top mass", 1000, 0, 1000);
-	addHistoDataAndMC(type, kmthad, "mthad", "reconstructed hadronic top mass", 1000, 0, 1000);
-	addHistoDataAndMC(type, ktlep_pt, "thad_pt", "reconstructed leptonic top p_{T}", 2000, 0, 2000);
-	addHistoDataAndMC(type, kthad_pt, "tlep_pt", "reconstructed hadronic top p_{T}", 2000, 0, 2000);
-	addHistoDataAndMC(type, kangle_b_ele, "angle_b_ele", "angle between b-jet and electron", 400, 0, 4);
-	addHistoDataAndMC(type, kptratio, "ptratio", "Pt ratio (top/W)", 600, -6, 6);
-	addHistoDataAndMC(type, kpttbar, "pttbar", "Pttbar/HT", 200, 0, 2);
-	addHistoDataAndMC(type, khtsystem, "htsystem", "HTsystem", 240, 0, 1.2);
+	addHistoDataAndMC(type, h_mWhad, "mWhad", "reconstructed hadronic W mass", 500, 0, 500);
+	addHistoDataAndMC(type, h_ptRel_ele_jet, "ptRel_ele_jet", "relative p_{T} electron - closest jet", 2000, 0, 2000);
+	addHistoDataAndMC(type, h_minDeltaR_ele_Jet, "minDeltaR_ele_Jet", "min. #Delta R(electron, jet)", 200, 0, 2);
+	addHistoDataAndMC(type, h_mtlep, "mtlep", "reconstructed leptonic top mass", 1000, 0, 1000);
+	addHistoDataAndMC(type, h_mthad, "mthad", "reconstructed hadronic top mass", 1000, 0, 1000);
+	addHistoDataAndMC(type, h_tlep_pt, "thad_pt", "reconstructed leptonic top p_{T}", 2000, 0, 2000);
+	addHistoDataAndMC(type, h_thad_pt, "tlep_pt", "reconstructed hadronic top p_{T}", 2000, 0, 2000);
+	addHistoDataAndMC(type, h_angle_b_ele, "angle_b_ele", "angle between b-jet and electron", 400, 0, 4);
+	addHistoDataAndMC(type, h_ptratio, "ptratio", "Pt ratio (top/W)", 600, -6, 6);
+	addHistoDataAndMC(type, h_pttbar, "pttbar", "Pttbar/HT", 200, 0, 2);
+	addHistoDataAndMC(type, h_htsystem, "htsystem", "HTsystem", 240, 0, 1.2);
 	addHistoDataAndMC(type, h_angle_b_e_vs_mttbar, "_angle_b_e_vs_mttbar",
 			"angle between b-jet and electron vs reconstructed mttbar", 400, 0, 4, 1000, 0, 5000);
 	addHistoDataAndMC(type, h_ptratio_vs_mttbar, "ptratio_vs_mttbar", "Pt ratio (top/W) vs reconstructed mttbar", 600, -6, 6,
@@ -8461,10 +8461,10 @@ void ana::bookExoticTopHistograms(ushort type) {
 	addHistoDataAndMC(type, h_pttbar_vs_mttbar, "pttbar_vs_mttbar", "Pttbar/HT vs reconstructed mttbar", 200, 0, 2, 1000, 0, 5000);
 	addHistoDataAndMC(type, h_htsystem_vs_mttbar, "htsystem_vs_mttbar", "HTsystem vs reconstructed mttbar", 240, 0, 1.2, 1000, 0,
 			5000);
-	addHistoDataAndMC(type, kChi2Leptonic, "Chi2Leptonic", "#Chi^{2}_{lep}", 1000, 0, 100);
-	addHistoDataAndMC(type, kChi2Hadronic, "Chi2Hadronic", "#Chi^{2}_{had}", 1000, 0, 100);
-	addHistoDataAndMC(type, kChi2Global, "Chi2Global", "#Chi^{2}_{global}", 1000, 0, 100);
-	addHistoDataAndMC(type, kChi2Total, "Chi2Total", "#Chi^{2}_{total}", 3000, 0, 300);
+	addHistoDataAndMC(type, h_Chi2Leptonic, "Chi2Leptonic", "#Chi^{2}_{lep}", 1000, 0, 100);
+	addHistoDataAndMC(type, h_Chi2Hadronic, "Chi2Hadronic", "#Chi^{2}_{had}", 1000, 0, 100);
+	addHistoDataAndMC(type, h_Chi2Global, "Chi2Global", "#Chi^{2}_{global}", 1000, 0, 100);
+	addHistoDataAndMC(type, h_Chi2Total, "Chi2Total", "#Chi^{2}_{total}", 3000, 0, 300);
 	addHistoDataAndMC(type, h_ptRel_vs_deltaRmin, "kptRel_vs_deltaRmin", "ptrel vs min. #Delta R", 600, 0, 6, 2000, 0, 2000);
 	addHistoDataAndMC(type, h_mWhad_vs_mthad, "mWhad_vs_mthad", "M(W_{had}) vs M(t_{had})", 1000, 0, 1000, 500, 0, 500);
 	addHistoDataAndMC(type, k2D_mWlep_vs_mtlep, "mWlep_vs_mtlep", "M(W_{lep}) vs M(t_{lep})", 1000, 0, 1000, 500, 0, 500);
@@ -8477,32 +8477,32 @@ void ana::bookExoticTopHistograms(ushort type) {
  */
 void ana::bookExoticTopMatchedHistograms(ushort type) {
 	addHistoDataAndMC(type, h_mttbar_matched, "mttbar_matched", "reconstructed M_{ttbar} (matched)", 10000, 0, 10000);
-	addHistoDataAndMC(type, kmtlep_matched, "mtlep_matched", "reconstructed leptonic top mass (matched)", 1000, 0, 1000);
-	addHistoDataAndMC(type, kmthad_matched, "mthad_matched", "reconstructed leptonic top mass (matched)", 1000, 0, 1000);
-	addHistoDataAndMC(type, kthad_pt_matched, "thad_pt_matched", "reconstructed hadronic top p_{T} (matched)", 2000, 0, 2000);
-	addHistoDataAndMC(type, ktlep_pt_matched, "tlep_pt_matched", "reconstructed leptonic top p_{T} (matched)", 2000, 0, 2000);
+	addHistoDataAndMC(type, h_mtlep_matched, "mtlep_matched", "reconstructed leptonic top mass (matched)", 1000, 0, 1000);
+	addHistoDataAndMC(type, h_mthad_matched, "mthad_matched", "reconstructed leptonic top mass (matched)", 1000, 0, 1000);
+	addHistoDataAndMC(type, h_thad_pt_matched, "thad_pt_matched", "reconstructed hadronic top p_{T} (matched)", 2000, 0, 2000);
+	addHistoDataAndMC(type, h_tlep_pt_matched, "tlep_pt_matched", "reconstructed leptonic top p_{T} (matched)", 2000, 0, 2000);
 
-	addHistoDataAndMC(type, kmWhad_matched, "mWhad_matched", "reconstructed hadronic W mass(matched)", 500, 0, 500);
-	addHistoDataAndMC(type, kmWlep_matched, "mWlep_matched", "reconstructed leptonic W mass(matched)", 500, 0, 500);
+	addHistoDataAndMC(type, h_mWhad_matched, "mWhad_matched", "reconstructed hadronic W mass(matched)", 500, 0, 500);
+	addHistoDataAndMC(type, h_mWlep_matched, "mWlep_matched", "reconstructed leptonic W mass(matched)", 500, 0, 500);
 
-	addHistoDataAndMC(type, kangle_b_ele_matched, "angle_b_ele_matched", "angle between b-jet and electron(matched)", 400, 0, 4);
-	addHistoDataAndMC(type, kptratio_matched, "ptratio_matched", "Pt ratio (top/W)(matched)", 600, -6, 6);
-	addHistoDataAndMC(type, kptratio2_matched, "ptratio2_matched", "Pt ratio (b/W) (matched)", 600, -6, 6);
-	addHistoDataAndMC(type, kpttbar_matched, "pttbar_matched", "Pttbar/HT(matched)", 200, 0, 2);
-	addHistoDataAndMC(type, khtsystem_matched, "htsystem_matched", "HTsystem (matched)", 240, 0, 1.2);
+	addHistoDataAndMC(type, h_angle_b_ele_matched, "angle_b_ele_matched", "angle between b-jet and electron(matched)", 400, 0, 4);
+	addHistoDataAndMC(type, h_ptratio_matched, "ptratio_matched", "Pt ratio (top/W)(matched)", 600, -6, 6);
+	addHistoDataAndMC(type, h_ptratio2_matched, "ptratio2_matched", "Pt ratio (b/W) (matched)", 600, -6, 6);
+	addHistoDataAndMC(type, h_pttbar_matched, "pttbar_matched", "Pttbar/HT(matched)", 200, 0, 2);
+	addHistoDataAndMC(type, h_htsystem_matched, "htsystem_matched", "HTsystem (matched)", 240, 0, 1.2);
 
-	addHistoDataAndMC(type, kChi2Leptonic_matched, "Chi2Leptonic_matched", "#Chi^{2}_{lep} (matched)", 1000, 0, 100);
-	addHistoDataAndMC(type, kChi2Hadronic_matched, "Chi2Hadronic_matched", "#Chi^{2}_{had} (matched)", 1000, 0, 100);
-	addHistoDataAndMC(type, kChi2Global_matched, "Chi2Global_matched", "#Chi^{2}_{global} (matched)", 1000, 0, 100);
-	addHistoDataAndMC(type, kChi2Total_matched, "Chi2Total_matched", "#Chi^{2}_{total} (matched)", 3000, 0, 300);
+	addHistoDataAndMC(type, h_Chi2Leptonic_matched, "Chi2Leptonic_matched", "#Chi^{2}_{lep} (matched)", 1000, 0, 100);
+	addHistoDataAndMC(type, h_Chi2Hadronic_matched, "Chi2Hadronic_matched", "#Chi^{2}_{had} (matched)", 1000, 0, 100);
+	addHistoDataAndMC(type, h_Chi2Global_matched, "Chi2Global_matched", "#Chi^{2}_{global} (matched)", 1000, 0, 100);
+	addHistoDataAndMC(type, h_Chi2Total_matched, "Chi2Total_matched", "#Chi^{2}_{total} (matched)", 3000, 0, 300);
 }
 
 void ana::bookExoticTopBtaggedHistograms(ushort type) {
 	addHistoDataAndMC(type, h_mttbar_btag_fake, "mttbar_btag_fake", "reconstructed M_{ttbar} (fake btag)", 10000, 0, 10000);
-	addHistoDataAndMC(type, kmWhad_btag_fake, "mWhad_btag_fake", "reconstructed hadronic W mass (fake btag)", 500, 0, 500);
+	addHistoDataAndMC(type, h_mWhad_btag_fake, "mWhad_btag_fake", "reconstructed hadronic W mass (fake btag)", 500, 0, 500);
 	addHistoDataAndMC(type, h_mWlep_btag_fake, "mWlep_btag_fake", "reconstructed leptonic W mass (fake btag)", 500, 0, 500);
-	addHistoDataAndMC(type, kmtlep_btag_fake, "mtlep_btag_fake", "reconstructed leptonic top mass (fake btag)", 1000, 0, 1000);
-	addHistoDataAndMC(type, kmthad_btag_fake, "mthad_btag_fake", "reconstructed hadronic top mass (fake btag)", 1000, 0, 1000);
+	addHistoDataAndMC(type, h_mtlep_btag_fake, "mtlep_btag_fake", "reconstructed leptonic top mass (fake btag)", 1000, 0, 1000);
+	addHistoDataAndMC(type, h_mthad_btag_fake, "mthad_btag_fake", "reconstructed hadronic top mass (fake btag)", 1000, 0, 1000);
 	addHistoDataAndMC(type, k2D_mWlep_vs_mtlep_btag_fake, "mWlep_vs_mtlep_btag_fake", "M(W_{lep}) vs M(t_{lep}) (fake btag)",
 			1000, 0, 1000, 500, 0, 500);
 	addHistoDataAndMC(type, h_mWhad_vs_mthad_btag_fake, "mWhad_vs_mthad_btag_fake", "M(W_{had}) vs M(t_{had}) (fake btag)", 1000,
@@ -8519,19 +8519,19 @@ void ana::bookExoticTopMCHistograms(ushort type) {
 	//TODO: decide if to keep
 	addHistoDataAndMC(type, h_mZprime_mc, "mZprime_mc", "generated M_{Z'}", 10000, 0, 10000);
 
-	addHistoDataAndMC(type, kmWlep_mc, "mWlep_mc", "generated leptonic W mass", 500, 0, 500);
-	addHistoDataAndMC(type, kmWhad_mc, "mWhad_mc", "generated hadronic W mass", 500, 0, 500);
+	addHistoDataAndMC(type, h_mWlep_mc, "mWlep_mc", "generated leptonic W mass", 500, 0, 500);
+	addHistoDataAndMC(type, h_mWhad_mc, "mWhad_mc", "generated hadronic W mass", 500, 0, 500);
 
-	addHistoDataAndMC(type, kmtlep_mc, "mtlep_mc", "generated leptonic top mass", 1000, 0, 1000);
-	addHistoDataAndMC(type, kmthad_mc, "mthad_mc", "generated hadronic top mass", 1000, 0, 1000);
-	addHistoDataAndMC(type, ktlep_pt_mc, "tlep_pt_mc", "generated leptonic top p_{T}", 2000, 0, 2000);
-	addHistoDataAndMC(type, kthad_pt_mc, "thad_pt_mc", "generated hadronic top p_{T}", 2000, 0, 2000);
+	addHistoDataAndMC(type, h_mtlep_mc, "mtlep_mc", "generated leptonic top mass", 1000, 0, 1000);
+	addHistoDataAndMC(type, h_mthad_mc, "mthad_mc", "generated hadronic top mass", 1000, 0, 1000);
+	addHistoDataAndMC(type, h_tlep_pt_mc, "tlep_pt_mc", "generated leptonic top p_{T}", 2000, 0, 2000);
+	addHistoDataAndMC(type, h_thad_pt_mc, "thad_pt_mc", "generated hadronic top p_{T}", 2000, 0, 2000);
 
-	addHistoDataAndMC(type, kangle_b_ele_mc, "angle_b_ele_mc", "angle between b-jet and electron (MC)", 400, 0, 4);
-	addHistoDataAndMC(type, kptratio_mc, "ptratio_mc", "Pt ratio (top/W) (MC)", 600, -6, 6);
-	addHistoDataAndMC(type, kptratio2_mc, "ptratio2_mc", "Pt ratio (b/W) (MC)", 600, -6, 6);
-	addHistoDataAndMC(type, kpttbar_mc, "pttbar_mc", "Pttbar/HT (MC)", 200, 0, 2);
-	addHistoDataAndMC(type, khtsystem_mc, "htsystem_mc", "HTsystem (MC)", 240, 0, 1.2);
+	addHistoDataAndMC(type, h_angle_b_ele_mc, "angle_b_ele_mc", "angle between b-jet and electron (MC)", 400, 0, 4);
+	addHistoDataAndMC(type, h_ptratio_mc, "ptratio_mc", "Pt ratio (top/W) (MC)", 600, -6, 6);
+	addHistoDataAndMC(type, h_ptratio2_mc, "ptratio2_mc", "Pt ratio (b/W) (MC)", 600, -6, 6);
+	addHistoDataAndMC(type, h_pttbar_mc, "pttbar_mc", "Pttbar/HT (MC)", 200, 0, 2);
+	addHistoDataAndMC(type, h_htsystem_mc, "htsystem_mc", "HTsystem (MC)", 240, 0, 1.2);
 
 	addHistoDataAndMC(type, h_Chi2Leptonic_mc, "Chi2Leptonic_mc", "#Chi^{2}_{lep} (mc)", 1000, 0, 100);
 	addHistoDataAndMC(type, h_Chi2Hadronic_mc, "Chi2Hadronic_mc", "#Chi^{2}_{had} (mc)", 1000, 0, 100);
@@ -8841,21 +8841,21 @@ void ana::reco_Mttbar(const vector<TLorentzVector>& jets, const TLorentzVector& 
 	double ptratio = TMath::Log(thad.Pt() / Whad.Pt());
 	TLorentzVector tmp1 = TLorentzVector(tlep + thad);
 	//fill histograms with best choice
-	fillHistoDataAndMC(kmthad, thad.M(), this_weight);
-	fillHistoDataAndMC(kmtlep, tlep.M(), this_weight);
-	fillHistoDataAndMC(kmWhad, Whad.M(), this_weight);
+	fillHistoDataAndMC(h_mthad, thad.M(), this_weight);
+	fillHistoDataAndMC(h_mtlep, tlep.M(), this_weight);
+	fillHistoDataAndMC(h_mWhad, Whad.M(), this_weight);
 	fillHistoDataAndMC(h_mWlep, Wlep.M(), this_weight);
 	fillHistoDataAndMC(h_mttbar, ttbar.M(), this_weight);
 	fillHistoDataAndMC(h_neutrino_pz, neutrino.Pz(), this_weight);
-	fillHistoDataAndMC(kpttbar, ttbar.Pt() / ht, this_weight);
-	fillHistoDataAndMC(khtsystem, htsystem, this_weight);
-	fillHistoDataAndMC(kptRel_ele_jet, ptrel, this_weight);
-	fillHistoDataAndMC(kminDeltaR_ele_Jet, minDeltaR, this_weight);
+	fillHistoDataAndMC(h_pttbar, ttbar.Pt() / ht, this_weight);
+	fillHistoDataAndMC(h_htsystem, htsystem, this_weight);
+	fillHistoDataAndMC(h_ptRel_ele_jet, ptrel, this_weight);
+	fillHistoDataAndMC(h_minDeltaR_ele_Jet, minDeltaR, this_weight);
 	fillHistoDataAndMC(h_ptRel_vs_deltaRmin, minDeltaR, ptrel, this_weight);
-	fillHistoDataAndMC(kChi2Global, chi2global, this_weight);
-	fillHistoDataAndMC(kChi2Leptonic, chi2lep, this_weight);
-	fillHistoDataAndMC(kChi2Hadronic, chi2had, this_weight);
-	fillHistoDataAndMC(kChi2Total, chi2Tot, this_weight);
+	fillHistoDataAndMC(h_Chi2Global, chi2global, this_weight);
+	fillHistoDataAndMC(h_Chi2Leptonic, chi2lep, this_weight);
+	fillHistoDataAndMC(h_Chi2Hadronic, chi2had, this_weight);
+	fillHistoDataAndMC(h_Chi2Total, chi2Tot, this_weight);
 
 	fillHistoDataAndMC(h_pttbar_vs_mttbar, tmp1.Pt() / ht, ttbar.M(), this_weight);
 	fillHistoDataAndMC(h_ptratio_vs_mttbar, ptratio, ttbar.M(), this_weight);
@@ -8990,9 +8990,9 @@ void ana::reco_Mttbar_btagged(const vector<TLorentzVector>& jets, const TLorentz
 	TLorentzVector resonance = TLorentzVector(thad + tlep);
 
 	//fill histograms with best choice
-	fillHistoDataAndMC(kmthad_btag_fake, thad.M(), this_weight);
-	fillHistoDataAndMC(kmtlep_btag_fake, tlep.M(), this_weight);
-	fillHistoDataAndMC(kmWhad_btag_fake, Whad.M(), this_weight);
+	fillHistoDataAndMC(h_mthad_btag_fake, thad.M(), this_weight);
+	fillHistoDataAndMC(h_mtlep_btag_fake, tlep.M(), this_weight);
+	fillHistoDataAndMC(h_mWhad_btag_fake, Whad.M(), this_weight);
 	fillHistoDataAndMC(h_mWlep_btag_fake, Wlep.M(), this_weight);
 	fillHistoDataAndMC(h_mttbar_btag_fake, resonance.M(), this_weight);
 	fillHistoDataAndMC(h_mWhad_vs_mthad_btag_fake, thad.M(), Whad.M(), this_weight);
@@ -9064,21 +9064,21 @@ void ana::reco_Mttbar_matched(const vector<TLorentzVector>& jets, const TLorentz
 		double chi2Tot = chi2lep + chi2had + chi2global;
 		TLorentzVector resonance = TLorentzVector(thad + tlep);
 
-		fillHistoDataAndMC(kthad_pt_matched, thad.Pt(), this_weight);
-		fillHistoDataAndMC(kmthad_matched, thad.M(), this_weight);
-		fillHistoDataAndMC(ktlep_pt_matched, tlep.Pt(), this_weight);
-		fillHistoDataAndMC(kmtlep_matched, tlep.M(), this_weight);
-		fillHistoDataAndMC(kmWhad_matched, Whad.M(), this_weight);
-		fillHistoDataAndMC(kmWlep_matched, Wlep.M(), this_weight);
-		fillHistoDataAndMC(kangle_b_ele_matched, blepjet.Angle(electron.Vect()), this_weight);
-		fillHistoDataAndMC(kptratio_matched, TMath::Log(thad.Pt() / Whad.Pt()), this_weight);
-		fillHistoDataAndMC(kptratio2_matched, TMath::Log(bhadjet.Pt() / Whad.Pt()), this_weight);
-		fillHistoDataAndMC(khtsystem_matched, htsystem, this_weight);
-		fillHistoDataAndMC(kpttbar_matched, pttbar, this_weight);
-		fillHistoDataAndMC(kChi2Global_matched, chi2global, this_weight);
-		fillHistoDataAndMC(kChi2Leptonic_matched, chi2lep, this_weight);
-		fillHistoDataAndMC(kChi2Hadronic_matched, chi2had, this_weight);
-		fillHistoDataAndMC(kChi2Total_matched, chi2Tot, this_weight);
+		fillHistoDataAndMC(h_thad_pt_matched, thad.Pt(), this_weight);
+		fillHistoDataAndMC(h_mthad_matched, thad.M(), this_weight);
+		fillHistoDataAndMC(h_tlep_pt_matched, tlep.Pt(), this_weight);
+		fillHistoDataAndMC(h_mtlep_matched, tlep.M(), this_weight);
+		fillHistoDataAndMC(h_mWhad_matched, Whad.M(), this_weight);
+		fillHistoDataAndMC(h_mWlep_matched, Wlep.M(), this_weight);
+		fillHistoDataAndMC(h_angle_b_ele_matched, blepjet.Angle(electron.Vect()), this_weight);
+		fillHistoDataAndMC(h_ptratio_matched, TMath::Log(thad.Pt() / Whad.Pt()), this_weight);
+		fillHistoDataAndMC(h_ptratio2_matched, TMath::Log(bhadjet.Pt() / Whad.Pt()), this_weight);
+		fillHistoDataAndMC(h_htsystem_matched, htsystem, this_weight);
+		fillHistoDataAndMC(h_pttbar_matched, pttbar, this_weight);
+		fillHistoDataAndMC(h_Chi2Global_matched, chi2global, this_weight);
+		fillHistoDataAndMC(h_Chi2Leptonic_matched, chi2lep, this_weight);
+		fillHistoDataAndMC(h_Chi2Hadronic_matched, chi2had, this_weight);
+		fillHistoDataAndMC(h_Chi2Total_matched, chi2Tot, this_weight);
 		fillHistoDataAndMC(h_mttbar_matched, resonance.M(), this_weight);
 	}
 
@@ -9304,19 +9304,19 @@ void ana::fillMCTopEventHists(double reco_mttbar) {
 	TLorentzVector ttbar = TLorentzVector(MCEvent[ktlep] + MCEvent[kthad]);
 
 	fasthist_[fastmctype_][h_neutrino_pz_mc]->Fill(MCEvent[kneutrino].Pz());
-	fasthist_[fastmctype_][kmtlep_mc]->Fill(MCEvent[ktlep].M());
-	fasthist_[fastmctype_][kmthad_mc]->Fill(MCEvent[kthad].M());
-	fasthist_[fastmctype_][kmWlep_mc]->Fill(MCEvent[kWlep].M());
-	fasthist_[fastmctype_][kmWhad_mc]->Fill(MCEvent[kWhad].M());
+	fasthist_[fastmctype_][h_mtlep_mc]->Fill(MCEvent[ktlep].M());
+	fasthist_[fastmctype_][h_mthad_mc]->Fill(MCEvent[kthad].M());
+	fasthist_[fastmctype_][h_mWlep_mc]->Fill(MCEvent[kWlep].M());
+	fasthist_[fastmctype_][h_mWhad_mc]->Fill(MCEvent[kWhad].M());
 	fasthist_[fastmctype_][h_mttbar_mc]->Fill(ttbar.M());
 	fasthist_[fastmctype_][h_mttbar_diff_reco_and_mc]->Fill(reco_mttbar - ttbar.M());
 	fasthist_[fastmctype_][h_mttbar_mc_smeared]->Fill(smearValueWithGaus(ttbar.M(), 90)); //smear 90 GeV width
-	fasthist_[fastmctype_][kthad_pt_mc]->Fill(MCEvent[kthad].Pt());
-	fasthist_[fastmctype_][ktlep_pt_mc]->Fill(MCEvent[ktlep].Pt());
+	fasthist_[fastmctype_][h_thad_pt_mc]->Fill(MCEvent[kthad].Pt());
+	fasthist_[fastmctype_][h_tlep_pt_mc]->Fill(MCEvent[ktlep].Pt());
 	double ptratio = TMath::Log(MCEvent[kthad].Pt() / MCEvent[kWhad].Pt());
-	fasthist_[fastmctype_][kptratio_mc]->Fill(ptratio);
+	fasthist_[fastmctype_][h_ptratio_mc]->Fill(ptratio);
 	ptratio = TMath::Log(MCEvent[kbhad].Pt() / MCEvent[kWhad].Pt());
-	fasthist_[fastmctype_][kptratio2_mc]->Fill(ptratio);
+	fasthist_[fastmctype_][h_ptratio2_mc]->Fill(ptratio);
 	if (fastmctype_ >= Zprime_M500GeV_W5GeV && fastmctype_ <= Zprime_M4TeV_W400GeV) {
 		for (unsigned int x = 0; x < Nmc_doc; x++) {
 			bool zprime = fabs(mc_doc_id->at(x)) == 32;
