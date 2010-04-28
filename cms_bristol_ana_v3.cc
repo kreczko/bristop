@@ -725,6 +725,7 @@ ana::ana() {
 	// end 856
 
 	mycounter = 0;
+	SetNumberOfJetsUsedInReco(8);
 }
 
 ana::~ana() {
@@ -844,229 +845,11 @@ bool ana::EventLoop() {
 	h_cIso_endcap->Sumw2();
 	h_tIso_endcap->Sumw2();
 
-	// Add 17-9-09
-	//	TDirectory *dir_DRemu = histf->mkdir("DRemu", "Delta R(e,mu)");
-	//	dir_DRemu->cd();
-	//	TH1F *h_DRemu_selE_GoodMu[NUMBER_OF_MC_TYPES];
-	//	TH1F *h_DRemu_selE_GoodMu_pass[NUMBER_OF_MC_TYPES];
-	//	addHistoDataAndMC(h_DRemu_selE_GoodMu, "DRemu_selE_GoodMu", "#DeltaR(e,#mu) (selE,GoodMu)", 60, 0, 6);
-	//	addHistoDataAndMC(h_DRemu_selE_GoodMu_pass, "DRemu_selE_GoodMu_pass", "#DeltaR(e,#mu) (selE,GoodMu) (passAllCut)", 60, 0, 6);
-
-	//==================================
-	//
-	//  Basic Kinematic Plots (Aug 09)
-	//
-	//==================================
-	//	TDirectory *dir_basic = histf->mkdir("basic", "Basic kinematics");
-	//	dir_basic->cd();
-
-	//-------------
-	//  Electrons
-	//-------------
-	//  14-8-09
-	//	TH1F *h_nele[mcsize];
-	//	TH1F *h_ele_ET[4][mcsize];
-	//	TH1F *h_ele_eta[4][mcsize];
-	//	TH1F *h_ele_phi[4][mcsize];
-	//	TH1F *h_ele_iso[4][mcsize];
-	//	addHistoDataAndMC(h_nele, "nele", "N(e) (no cut)", 6, 0, 6);
-	//	addHistoDataAndMC(h_ele_ET[0], "ele_ET", "E_{T}(all e) (nocut)", 50, 0, 100);
-	//	addHistoDataAndMC(h_ele_ET[1], "ele1_ET", "E_{T}(leading e: no cut)", 50, 0, 100);
-	//	addHistoDataAndMC(h_ele_ET[2], "ele2_ET", "E_{T}(2^{nd} leading e: no cut)", 50, 0, 100);
-	//	addHistoDataAndMC(h_ele_ET[3], "ele3_ET", "E_{T}(3^{rd} leading e: no cut)", 50, 0, 100);
-	//	addHistoDataAndMC(h_ele_eta[0], "ele_eta", "#eta(all e) (no cut)", 50, -2.5, 2.5);
-	//	addHistoDataAndMC(h_ele_eta[1], "ele1_eta", "#eta(leading e: no cut)", 50, -2.5, 2.5);
-	//	addHistoDataAndMC(h_ele_eta[2], "ele2_eta", "#eta(2^{nd} leading e: no cut)", 50, -2.5, 2.5);
-	//	addHistoDataAndMC(h_ele_eta[3], "ele3_eta", "#eta(3^{rd} leading e: no cut)", 50, -2.5, 2.5);
-	//	addHistoDataAndMC(h_ele_phi[0], "ele_phi", "#phi(all e) (no cut)", 50, -3.2, 3.2);
-	//	addHistoDataAndMC(h_ele_phi[1], "ele1_phi", "#phi(leading e: no cut)", 50, -3.2, 3.2);
-	//	addHistoDataAndMC(h_ele_phi[2], "ele2_phi", "#phi(2^{nd} leading e: no cut)", 50, -3.2, 3.2);
-	//	addHistoDataAndMC(h_ele_phi[3], "ele3_phi", "#phi(3^{rd} leading e: no cut)", 50, -3.2, 3.2);
-	//	addHistoDataAndMC(h_ele_iso[0], "ele_iso", "RelIso(all e) (no cut)", 1000, 0, 2);
-	//	addHistoDataAndMC(h_ele_iso[1], "ele1_iso", "RelIso(leading e: no cut)", 1000, 0, 2);
-	//	addHistoDataAndMC(h_ele_iso[2], "ele2_iso", "RelIso(2^{nd} leading e: no cut)", 1000, 0, 2);
-	//	addHistoDataAndMC(h_ele_iso[3], "ele3_iso", "RelIso(3^{rd} leading e: no cut)", 1000, 0, 2);
-
-	//-----------
-	//  J E T S
-	//-----------
-	// 14-8-09: jets after jet-cleaning
-	//	TH1F *h_njet[mcsize]; //per MC type
-	//	TH1F *h_jet_PT[5][mcsize];
-	//	TH1F *h_jet_eta[5][mcsize];
-	//	TH1F *h_jet_phi[5][mcsize];
-	//	addHistoDataAndMC(h_njet, "njet", "jet multiplicity (ET/eta)", 10, 0, 10);
-	//	addHistoDataAndMC(h_jet_PT[0], "jet_PT", "P_{T}(all jets) (pass P_{T}/#eta)", 100, 0, 200);
-	//	addHistoDataAndMC(h_jet_PT[1], "jet1_PT", "P_{T}(leading jet) (pass P_{T}/#eta)", 100, 0, 200);
-	//	addHistoDataAndMC(h_jet_PT[2], "jet2_PT", "P_{T}(2^{nd} leading jet) (pass P_{T}/#eta)", 100, 0, 200);
-	//	addHistoDataAndMC(h_jet_PT[3], "jet3_PT", "P_{T}(3^{rd} leading jet) (pass P_{T}/#eta)", 100, 0, 200);
-	//	addHistoDataAndMC(h_jet_PT[4], "jet4_PT", "P_{T}(4^{th} leading jet) (pass P_{T}/#eta)", 100, 0, 200);
-	//	addHistoDataAndMC(h_jet_eta[0], "jet_eta", "#eta(all jets) (pass P_{T}/#eta)", 50, -2.5, 2.5);
-	//	addHistoDataAndMC(h_jet_eta[1], "jet1_eta", "#eta(leading jet) (pass P_{T}/#eta)", 50, -2.5, 2.5);
-	//	addHistoDataAndMC(h_jet_eta[2], "jet2_eta", "#eta(2^{nd} leading jet) (pass P_{T}/#eta)", 50, -2.5, 2.5);
-	//	addHistoDataAndMC(h_jet_eta[3], "jet3_eta", "#eta(3^{rd} leading jet) (pass P_{T}/#eta)", 50, -2.5, 2.5);
-	//	addHistoDataAndMC(h_jet_eta[4], "jet4_eta", "#eta(4^{rd} leading jet) (pass P_{T}/#eta)", 50, -2.5, 2.5);
-	//	addHistoDataAndMC(h_jet_phi[0], "jet_phi", "#phi(all jets) (pass P_{T}/#eta)", 50, -3.2, 3.2);
-	//	addHistoDataAndMC(h_jet_phi[1], "jet1_phi", "#phi(leading jet) (pass P_{T}/#eta)", 50, -3.2, 3.2);
-	//	addHistoDataAndMC(h_jet_phi[2], "jet2_phi", "#phi(2^{nd} leading jet) (pass P_{T}/#eta)", 50, -3.2, 3.2);
-	//	addHistoDataAndMC(h_jet_phi[3], "jet3_phi", "#phi(3^{rd} leading jet) (pass P_{T}/#eta)", 50, -3.2, 3.2);
-	//	addHistoDataAndMC(h_jet_phi[4], "jet4_phi", "#phi(4^{rd} leading jet) (pass P_{T}/#eta)", 50, -3.2, 3.2);
-
-	//-----
-	// MET
-	//-----
-	//	TH1F *h_metAlone[mcsize]; //per MC type
-	//	TH1F *h_metAlone_phi[mcsize];
-	//	addHistoDataAndMC(h_metAlone, "metAlone", "Missing ET (no cut)", 200, 0, 200);
-	//	addHistoDataAndMC(h_metAlone_phi, "metAlone_phi", "MET #phi (no cut)", 50, -3.2, 3.2);
-
-	//=======================
-	//
-	// Explore new variables
-	//
-	//=======================
-	// 4-11-09: explore var after all but MET cuts
-	//	TDirectory *dir_explore = histf->mkdir("explore", "explore new var after all but MET cuts (>=4j)");
-	//	dir_explore->cd();
-	//	TH1F *h_exp_ele_et[mcsize]; // selected ele et
-	//	TH1F *h_exp_ele_eta[mcsize]; // selected ele eta
-	//	TH1F *h_exp_j0_pt[mcsize]; // leading jet pt
-	//	TH1F *h_exp_j1_pt[mcsize]; // 2n-leading jet pt
-	//	TH1F *h_exp_DRej[mcsize]; // DR(e,j0)
-	//	TH1F *h_exp_DPhiej[mcsize]; // DPhi(e,j0)
-	//	TH1F *h_exp_DRjj[mcsize]; // DR(j0,j1)
-	//	TH1F *h_exp_DPhijj[mcsize]; // DPhi(j0,j1)
-	//	TH2F *h_exp_met_v_eeta[mcsize]; // met:ele_eta
-
-	//	addHistoDataAndMC(h_exp_ele_et, "ele_et", "ele E_{T}", 50, 20, 120);
-	//	addHistoDataAndMC(h_exp_ele_eta, "ele_eta", "ele #eta", 50, -2.5, 2.5);
-	//	addHistoDataAndMC(h_exp_j0_pt, "j0_pt", "leading jet p_{T}", 100, 0, 200);
-	//	addHistoDataAndMC(h_exp_j1_pt, "j1_pt", "2nd leading jet p_{T}", 100, 0, 200);
-	//	addHistoDataAndMC(h_exp_DRej, "DRej", "#DeltaR(e,j0)", 60, 0, 6);
-	//	addHistoDataAndMC(h_exp_DPhiej, "DPhiej", "#Delta#Phi(e,j0)", 64, -3.2, 3.2);
-	//	addHistoDataAndMC(h_exp_DRjj, "DRjj", "#DeltaR(j0,j1)", 60, 0, 6);
-	//	addHistoDataAndMC(h_exp_DPhijj, "DPhijj", "#Delta#Phi(j0,j1)", 64, -3.2, 3.2);
-	//	addHistoDataAndMC(h_exp_met_v_eeta, "met_v_eeta", "met v #eta(e)", 50, 0, 100, 50, -2.5, 2.5);
-
-	//--------------------
-	// Electron counting
-	//--------------------
-	//	TDirectory *dir_nEle = histf->mkdir("electron_count"); // Next TODO...
-	//	dir_nEle->cd();
-
-	//-------------------
-	//  Study of Z veto
-	//-------------------
-	//	TDirectory *dir_zveto = histf->mkdir("z_veto", "Z veto");
-	//	dir_zveto->cd();
-
-
-	//	TDirectory *dir_z1 = dir_zveto->mkdir("NES", "Normal Event Selection");
-	//	dir_z1->cd();
-
-	//	TDirectory *dir_z2 = dir_zveto->mkdir("AES", "Anti Event Selection");
-	//	dir_z2->cd();
-
-	// Electron ID plots
-	//	TDirectory *dir_eid = histf->mkdir("electron_id");
-	//	dir_eid->cd();
-	//	TH1F *h_eid[mcsize];
-	//	addHistoDataAndMC(h_eid, "eid", "N(ele) pass each cut", 8, 0, 8);//all, ET+eta, d0, loose, tight, RL, RT, robusthighenergy
-	//	SetHistoLabelEleID( h_eid);
-
-	// Electron d0 plots (bin: 0.5cm for 5000 bins, ie 1 micron per bin)
-	//	TDirectory *dir_ed0_unCor = histf->mkdir("electron_d0_unCor", "electron d0 (uncorrected)");
-	//	dir_ed0_unCor->cd();
-	//	TH1F *h_ed0_unCor[mcsize];
-	//	addHistoDataAndMC(h_ed0_unCor, "ed0_unCor", "ele |d0| (pass ET,eta cut)", 3000, 0, 0.3);
-	//
-	//	TDirectory *dir_ed0 = histf->mkdir("electron_d0", "electron d0 (corrected using BeamSpot)");
-	//	dir_ed0->cd();
-	//	TH1F *h_ed0[mcsize]; //w.r.t beam spot
-	//	TH1F *h_ed0_pass[mcsize]; //w.r.t beam spot
-	//	addHistoDataAndMC(h_ed0, "ed0", "ele |d0| (pass ET,eta cut)", 3000, 0, 0.3);
-	//	addHistoDataAndMC(h_ed0_pass, "ed0_pass", "ele |d0| (pass all cuts, >=4j)", 3000, 0, 0.3);
-	//	histf->cd();
-
-	//Muon Plots
-	//	TH1F *h_muon_chi2 = new TH1F("h_muon_chi2", "muon chi2 (normalized) (pass pt,eta cut)", 100, 0, 20);
-	//	TH1F *h_muon_d0_unCor = new TH1F("h_muon_d0_unCor", "muon d0 (uncorrected )(pass pt,eta cut) ", 1000, -0.5, 0.5);
-	//	TH1F *h_muon_d0 = new TH1F("h_muon_d0", "muon d0 (corrected using BeamSpot) (pass pt,eta cut)", 1000, -0.5, 0.5);
-	//	TH1F *h_muon_hits = new TH1F("h_muon_hits", "muon hits (pass pt,eta cut)", 40, 0, 40);
-	//	h_muon_chi2->Sumw2();
-	//	h_muon_d0_unCor->Sumw2();
-	//	h_muon_d0 ->Sumw2();
-	//	h_muon_hits->Sumw2();
-
 	//Kinematic Plots
 	TH1F *pass_ht = new TH1F("pass_ht", "HT (after all cuts)", 100, 0.0, 1000.0);
 	TH1F *pass_met = new TH1F("pass_met", "MET (after all cuts)", 200, 0.0, 200.0);
 	pass_ht->Sumw2();
 	pass_met->Sumw2();
-
-	//New directories for kinematics plots
-	//	TDirectory *dir_HT = histf->mkdir("HT", "HT after all but HT cut");
-	//	TDirectory *dir_MET = histf->mkdir("MET", "MET after all but MET cut");
-	//	TH1F *h_ht[7][mcsize];
-	//	TH1F *h_met[7][mcsize]; //user-chosen MET
-	//	TH1F *h_met_mu[7][mcsize]; //muon-MET
-	//	TH1F *h_met_t1[7][mcsize]; //type1-MET
-	//	TH1F *h_met_BA[7][mcsize]; //user-chosen MET (Barrel)
-	//	TH1F *h_met_mu_BA[7][mcsize]; //muon-MET (Barrel)
-	//	TH1F *h_met_t1_BA[7][mcsize]; //type1-MET (Barrel)
-
-	//   dir_HT->cd();   addHistoDataAndMC( h_ht,  "HT",  "HT (after all but HT cut)", 100, 0, 1000);
-	//   dir_MET->cd();  addHistoDataAndMC( h_met, "met", "Missing ET", 200, 0, 200);
-	//	dir_HT->cd();
-	//	addHisto_Njet_DataAndMC(h_ht, "HT", "HT (after all but HT cut)", 100, 0, 1000);
-	//	dir_MET->cd();
-	//	addHisto_Njet_DataAndMC(h_met, "met", "MET (n-1)", 200, 0, 200);
-	//	addHisto_Njet_DataAndMC(h_met_mu, "met_mu", "#muMET (n-1)", 200, 0, 200);
-	//	addHisto_Njet_DataAndMC(h_met_t1, "met_t1", "Type1MET (n-1)", 200, 0, 200);
-	//	addHisto_Njet_DataAndMC(h_met_BA, "met_BA", "MET (n-1 barrel)", 200, 0, 200);
-	//	addHisto_Njet_DataAndMC(h_met_mu_BA, "met_mu_BA", "#muMET (n-1 barrel)", 200, 0, 200);
-	//	addHisto_Njet_DataAndMC(h_met_t1_BA, "met_t1_BA", "Type1MET (n-1 barrel)", 200, 0, 200);
-
-	//TH1F *h_metAlone[mcsize];
-	//addHistoDataAndMC( h_metAlone, "metAlone", "Missing ET (no other cuts)", 200, 0, 200);
-	//	TH1F *h_met_ante_ISO[mcsize]; //user-chosen MET
-	//	TH1F *h_met_ante_ISO_mu[mcsize];
-	//	TH1F *h_met_ante_ISO_t1[mcsize];
-	//	addHistoDataAndMC(h_met_ante_ISO, "met_ante_ISO", "Missing ET (1 GooEle, before ISO cut)", 200, 0, 200);
-	//	addHistoDataAndMC(h_met_ante_ISO_mu, "met_ante_ISO_mu", "muMET (1 GooEle, before ISO cut)", 200, 0, 200);
-	//	addHistoDataAndMC(h_met_ante_ISO_t1, "met_ante_ISO_t1", "Type1MET (1 GooEle, before ISO cut)", 200, 0, 200);
-	//   histf->cd();
-
-	// NEW: 30-10-09, mTW
-	//	TDirectory *dir_mtw = histf->mkdir("mtw", "mT(W) W transverse mass");
-	//	dir_mtw->cd();
-	//	TH1F *h_mtw_mu_incl[mcsize]; //inclusive
-	//	TH1F *h_mtw_t1_incl[mcsize]; //type 1 calomet
-	// after all but MET cut
-	//	TH1F *h_mtw_mu[7][mcsize];
-	//	TH1F *h_mtw_t1[7][mcsize];
-	//   TDirectory *dir_mtw_1 = dir_mtw->mkdir("muonCorCaloMET","muon-corrected caloMET");
-	//   TDirectory *dir_mtw_2 = dir_mtw->mkdir("type1CaloMET","type1 (mu+jes) caloMET");
-	//	addHistoDataAndMC(h_mtw_mu_incl, "mtw_mu_incl", "mT(W) #mu-cor caloMet (incl, leading isolated ele)", 100, 0, 200);
-	//	addHistoDataAndMC(h_mtw_t1_incl, "mtw_t1_incl", "mT(W) type1 caloMet (incl, leading isolated ele)", 100, 0, 200);
-	//	addHisto_Njet_DataAndMC(h_mtw_mu, "mtw_mu", "mT(W) #mu-cor caloMet (after all but MET cut)", 100, 0, 200);
-	//	addHisto_Njet_DataAndMC(h_mtw_t1, "mtw_t1", "mT(W) type1 caloMet (after all but MET cut)", 100, 0, 200);
-
-	// NEW: 30-10-09
-	//	TDirectory *dir_DPhiEmet = histf->mkdir("DPhi_ele_met", "Delta phi(isoele,met)");
-	//	dir_DPhiEmet->cd();
-	//	TH1F *h_DPhiEmet_mu_incl[mcsize];
-	//	TH1F *h_DPhiEmet_t1_incl[mcsize];
-	//	TH1F *h_DPhiEmet_mu[7][mcsize];
-	//	TH1F *h_DPhiEmet_t1[7][mcsize];
-	//	addHistoDataAndMC(h_DPhiEmet_mu_incl, "DPhiEmet_mu_incl", "#Delta#Phi(e,met) #mu-cor caloMet (incl, leading isolated ele)",
-	//			64, -3.2, 3.2);
-	//	addHistoDataAndMC(h_DPhiEmet_t1_incl, "DPhiEmet_t1_incl", "#Delta#Phi(e,met) type 1 caloMet (incl, leading isolated ele)",
-	//			64, -3.2, 3.2);
-	//	addHisto_Njet_DataAndMC(h_DPhiEmet_mu, "DPhiEmet_mu", "#Delta#Phi(e,met) #mu-cor caloMet (after all but MET cut)", 64, -3.2,
-	//			3.2);
-	//	addHisto_Njet_DataAndMC(h_DPhiEmet_t1, "DPhiEmet_t1", "#Delta#Phi(e,met) type 1 caloMet (after all but MET cut)", 64, -3.2,
-	//			3.2);
 
 	TDirectory *dir_conv = histf->mkdir("conversion", "conversion");
 	dir_conv->cd();
@@ -1354,9 +1137,10 @@ bool ana::EventLoop() {
 	std::vector<TLorentzVector> iso_electrons_endcap;
 	std::vector<TLorentzVector> muons;
 	std::vector<TLorentzVector> iso_muons;
-	std::vector<TLorentzVector> jets;
+	std::vector<TLorentzVector> goodJets;
+	std::vector<std::vector<double> > btag_information;
+	btag_information.resize(NUMBER_OF_BTAGS);
 	std::vector<TLorentzVector> met;
-	//std::vector<TLorentzVector> tagged_jets; //not used
 	std::vector<float> electrons_isoval;
 	std::vector<float> electrons_isoval2;
 
@@ -1499,36 +1283,6 @@ bool ana::EventLoop() {
 
 				// Reset flags
 				fastmctype_ = kdata;
-				//				isMCType(kttbar) = false;
-				//				isMCType(kWjets) = false;
-				//				isMCType(kZjets) = false;
-				//				isMCType(kQCD) = false;
-				//				isMCType(kenri1) = false;
-				//				isMCType(kenri2) = false;
-				//				isMCType(kenri3) = false;
-				//				isMCType(kbce1) = false;
-				//				isMCType(kbce2) = false;
-				//				isMCType(kbce3) = false;
-				//				isMCType(kVQQ) = false;
-				//				isMCType(ksingleTop) = false;
-				//				isMCType(ktW) = false;
-				//				isMCType(ktchan) = false;
-				//				isMCType(kschan) = false;
-				//				//FIXME: 09th step to new sample - reset flags
-				//				isMCType(Zprime_M500GeV_W5GeV) = false;
-				//				isMCType(Zprime_M500GeV_W50GeV) = false;
-				//				isMCType(Zprime_M750GeV_W7500MeV) = false;
-				//				isMCType(Zprime_M1TeV_W10GeV) = false;
-				//				isMCType(Zprime_M1TeV_W100GeV) = false;
-				//				isMCType(Zprime_M1250GeV_W12500MeV) = false;
-				//				isMCType(Zprime_M1500GeV_W15GeV) = false;
-				//				isMCType(Zprime_M1500GeV_W150GeV) = false;
-				//				isMCType(Zprime_M2TeV_W20GeV) = false;
-				//				isMCType(Zprime_M2TeV_W200GeV) = false;
-				//				isMCType(Zprime_M3TeV_W30GeV) = false;
-				//				isMCType(Zprime_M3TeV_W300GeV) = false;
-				//				isMCType(Zprime_M4TeV_W40GeV) = false;
-				//				isMCType(Zprime_M4TeV_W400GeV) = false;
 
 				if (!RunOnMixedMC) {
 					if (m_debug)
@@ -1571,7 +1325,9 @@ bool ana::EventLoop() {
 				this_weight = GetWeight(fastmctype_);
 				if (!isMCType(kttbar))
 					mctype = fastmctype_ + NUMBER_OF_DECAY_BRANCHES;//equivalent to the lines below
+				//				if (m_debug)
 				cout << "FAST MC Type is: " << fastmctype_ << endl;
+				cout << "mctype is: " << mctype << endl;
 
 				// set nmctype code
 				//				if (this_mc == "ttbar" || this_mc == "ttjet") {
@@ -1923,9 +1679,7 @@ bool ana::EventLoop() {
 		//cout << "\n==> There are  " << Nels << "  reco-electrons in this event."<<endl;
 
 		// basic
-		//		fillHistoDataAndMC(h_nele, Nels, this_weight);
-		fillHistoDataAndMC(knele, Nels, this_weight);
-		//		fasthist_[fastmctype_][knele]->Fill(Nels, this_weight);
+		fillHistoDataAndMC(h_nele, Nels, this_weight);
 
 		for (unsigned int i = 0; i < Nels; ++i) {
 
@@ -1952,7 +1706,6 @@ bool ana::EventLoop() {
 
 			// Basic kinematics (14-8-09)
 			// - all electrons
-			//			fasthist_[fastmctype_][h_ele_ET_all]->Fill(els_et->at(i), this_weight);
 			fillHistoDataAndMC(h_ele_ET_all, els_et->at(i), this_weight);
 			fillHistoDataAndMC(kele_eta_all, els_eta->at(i), this_weight);
 			fillHistoDataAndMC(kele_phi_all, els_phi->at(i), this_weight);
@@ -2518,13 +2271,21 @@ bool ana::EventLoop() {
 			cout << " Starting JET section" << endl;
 		int nGoodJet = 0;
 		int ntj = 0;
-
 		if (m_jetAlgo == "Default") {
 			for (unsigned int i = 0; i < Njets; ++i) {
 				if (jets_pt->at(i) > JET_PTCUT && fabs(jets_eta->at(i)) < 2.4 && jets_emf->at(i) > 0.01) { //<-- NEW: jets_emf
 					TLorentzVector jt(jets_px->at(i), jets_py->at(i), jets_pz->at(i), jets_energy->at(i));
 					nGoodJet++;//FIXME: isn't jets.size() enough?
-					jets.push_back(jt);
+					goodJets.push_back(jt);
+					btag_information[btag_TC_highEff].push_back(jets_btag_TC_highEff->at(i));
+					btag_information[btag_TC_highPur].push_back(jets_btag_TC_highPur->at(i));
+					btag_information[btag_JetBProb].push_back(jets_btag_jetBProb->at(i));
+					btag_information[btag_JetProb].push_back(jets_btag_jetProb->at(i));
+					btag_information[btag_softEle].push_back(jets_btag_softEle->at(i));
+					btag_information[btag_softMuon].push_back(jets_btag_softMuon->at(i));
+					btag_information[btag_softMuonNoIP].push_back(jets_btag_softMuonNoIP->at(i));
+					btag_information[btag_secondaryVertex].push_back(jets_btag_secVertex->at(i));
+					btag_information[btag_fake].push_back(jets_parton_Id->at(i));
 				}
 			}
 		} else if (m_jetAlgo == "SC5") {
@@ -2532,7 +2293,15 @@ bool ana::EventLoop() {
 				if (jetsSC5_pt->at(i) > JET_PTCUT && fabs(jetsSC5_eta->at(i)) < 2.4 && jetsSC5_emf->at(i) > 0.01) {
 					TLorentzVector jt(jetsSC5_px->at(i), jetsSC5_py->at(i), jetsSC5_pz->at(i), jetsSC5_energy->at(i));
 					nGoodJet++;//FIXME: isn't jets.size() enough?
-					jets.push_back(jt);
+					goodJets.push_back(jt);
+					btag_information[btag_TC_highEff].push_back(jetsSC5_btag_TC_highEff->at(i));
+					btag_information[btag_TC_highPur].push_back(jetsSC5_btag_TC_highPur->at(i));
+					btag_information[btag_JetBProb].push_back(jetsSC5_btag_jetBProb->at(i));
+					btag_information[btag_JetProb].push_back(jetsSC5_btag_jetProb->at(i));
+					btag_information[btag_softEle].push_back(jetsSC5_btag_softEle->at(i));
+					btag_information[btag_softMuon].push_back(jetsSC5_btag_softMuon->at(i));
+					btag_information[btag_softMuonNoIP].push_back(jetsSC5_btag_softMuonNoIP->at(i));
+					btag_information[btag_secondaryVertex].push_back(jetsSC5_btag_secVertex->at(i));
 				}
 			}
 		} else if (m_jetAlgo == "KT4") {
@@ -2540,7 +2309,15 @@ bool ana::EventLoop() {
 				if (jetsKT4_pt->at(i) > JET_PTCUT && fabs(jetsKT4_eta->at(i)) < 2.4 && jetsKT4_emf->at(i) > 0.01) {
 					TLorentzVector jt(jetsKT4_px->at(i), jetsKT4_py->at(i), jetsKT4_pz->at(i), jetsKT4_energy->at(i));
 					nGoodJet++;//FIXME: isn't jets.size() enough?
-					jets.push_back(jt);
+					goodJets.push_back(jt);
+					btag_information[btag_TC_highEff].push_back(jetsKT4_btag_TC_highEff->at(i));
+					btag_information[btag_TC_highPur].push_back(jetsKT4_btag_TC_highPur->at(i));
+					btag_information[btag_JetBProb].push_back(jetsKT4_btag_jetBProb->at(i));
+					btag_information[btag_JetProb].push_back(jetsKT4_btag_jetProb->at(i));
+					btag_information[btag_softEle].push_back(jetsKT4_btag_softEle->at(i));
+					btag_information[btag_softMuon].push_back(jetsKT4_btag_softMuon->at(i));
+					btag_information[btag_softMuonNoIP].push_back(jetsKT4_btag_softMuonNoIP->at(i));
+					btag_information[btag_secondaryVertex].push_back(jetsKT4_btag_secVertex->at(i));
 				}
 			}
 		} else if (m_jetAlgo == "pfjet") {
@@ -2548,7 +2325,16 @@ bool ana::EventLoop() {
 				if (PFJets_pt->at(i) > JET_PTCUT && fabs(PFJets_eta->at(i)) < 2.4) {// NB: EMF cannot be calculated for PFJets
 					TLorentzVector jt(PFJets_px->at(i), PFJets_py->at(i), PFJets_pz->at(i), PFJets_energy->at(i));
 					nGoodJet++;//FIXME: isn't jets.size() enough?
-					jets.push_back(jt);
+					goodJets.push_back(jt);
+					btag_information[btag_TC_highEff].push_back(PFJets_btag_TC_highEff->at(i));
+					btag_information[btag_TC_highPur].push_back(PFJets_btag_TC_highPur->at(i));
+					btag_information[btag_JetBProb].push_back(PFJets_btag_jetBProb->at(i));
+					btag_information[btag_JetProb].push_back(PFJets_btag_jetProb->at(i));
+					btag_information[btag_softEle].push_back(PFJets_btag_softEle->at(i));
+					btag_information[btag_softMuon].push_back(PFJets_btag_softMuon->at(i));
+					btag_information[btag_softMuonNoIP].push_back(PFJets_btag_softMuonNoIP->at(i));
+					btag_information[btag_secondaryVertex].push_back(PFJets_btag_secVertex->at(i));
+					btag_information[btag_fake].push_back(PFJets_parton_Id->at(i));
 				}
 			}
 
@@ -2563,20 +2349,20 @@ bool ana::EventLoop() {
 		float delR_jet_ele = 9999;
 
 		//Loop over selected jets
-		for (unsigned int i = 0; i < jets.size(); ++i) {
+		for (unsigned int i = 0; i < goodJets.size(); ++i) {
 
 			//Loop over selected (isolated) electrons
 			//for(unsigned int j = 0 ; j < iso_electrons.size(); ++j) {
 			for (unsigned int j = 0; j < electrons.size(); ++j) {
 
 				//For each jet, compute dR to *all* selected electrons
-				delR_jet_ele = calcDeltaR(jets.at(i), electrons.at(j));
+				delR_jet_ele = calcDeltaR(goodJets.at(i), electrons.at(j));
 				//delR_jet_ele = calcDeltaR(jets.at(i),iso_electrons.at(j));
 
 				//If delta R is within a cone of 0.3, remove this jet from selected jet list, since it's an electron
 				if (delR_jet_ele < 0.3) {
 					nGoodJet--;
-					jets.erase(jets.begin() + i);
+					goodJets.erase(goodJets.begin() + i);
 					i--;
 					break;
 				}
@@ -2595,14 +2381,14 @@ bool ana::EventLoop() {
 			cout << "ERROR!!! negative njet: " << Njet() << endl;
 		}
 
-		for (unsigned int i = 0; i < jets.size(); ++i) {
-			fillHistoDataAndMC(kjet_pt_all, jets.at(i).Pt(), this_weight);
-			fillHistoDataAndMC(kjet_eta_all, jets.at(i).Eta(), this_weight);
-			fillHistoDataAndMC(kjet_phi_all, jets.at(i).Phi(), this_weight);
+		for (unsigned int i = 0; i < goodJets.size(); ++i) {
+			fillHistoDataAndMC(kjet_pt_all, goodJets.at(i).Pt(), this_weight);
+			fillHistoDataAndMC(kjet_eta_all, goodJets.at(i).Eta(), this_weight);
+			fillHistoDataAndMC(kjet_phi_all, goodJets.at(i).Phi(), this_weight);
 			if (i < 4) {// fill for first 4 jets
-				fillHistoDataAndMC(kjet_pt_all + i + 1, jets.at(i).Pt(), this_weight);
-				fillHistoDataAndMC(kjet_eta_all + i + 1, jets.at(i).Eta(), this_weight);
-				fillHistoDataAndMC(kjet_phi_all + i + 1, jets.at(i).Phi(), this_weight);
+				fillHistoDataAndMC(kjet_pt_all + i + 1, goodJets.at(i).Pt(), this_weight);
+				fillHistoDataAndMC(kjet_eta_all + i + 1, goodJets.at(i).Eta(), this_weight);
+				fillHistoDataAndMC(kjet_phi_all + i + 1, goodJets.at(i).Phi(), this_weight);
 			}
 		}
 
@@ -2705,17 +2491,8 @@ bool ana::EventLoop() {
 		met2v_mu.SetMagPhi(mets_et_muonCor->at(0), mets_phi_muonCor->at(0));
 		met2v_t1.SetMagPhi(mets_et->at(0), mets_phi->at(0));
 
-		// MET eta? Not meaningful.
-		//TLorentzVector met4p(this_met*cos(this_met_phi),this_met*sin(this_met_phi),0,this_met);
-		//float this_met_eta = met4p.Eta();
-		//cout << "MET px = " << this_met*cos(this_met_phi) << endl;
-		//cout << "MET py = " << this_met*sin(this_met_phi) << endl;
-		//cout << "MET eta = " << this_met_eta << endl;
-
-		fillHistoDataAndMC(kmetAlone, this_met, this_weight);
-		fillHistoDataAndMC(kmetAlone_phi, this_met_phi, this_weight);
-		//		fillHistoDataAndMC(h_metAlone, this_met, this_weight);
-		//		fillHistoDataAndMC(h_metAlone_phi, this_met_phi, this_weight);
+		fillHistoDataAndMC(h_metAlone, this_met, this_weight);
+		fillHistoDataAndMC(h_metAlone_phi, this_met_phi, this_weight);
 
 		// 6 - Calculate some kinematic variables
 
@@ -2730,8 +2507,8 @@ bool ana::EventLoop() {
 		for (unsigned int i = 0; i < iso_muons.size(); ++i) {
 			ht += iso_muons.at(i).Pt();
 		}
-		for (unsigned int i = 0; i < jets.size(); ++i) {
-			ht += jets.at(i).Pt();
+		for (unsigned int i = 0; i < goodJets.size(); ++i) {
+			ht += goodJets.at(i).Pt();
 		}
 
 		// compute mT(W)
@@ -2823,20 +2600,20 @@ bool ana::EventLoop() {
 
 			valid_fillHisto(valid_HT, Boolcuts, nGoodJet, ht);
 
-			for (unsigned int i = 0; i < jets.size(); ++i) {
-				valid_fillHisto(valid_jetsEt, Boolcuts, nGoodJet, jets.at(i).Et());
-				valid_fillHisto(valid_jetsEta, Boolcuts, nGoodJet, jets.at(i).Phi());
-				valid_fillHisto(valid_jetsPhi, Boolcuts, nGoodJet, jets.at(i).Eta());
+			for (unsigned int i = 0; i < goodJets.size(); ++i) {
+				valid_fillHisto(valid_jetsEt, Boolcuts, nGoodJet, goodJets.at(i).Et());
+				valid_fillHisto(valid_jetsEta, Boolcuts, nGoodJet, goodJets.at(i).Phi());
+				valid_fillHisto(valid_jetsPhi, Boolcuts, nGoodJet, goodJets.at(i).Eta());
 			}
 
 			if (ntj > 0)
-				valid_fillHisto(valid_jets1stEt, Boolcuts, nGoodJet, jets.at(0).Et());
+				valid_fillHisto(valid_jets1stEt, Boolcuts, nGoodJet, goodJets.at(0).Et());
 			if (ntj > 1)
-				valid_fillHisto(valid_jets2ndEt, Boolcuts, nGoodJet, jets.at(1).Et());
+				valid_fillHisto(valid_jets2ndEt, Boolcuts, nGoodJet, goodJets.at(1).Et());
 			if (ntj > 2)
-				valid_fillHisto(valid_jets3rdEt, Boolcuts, nGoodJet, jets.at(2).Et());
+				valid_fillHisto(valid_jets3rdEt, Boolcuts, nGoodJet, goodJets.at(2).Et());
 			if (ntj > 3)
-				valid_fillHisto(valid_jets4thEt, Boolcuts, nGoodJet, jets.at(3).Et());
+				valid_fillHisto(valid_jets4thEt, Boolcuts, nGoodJet, goodJets.at(3).Et());
 
 			vector<TLorentzVector> valid_eles;
 			for (unsigned int i = 0; i < Nels; ++i) {
@@ -2885,7 +2662,7 @@ bool ana::EventLoop() {
 			}
 
 			if (nGoodJet > 2) {
-				pair<double, double> res = compute_M3(jets);
+				pair<double, double> res = compute_M3(goodJets);
 				valid_fillHisto(valid_recoM3, Boolcuts, nGoodJet, res.first);
 				valid_fillHisto(valid_recoM3_PTMax, Boolcuts, nGoodJet, res.second);
 			}
@@ -3028,7 +2805,7 @@ bool ana::EventLoop() {
 
 			//Print out for each selected event
 			fprintf(outfile, "%7d %6d %10d %10d %8d %8lld %5dj %11.2f %8.2f %8.2f %8s   %s\n", counter_pass, run, event,
-					lumiBlock, chain->GetTreeNumber(), lflag, nGoodJet, jets.at(0).Pt(), this_met, ht,
+					lumiBlock, chain->GetTreeNumber(), lflag, nGoodJet, goodJets.at(0).Pt(), this_met, ht,
 					mclabel[fastmctype_].c_str(), chain->GetCurrentFile()->GetName());
 			interestingFiles.insert(chain->GetCurrentFile()->GetName());
 		}
@@ -3070,12 +2847,12 @@ bool ana::EventLoop() {
 				//				fasthist2D_[fastmctype_][h_exp_met_v_eeta]->Fill(this_met, iso_electrons.at(0).Eta(), this_weight);
 				fillHistoDataAndMC(h_exp_ele_et, iso_electrons.at(0).Et(), this_weight);
 				fillHistoDataAndMC(h_exp_ele_eta, iso_electrons.at(0).Eta(), this_weight);
-				fillHistoDataAndMC(h_exp_j0_pt, jets.at(0).Pt(), this_weight);
-				fillHistoDataAndMC(h_exp_j1_pt, jets.at(1).Pt(), this_weight);
-				fillHistoDataAndMC(h_exp_DRej, iso_electrons.at(0).DeltaR(jets.at(0)), this_weight);
-				fillHistoDataAndMC(h_exp_DPhiej, iso_electrons.at(0).DeltaPhi(jets.at(0)), this_weight);
-				fillHistoDataAndMC(h_exp_DRjj, jets.at(0).DeltaR(jets.at(1)), this_weight);
-				fillHistoDataAndMC(h_exp_DPhijj, jets.at(0).DeltaPhi(jets.at(1)), this_weight);
+				fillHistoDataAndMC(h_exp_j0_pt, goodJets.at(0).Pt(), this_weight);
+				fillHistoDataAndMC(h_exp_j1_pt, goodJets.at(1).Pt(), this_weight);
+				fillHistoDataAndMC(h_exp_DRej, iso_electrons.at(0).DeltaR(goodJets.at(0)), this_weight);
+				fillHistoDataAndMC(h_exp_DPhiej, iso_electrons.at(0).DeltaPhi(goodJets.at(0)), this_weight);
+				fillHistoDataAndMC(h_exp_DRjj, goodJets.at(0).DeltaR(goodJets.at(1)), this_weight);
+				fillHistoDataAndMC(h_exp_DPhijj, goodJets.at(0).DeltaPhi(goodJets.at(1)), this_weight);
 				fillHistoDataAndMC(h_exp_met_v_eeta, this_met, iso_electrons.at(0).Eta(), this_weight);
 			}
 		}
@@ -3336,8 +3113,8 @@ bool ana::EventLoop() {
 
 			float ht_AES = this_met;
 			ht_AES += els_et->at(ii_AES);
-			for (unsigned int i = 0; i < jets.size(); ++i) {
-				ht_AES += jets.at(i).Pt();
+			for (unsigned int i = 0; i < goodJets.size(); ++i) {
+				ht_AES += goodJets.at(i).Pt();
 			}
 
 			if (ht_AES < AES_HT_cut)
@@ -3420,8 +3197,8 @@ bool ana::EventLoop() {
 				unsigned int theGE = ii_electrons.at(0); //first good ele
 
 				float ht_AES = this_met + els_et->at(theGE);
-				for (unsigned int i = 0; i < jets.size(); ++i) {
-					ht_AES += jets.at(i).Pt();
+				for (unsigned int i = 0; i < goodJets.size(); ++i) {
+					ht_AES += goodJets.at(i).Pt();
 				}
 
 				if (this_met < AES_MET_cut && ht_AES < AES_HT_cut) {
@@ -3865,10 +3642,11 @@ bool ana::EventLoop() {
 		// notes: all cuts except ISO
 		if (goodrun && fired_single_em && nGoodEle > 0 && this_met > METCUT && !isMuon && !isZ && !isConversion
 				&& !isDifferentInteraction && ht >= HTCUT && nGoodJet >= 4) {
-			reco_hadronicTop_highestTopPT(jets, nGoodIsoEle);
+			reco_hadronicTop_highestTopPT(goodJets, nGoodIsoEle);
 			//			reco_mttbar(jets, electrons, met, nGoodIsoEle);
 			//new version with Chi2 fit
-			reco_Mttbar(jets, electrons[0], met[0]);
+			reco_Mttbar(goodJets, electrons[0], met[0]);
+			fillBtagHistograms(goodJets, btag_information);
 		}
 
 		// Add Delta R(e,mu)
@@ -3911,7 +3689,11 @@ bool ana::EventLoop() {
 		iso_electrons_endcap.clear();
 		muons.clear();
 		iso_muons.clear();
-		jets.clear();
+		goodJets.clear();
+		for(ushort btag = 0; btag < NUMBER_OF_BTAGS; ++ btag){
+			btag_information[btag].clear();
+		}
+
 		met.clear();
 		electrons_isoval.clear();
 		electrons_isoval2.clear();
@@ -4199,7 +3981,7 @@ bool ana::EventLoop() {
 
 		// (19 Feb 09) print how many QCD events we have after all cuts except reliso nad njet
 		if (hasSampleMC(kQCD)) {
-			const int QCD_bc = kbce2;
+			const int QCD_bc = kQCD;
 			cout << "\n New RelIso  mc" << setw(10) << intlumi << "/pb" << endl;
 			cout << "   1j" << setw(10) << fasthist_jetbinned_[QCD_bc][OneJet][h_QCDest_CombRelIso]->GetEntries() << setw(10)
 					<< fasthist_jetbinned_[QCD_bc][OneJet][h_QCDest_CombRelIso]->Integral() << endl;
@@ -5032,8 +4814,8 @@ bool ana::EstimateQCD(const string inputFile) {
 			char *hname = Form("%s_%dj", isoVariable.c_str(), j + 1);
 			if (j + 1 == 4)
 				hname = Form("%s_4mj", isoVariable.c_str());
-			TH1F *allEvent = (TH1F*) f.Get(Form("QCD_estimation/%s__data", hname)); //all events
-			TH1F *qcdEvent = (TH1F*) f.Get(Form("QCD_estimation/%s__QCD", hname)); //QCD only
+			TH1F *allEvent = (TH1F*) f.Get(Form("data/QCD_estimation/%s", hname)); //all events
+			TH1F *qcdEvent = (TH1F*) f.Get(Form("QCD/QCD_estimation/%s", hname)); //QCD only
 			if (allEvent == 0 || qcdEvent == 0) {
 				cout << "Warning: zero pointer to reliso histograms, exit EstimateQCD()" << endl;
 				return false;
@@ -5465,8 +5247,13 @@ void ana::fillHistoDataAndMC(ushort hist, const float value, const double weight
 	}
 	if (fasthist_[fastmctype_][hist] != NULL && fasthist_[kdata][hist] != NULL) {
 		fasthist_[fastmctype_][hist]->Fill(value, weight);
+
 		if (fastmctype_ != kdata)
 			fasthist_[kdata][hist]->Fill(value, weight);
+		if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
+			fasthist_[kQCD][hist]->Fill(value, weight);
+		if (fastmctype_ >= ktW && fastmctype_ <= kschan)
+			fasthist_[ksingleTop][hist]->Fill(value, weight);
 	} else
 		cout << "WARNING: Trying to fill not initialized 1D histogram: " << hist + 1 << "out of " << NUMBER_OF_1D_HISTOGRAMS
 				<< endl;
@@ -5483,6 +5270,10 @@ void ana::fillHistoDataAndMC(ushort hist, const float Xvalue, const float Yvalue
 		fasthist2D_[fastmctype_][hist]->Fill(Xvalue, Yvalue, weight);
 		if (fastmctype_ != kdata)
 			fasthist2D_[kdata][hist]->Fill(Xvalue, Yvalue, weight);
+		if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
+			fasthist2D_[kQCD][hist]->Fill(Xvalue, Yvalue, weight);
+		if (fastmctype_ >= ktW && fastmctype_ <= kschan)
+			fasthist2D_[ksingleTop][hist]->Fill(Xvalue, Yvalue, weight);
 	} else
 		cout << "WARNING: Trying to fill not initialized 2D histogram: " << hist + 1 << "out of " << NUMBER_OF_2D_HISTOGRAMS
 				<< endl;
@@ -5515,18 +5306,32 @@ void ana::iso_fillHisto_nlevel_nj_nmc(const ushort hist, ushort level, const flo
 		//		if (fasthistNlevel1D_[fastmctype_][level][jetbin][hist] != NULL) {
 		if (Njet() < 5) {
 			fasthistNlevel1D_[fastmctype_][level][Njet()][hist]->Fill(value, weight);
+
 			if (fastmctype_ != kdata)
 				fasthistNlevel1D_[kdata][level][Njet()][hist]->Fill(value, weight);
+			if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
+				fasthistNlevel1D_[kQCD][level][Njet()][hist]->Fill(value, weight);
+			if (fastmctype_ >= ktW && fastmctype_ <= kschan)
+				fasthistNlevel1D_[ksingleTop][level][Njet()][hist]->Fill(value, weight);
 		}
 		if (Njet() >= 4) {
 			fasthistNlevel1D_[fastmctype_][level][FourOrMoreJets][hist]->Fill(value, weight);
+
 			if (fastmctype_ != kdata)
 				fasthistNlevel1D_[kdata][level][FourOrMoreJets][hist]->Fill(value, weight);
+			if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
+				fasthistNlevel1D_[kQCD][level][FourOrMoreJets][hist]->Fill(value, weight);
+			if (fastmctype_ >= ktW && fastmctype_ <= kschan)
+				fasthistNlevel1D_[ksingleTop][level][FourOrMoreJets][hist]->Fill(value, weight);
 		}
 
 		fasthistNlevel1D_[fastmctype_][level][Alljets][hist]->Fill(value, weight);
 		if (fastmctype_ != kdata)
 			fasthistNlevel1D_[kdata][level][Alljets][hist]->Fill(value, weight);
+		if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
+			fasthistNlevel1D_[kQCD][level][Alljets][hist]->Fill(value, weight);
+		if (fastmctype_ >= ktW && fastmctype_ <= kschan)
+			fasthistNlevel1D_[ksingleTop][level][Alljets][hist]->Fill(value, weight);
 		//		} else
 		//			cout << "Trying to fill not initiated histogram" << endl;
 	}
@@ -5536,18 +5341,31 @@ void ana::iso_fillHisto_nlevel_nj_nmc(const ushort hist, ushort level, const flo
 		//		if (fasthistNlevel2D_[fastmctype_][level][jetbin][hist] != NULL) {
 		if (Njet() < 5) {
 			fasthistNlevel2D_[fastmctype_][level][Njet()][hist]->Fill(valueX, valueY, weight);
+
 			if (fastmctype_ != kdata)
 				fasthistNlevel2D_[kdata][level][Njet()][hist]->Fill(valueX, valueY, weight);
+			if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
+				fasthistNlevel2D_[kQCD][level][Njet()][hist]->Fill(valueX, valueY, weight);
+			if (fastmctype_ >= ktW && fastmctype_ <= kschan)
+				fasthistNlevel2D_[ksingleTop][level][Njet()][hist]->Fill(valueX, valueY, weight);
 		}
 	if (Njet() >= 4) {
 		fasthistNlevel2D_[fastmctype_][level][FourOrMoreJets][hist]->Fill(valueX, valueY, weight);
 		if (fastmctype_ != kdata)
 			fasthistNlevel2D_[kdata][level][FourOrMoreJets][hist]->Fill(valueX, valueY, weight);
+		if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
+			fasthistNlevel2D_[kQCD][level][FourOrMoreJets][hist]->Fill(valueX, valueY, weight);
+		if (fastmctype_ >= ktW && fastmctype_ <= kschan)
+			fasthistNlevel2D_[ksingleTop][level][FourOrMoreJets][hist]->Fill(valueX, valueY, weight);
 	}
 
 	fasthistNlevel2D_[fastmctype_][level][Alljets][hist]->Fill(valueX, valueY, weight);
 	if (fastmctype_ != kdata)
 		fasthistNlevel2D_[kdata][level][Alljets][hist]->Fill(valueX, valueY, weight);
+	if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
+		fasthistNlevel2D_[kQCD][level][Alljets][hist]->Fill(valueX, valueY, weight);
+	if (fastmctype_ >= ktW && fastmctype_ <= kschan)
+		fasthistNlevel2D_[ksingleTop][level][Alljets][hist]->Fill(valueX, valueY, weight);
 	//		} else
 	//			cout << "Trying to fill not initiated histogram" << endl;
 }
@@ -5606,18 +5424,33 @@ void ana::fillHisto_Njet_DataAndMC(ushort hist, const float value, const double 
 	if (m_debug)
 		cout << "\nStart of << fillHisto_Njet_DataAndMC >>: " << fasthist_jetbinned_[fastmctype_][0][hist]->GetName() << endl;
 	if (Njet() < 5) {
+		fasthist_jetbinned_[fastmctype_][Njet()][hist]->Fill(value, w);
+
 		if (fastmctype_ != kdata)
 			fasthist_jetbinned_[kdata][Njet()][hist]->Fill(value, w);
-		fasthist_jetbinned_[fastmctype_][Njet()][hist]->Fill(value, w);
+		if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
+			fasthist_jetbinned_[kQCD][Njet()][hist]->Fill(value, w);
+		if (fastmctype_ >= ktW && fastmctype_ <= kschan)
+			fasthist_jetbinned_[ksingleTop][Njet()][hist]->Fill(value, w);
 	}
 	if (Njet() >= 4) {
+		fasthist_jetbinned_[fastmctype_][FourOrMoreJets][h_nEle_all]->Fill(value, w);
+
 		if (fastmctype_ != kdata)
 			fasthist_jetbinned_[kdata][FourOrMoreJets][h_nEle_all]->Fill(value, w);
-		fasthist_jetbinned_[fastmctype_][FourOrMoreJets][h_nEle_all]->Fill(value, w);
+		if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
+			fasthist_jetbinned_[kQCD][FourOrMoreJets][hist]->Fill(value, w);
+		if (fastmctype_ >= ktW && fastmctype_ <= kschan)
+			fasthist_jetbinned_[ksingleTop][FourOrMoreJets][hist]->Fill(value, w);
 	}
+	fasthist_jetbinned_[fastmctype_][Alljets][h_nEle_all]->Fill(value, w);
+
 	if (fastmctype_ != kdata)
 		fasthist_jetbinned_[kdata][Alljets][h_nEle_all]->Fill(value, w);
-	fasthist_jetbinned_[fastmctype_][Alljets][h_nEle_all]->Fill(value, w);
+	if (fastmctype_ >= kenri1 && fastmctype_ <= kbce3)
+		fasthist_jetbinned_[kQCD][Alljets][hist]->Fill(value, w);
+	if (fastmctype_ >= ktW && fastmctype_ <= kschan)
+		fasthist_jetbinned_[ksingleTop][Alljets][hist]->Fill(value, w);
 
 	if (m_debug)
 		cout << "End of << fillHisto_Njet_DataAndMC >>" << endl;
@@ -7589,39 +7422,39 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 		printCutStage(i, ve.at(i));
 
 		//Signal
-		totalT = getTotalEvents(nevent, i, 1, 11, njbegin);
+		totalT = getTotalEvents(nevent, i, kttbar, kttbar + NUMBER_OF_DECAY_BRANCHES, njbegin);//TODO: check this
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add signal to total
 
 		//Wjets
-		totalT = getTotalEvents(nevent, i, 11, 12, njbegin);
+		totalT = getTotalEvents(nevent, i, kWjets, kWjets, njbegin);
 		;
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add wjets to total
 
 		//Zjets
-		totalT = getTotalEvents(nevent, i, 12, 13, njbegin);
+		totalT = getTotalEvents(nevent, i, kZjets, kZjets, njbegin);
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add zjets to total
 
-		//QCD
-		totalT = getTotalEvents(nevent, i, 13, 19, njbegin);//loop over QCD mc types
+		//QCD//loop over QCD mc types
+		totalT = getTotalEvents(nevent, i, kenri1, kbce3, njbegin);
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add QCD to total
 
 		//VQQ
-		totalT = getTotalEvents(nevent, i, 19, 20, njbegin);
+		totalT = getTotalEvents(nevent, i, kVQQ, kVQQ, njbegin);
 		;
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add VQQ to total
 
 		//single top
-		totalT = getTotalEvents(nevent, i, 20, 23, njbegin);//loop over single top mc types (20-22)
+		totalT = getTotalEvents(nevent, i, ktW, kschan, njbegin);//loop over single top mc types (20-22)
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT; //add single top to total
 
 		//FIXME 17th step to new sample (optional)
-		totalT = getTotalEvents(nevent, i, 23, 24, njbegin);
+		totalT = getTotalEvents(nevent, i, Zprime_M500GeV_W5GeV, Zprime_M500GeV_W5GeV, njbegin);
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT; //add Z' M500GeV_W5GeV to total
 
@@ -7670,35 +7503,35 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 		//		}}
 		totalA = 0; //reset to zero for each cut
 		printCutStage(i, ve.at(i));
-		totalT = getTotalEvents(nevent, i, 23 + 2, 24 + 2, njbegin);//Z' M500GeV_W5GeV
+		totalT = getTotalEvents(nevent, i, Zprime_M500GeV_W5GeV, Zprime_M500GeV_W5GeV, njbegin);//Z' M500GeV_W5GeV
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add Z' M500GeV_W5GeV to total
 
-		totalT = getTotalEvents(nevent, i, 25 + 2, 26 + 2, njbegin);//750, 7.5
+		totalT = getTotalEvents(nevent, i, Zprime_M750GeV_W7500MeV, Zprime_M750GeV_W7500MeV, njbegin);//750, 7.5
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;
 
-		totalT = getTotalEvents(nevent, i, 26 + 2, 27 + 2, njbegin);//1000, 10
+		totalT = getTotalEvents(nevent, i, Zprime_M1TeV_W10GeV, Zprime_M1TeV_W10GeV, njbegin);//1000, 10
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;
 
-		totalT = getTotalEvents(nevent, i, 28 + 2, 29 + 2, njbegin);//1250, 12.5
+		totalT = getTotalEvents(nevent, i, Zprime_M1250GeV_W12500MeV, Zprime_M1250GeV_W12500MeV, njbegin);//1250, 12.5
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;
 
-		totalT = getTotalEvents(nevent, i, 29 + 2, 30 + 2, njbegin);//1500, 15
+		totalT = getTotalEvents(nevent, i, Zprime_M1500GeV_W15GeV, Zprime_M1500GeV_W15GeV, njbegin);//1500, 15
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;
 
-		totalT = getTotalEvents(nevent, i, 31 + 2, 32 + 2, njbegin);//2000, 20
+		totalT = getTotalEvents(nevent, i, Zprime_M2TeV_W20GeV, Zprime_M2TeV_W20GeV, njbegin);//2000, 20
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;
 
-		totalT = getTotalEvents(nevent, i, 33 + 2, 34 + 2, njbegin);//3000, 30
+		totalT = getTotalEvents(nevent, i, Zprime_M3TeV_W30GeV, Zprime_M3TeV_W30GeV, njbegin);//3000, 30
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;
 
-		totalT = getTotalEvents(nevent, i, 35 + 2, 36 + 2, njbegin);//4000, 40
+		totalT = getTotalEvents(nevent, i, Zprime_M4TeV_W40GeV, Zprime_M4TeV_W40GeV, njbegin);//4000, 40
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;
 
@@ -7740,27 +7573,27 @@ void ana::DrawMCTypeTable(const double nevent[14][5][nmctype], const string titl
 	for (short i = 0; i < 11; ++i) {//loop over cuts (up to HT)
 		totalA = 0; //reset to zero for each cut
 		printCutStage(i, ve.at(i));
-		totalT = getTotalEvents(nevent, i, 24 + 2, 25 + 2, njbegin);//Z' M500GeV_W50GeV
+		totalT = getTotalEvents(nevent, i, Zprime_M500GeV_W50GeV, Zprime_M500GeV_W50GeV, njbegin);//Z' M500GeV_W50GeV
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;//add Z' M500GeV_W5GeV to total
 
-		totalT = getTotalEvents(nevent, i, 27 + 2, 28 + 2, njbegin);//1000, 100
+		totalT = getTotalEvents(nevent, i, Zprime_M1TeV_W100GeV, Zprime_M1TeV_W100GeV, njbegin);//1000, 100
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;
 
-		totalT = getTotalEvents(nevent, i, 30 + 2, 31 + 2, njbegin);//1500, 150
+		totalT = getTotalEvents(nevent, i, Zprime_M1500GeV_W150GeV, Zprime_M1500GeV_W150GeV, njbegin);//1500, 150
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;
 
-		totalT = getTotalEvents(nevent, i, 32 + 2, 33 + 2, njbegin);//2000, 200
+		totalT = getTotalEvents(nevent, i, Zprime_M2TeV_W200GeV, Zprime_M2TeV_W200GeV, njbegin);//2000, 200
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;
 
-		totalT = getTotalEvents(nevent, i, 34 + 2, 35 + 2, njbegin);//3000, 300
+		totalT = getTotalEvents(nevent, i, Zprime_M3TeV_W300GeV, Zprime_M3TeV_W300GeV, njbegin);//3000, 300
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;
 
-		totalT = getTotalEvents(nevent, i, 36 + 2, 37 + 2, njbegin);//4000, 400
+		totalT = getTotalEvents(nevent, i, Zprime_M4TeV_W400GeV, Zprime_M4TeV_W400GeV, njbegin);//4000, 400
 		cout << " & " << setw(12) << fixed << totalT;
 		totalA += totalT;
 
@@ -8295,11 +8128,13 @@ void ana::bookHistograms() {
 		gROOT->cd();
 		TDirectory *dir = histf->mkdir(mclabel[type].c_str());
 		dir->cd();
+		bookBtagHistograms(type, dir);
 		TDirectory *exo = dir->mkdir("exotic_top", "Exotic Top searches");
 		exo->cd();
 		bookExoticTopMatchedHistograms(type);
 		bookExoticTopMCHistograms(type);
 		bookExoticTopHistograms(type);
+		bookExoticTopBtaggedHistograms(type);
 		dir->cd();
 		//
 		TDirectory *basic = dir->mkdir("basic", "Basic kinematics");
@@ -8534,8 +8369,6 @@ void ana::bookQCDEstimationHistograms(ushort type, TDirectory *parent) {
 	// notes: [4]:levels, [7]:njet
 	// scatter plot, iso:met
 	if (m_plotRelisoNES) {
-		cout << "plotRelIsoNES" << endl;
-
 		TDirectory *dir_NES = dir_QCD->mkdir("NES", "normal event selection");
 		dir_NES->cd();
 
@@ -8607,34 +8440,20 @@ void ana::bookElectronCountHistograms(ushort type) {
 }
 
 void ana::bookExoticTopHistograms(ushort type) {
-	addHistoDataAndMC(type, kneutrino_pz, "neutrino_pz", "reconstructed p_z(#nu)", 50, -500, 500);
-	addHistoDataAndMC(type, kMttbar, "mttbar", "reconstructed M_{ttbar}", 10000, 0, 10000);
-	addHistoDataAndMC(type, kMttbar_btagged, "mttbar_btagged", "reconstructed M_{ttbar} (btagged)", 10000, 0, 10000);
-	addHistoDataAndMC(type, kMttbar_matched, "mttbar_matched", "reconstructed M_{ttbar} (matched)", 10000, 0, 10000);
-	addHistoDataAndMC(type, kMttbar_mc_smeared, "mttbar_mc_smeared", "reconstructed M_{ttbar} (smeared mc)", 10000, 0, 10000);
-	addHistoDataAndMC(type, kMttbar_diff_reco_and_mc, "mttbar_diff_reco_mc", "reconstructed - generated M_{ttbar}", 1000, -500,
-			500);
-
-	addHistoDataAndMC(type, kmWlep, "mWlep", "reconstructed leptonic W mass", 500, 0, 500);
-	addHistoDataAndMC(type, kmWlep_btagged, "mWlep_btagged", "reconstructed leptonic W mass (btagged)", 500, 0, 500);
+	addHistoDataAndMC(type, h_neutrino_pz, "neutrino_pz", "reconstructed p_z(#nu)", 50, -500, 500);
+	addHistoDataAndMC(type, h_mttbar, "mttbar", "reconstructed M_{ttbar}", 10000, 0, 10000);
+	addHistoDataAndMC(type, h_mWlep, "mWlep", "reconstructed leptonic W mass", 500, 0, 500);
 	addHistoDataAndMC(type, kmWhad, "mWhad", "reconstructed hadronic W mass", 500, 0, 500);
-	addHistoDataAndMC(type, kmWhad_btagged, "mWhad_btagged", "reconstructed hadronic W mass (btagged)", 500, 0, 500);
-
 	addHistoDataAndMC(type, kptRel_ele_jet, "ptRel_ele_jet", "relative p_{T} electron - closest jet", 2000, 0, 2000);
 	addHistoDataAndMC(type, kminDeltaR_ele_Jet, "minDeltaR_ele_Jet", "min. #Delta R(electron, jet)", 200, 0, 2);
-
 	addHistoDataAndMC(type, kmtlep, "mtlep", "reconstructed leptonic top mass", 1000, 0, 1000);
-	addHistoDataAndMC(type, kmtlep_btagged, "mtlep_btagged", "reconstructed leptonic top mass (btagged)", 1000, 0, 1000);
 	addHistoDataAndMC(type, kmthad, "mthad", "reconstructed hadronic top mass", 1000, 0, 1000);
-	addHistoDataAndMC(type, kmthad_btagged, "mthad_btagged", "reconstructed hadronic top mass (btagged)", 1000, 0, 1000);
 	addHistoDataAndMC(type, ktlep_pt, "thad_pt", "reconstructed leptonic top p_{T}", 2000, 0, 2000);
 	addHistoDataAndMC(type, kthad_pt, "tlep_pt", "reconstructed hadronic top p_{T}", 2000, 0, 2000);
-
 	addHistoDataAndMC(type, kangle_b_ele, "angle_b_ele", "angle between b-jet and electron", 400, 0, 4);
 	addHistoDataAndMC(type, kptratio, "ptratio", "Pt ratio (top/W)", 600, -6, 6);
 	addHistoDataAndMC(type, kpttbar, "pttbar", "Pttbar/HT", 200, 0, 2);
 	addHistoDataAndMC(type, khtsystem, "htsystem", "HTsystem", 240, 0, 1.2);
-
 	addHistoDataAndMC(type, h_angle_b_e_vs_mttbar, "_angle_b_e_vs_mttbar",
 			"angle between b-jet and electron vs reconstructed mttbar", 400, 0, 4, 1000, 0, 5000);
 	addHistoDataAndMC(type, h_ptratio_vs_mttbar, "ptratio_vs_mttbar", "Pt ratio (top/W) vs reconstructed mttbar", 600, -6, 6,
@@ -8642,20 +8461,14 @@ void ana::bookExoticTopHistograms(ushort type) {
 	addHistoDataAndMC(type, h_pttbar_vs_mttbar, "pttbar_vs_mttbar", "Pttbar/HT vs reconstructed mttbar", 200, 0, 2, 1000, 0, 5000);
 	addHistoDataAndMC(type, h_htsystem_vs_mttbar, "htsystem_vs_mttbar", "HTsystem vs reconstructed mttbar", 240, 0, 1.2, 1000, 0,
 			5000);
-
 	addHistoDataAndMC(type, kChi2Leptonic, "Chi2Leptonic", "#Chi^{2}_{lep}", 1000, 0, 100);
 	addHistoDataAndMC(type, kChi2Hadronic, "Chi2Hadronic", "#Chi^{2}_{had}", 1000, 0, 100);
 	addHistoDataAndMC(type, kChi2Global, "Chi2Global", "#Chi^{2}_{global}", 1000, 0, 100);
 	addHistoDataAndMC(type, kChi2Total, "Chi2Total", "#Chi^{2}_{total}", 3000, 0, 300);
-
-	addHistoDataAndMC(type, k2D_ptRel_vs_deltaRmin, "kptRel_vs_deltaRmin", "ptrel vs min. #Delta R", 600, 0, 6, 2000, 0, 2000);
-
-	addHistoDataAndMC(type, k2D_mWhad_vs_mthad, "mWhad_vs_mthad", "M(W_{had}) vs M(t_{had})", 1000, 0, 1000, 500, 0, 500);
-	addHistoDataAndMC(type, k2D_mWhad_vs_mthad_btagged, "mWhad_vs_mthad_btagged", "M(W_{had}) vs M(t_{had}) (btagged)", 1000, 0,
-			1000, 500, 0, 500);
+	addHistoDataAndMC(type, h_ptRel_vs_deltaRmin, "kptRel_vs_deltaRmin", "ptrel vs min. #Delta R", 600, 0, 6, 2000, 0, 2000);
+	addHistoDataAndMC(type, h_mWhad_vs_mthad, "mWhad_vs_mthad", "M(W_{had}) vs M(t_{had})", 1000, 0, 1000, 500, 0, 500);
 	addHistoDataAndMC(type, k2D_mWlep_vs_mtlep, "mWlep_vs_mtlep", "M(W_{lep}) vs M(t_{lep})", 1000, 0, 1000, 500, 0, 500);
-	addHistoDataAndMC(type, k2D_mWlep_vs_mtlep_btagged, "mWlep_vs_mtlep_btagged", "M(W_{lep}) vs M(t_{lep}) (btagged)", 1000, 0,
-			1000, 500, 0, 500);
+
 }
 
 /**
@@ -8663,6 +8476,7 @@ void ana::bookExoticTopHistograms(ushort type) {
  * @param type MCType
  */
 void ana::bookExoticTopMatchedHistograms(ushort type) {
+	addHistoDataAndMC(type, h_mttbar_matched, "mttbar_matched", "reconstructed M_{ttbar} (matched)", 10000, 0, 10000);
 	addHistoDataAndMC(type, kmtlep_matched, "mtlep_matched", "reconstructed leptonic top mass (matched)", 1000, 0, 1000);
 	addHistoDataAndMC(type, kmthad_matched, "mthad_matched", "reconstructed leptonic top mass (matched)", 1000, 0, 1000);
 	addHistoDataAndMC(type, kthad_pt_matched, "thad_pt_matched", "reconstructed hadronic top p_{T} (matched)", 2000, 0, 2000);
@@ -8683,11 +8497,27 @@ void ana::bookExoticTopMatchedHistograms(ushort type) {
 	addHistoDataAndMC(type, kChi2Total_matched, "Chi2Total_matched", "#Chi^{2}_{total} (matched)", 3000, 0, 300);
 }
 
+void ana::bookExoticTopBtaggedHistograms(ushort type) {
+	addHistoDataAndMC(type, h_mttbar_btag_fake, "mttbar_btag_fake", "reconstructed M_{ttbar} (fake btag)", 10000, 0, 10000);
+	addHistoDataAndMC(type, kmWhad_btag_fake, "mWhad_btag_fake", "reconstructed hadronic W mass (fake btag)", 500, 0, 500);
+	addHistoDataAndMC(type, h_mWlep_btag_fake, "mWlep_btag_fake", "reconstructed leptonic W mass (fake btag)", 500, 0, 500);
+	addHistoDataAndMC(type, kmtlep_btag_fake, "mtlep_btag_fake", "reconstructed leptonic top mass (fake btag)", 1000, 0, 1000);
+	addHistoDataAndMC(type, kmthad_btag_fake, "mthad_btag_fake", "reconstructed hadronic top mass (fake btag)", 1000, 0, 1000);
+	addHistoDataAndMC(type, k2D_mWlep_vs_mtlep_btag_fake, "mWlep_vs_mtlep_btag_fake", "M(W_{lep}) vs M(t_{lep}) (fake btag)",
+			1000, 0, 1000, 500, 0, 500);
+	addHistoDataAndMC(type, h_mWhad_vs_mthad_btag_fake, "mWhad_vs_mthad_btag_fake", "M(W_{had}) vs M(t_{had}) (fake btag)", 1000,
+			0, 1000, 500, 0, 500);
+}
+
 void ana::bookExoticTopMCHistograms(ushort type) {
-	addHistoDataAndMC(type, kneutrino_pz_mc, "neutrino_pz_mc", "generated p_z(#nu)", 50, -500, 500);
-	addHistoDataAndMC(type, kMttbar_mc, "mttbar_mc", "generated M_{ttbar}", 10000, 0, 10000);
+
+	addHistoDataAndMC(type, h_mttbar_mc_smeared, "mttbar_mc_smeared", "reconstructed M_{ttbar} (smeared mc)", 10000, 0, 10000);
+	addHistoDataAndMC(type, h_mttbar_diff_reco_and_mc, "mttbar_diff_reco_mc", "reconstructed - generated M_{ttbar}", 1000, -500,
+			500);
+	addHistoDataAndMC(type, h_neutrino_pz_mc, "neutrino_pz_mc", "generated p_z(#nu)", 50, -500, 500);
+	addHistoDataAndMC(type, h_mttbar_mc, "mttbar_mc", "generated M_{ttbar}", 10000, 0, 10000);
 	//TODO: decide if to keep
-	addHistoDataAndMC(type, kMZprime_mc, "mZprime_mc", "generated M_{Z'}", 10000, 0, 10000);
+	addHistoDataAndMC(type, h_mZprime_mc, "mZprime_mc", "generated M_{Z'}", 10000, 0, 10000);
 
 	addHistoDataAndMC(type, kmWlep_mc, "mWlep_mc", "generated leptonic W mass", 500, 0, 500);
 	addHistoDataAndMC(type, kmWhad_mc, "mWhad_mc", "generated hadronic W mass", 500, 0, 500);
@@ -8703,10 +8533,10 @@ void ana::bookExoticTopMCHistograms(ushort type) {
 	addHistoDataAndMC(type, kpttbar_mc, "pttbar_mc", "Pttbar/HT (MC)", 200, 0, 2);
 	addHistoDataAndMC(type, khtsystem_mc, "htsystem_mc", "HTsystem (MC)", 240, 0, 1.2);
 
-	addHistoDataAndMC(type, kChi2Leptonic_mc, "Chi2Leptonic_mc", "#Chi^{2}_{lep} (mc)", 1000, 0, 100);
-	addHistoDataAndMC(type, kChi2Hadronic_mc, "Chi2Hadronic_mc", "#Chi^{2}_{had} (mc)", 1000, 0, 100);
-	addHistoDataAndMC(type, kChi2Global_mc, "Chi2Global_mc", "#Chi^{2}_{global} (mc)", 1000, 0, 100);
-	addHistoDataAndMC(type, kChi2Total_mc, "Chi2Total_mc", "#Chi^{2}_{total} (mc)", 3000, 0, 300);
+	addHistoDataAndMC(type, h_Chi2Leptonic_mc, "Chi2Leptonic_mc", "#Chi^{2}_{lep} (mc)", 1000, 0, 100);
+	addHistoDataAndMC(type, h_Chi2Hadronic_mc, "Chi2Hadronic_mc", "#Chi^{2}_{had} (mc)", 1000, 0, 100);
+	addHistoDataAndMC(type, h_Chi2Global_mc, "Chi2Global_mc", "#Chi^{2}_{global} (mc)", 1000, 0, 100);
+	addHistoDataAndMC(type, h_Chi2Total_mc, "Chi2Total_mc", "#Chi^{2}_{total} (mc)", 3000, 0, 300);
 }
 
 /**
@@ -8717,7 +8547,7 @@ void ana::bookBasicHistograms(ushort type) {
 	//-------------
 	//  Electrons
 	//-------------
-	addHistoDataAndMC(type, knele, "nele", "N(e) (no cut)", 6, 0, 6);
+	addHistoDataAndMC(type, h_nele, "nele", "N(e) (no cut)", 6, 0, 6);
 	addHistoDataAndMC(type, h_ele_ET_all, "ele_ET", "E_{T}(all e) (nocut)", 50, 0, 100);
 	addHistoDataAndMC(type, kele_ET_1, "ele1_ET", "E_{T}(leading e: no cut)", 50, 0, 100);
 	addHistoDataAndMC(type, kele_ET_2, "ele2_ET", "E_{T}(2^{nd} leading e: no cut)", 50, 0, 100);
@@ -8771,14 +8601,14 @@ void ana::bookBasicHistograms(ushort type) {
 	addHistoDataAndMC(type, kjet_phi_all, "jet_phi", "#phi(all jets) (pass P_{T}/#eta)", 50, -3.2, 3.2);
 	addHistoDataAndMC(type, kjet_phi_1, "jet1_phi", "#phi(leading jet) (pass P_{T}/#eta)", 50, -3.2, 3.2);
 	addHistoDataAndMC(type, kjet_phi_2, "jet2_phi", "#phi(2^{nd} leading jet) (pass P_{T}/#eta)", 50, -3.2, 3.2);
-	addHistoDataAndMC(type, kjet_phi_3, "jet3_phi", "#phi(3^{rd} leading jet) (pass P_{T}/#eta)", 50, -3.2, 3.2);
-	addHistoDataAndMC(type, kjet_phi_4, "jet4_phi", "#phi(4^{th} leading jet) (pass P_{T}/#eta)", 50, -3.2, 3.2);
+	addHistoDataAndMC(type, h_jet_phi_3, "jet3_phi", "#phi(3^{rd} leading jet) (pass P_{T}/#eta)", 50, -3.2, 3.2);
+	addHistoDataAndMC(type, h_jet_phi_4, "jet4_phi", "#phi(4^{th} leading jet) (pass P_{T}/#eta)", 50, -3.2, 3.2);
 
 	//-----
 	// MET
 	//-----
-	addHistoDataAndMC(type, kmetAlone, "metAlone", "Missing ET (no cut)", 200, 0, 200);
-	addHistoDataAndMC(type, kmetAlone_phi, "metAlone_phi", "MET #phi (no cut)", 50, -3.2, 3.2);
+	addHistoDataAndMC(type, h_metAlone, "metAlone", "Missing ET (no cut)", 200, 0, 200);
+	addHistoDataAndMC(type, h_metAlone_phi, "metAlone_phi", "MET #phi (no cut)", 50, -3.2, 3.2);
 }
 
 void ana::bookDRemuHistograms(ushort type) {
@@ -8842,6 +8672,57 @@ void ana::bookZvetoHistograms(ushort type, TDirectory *parent) {
 	parent->cd();
 }
 
+void ana::bookBtagHistograms(ushort type, TDirectory *parent) {
+	TDirectory *btag_dir = parent->mkdir("btags", "btag algorithms");
+	btag_dir->cd();
+	addHistoDataAndMC(type, h_btag_TC_highEff_b, "btag_TC_highEff_b", "btag track counting high efficiency (b-quarks)", 100,
+			-110, 110);
+	addHistoDataAndMC(type, h_btag_TC_highEff_c, "btag_TC_highEff_c", "btag track counting high efficiency (c-quarks)", 100,
+			-110, 110);
+	addHistoDataAndMC(type, h_btag_TC_highEff_g, "btag_TC_highEff_g", "btag track counting high efficiency (gluons)", 100, -110,
+			110);
+	addHistoDataAndMC(type, h_btag_TC_highEff_uds, "btag_TC_highEff_uds", "btag track counting high efficiency (uds-quarks)",
+			100, -110, 110);
+
+	addHistoDataAndMC(type, h_btag_TC_highPur_b, "btag_TC_highPur_b", "btag track counting high purity (b-quarks)", 80, -80, 80);
+	addHistoDataAndMC(type, h_btag_TC_highPur_c, "btag_TC_highPur_c", "btag track counting high purity (c-quarks)", 80, -80, 80);
+	addHistoDataAndMC(type, h_btag_TC_highPur_g, "btag_TC_highPur_g", "btag track counting high purity (gluons)", 80, -80, 80);
+	addHistoDataAndMC(type, h_btag_TC_highPur_uds, "btag_TC_highPur_uds", "btag track counting high purity (uds-quarks)", 80,
+			-80, 80);
+
+	addHistoDataAndMC(type, h_btag_JetBProb_b, "btag_JetBProb_b", "btag JetB Propability (b-quarks)", 100, 0, 12);
+	addHistoDataAndMC(type, h_btag_JetBProb_c, "btag_JetBProb_c", "btag JetB Propability (c-quarks)", 100, 0, 12);
+	addHistoDataAndMC(type, h_btag_JetBProb_g, "btag_JetBProb_g", "btag JetB Propability (gluons)", 100, 0, 12);
+	addHistoDataAndMC(type, h_btag_JetBProb_uds, "btag_JetBProb_uds", "btag JetB Propability (uds-quarks)", 100, 0, 12);
+
+	addHistoDataAndMC(type, h_btag_JetProb_b, "btag_JetProb_b", "btag Jet Propability (b-quarks)", 30, 0, 3.6);
+	addHistoDataAndMC(type, h_btag_JetProb_c, "btag_JetProb_c", "btag Jet Propability (c-quarks)", 30, 0, 3.6);
+	addHistoDataAndMC(type, h_btag_JetProb_g, "btag_JetProb_g", "btag Jet Propability (gluons)", 30, 0, 3.6);
+	addHistoDataAndMC(type, h_btag_JetProb_uds, "btag_JetProb_uds", "btag Jet Propability (uds-quarks)", 30, 0, 3.6);
+
+	addHistoDataAndMC(type, h_btag_secondaryVertex_b, "btag_secondaryVertex_b", "btag secondary vertex (b-quarks)", 80, 0, 6.4);
+	addHistoDataAndMC(type, h_btag_secondaryVertex_c, "btag_secondaryVertex_c", "btag secondary vertex (c-quarks)", 80, 0, 6.4);
+	addHistoDataAndMC(type, h_btag_secondaryVertex_g, "btag_secondaryVertex_g", "btag secondary vertex (gluons)", 80, 0, 6.4);
+	addHistoDataAndMC(type, h_btag_secondaryVertex_uds, "btag_secondaryVertex_uds", "btag secondary vertex (uds-quarks)", 30, 0,
+			6.2);
+
+	//FIXME: put proper bins
+	addHistoDataAndMC(type, h_btag_softEle_b, "btag_softEle_b", "btag soft electron (b-quarks)", 100, 0, 12);
+	addHistoDataAndMC(type, h_btag_softEle_c, "btag_softEle_c", "btag soft electron (c-quarks)", 100, 0, 12);
+	addHistoDataAndMC(type, h_btag_softEle_g, "btag_softEle_g", "btag soft electron (gluons)", 100, 0, 12);
+	addHistoDataAndMC(type, h_btag_softEle_uds, "btag_softEle_uds", "btag soft electron (uds-quarks)", 30, 0, 3.6);
+	addHistoDataAndMC(type, h_btag_softMuon_b, "btag_softMuon_b", "btag soft muon (b-quarks)", 100, 0, 12);
+	addHistoDataAndMC(type, h_btag_softMuon_c, "btag_softMuon_c", "btag soft muon (c-quarks)", 100, 0, 12);
+	addHistoDataAndMC(type, h_btag_softMuon_g, "btag_softMuon_g", "btag soft muon (gluons)", 100, 0, 12);
+	addHistoDataAndMC(type, h_btag_softMuon_uds, "btag_softMuon_uds", "btag soft muon (uds-quarks)", 30, 0, 3.6);
+	addHistoDataAndMC(type, h_btag_softMuonNoIP_b, "btag_softMuonNoIP_b", "btag soft muon (b-quarks) no IP", 100, 0, 12);
+	addHistoDataAndMC(type, h_btag_softMuonNoIP_c, "btag_softMuonNoIP_c", "btag soft muon (c-quarks) no IP", 100, 0, 12);
+	addHistoDataAndMC(type, h_btag_softMuonNoIP_g, "btag_softMuonNoIP_g", "btag soft muon (gluons) no IP", 100, 0, 12);
+	addHistoDataAndMC(type, h_btag_softMuonNoIP_uds, "btag_softMuonNoIP_uds", "btag soft muon (uds-quarks) no IP", 30, 0, 3.6);
+
+	parent->cd();
+}
+
 /**
  * Reconstruct the invariant mass of the ttbar system
  * @param jets reconstructed jets
@@ -8855,7 +8736,7 @@ void ana::reco_Mttbar(const vector<TLorentzVector>& jets, const TLorentzVector& 
 	Wlep2 = TLorentzVector(neutrinos.second + electron);
 	ushort neutrinoID(0);
 	short bhadjetID(-1), blepjetID(-1), q1ID(-1), q2ID(-1);
-	ushort njets = jets.size();
+	ushort njets = number_of_jets_to_use_for_reco;
 
 	double chi2Tot = 999999;
 	double ht = GetHT(jets, 8);
@@ -8963,14 +8844,14 @@ void ana::reco_Mttbar(const vector<TLorentzVector>& jets, const TLorentzVector& 
 	fillHistoDataAndMC(kmthad, thad.M(), this_weight);
 	fillHistoDataAndMC(kmtlep, tlep.M(), this_weight);
 	fillHistoDataAndMC(kmWhad, Whad.M(), this_weight);
-	fillHistoDataAndMC(kmWlep, Wlep.M(), this_weight);
-	fillHistoDataAndMC(kMttbar, ttbar.M(), this_weight);
-	fillHistoDataAndMC(kneutrino_pz, neutrino.Pz(), this_weight);
+	fillHistoDataAndMC(h_mWlep, Wlep.M(), this_weight);
+	fillHistoDataAndMC(h_mttbar, ttbar.M(), this_weight);
+	fillHistoDataAndMC(h_neutrino_pz, neutrino.Pz(), this_weight);
 	fillHistoDataAndMC(kpttbar, ttbar.Pt() / ht, this_weight);
 	fillHistoDataAndMC(khtsystem, htsystem, this_weight);
 	fillHistoDataAndMC(kptRel_ele_jet, ptrel, this_weight);
 	fillHistoDataAndMC(kminDeltaR_ele_Jet, minDeltaR, this_weight);
-	fillHistoDataAndMC(k2D_ptRel_vs_deltaRmin, minDeltaR, ptrel, this_weight);
+	fillHistoDataAndMC(h_ptRel_vs_deltaRmin, minDeltaR, ptrel, this_weight);
 	fillHistoDataAndMC(kChi2Global, chi2global, this_weight);
 	fillHistoDataAndMC(kChi2Leptonic, chi2lep, this_weight);
 	fillHistoDataAndMC(kChi2Hadronic, chi2had, this_weight);
@@ -8982,7 +8863,7 @@ void ana::reco_Mttbar(const vector<TLorentzVector>& jets, const TLorentzVector& 
 	fillHistoDataAndMC(h_angle_b_e_vs_mttbar, angle, ttbar.M(), this_weight);
 
 	fillHistoDataAndMC(k2D_mWlep_vs_mtlep, tlep.M(), Wlep.M(), this_weight);
-	fillHistoDataAndMC(k2D_mWhad_vs_mthad, thad.M(), Whad.M(), this_weight);
+	fillHistoDataAndMC(h_mWhad_vs_mthad, thad.M(), Whad.M(), this_weight);
 
 	if (fastmctype_ == kttbar || fastmctype_ == kttjet || fastmctype_ >= Zprime_M500GeV_W5GeV && fastmctype_
 			<= Zprime_M4TeV_W400GeV) {
@@ -9007,7 +8888,7 @@ void ana::reco_Mttbar_btagged(const vector<TLorentzVector>& jets, const TLorentz
 	Wlep2 = TLorentzVector(neutrinos.second + electron);
 	ushort neutrinoID(0);
 	short bhadjetID(-1), blepjetID(-1), q1ID(-1), q2ID(-1);
-	ushort njets = jets.size();
+	ushort njets = number_of_jets_to_use_for_reco;
 
 	double chi2Tot = 999999;
 	double ht = GetHT(jets, 8);
@@ -9109,13 +8990,13 @@ void ana::reco_Mttbar_btagged(const vector<TLorentzVector>& jets, const TLorentz
 	TLorentzVector resonance = TLorentzVector(thad + tlep);
 
 	//fill histograms with best choice
-	fillHistoDataAndMC(kmthad_btagged, thad.M(), this_weight);
-	fillHistoDataAndMC(kmtlep_btagged, tlep.M(), this_weight);
-	fillHistoDataAndMC(kmWhad_btagged, Whad.M(), this_weight);
-	fillHistoDataAndMC(kmWlep_btagged, Wlep.M(), this_weight);
-	fillHistoDataAndMC(kMttbar_btagged, resonance.M(), this_weight);
-	fillHistoDataAndMC(k2D_mWhad_vs_mthad_btagged, thad.M(), Whad.M(), this_weight);
-	fillHistoDataAndMC(k2D_mWlep_vs_mtlep_btagged, tlep.M(), Wlep.M(), this_weight);
+	fillHistoDataAndMC(kmthad_btag_fake, thad.M(), this_weight);
+	fillHistoDataAndMC(kmtlep_btag_fake, tlep.M(), this_weight);
+	fillHistoDataAndMC(kmWhad_btag_fake, Whad.M(), this_weight);
+	fillHistoDataAndMC(h_mWlep_btag_fake, Wlep.M(), this_weight);
+	fillHistoDataAndMC(h_mttbar_btag_fake, resonance.M(), this_weight);
+	fillHistoDataAndMC(h_mWhad_vs_mthad_btag_fake, thad.M(), Whad.M(), this_weight);
+	fillHistoDataAndMC(k2D_mWlep_vs_mtlep_btag_fake, tlep.M(), Wlep.M(), this_weight);
 }
 /**
  * Reconstruct the invariant mass of the ttbar system using parton matched jets only
@@ -9168,37 +9049,37 @@ void ana::reco_Mttbar_matched(const vector<TLorentzVector>& jets, const TLorentz
 		Wlep = TLorentzVector(neutrino + electron);
 		thad = TLorentzVector(Whad + bhadjet);
 		tlep = TLorentzVector(Wlep + blepjet);
+
+		double ht = GetHT(jets, 8);
+		double htsystem = (bhadjet.Pt() + blepjet.Pt() + q1jet.Pt() + q2jet.Pt()) / ht;
+
+		TLorentzVector temp = TLorentzVector(tlep + thad);
+		TLorentzVector temp2 = TLorentzVector(blepjet + bhadjet + q1jet + q2jet + neutrino + electron);
+		double pttbar = temp.Pt() / ht;
+		pttbar = temp2.Pt() / ht;
+
+		double chi2lep = GetChi2Leptonic(tlep.M(), blepjet.Angle(electron.Vect()));
+		double chi2had = GetChi2Hadronic(Whad.M(), thad.M(), TMath::Log(thad.Pt() / Whad.Pt()));
+		double chi2global = GetChi2Global(temp.Pt() / ht, htsystem);
+		double chi2Tot = chi2lep + chi2had + chi2global;
+		TLorentzVector resonance = TLorentzVector(thad + tlep);
+
 		fillHistoDataAndMC(kthad_pt_matched, thad.Pt(), this_weight);
 		fillHistoDataAndMC(kmthad_matched, thad.M(), this_weight);
 		fillHistoDataAndMC(ktlep_pt_matched, tlep.Pt(), this_weight);
 		fillHistoDataAndMC(kmtlep_matched, tlep.M(), this_weight);
 		fillHistoDataAndMC(kmWhad_matched, Whad.M(), this_weight);
 		fillHistoDataAndMC(kmWlep_matched, Wlep.M(), this_weight);
-
-		double angle = blepjet.Angle(electron.Vect());
-		fillHistoDataAndMC(kangle_b_ele_matched, angle, this_weight);
-		double ptratio = TMath::Log(thad.Pt() / Whad.Pt());
-		fillHistoDataAndMC(kptratio_matched, ptratio, this_weight);
-		ptratio = TMath::Log(bhadjet.Pt() / Whad.Pt());
-		fillHistoDataAndMC(kptratio2_matched, ptratio, this_weight);
-
-		double ht = GetHT(jets, 8);
-		double htsystem = (bhadjet.Pt() + blepjet.Pt() + q1jet.Pt() + q2jet.Pt()) / ht;
-
+		fillHistoDataAndMC(kangle_b_ele_matched, blepjet.Angle(electron.Vect()), this_weight);
+		fillHistoDataAndMC(kptratio_matched, TMath::Log(thad.Pt() / Whad.Pt()), this_weight);
+		fillHistoDataAndMC(kptratio2_matched, TMath::Log(bhadjet.Pt() / Whad.Pt()), this_weight);
 		fillHistoDataAndMC(khtsystem_matched, htsystem, this_weight);
-		TLorentzVector temp = TLorentzVector(tlep + thad);
-		double pttbar = temp.Pt() / ht;
-		double chi2lep = GetChi2Leptonic(tlep.M(), blepjet.Angle(electron.Vect()));
-		double chi2had = GetChi2Hadronic(Whad.M(), thad.M(), TMath::Log(thad.Pt() / Whad.Pt()));
-		double chi2global = GetChi2Global(temp.Pt() / ht, htsystem);
-		double chi2Tot = chi2lep + chi2had + chi2global;
-		TLorentzVector resonance = TLorentzVector(thad + tlep);
 		fillHistoDataAndMC(kpttbar_matched, pttbar, this_weight);
 		fillHistoDataAndMC(kChi2Global_matched, chi2global, this_weight);
 		fillHistoDataAndMC(kChi2Leptonic_matched, chi2lep, this_weight);
 		fillHistoDataAndMC(kChi2Hadronic_matched, chi2had, this_weight);
 		fillHistoDataAndMC(kChi2Total_matched, chi2Tot, this_weight);
-		fillHistoDataAndMC(kMttbar_matched, resonance.M(), this_weight);
+		fillHistoDataAndMC(h_mttbar_matched, resonance.M(), this_weight);
 	}
 
 }
@@ -9326,8 +9207,10 @@ pair<double, double> ana::compute_neutrino_momentum_z(const TLorentzVector& met,
  */
 double ana::getTotalEvents(const double nevent[][5][nmctype], short cut, short k_start, short k_end, short njbegin) const {
 	double totalT = 0; //total for a particular mc type
-
-	for (short k = k_start; k < k_end; ++k) { //loop over mc types
+	ushort offset = 0;
+	if (k_start > kttjet)
+		offset = NUMBER_OF_DECAY_BRANCHES;
+	for (short k = k_start + offset; k <= k_end + offset; ++k) { //loop over mc types
 		for (short j = njbegin; j < ntjet; ++j) {
 			totalT += nevent[cut][j][k];
 		} //sum up jet bins
@@ -9420,14 +9303,14 @@ void ana::fillMCTopEventHists(double reco_mttbar) {
 		return;
 	TLorentzVector ttbar = TLorentzVector(MCEvent[ktlep] + MCEvent[kthad]);
 
-	fasthist_[fastmctype_][kneutrino_pz_mc]->Fill(MCEvent[kneutrino].Pz());
+	fasthist_[fastmctype_][h_neutrino_pz_mc]->Fill(MCEvent[kneutrino].Pz());
 	fasthist_[fastmctype_][kmtlep_mc]->Fill(MCEvent[ktlep].M());
 	fasthist_[fastmctype_][kmthad_mc]->Fill(MCEvent[kthad].M());
 	fasthist_[fastmctype_][kmWlep_mc]->Fill(MCEvent[kWlep].M());
 	fasthist_[fastmctype_][kmWhad_mc]->Fill(MCEvent[kWhad].M());
-	fasthist_[fastmctype_][kMttbar_mc]->Fill(ttbar.M());
-	fasthist_[fastmctype_][kMttbar_diff_reco_and_mc]->Fill(reco_mttbar - ttbar.M());
-	fasthist_[fastmctype_][kMttbar_mc_smeared]->Fill(smearValueWithGaus(ttbar.M(), 90)); //smear 90 GeV width
+	fasthist_[fastmctype_][h_mttbar_mc]->Fill(ttbar.M());
+	fasthist_[fastmctype_][h_mttbar_diff_reco_and_mc]->Fill(reco_mttbar - ttbar.M());
+	fasthist_[fastmctype_][h_mttbar_mc_smeared]->Fill(smearValueWithGaus(ttbar.M(), 90)); //smear 90 GeV width
 	fasthist_[fastmctype_][kthad_pt_mc]->Fill(MCEvent[kthad].Pt());
 	fasthist_[fastmctype_][ktlep_pt_mc]->Fill(MCEvent[ktlep].Pt());
 	double ptratio = TMath::Log(MCEvent[kthad].Pt() / MCEvent[kWhad].Pt());
@@ -9438,7 +9321,7 @@ void ana::fillMCTopEventHists(double reco_mttbar) {
 		for (unsigned int x = 0; x < Nmc_doc; x++) {
 			bool zprime = fabs(mc_doc_id->at(x)) == 32;
 			if (zprime)
-				fasthist_[fastmctype_][kMZprime_mc]->Fill(mc_doc_mass->at(x));
+				fasthist_[fastmctype_][h_mZprime_mc]->Fill(mc_doc_mass->at(x));
 		}
 
 	}
@@ -9512,5 +9395,61 @@ double ana::GetChi2Global(double pttbar, double htsystem) {
 
 double ana::smearValueWithGaus(double value, double gaus_width) {
 	return value + gRandom->Gaus(0, gaus_width);
+}
+
+//double ana::btag(ushort jetid, ushort btag) {
+//	return btag_information[btag][jetid];
+//}
+
+void ana::fillBtagHistograms(std::vector<TLorentzVector> jets, std::vector<std::vector<double> > btag_information) {
+	for (ushort jetID = 0; jetID < jets.size(); ++jetID) {
+		double pdgID = 0;
+		if (m_jetAlgo == "Default" || m_jetAlgo == "pfjet")
+			pdgID = fabs(btag_information[btag_fake][jetID]);
+		else
+			pdgID = fabs(MCTruthMatch(jets[jetID].Eta(), jets[jetID].Phi()));
+
+		if (pdgID == 5) {
+			//fill B jets
+			fillHistoDataAndMC(h_btag_JetBProb_b, btag_information[btag_JetBProb][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_JetProb_b, btag_information[btag_JetProb][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_secondaryVertex_b, btag_information[btag_secondaryVertex][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_TC_highEff_b, btag_information[btag_TC_highEff][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_TC_highPur_b, btag_information[btag_TC_highPur][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_softEle_b, btag_information[btag_softEle][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_softMuon_b, btag_information[btag_softMuon][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_softMuonNoIP_b, btag_information[btag_softMuonNoIP][jetID], this_weight);
+		} else if (pdgID == 4) {
+			fillHistoDataAndMC(h_btag_JetBProb_c, btag_information[btag_JetBProb][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_JetProb_c, btag_information[btag_JetProb][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_secondaryVertex_c, btag_information[btag_secondaryVertex][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_TC_highEff_c, btag_information[btag_TC_highEff][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_TC_highPur_c, btag_information[btag_TC_highPur][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_softEle_c, btag_information[btag_softEle][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_softMuon_c, btag_information[btag_softMuon][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_softMuonNoIP_c, btag_information[btag_softMuonNoIP][jetID], this_weight);
+		} else if (pdgID >= 1 && pdgID <= 3) {
+			//fill uds
+			fillHistoDataAndMC(h_btag_JetBProb_uds, btag_information[btag_JetBProb][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_JetProb_uds, btag_information[btag_JetProb][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_secondaryVertex_uds, btag_information[btag_secondaryVertex][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_TC_highEff_uds, btag_information[btag_TC_highEff][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_TC_highPur_uds, btag_information[btag_TC_highPur][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_softEle_uds, btag_information[btag_softEle][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_softMuon_uds, btag_information[btag_softMuon][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_softMuonNoIP_uds, btag_information[btag_softMuonNoIP][jetID], this_weight);
+		} else if (pdgID == 21) {
+			//fill gluons
+			fillHistoDataAndMC(h_btag_JetBProb_g, btag_information[btag_JetBProb][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_JetProb_g, btag_information[btag_JetProb][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_secondaryVertex_g, btag_information[btag_secondaryVertex][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_TC_highEff_g, btag_information[btag_TC_highEff][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_TC_highPur_g, btag_information[btag_TC_highPur][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_softEle_g, btag_information[btag_softEle][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_softMuon_g, btag_information[btag_softMuon][jetID], this_weight);
+			fillHistoDataAndMC(h_btag_softMuonNoIP_g, btag_information[btag_softMuonNoIP][jetID], this_weight);
+		}
+
+	}
 }
 //-- eof ------------------------------------------------------------------------------------------
