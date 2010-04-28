@@ -62,7 +62,6 @@ public:
 	string GetHLTBit();
 	void SetHLTBit(string);
 
-
 protected:
 	// chain = list of root files containing the same tree
 	/**
@@ -95,6 +94,15 @@ protected:
 	vector<float> *PFJets_neutral_Mult;
 	vector<float> *PFJets_mu_Mult;
 	vector<float> *PFJets_mass;
+	vector<float> *PFJets_btag_TC_highEff;
+	vector<float> *PFJets_btag_TC_highPur;
+	vector<float> *PFJets_btag_jetBProb;
+	vector<float> *PFJets_btag_jetProb;
+	vector<float> *PFJets_btag_softEle;
+	vector<float> *PFJets_btag_softMuon;
+	vector<float> *PFJets_btag_softMuonNoIP;
+	vector<float> *PFJets_btag_secVertex;
+	vector<float> *PFJets_parton_Id;
 	UInt_t NPFMets;
 	vector<float> *PFMets_et;
 	vector<float> *PFMets_phi;
@@ -645,6 +653,15 @@ protected:
 	TBranch *b_PFJets_neutral_Mult; //!
 	TBranch *b_PFJets_mu_Mult; //!
 	TBranch *b_PFJets_mass; //!
+	TBranch *b_PFJets_btag_TC_highEff;//!
+	TBranch *b_PFJets_btag_TC_highPur;//!
+	TBranch *b_PFJets_btag_jetBProb;//!
+	TBranch *b_PFJets_btag_jetProb;//!
+	TBranch *b_PFJets_btag_softEle;//!
+	TBranch *b_PFJets_btag_softMuon;//!
+	TBranch *b_PFJets_btag_softMuonNoIP;//!
+	TBranch *b_PFJets_btag_secVertex;//!
+	TBranch *b_PFJets_parton_Id;//!
 	TBranch *b_NPFMets; //!
 	TBranch *b_PFMets_et; //!
 	TBranch *b_PFMets_phi; //!
@@ -1309,5 +1326,4 @@ protected:
  *  Created on: Mar 22, 2010
  *      Author: lkreczko
  */
-
 

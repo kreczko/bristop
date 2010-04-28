@@ -7,23 +7,21 @@
 
 #include "NTupleReader.h"
 
-
-NTupleReader::NTupleReader(){
+NTupleReader::NTupleReader() {
 
 }
 
-bool NTupleReader::GetDebug() const{
-		return m_debug;
-	}
+bool NTupleReader::GetDebug() const {
+	return m_debug;
+}
 
 void NTupleReader::SetDebug(bool val) {
-		m_debug = val;
-	}
-
+	m_debug = val;
+}
 
 bool NTupleReader::IsData() const {
-		return datafile;
-	}
+	return datafile;
+}
 
 bool NTupleReader::GetTrigger() const {
 	return checkTrig;
@@ -38,26 +36,26 @@ void NTupleReader::SetTrigger(bool val, const string hlt) {
 	HLTBit = hlt;
 }
 
-bool NTupleReader::GetMissLayersFlag(){
+bool NTupleReader::GetMissLayersFlag() {
 	return m_useMisslayers;
 }
 
 void NTupleReader::SetMissLayersFlag(bool val) {
- 		m_useMisslayers = val;
+	m_useMisslayers = val;
 }
 
 bool NTupleReader::GetStudyPDFunc() {
-		return m_studyPDFunc;
+	return m_studyPDFunc;
 }
 void NTupleReader::SetStudyPDFunc(bool f) {
-		m_studyPDFunc = f;
+	m_studyPDFunc = f;
 }
 
-string NTupleReader::GetHLTBit(){
+string NTupleReader::GetHLTBit() {
 	return HLTBit;
 }
 
-void NTupleReader::SetHLTBit(string bit){
+void NTupleReader::SetHLTBit(string bit) {
 	HLTBit = bit;
 }
 
@@ -615,6 +613,15 @@ void NTupleReader::Init() {
 		chain->SetBranchAddress("PFJets_neutral_Mult", &PFJets_neutral_Mult, &b_PFJets_neutral_Mult);
 		chain->SetBranchAddress("PFJets_mu_Mult", &PFJets_mu_Mult, &b_PFJets_mu_Mult);
 		chain->SetBranchAddress("PFJets_mass", &PFJets_mass, &b_PFJets_mass);
+		chain->SetBranchAddress("PFJets_parton_Id", &PFJets_parton_Id, &b_PFJets_parton_Id);
+		chain->SetBranchAddress("PFJets_btag_TC_highPur", &PFJets_btag_TC_highPur, &b_PFJets_btag_TC_highPur);
+		chain->SetBranchAddress("PFJets_btag_TC_highEff", &PFJets_btag_TC_highEff, &b_PFJets_btag_TC_highEff);
+		chain->SetBranchAddress("PFJets_btag_jetProb", &PFJets_btag_jetProb, &b_PFJets_btag_jetProb);
+		chain->SetBranchAddress("PFJets_btag_jetBProb", &PFJets_btag_jetBProb, &b_PFJets_btag_jetBProb);
+		chain->SetBranchAddress("PFJets_btag_softEle", &PFJets_btag_softEle, &b_PFJets_btag_softEle);
+		chain->SetBranchAddress("PFJets_btag_softMuon", &PFJets_btag_softMuon, &b_PFJets_btag_softMuon);
+		chain->SetBranchAddress("PFJets_btag_softMuonNoIP", &PFJets_btag_softMuonNoIP, &b_PFJets_btag_softMuonNoIP);
+		chain->SetBranchAddress("PFJets_btag_secVertex", &PFJets_btag_secVertex, &b_PFJets_btag_secVertex);
 	}
 	if (m_metAlgo == "pfmet") {
 		chain->SetBranchAddress("NPFMets", &NPFMets, &b_NPFMets);
@@ -1228,181 +1235,211 @@ void NTupleReader::Init() {
 
 void NTupleReader::ReadSelectedBranches() const {
 
-		chain->SetBranchStatus("*", 0); //disable all branches
-		chain->SetBranchStatus("run", 1);
-		chain->SetBranchStatus("event", 1);
-		chain->SetBranchStatus("lumiBlock", 1);
-		chain->SetBranchStatus("beamSpot_x", 1); //beam spot
-		chain->SetBranchStatus("beamSpot_y", 1);
-		chain->SetBranchStatus("Nels", 1); //electrons
-		chain->SetBranchStatus("els_px", 1);
-		chain->SetBranchStatus("els_py", 1);
-		chain->SetBranchStatus("els_pz", 1);
-		chain->SetBranchStatus("els_energy", 1);
-		chain->SetBranchStatus("els_et", 1);
-		chain->SetBranchStatus("els_eta", 1);
-		chain->SetBranchStatus("els_phi", 1);//z study
-		chain->SetBranchStatus("els_looseId", 1);
-		chain->SetBranchStatus("els_tightId", 1);
-		chain->SetBranchStatus("els_robustLooseId", 1);
-		chain->SetBranchStatus("els_robustTightId", 1);
-		chain->SetBranchStatus("els_robustHighEnergyId", 1);
-		chain->SetBranchStatus("els_sigmaIEtaIEta", 1); //sigma i eta i eta
-		chain->SetBranchStatus("els_hadOverEm", 1);
-		chain->SetBranchStatus("els_dEtaIn", 1);
-		chain->SetBranchStatus("els_dPhiIn", 1);
-		chain->SetBranchStatus("els_eOverPIn", 1);
-		chain->SetBranchStatus("els_tIso", 1);
-		chain->SetBranchStatus("els_dr04EcalRecHitSumEt", 1);
-		chain->SetBranchStatus("els_dr04HcalTowerSumEt", 1);
-		chain->SetBranchStatus("els_d0dum", 1);
-		chain->SetBranchStatus("els_vx", 1);
-		chain->SetBranchStatus("els_vy", 1);
-		chain->SetBranchStatus("els_vpx", 1);
-		chain->SetBranchStatus("els_vpy", 1);
-		chain->SetBranchStatus("els_closestCtfTrackRef", 1);
-		chain->SetBranchStatus("els_tk_pt", 1);
-		chain->SetBranchStatus("els_tk_phi", 1);
-		chain->SetBranchStatus("els_tk_eta", 1);
-		chain->SetBranchStatus("els_tk_charge", 1);
-		chain->SetBranchStatus("els_tk_theta", 1);
-		chain->SetBranchStatus("els_shFracInnerHits", 1);
-		if (m_useMisslayers)
-			chain->SetBranchStatus("els_innerLayerMissingHits", 1);
-		chain->SetBranchStatus("Nmus", 1); //muons
-		chain->SetBranchStatus("mus_cm_px", 1); //global muon
-		chain->SetBranchStatus("mus_cm_py", 1);
-		chain->SetBranchStatus("mus_cm_pz", 1);
-		chain->SetBranchStatus("mus_energy", 1);
-		chain->SetBranchStatus("mus_cm_pt", 1);
-		chain->SetBranchStatus("mus_cm_eta", 1);
-		chain->SetBranchStatus("mus_cm_chi2", 1);
-		chain->SetBranchStatus("mus_cm_ndof", 1);
-		chain->SetBranchStatus("mus_cm_d0dum", 1);
-		chain->SetBranchStatus("mus_tk_vx", 1);
-		chain->SetBranchStatus("mus_tk_vy", 1);
-		chain->SetBranchStatus("mus_tk_px", 1);
-		chain->SetBranchStatus("mus_tk_py", 1);
-		chain->SetBranchStatus("mus_tkHits", 1);
-		chain->SetBranchStatus("mus_tIso", 1);
-		chain->SetBranchStatus("mus_cIso", 1);
-		chain->SetBranchStatus("mus_id_AllGlobalMuons", 1); //new
-		chain->SetBranchStatus("mus_ecalvetoDep", 1); //new
-		chain->SetBranchStatus("mus_hcalvetoDep", 1); //new
+	chain->SetBranchStatus("*", 0); //disable all branches
+	chain->SetBranchStatus("run", 1);
+	chain->SetBranchStatus("event", 1);
+	chain->SetBranchStatus("lumiBlock", 1);
+	chain->SetBranchStatus("beamSpot_x", 1); //beam spot
+	chain->SetBranchStatus("beamSpot_y", 1);
+	chain->SetBranchStatus("Nels", 1); //electrons
+	chain->SetBranchStatus("els_px", 1);
+	chain->SetBranchStatus("els_py", 1);
+	chain->SetBranchStatus("els_pz", 1);
+	chain->SetBranchStatus("els_energy", 1);
+	chain->SetBranchStatus("els_et", 1);
+	chain->SetBranchStatus("els_eta", 1);
+	chain->SetBranchStatus("els_phi", 1);//z study
+	chain->SetBranchStatus("els_looseId", 1);
+	chain->SetBranchStatus("els_tightId", 1);
+	chain->SetBranchStatus("els_robustLooseId", 1);
+	chain->SetBranchStatus("els_robustTightId", 1);
+	chain->SetBranchStatus("els_robustHighEnergyId", 1);
+	chain->SetBranchStatus("els_sigmaIEtaIEta", 1); //sigma i eta i eta
+	chain->SetBranchStatus("els_hadOverEm", 1);
+	chain->SetBranchStatus("els_dEtaIn", 1);
+	chain->SetBranchStatus("els_dPhiIn", 1);
+	chain->SetBranchStatus("els_eOverPIn", 1);
+	chain->SetBranchStatus("els_tIso", 1);
+	chain->SetBranchStatus("els_dr04EcalRecHitSumEt", 1);
+	chain->SetBranchStatus("els_dr04HcalTowerSumEt", 1);
+	chain->SetBranchStatus("els_d0dum", 1);
+	chain->SetBranchStatus("els_vx", 1);
+	chain->SetBranchStatus("els_vy", 1);
+	chain->SetBranchStatus("els_vpx", 1);
+	chain->SetBranchStatus("els_vpy", 1);
+	chain->SetBranchStatus("els_closestCtfTrackRef", 1);
+	chain->SetBranchStatus("els_tk_pt", 1);
+	chain->SetBranchStatus("els_tk_phi", 1);
+	chain->SetBranchStatus("els_tk_eta", 1);
+	chain->SetBranchStatus("els_tk_charge", 1);
+	chain->SetBranchStatus("els_tk_theta", 1);
+	chain->SetBranchStatus("els_shFracInnerHits", 1);
+	if (m_useMisslayers)
+		chain->SetBranchStatus("els_innerLayerMissingHits", 1);
+	chain->SetBranchStatus("Nmus", 1); //muons
+	chain->SetBranchStatus("mus_cm_px", 1); //global muon
+	chain->SetBranchStatus("mus_cm_py", 1);
+	chain->SetBranchStatus("mus_cm_pz", 1);
+	chain->SetBranchStatus("mus_energy", 1);
+	chain->SetBranchStatus("mus_cm_pt", 1);
+	chain->SetBranchStatus("mus_cm_eta", 1);
+	chain->SetBranchStatus("mus_cm_chi2", 1);
+	chain->SetBranchStatus("mus_cm_ndof", 1);
+	chain->SetBranchStatus("mus_cm_d0dum", 1);
+	chain->SetBranchStatus("mus_tk_vx", 1);
+	chain->SetBranchStatus("mus_tk_vy", 1);
+	chain->SetBranchStatus("mus_tk_px", 1);
+	chain->SetBranchStatus("mus_tk_py", 1);
+	chain->SetBranchStatus("mus_tkHits", 1);
+	chain->SetBranchStatus("mus_tIso", 1);
+	chain->SetBranchStatus("mus_cIso", 1);
+	chain->SetBranchStatus("mus_id_AllGlobalMuons", 1); //new
+	chain->SetBranchStatus("mus_ecalvetoDep", 1); //new
+	chain->SetBranchStatus("mus_hcalvetoDep", 1); //new
 
-		if (m_jetAlgo == "Default") { //using default jet-met
-			chain->SetBranchStatus("Njets", 1); //jets
-			chain->SetBranchStatus("jets_px", 1);
-			chain->SetBranchStatus("jets_py", 1);
-			chain->SetBranchStatus("jets_pz", 1);
-			chain->SetBranchStatus("jets_energy", 1);
-			chain->SetBranchStatus("jets_eta", 1);
-			chain->SetBranchStatus("jets_pt", 1);
-			chain->SetBranchStatus("jets_emf", 1);
+	if (m_jetAlgo == "Default") { //using default jet-met
+		chain->SetBranchStatus("Njets", 1); //jets
+		chain->SetBranchStatus("jets_px", 1);
+		chain->SetBranchStatus("jets_py", 1);
+		chain->SetBranchStatus("jets_pz", 1);
+		chain->SetBranchStatus("jets_energy", 1);
+		chain->SetBranchStatus("jets_eta", 1);
+		chain->SetBranchStatus("jets_pt", 1);
+		chain->SetBranchStatus("jets_emf", 1);
+		chain->SetBranchStatus("jets_emf", 1);
+		//btagging
+		chain->SetBranchStatus("jets_btag_TC_highEff", 1);
+		chain->SetBranchStatus("jets_btag_TC_highPur", 1);
+		chain->SetBranchStatus("jets_btag_jetBProb", 1);
+		chain->SetBranchStatus("jets_btag_jetProb", 1);
+		chain->SetBranchStatus("jets_btag_softEle", 1);
+		chain->SetBranchStatus("jets_btag_softMuon", 1);
+		chain->SetBranchStatus("jets_btag_softMuonNoIP", 1);
+		chain->SetBranchStatus("jets_btag_secVertex", 1);
+		chain->SetBranchStatus("jets_parton_Id", 1);
 
-		} else if (m_jetAlgo == "pfjet") { //PFJet
-			chain->SetBranchStatus(Form("NPFJets"), 1); //jets
-			chain->SetBranchStatus("PFJets_px", 1);
-			chain->SetBranchStatus("PFJets_py", 1);
-			chain->SetBranchStatus("PFJets_pz", 1);
-			chain->SetBranchStatus("PFJets_energy", 1);
-			chain->SetBranchStatus("PFJets_eta", 1);
-			chain->SetBranchStatus("PFJets_pt", 1);
+	} else if (m_jetAlgo == "pfjet") { //PFJet
+		chain->SetBranchStatus(Form("NPFJets"), 1); //jets
+		chain->SetBranchStatus("PFJets_px", 1);
+		chain->SetBranchStatus("PFJets_py", 1);
+		chain->SetBranchStatus("PFJets_pz", 1);
+		chain->SetBranchStatus("PFJets_energy", 1);
+		chain->SetBranchStatus("PFJets_eta", 1);
+		chain->SetBranchStatus("PFJets_pt", 1);
+		//btagging
+		chain->SetBranchStatus("PFJets_btag_TC_highEff", 1);
+		chain->SetBranchStatus("PFJets_btag_TC_highPur", 1);
+		chain->SetBranchStatus("PFJets_btag_jetBProb", 1);
+		chain->SetBranchStatus("PFJets_btag_jetProb", 1);
+		chain->SetBranchStatus("PFJets_btag_softEle", 1);
+		chain->SetBranchStatus("PFJets_btag_softMuon", 1);
+		chain->SetBranchStatus("PFJets_btag_softMuonNoIP", 1);
+		chain->SetBranchStatus("PFJets_btag_secVertex", 1);
+		chain->SetBranchStatus("PFJets_parton_Id", 1);
 
-		} else { //if not using default jets
-			chain->SetBranchStatus(Form("Njets%s", m_jetAlgo.c_str()), 1); //jets
-			chain->SetBranchStatus(Form("jets%s_px", m_jetAlgo.c_str()), 1);
-			chain->SetBranchStatus(Form("jets%s_py", m_jetAlgo.c_str()), 1);
-			chain->SetBranchStatus(Form("jets%s_pz", m_jetAlgo.c_str()), 1);
-			chain->SetBranchStatus(Form("jets%s_energy", m_jetAlgo.c_str()), 1);
-			chain->SetBranchStatus(Form("jets%s_eta", m_jetAlgo.c_str()), 1);
-			chain->SetBranchStatus(Form("jets%s_pt", m_jetAlgo.c_str()), 1);
-			chain->SetBranchStatus(Form("jets%s_emf", m_jetAlgo.c_str()), 1);
-		}
+	} else { //if not using default jets
+		chain->SetBranchStatus(Form("Njets%s", m_jetAlgo.c_str()), 1); //jets
+		chain->SetBranchStatus(Form("jets%s_px", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_py", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_pz", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_energy", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_eta", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_pt", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_emf", m_jetAlgo.c_str()), 1);
+		//btagging
+		chain->SetBranchStatus(Form("jets%s_btag_TC_highEff", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_btag_TC_highPur", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_btag_jetBProb", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_btag_jetProb", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_btag_softEle", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_btag_softMuon", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_btag_softMuonNoIP", m_jetAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("jets%s_btag_secVertex", m_jetAlgo.c_str()), 1);
+	}
 
-		// 30-10-09
-		chain->SetBranchStatus("Nmets", 1);
-		chain->SetBranchStatus("mets_et_muonCor", 1);
-		chain->SetBranchStatus("mets_phi_muonCor", 1);
-		chain->SetBranchStatus("mets_et", 1);
-		chain->SetBranchStatus("mets_phi", 1);
-		chain->SetBranchStatus("mets_ex", 1);
-		chain->SetBranchStatus("mets_ey", 1);
+	// 30-10-09
+	chain->SetBranchStatus("Nmets", 1);
+	chain->SetBranchStatus("mets_et_muonCor", 1);
+	chain->SetBranchStatus("mets_phi_muonCor", 1);
+	chain->SetBranchStatus("mets_et", 1);
+	chain->SetBranchStatus("mets_phi", 1);
+	chain->SetBranchStatus("mets_ex", 1);
+	chain->SetBranchStatus("mets_ey", 1);
 
-		if (m_metAlgo == "tcmet") { //tcMET
-			chain->SetBranchStatus("Ntcmets", 1);
-			chain->SetBranchStatus("tcmets_et", 1);
-			chain->SetBranchStatus("tcmets_phi", 1);
-			chain->SetBranchStatus("tcmets_ex", 1);
-			chain->SetBranchStatus("tcmets_ey", 1);
-		} else if (m_metAlgo == "pfmet") { //PFMET
-			chain->SetBranchStatus("NPFMets", 1);
-			chain->SetBranchStatus("PFMets_et", 1);
-			chain->SetBranchStatus("PFMets_phi", 1);
-			chain->SetBranchStatus("PFMets_ex", 1);
-			chain->SetBranchStatus("PFMets_ey", 1);
+	if (m_metAlgo == "tcmet") { //tcMET
+		chain->SetBranchStatus("Ntcmets", 1);
+		chain->SetBranchStatus("tcmets_et", 1);
+		chain->SetBranchStatus("tcmets_phi", 1);
+		chain->SetBranchStatus("tcmets_ex", 1);
+		chain->SetBranchStatus("tcmets_ey", 1);
+	} else if (m_metAlgo == "pfmet") { //PFMET
+		chain->SetBranchStatus("NPFMets", 1);
+		chain->SetBranchStatus("PFMets_et", 1);
+		chain->SetBranchStatus("PFMets_phi", 1);
+		chain->SetBranchStatus("PFMets_ex", 1);
+		chain->SetBranchStatus("PFMets_ey", 1);
 
-		} else if (m_metAlgo == "SC5" || m_metAlgo == "SC7" || m_metAlgo == "KT4" || m_metAlgo == "KT6") { //CaloMET: SC5/7, KT4/6
-			chain->SetBranchStatus(Form("Nmets%s", m_metAlgo.c_str()), 1);
-			chain->SetBranchStatus(Form("mets%s_et", m_metAlgo.c_str()), 1);
-			chain->SetBranchStatus(Form("mets%s_phi", m_metAlgo.c_str()), 1);
-			chain->SetBranchStatus(Form("mets%s_ex", m_metAlgo.c_str()), 1);
-			chain->SetBranchStatus(Form("mets%s_ey", m_metAlgo.c_str()), 1);
-		}
+	} else if (m_metAlgo == "SC5" || m_metAlgo == "SC7" || m_metAlgo == "KT4" || m_metAlgo == "KT6") { //CaloMET: SC5/7, KT4/6
+		chain->SetBranchStatus(Form("Nmets%s", m_metAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("mets%s_et", m_metAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("mets%s_phi", m_metAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("mets%s_ex", m_metAlgo.c_str()), 1);
+		chain->SetBranchStatus(Form("mets%s_ey", m_metAlgo.c_str()), 1);
+	}
 
-		chain->SetBranchStatus("Ntracks", 1); //tracks
-		chain->SetBranchStatus("tracks_pt", 1);
-		chain->SetBranchStatus("tracks_phi", 1);
-		chain->SetBranchStatus("tracks_eta", 1);
-		chain->SetBranchStatus("tracks_chg", 1);
-		chain->SetBranchStatus("tracks_theta", 1);
-		chain->SetBranchStatus("tracks_vx", 1);
-		chain->SetBranchStatus("tracks_vy", 1);
-		chain->SetBranchStatus("tracks_px", 1);
-		chain->SetBranchStatus("tracks_py", 1);
-		if (m_useMisslayers)
-			chain->SetBranchStatus("tracks_innerLayerMissingHits", 1);
+	chain->SetBranchStatus("Ntracks", 1); //tracks
+	chain->SetBranchStatus("tracks_pt", 1);
+	chain->SetBranchStatus("tracks_phi", 1);
+	chain->SetBranchStatus("tracks_eta", 1);
+	chain->SetBranchStatus("tracks_chg", 1);
+	chain->SetBranchStatus("tracks_theta", 1);
+	chain->SetBranchStatus("tracks_vx", 1);
+	chain->SetBranchStatus("tracks_vy", 1);
+	chain->SetBranchStatus("tracks_px", 1);
+	chain->SetBranchStatus("tracks_py", 1);
+	if (m_useMisslayers)
+		chain->SetBranchStatus("tracks_innerLayerMissingHits", 1);
 
-		chain->SetBranchStatus("Nphotons", 1); //z study
-		chain->SetBranchStatus("photons_eta", 1); //z study
-		chain->SetBranchStatus("photons_et", 1); //z study
-		chain->SetBranchStatus("photons_phi", 1); //z study
-		chain->SetBranchStatus("photons_px", 1); //z study
-		chain->SetBranchStatus("photons_py", 1); //z study
-		chain->SetBranchStatus("photons_pz", 1); //z study
-		chain->SetBranchStatus("photons_energy", 1); //z study
-		///-------------------------- MC Truth info ------------------------------
-		if (!IsData()) {
-			chain->SetBranchStatus("Nmc_doc", 1); // generator particles
-			chain->SetBranchStatus("mc_doc_id", 1);
-			chain->SetBranchStatus("mc_doc_status", 1);
-			chain->SetBranchStatus("mc_doc_mother_id", 1);
-			chain->SetBranchStatus("mc_doc_grandmother_id", 1);
-			//		chain->SetBranchStatus("mc_doc_mother_id", 1);
-			chain->SetBranchStatus("mc_doc_mass", 1);
-			chain->SetBranchStatus("mc_doc_px", 1);
-			chain->SetBranchStatus("mc_doc_py", 1);
-			chain->SetBranchStatus("mc_doc_pz", 1);
-			chain->SetBranchStatus("mc_doc_pt", 1);
-			chain->SetBranchStatus("mc_doc_eta", 1);
-			chain->SetBranchStatus("mc_doc_phi", 1); //z study
-			chain->SetBranchStatus("mc_doc_energy", 1); //z study
+	chain->SetBranchStatus("Nphotons", 1); //z study
+	chain->SetBranchStatus("photons_eta", 1); //z study
+	chain->SetBranchStatus("photons_et", 1); //z study
+	chain->SetBranchStatus("photons_phi", 1); //z study
+	chain->SetBranchStatus("photons_px", 1); //z study
+	chain->SetBranchStatus("photons_py", 1); //z study
+	chain->SetBranchStatus("photons_pz", 1); //z study
+	chain->SetBranchStatus("photons_energy", 1); //z study
+	///-------------------------- MC Truth info ------------------------------
+	if (!IsData()) {
+		chain->SetBranchStatus("Nmc_doc", 1); // generator particles
+		chain->SetBranchStatus("mc_doc_id", 1);
+		chain->SetBranchStatus("mc_doc_status", 1);
+		chain->SetBranchStatus("mc_doc_mother_id", 1);
+		chain->SetBranchStatus("mc_doc_grandmother_id", 1);
+		//		chain->SetBranchStatus("mc_doc_mother_id", 1);
+		chain->SetBranchStatus("mc_doc_mass", 1);
+		chain->SetBranchStatus("mc_doc_px", 1);
+		chain->SetBranchStatus("mc_doc_py", 1);
+		chain->SetBranchStatus("mc_doc_pz", 1);
+		chain->SetBranchStatus("mc_doc_pt", 1);
+		chain->SetBranchStatus("mc_doc_eta", 1);
+		chain->SetBranchStatus("mc_doc_phi", 1); //z study
+		chain->SetBranchStatus("mc_doc_energy", 1); //z study
 
-			if (m_studyPDFunc) {
-				for (short i = 0; i <= 44; i++) {
-					string pdf = Form("PDFWcteq66_%u", i);//unsigned %u
-					if (m_debug)
-						cout << " pdf  " << pdf << endl;
-					chain->SetBranchStatus(pdf.c_str(), 1);
-				}
+		if (m_studyPDFunc) {
+			for (short i = 0; i <= 44; i++) {
+				string pdf = Form("PDFWcteq66_%u", i);//unsigned %u
+				if (m_debug)
+					cout << " pdf  " << pdf << endl;
+				chain->SetBranchStatus(pdf.c_str(), 1);
 			}
 		}
-		///------------------------  MC Truth info (END)  ---------------------------
+	}
+	///------------------------  MC Truth info (END)  ---------------------------
 
-		if (GetTrigger()) {
-			//chain->SetBranchStatus("HLT_Ele15_LW_L1R",1); //trigger (8e29)
-			//chain->SetBranchStatus("HLT_Ele10_SW_L1R",1); //trigger (1e30)
-			chain->SetBranchStatus(HLTBit.c_str(), 1);
-		}
-	}//end ReadSelectedBranches
+	if (GetTrigger()) {
+		//chain->SetBranchStatus("HLT_Ele15_LW_L1R",1); //trigger (8e29)
+		//chain->SetBranchStatus("HLT_Ele10_SW_L1R",1); //trigger (1e30)
+		chain->SetBranchStatus(HLTBit.c_str(), 1);
+	}
+}//end ReadSelectedBranches
 //	------------------------------------------------------------------------------------
