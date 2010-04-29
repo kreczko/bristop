@@ -726,6 +726,7 @@ ana::ana() {
 
 	mycounter = 0;
 	SetNumberOfJetsUsedInReco(8);
+	btag_information.resize(NUMBER_OF_BTAGS);
 }
 
 ana::~ana() {
@@ -1138,8 +1139,7 @@ bool ana::EventLoop() {
 	std::vector<TLorentzVector> muons;
 	std::vector<TLorentzVector> iso_muons;
 	std::vector<TLorentzVector> goodJets;
-	std::vector<std::vector<double> > btag_information;
-	btag_information.resize(NUMBER_OF_BTAGS);
+	//	std::vector<std::vector<double> > btag_information;
 	std::vector<TLorentzVector> met;
 	std::vector<float> electrons_isoval;
 	std::vector<float> electrons_isoval2;
@@ -3646,7 +3646,7 @@ bool ana::EventLoop() {
 			//			reco_mttbar(jets, electrons, met, nGoodIsoEle);
 			//new version with Chi2 fit
 			reco_Mttbar(goodJets, electrons[0], met[0]);
-			fillBtagHistograms(goodJets, btag_information);
+			fillBtagHistograms(goodJets);
 		}
 
 		// Add Delta R(e,mu)
@@ -4005,11 +4005,11 @@ bool ana::EventLoop() {
 	cout.precision(myprec); //reset precision
 
 	//Print event tables with errors
-	PrintErrorTables(e_plus_jet, e_plus_jet_weighted, ve); //TEMPORARY Turn off
+	//	PrintErrorTables(e_plus_jet, e_plus_jet_weighted, ve); //TEMPORARY Turn off
 
 	//Print event tables with errors, but without applying scientific notation
 	ScientificNotation = false;
-	PrintErrorTables(e_plus_jet, e_plus_jet_weighted, ve); //TEMPORARY Turn off
+	//	PrintErrorTables(e_plus_jet, e_plus_jet_weighted, ve); //TEMPORARY Turn off
 	End();
 
 	// Close the histogram file
@@ -8703,22 +8703,23 @@ void ana::bookBtagHistograms(ushort type, TDirectory *parent) {
 	addHistoDataAndMC(type, h_btag_secondaryVertex_b, "btag_secondaryVertex_b", "btag secondary vertex (b-quarks)", 80, 0, 6.4);
 	addHistoDataAndMC(type, h_btag_secondaryVertex_c, "btag_secondaryVertex_c", "btag secondary vertex (c-quarks)", 80, 0, 6.4);
 	addHistoDataAndMC(type, h_btag_secondaryVertex_g, "btag_secondaryVertex_g", "btag secondary vertex (gluons)", 80, 0, 6.4);
-	addHistoDataAndMC(type, h_btag_secondaryVertex_uds, "btag_secondaryVertex_uds", "btag secondary vertex (uds-quarks)", 30, 0,
-			6.2);
+	addHistoDataAndMC(type, h_btag_secondaryVertex_uds, "btag_secondaryVertex_uds", "btag secondary vertex (uds-quarks)", 80, 0,
+			6.4);
 
 	//FIXME: put proper bins
 	addHistoDataAndMC(type, h_btag_softEle_b, "btag_softEle_b", "btag soft electron (b-quarks)", 100, 0, 12);
 	addHistoDataAndMC(type, h_btag_softEle_c, "btag_softEle_c", "btag soft electron (c-quarks)", 100, 0, 12);
 	addHistoDataAndMC(type, h_btag_softEle_g, "btag_softEle_g", "btag soft electron (gluons)", 100, 0, 12);
-	addHistoDataAndMC(type, h_btag_softEle_uds, "btag_softEle_uds", "btag soft electron (uds-quarks)", 30, 0, 3.6);
+	addHistoDataAndMC(type, h_btag_softEle_uds, "btag_softEle_uds", "btag soft electron (uds-quarks)", 100, 0, 12);
+
 	addHistoDataAndMC(type, h_btag_softMuon_b, "btag_softMuon_b", "btag soft muon (b-quarks)", 100, 0, 12);
 	addHistoDataAndMC(type, h_btag_softMuon_c, "btag_softMuon_c", "btag soft muon (c-quarks)", 100, 0, 12);
 	addHistoDataAndMC(type, h_btag_softMuon_g, "btag_softMuon_g", "btag soft muon (gluons)", 100, 0, 12);
-	addHistoDataAndMC(type, h_btag_softMuon_uds, "btag_softMuon_uds", "btag soft muon (uds-quarks)", 30, 0, 3.6);
+	addHistoDataAndMC(type, h_btag_softMuon_uds, "btag_softMuon_uds", "btag soft muon (uds-quarks)", 100, 0, 12);
 	addHistoDataAndMC(type, h_btag_softMuonNoIP_b, "btag_softMuonNoIP_b", "btag soft muon (b-quarks) no IP", 100, 0, 12);
 	addHistoDataAndMC(type, h_btag_softMuonNoIP_c, "btag_softMuonNoIP_c", "btag soft muon (c-quarks) no IP", 100, 0, 12);
 	addHistoDataAndMC(type, h_btag_softMuonNoIP_g, "btag_softMuonNoIP_g", "btag soft muon (gluons) no IP", 100, 0, 12);
-	addHistoDataAndMC(type, h_btag_softMuonNoIP_uds, "btag_softMuonNoIP_uds", "btag soft muon (uds-quarks) no IP", 30, 0, 3.6);
+	addHistoDataAndMC(type, h_btag_softMuonNoIP_uds, "btag_softMuonNoIP_uds", "btag soft muon (uds-quarks) no IP", 100, 0, 12);
 
 	parent->cd();
 }
@@ -8740,15 +8741,21 @@ void ana::reco_Mttbar(const vector<TLorentzVector>& jets, const TLorentzVector& 
 
 	double chi2Tot = 999999;
 	double ht = GetHT(jets, 8);
+	ushort btag = btag_fake;
+
 	for (ushort blep_id = 0; blep_id < njets; blep_id++) {//get leptonic b-jet
+		if (!GetBtagFlag(blep_id, btag))
+			continue;
 		for (ushort bhad_id = 0; bhad_id < njets; bhad_id++) {//get hadronic b-jet
+			if (!GetBtagFlag(bhad_id, btag))
+				continue;
 			if (bhad_id == blep_id)
 				continue;
 			for (ushort quark1_id = 0; quark1_id < njets; quark1_id++) {//get quark from W decay
-				if (quark1_id == blep_id || quark1_id == bhad_id)
+				if (quark1_id == blep_id || quark1_id == bhad_id || GetBtagFlag(quark1_id, btag))
 					continue;
 				for (ushort quark2_id = 0; quark2_id < njets; quark2_id++) {//get quark' from W decay
-					if (quark2_id == quark1_id || quark2_id == bhad_id || quark2_id == blep_id)
+					if (quark2_id == quark1_id || quark2_id == bhad_id || quark2_id == blep_id || GetBtagFlag(quark2_id, btag))
 						continue;
 					blepjet = jets[blep_id];
 					bhadjet = jets[bhad_id];
@@ -9401,7 +9408,7 @@ double ana::smearValueWithGaus(double value, double gaus_width) {
 //	return btag_information[btag][jetid];
 //}
 
-void ana::fillBtagHistograms(std::vector<TLorentzVector> jets, std::vector<std::vector<double> > btag_information) {
+void ana::fillBtagHistograms(std::vector<TLorentzVector> jets) {
 	for (ushort jetID = 0; jetID < jets.size(); ++jetID) {
 		double pdgID = 0;
 		if (m_jetAlgo == "Default" || m_jetAlgo == "pfjet")
@@ -9451,5 +9458,17 @@ void ana::fillBtagHistograms(std::vector<TLorentzVector> jets, std::vector<std::
 		}
 
 	}
+}
+
+bool ana::GetBtagFlag(ushort jetID, ushort btag) {
+	if (btag == btag_fake)
+		return fabs(btag_information[btag][jetID]) == 5;
+	else if (btag == btag_secondaryVertex)
+		return btag_information[btag][jetID] > 3.45; //~1% misstag rate
+	else if (btag == btag_TC_highPur)
+		return btag_information[btag][jetID] > 7;//1% misstag rate
+	else
+		//TODO: implement other btags
+		return false;
 }
 //-- eof ------------------------------------------------------------------------------------------

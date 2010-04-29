@@ -91,8 +91,7 @@ public:
 	bool EstimateWjets(const string data, const string mc = ""); // run W+jets estimation
 	void SetNtoyForM3Fit(int val) {
 		m_ntoy = val;
-	}
-	; //number of toy exp to run for m3
+	}//number of toy exp to run for m3
 
 	void SetEleETcut(float);
 	void SetMuonPTcut(float);
@@ -121,12 +120,13 @@ public:
 	enum EHist {
 		h_neutrino_pz, h_neutrino_pz_mc, h_mttbar, h_mttbar_btag_fake, h_mttbar_matched, h_mttbar_mc, h_mttbar_mc_smeared,
 		h_mttbar_diff_reco_and_mc, h_mZprime_mc, h_mWlep, h_mWlep_btag_fake, h_mWlep_mc, h_mWhad, h_mWhad_btag_fake, h_mWhad_mc,
-		h_minDeltaR_ele_Jet, h_ptRel_ele_jet, h_mtlep, h_mtlep_btag_fake, h_mtlep_mc, h_mthad, h_mthad_btag_fake, h_mthad_mc, h_thad_pt,
-		h_thad_pt_mc, h_tlep_pt, h_tlep_pt_mc, h_angle_b_ele, h_ptratio, h_pttbar, h_htsystem, h_angle_b_ele_matched, h_mtlep_matched,
-		h_mthad_matched, h_mWhad_matched, h_mWlep_matched, h_ptratio_matched, h_ptratio2_matched, h_ptratio2_mc, h_pttbar_matched,
-		h_htsystem_matched, h_Chi2Leptonic, h_Chi2Leptonic_matched, h_Chi2Hadronic, h_Chi2Hadronic_matched, h_Chi2Global,
-		h_Chi2Global_matched, h_Chi2Total, h_Chi2Total_matched, h_tlep_pt_matched, h_thad_pt_matched, h_angle_b_ele_mc, h_ptratio_mc,
-		h_pttbar_mc, h_htsystem_mc, h_Chi2Leptonic_mc, h_Chi2Hadronic_mc, h_Chi2Global_mc, h_Chi2Total_mc,/*end of exotic top*/
+		h_minDeltaR_ele_Jet, h_ptRel_ele_jet, h_mtlep, h_mtlep_btag_fake, h_mtlep_mc, h_mthad, h_mthad_btag_fake, h_mthad_mc,
+		h_thad_pt, h_thad_pt_mc, h_tlep_pt, h_tlep_pt_mc, h_angle_b_ele, h_ptratio, h_pttbar, h_htsystem, h_angle_b_ele_matched,
+		h_mtlep_matched, h_mthad_matched, h_mWhad_matched, h_mWlep_matched, h_ptratio_matched, h_ptratio2_matched, h_ptratio2_mc,
+		h_pttbar_matched, h_htsystem_matched, h_Chi2Leptonic, h_Chi2Leptonic_matched, h_Chi2Hadronic, h_Chi2Hadronic_matched,
+		h_Chi2Global, h_Chi2Global_matched, h_Chi2Total, h_Chi2Total_matched, h_tlep_pt_matched, h_thad_pt_matched,
+		h_angle_b_ele_mc, h_ptratio_mc, h_pttbar_mc, h_htsystem_mc, h_Chi2Leptonic_mc, h_Chi2Hadronic_mc, h_Chi2Global_mc,
+		h_Chi2Total_mc,/*end of exotic top*/
 		h_nele, h_ele_ET_all, kele_ET_1, kele_ET_2, kele_ET_3, kele_eta_all, kele_eta_1, kele_eta_2, kele_eta_3, kele_phi_all,
 		kele_phi_1, kele_phi_2, kele_phi_3, kele_iso_all, kele_iso_1, kele_iso_2, kele_iso_3, knele_cuts, h_eid,/*electrons*/
 		knjets, kjet_pt_all, kjet_pt_1, kjet_pt_2, kjet_pt_3, kjet_pt_4, kjet_eta_all, kjet_eta_1, kjet_eta_2, kjet_eta_3,
@@ -211,8 +211,8 @@ public:
 	};
 
 	enum EBTAG {
-		btag_fake, btag_TC_highEff, btag_TC_highPur, btag_JetBProb, btag_JetProb, btag_secondaryVertex, btag_softEle, btag_softMuon,
-		btag_softMuonNoIP, NUMBER_OF_BTAGS
+		btag_fake, btag_TC_highEff, btag_TC_highPur, btag_JetBProb, btag_JetProb, btag_secondaryVertex, btag_softEle,
+		btag_softMuon, btag_softMuonNoIP, NUMBER_OF_BTAGS
 	};
 private:
 	vector<string> mc_names;
@@ -255,6 +255,7 @@ private:
 	 */
 	vector<double> fastWeight_;
 	ushort number_of_jets_to_use_for_reco;
+	std::vector<std::vector<double> > btag_information;
 public:
 
 	void SetNumberOfJetsUsedInReco(ushort number) {
@@ -342,7 +343,7 @@ private:
 		return m_eID;
 	}
 
-//	double btag(ushort jetid, ushort btag_type);
+	//	double btag(ushort jetid, ushort btag_type);
 	void PrintCuts() const; // print kinematic cuts
 	string printEleID() const;
 	void CheckAvailableJetMET();
@@ -429,7 +430,7 @@ private:
 	void fillHisto_Njet_DataAndMC(ushort hist, const float value, const double w);
 	void fillHisto_PDF_weights(TH1F* h);
 	void fillMCTopEventHists(double reco_mttbar);
-	void fillBtagHistograms(std::vector<TLorentzVector> jets, std::vector<std::vector<double> > btag_information);
+	void fillBtagHistograms(std::vector<TLorentzVector> jets);//TODO: pass size instead of whole vector
 	//	void fillHistoNjet(TH1F* h[], const float value, const double weight);
 	//	void fillHistoNjet(TH2F* h[], const float value, const float value2, const double weight);
 	//	void fillHistoNjet_DataAndMC(const string hname, const float value, const double weight);
@@ -479,6 +480,7 @@ private:
 	double GetChi2Hadronic(double Wmass, double tmass, double ptratio);
 	double GetChi2Global(double pttbar, double htsystem);
 	double GetHT(const std::vector<TLorentzVector>& jets, ushort N);
+	bool GetBtagFlag(ushort jetID, ushort btag);
 	string ScrNum(double num) const;
 	void printLine(ofstream &myfile, const double, const double) const;
 	bool ScientificNotation;
