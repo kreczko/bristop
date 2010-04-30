@@ -143,7 +143,7 @@ public:
 		h_btag_JetProb_g, h_btag_secondaryVertex_b, h_btag_secondaryVertex_c, h_btag_secondaryVertex_uds,
 		h_btag_secondaryVertex_g, h_btag_softEle_b, h_btag_softEle_c, h_btag_softEle_uds, h_btag_softEle_g, h_btag_softMuon_b,
 		h_btag_softMuon_c, h_btag_softMuon_uds, h_btag_softMuon_g, h_btag_softMuonNoIP_b, h_btag_softMuonNoIP_c,
-		h_btag_softMuonNoIP_uds, h_btag_softMuonNoIP_g, NUMBER_OF_1D_HISTOGRAMS
+		h_btag_softMuonNoIP_uds, h_btag_softMuonNoIP_g, h_numberOfBtags, NUMBER_OF_1D_HISTOGRAMS
 	};
 
 	/**
