@@ -3647,6 +3647,12 @@ bool ana::EventLoop() {
 			//new version with Chi2 fit
 			reco_Mttbar(goodJets, electrons[0], met[0]);
 			fillBtagHistograms(goodJets);
+			ushort numberOfBtags = 0;
+			for(ushort jet = 0; jet < goodJets.size(); ++jet){
+				if(GetBtagFlag(jet, btag_secondaryVertex))
+					numberOfBtags++;
+			}
+			fillHistoDataAndMC(h_numberOfBtags, numberOfBtags, this_weight);
 		}
 
 		// Add Delta R(e,mu)
@@ -8720,7 +8726,7 @@ void ana::bookBtagHistograms(ushort type, TDirectory *parent) {
 	addHistoDataAndMC(type, h_btag_softMuonNoIP_c, "btag_softMuonNoIP_c", "btag soft muon (c-quarks) no IP", 100, 0, 12);
 	addHistoDataAndMC(type, h_btag_softMuonNoIP_g, "btag_softMuonNoIP_g", "btag soft muon (gluons) no IP", 100, 0, 12);
 	addHistoDataAndMC(type, h_btag_softMuonNoIP_uds, "btag_softMuonNoIP_uds", "btag soft muon (uds-quarks) no IP", 100, 0, 12);
-
+	addHistoDataAndMC(type, h_numberOfBtags, "numberOfBtags", "number of btags", 10, 0, 10);
 	parent->cd();
 }
 
@@ -8741,7 +8747,7 @@ void ana::reco_Mttbar(const vector<TLorentzVector>& jets, const TLorentzVector& 
 
 	double chi2Tot = 999999;
 	double ht = GetHT(jets, 8);
-	ushort btag = btag_fake;
+	ushort btag = btag_secondaryVertex;
 
 	for (ushort blep_id = 0; blep_id < njets; blep_id++) {//get leptonic b-jet
 		if (!GetBtagFlag(blep_id, btag))
@@ -8752,10 +8758,10 @@ void ana::reco_Mttbar(const vector<TLorentzVector>& jets, const TLorentzVector& 
 			if (bhad_id == blep_id)
 				continue;
 			for (ushort quark1_id = 0; quark1_id < njets; quark1_id++) {//get quark from W decay
-				if (quark1_id == blep_id || quark1_id == bhad_id || GetBtagFlag(quark1_id, btag))
+				if (quark1_id == blep_id || quark1_id == bhad_id)
 					continue;
 				for (ushort quark2_id = 0; quark2_id < njets; quark2_id++) {//get quark' from W decay
-					if (quark2_id == quark1_id || quark2_id == bhad_id || quark2_id == blep_id || GetBtagFlag(quark2_id, btag))
+					if (quark2_id == quark1_id || quark2_id == bhad_id || quark2_id == blep_id)
 						continue;
 					blepjet = jets[blep_id];
 					bhadjet = jets[bhad_id];
@@ -8896,6 +8902,8 @@ void ana::reco_Mttbar_btagged(const vector<TLorentzVector>& jets, const TLorentz
 	ushort neutrinoID(0);
 	short bhadjetID(-1), blepjetID(-1), q1ID(-1), q2ID(-1);
 	ushort njets = number_of_jets_to_use_for_reco;
+	//for testing
+	njets = jets.size();
 
 	double chi2Tot = 999999;
 	double ht = GetHT(jets, 8);
@@ -9464,9 +9472,9 @@ bool ana::GetBtagFlag(ushort jetID, ushort btag) {
 	if (btag == btag_fake)
 		return fabs(btag_information[btag][jetID]) == 5;
 	else if (btag == btag_secondaryVertex)
-		return btag_information[btag][jetID] > 3.45; //~1% misstag rate
+		return btag_information[btag][jetID] > 0.9; //~1% misstag rate on uds
 	else if (btag == btag_TC_highPur)
-		return btag_information[btag][jetID] > 7;//1% misstag rate
+		return btag_information[btag][jetID] > 0;//1% misstag rate on uds
 	else
 		//TODO: implement other btags
 		return false;
