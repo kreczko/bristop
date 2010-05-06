@@ -2,8 +2,21 @@
 // To Do: 1) validate error table code.
 //        2) add WW,ZZ,WZ.
 //        3) adapt cut to conform to Reference Selection of Top Lepton+Jets
+//        4) exploit "goodrun" (stage 1) for event cleaning: NoScraping, goodPV
+//        5) Synch the muon veto with the current baseline from https://twiki.cern.ch/twiki/bin/view/CMS/TopLeptonPlusJetsRefSel_el
 //#====================================================#
 //# Last update:
+//  26 Apr 2010: -  
+//
+//  21 Apr 2010: - Made changes to jet cleaning (3H). Cleans using most isolated electron, but all isolated electrons 
+//                 if there is more than one.
+//               - added branches for els_scEta and els_dB and els_edB
+//               - TODO: check whether we're going to replace all els_eta with els_scEta, or just for synch exercise
+//
+//  16 Apr 2010: - Added QCD_AES plots: planB3_e5/10/15.
+//               - Reverted to old Z veto (ie Reference Selection)
+//               - Switched to explicit isolation variables: els_dr04TkSumPt; mus_iso03_sumPt/_emEt/_hadEt.
+//               - Conform muon veto to Ref. Sel.: Added MU_ISOCUT option.
 //
 //  13 Apr 2010: - Added met_ex and met_ey to validation code. Applied filtering requirements for validation.
 //
@@ -119,6 +132,9 @@ using namespace RooFit;
 
 #include "cms_bristol_ana_v3.hh" // defines ana class, including branches and leaves for tree
 
+
+// define type
+typedef unsigned int uint;
 
 // Global variables/constants
 //-----------------------------
@@ -355,6 +371,9 @@ void ana::SetMuonPTcut(float cut){
   MU_PTCUT = cut;
   nCutSetInScript++;
 }
+void ana::SetMuonISOcut(float cut){
+  MU_ISOCUT = cut;
+}
 void ana::SetJetPTcut(float cut){
   JET_PTCUT = cut;
   nCutSetInScript++;
@@ -386,11 +405,11 @@ void ana::PrintCuts() const {
     cout << "\n Okay, all 4 cuts are set." << endl;
   }
   cout << "\n This run will use the following cut values:\n"<< endl;
-  cout << " ELECTRON et cut =  " << ELE_ETCUT << "  GeV" << endl;
-  cout << "     MUON pt cut =  " << MU_PTCUT  << "  GeV" << endl;
-  cout << "      JET pt cut =  " << JET_PTCUT << "  GeV" << endl;
-  cout << "      MET    cut =  " << METCUT    << "  GeV" << endl;
-  //  cout << " HT cut     = " << HTCUT  << " GeV" << endl;
+  cout << " ELECTRON et cut  =  " << ELE_ETCUT << "  GeV" << endl;
+  cout << "     MUON pt cut  =  " << MU_PTCUT  << "  GeV" << endl;
+  cout << "     MUON iso cut =  " << MU_ISOCUT << endl;
+  cout << "      JET pt cut  =  " << JET_PTCUT << "  GeV" << endl;
+  cout << "      MET    cut  =  " << METCUT    << "  GeV" << endl;
   cout << " ELECTRON ID requirement  =  " << printEleID() << endl;
   cout << "\n***********************************************" << endl;
   cout << "\n  HT cut in AES:  " << AES_HT_cut << " GeV";
@@ -778,6 +797,7 @@ ana::ana(){
    m_runOnSD                 = true;
    m_runOnMyHLTskim          = true;
    m_runOn35Xntuples         = false;
+   m_cleanEvents             = false;
    m_useMisslayers           = false;
    m_muonCutNum              = 0;
    m_ntoy                    = 2;
@@ -791,7 +811,8 @@ ana::ana(){
 
    // Default values of kinematic cuts
    ELE_ETCUT                = 30.0;
-   MU_PTCUT                 = 20.0;
+   MU_PTCUT                 = 10.0;
+   MU_ISOCUT                = 0.2;
    JET_PTCUT                = 30.0;
    METCUT                   = 30.0;
    HTCUT                    = 0.0;
@@ -921,11 +942,14 @@ void ana::ReadSelectedBranches() const {
    chain->SetBranchStatus("mus_tk_px",1);
    chain->SetBranchStatus("mus_tk_py",1);
    chain->SetBranchStatus("mus_tkHits",1);
-   chain->SetBranchStatus("mus_tIso",1);
-   chain->SetBranchStatus("mus_cIso",1);
+   //chain->SetBranchStatus("mus_tIso",1);
+   //chain->SetBranchStatus("mus_cIso",1);
    chain->SetBranchStatus("mus_id_AllGlobalMuons",1); //new
    chain->SetBranchStatus("mus_ecalvetoDep",1); //new
    chain->SetBranchStatus("mus_hcalvetoDep",1); //new
+   chain->SetBranchStatus("mus_iso03_sumPt",1); //new
+   chain->SetBranchStatus("mus_iso03_emEt",1); //new
+   chain->SetBranchStatus("mus_iso03_hadEt",1); //new
 
    if(m_jetAlgo=="Default"){ //using default jet-met
      chain->SetBranchStatus("Njets",1); //jets
@@ -936,6 +960,11 @@ void ana::ReadSelectedBranches() const {
      chain->SetBranchStatus("jets_eta",1);
      chain->SetBranchStatus("jets_pt",1);
      chain->SetBranchStatus("jets_emf",1);
+     chain->SetBranchStatus("jets_n90",1);
+     if(m_runOn35Xntuples){
+       //chain->SetBranchStatus("jets_id_hitsInN90",1);
+       //chain->SetBranchStatus("jets_id_fHPD",1);
+     }
      chain->SetBranchStatus("jets_btag_TC_highPur",1);//btag
      chain->SetBranchStatus("jets_btag_TC_highEff",1);
      chain->SetBranchStatus("jets_btag_secVertex",1);
@@ -1050,12 +1079,15 @@ void ana::ReadSelectedBranches() const {
      chain->SetBranchStatus(HLTBit.c_str(),1);
    }
 
-   if(m_runOn35Xntuples){
+   if(m_runOn35Xntuples && m_cleanEvents){
      chain->SetBranchStatus("Npv",1);
      chain->SetBranchStatus("pv_z",1);
      chain->SetBranchStatus("pv_isFake",1);
      chain->SetBranchStatus("pv_ndof",1);
-     //chain->SetBranchStatus("pv_rho",1);//missing rho
+     chain->SetBranchStatus("els_dB",1);
+     chain->SetBranchStatus("els_edB",1);
+     chain->SetBranchStatus("els_scEta",1);
+     chain->SetBranchStatus("pv_rho",1);//missing rho
    }
 
 }//end ReadSelectedBranches
@@ -1134,10 +1166,10 @@ bool ana::PrimaryVertexFilter() const {
   
   bool goodpv = false;
   for(unsigned int i=0; i<Npv; ++i){
-    if(    pv_isFake->at(i)==0 
-	   && pv_ndof->at(i) > 4  
-	   && fabs(pv_z->at(i)) <= 15 
-	   // &&      fabs(pv_rho->at(i) < 2 
+    if(    pv_isFake->at(i)==0 &&
+	   pv_ndof->at(i) > 4  &&
+	   fabs(pv_z->at(i)) <= 15 
+	   &&      fabs(pv_rho->at(i)) < 2 
 	   ) { goodpv = true;
     }
   }
@@ -1827,6 +1859,10 @@ void ana::BookHistograms_QCD_planB(){
   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB7_e30, "QCDest_CombRelIso_AES_planB7_e30", "RelIso (AES B7 |d_{0}|>200um RT=1 E_{T}>30)", 1000,0,10);
   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB8_e20, "QCDest_CombRelIso_AES_planB8_e20", "RelIso (AES B8 |d_{0}|>200um RT=0 E_{T}>20)", 1000,0,10);
   addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB8_e30, "QCDest_CombRelIso_AES_planB8_e30", "RelIso (AES B8 |d_{0}|>200um RT=0 E_{T}>30)", 1000,0,10);
+  // new 16 Apr
+  addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e5,  "QCDest_CombRelIso_AES_planB3_e5",  "RelIso (AES B3 RT=0 E_{T}>5)",  1000,0,10);
+  addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e10, "QCDest_CombRelIso_AES_planB3_e10", "RelIso (AES B3 RT=0 E_{T}>10)", 1000,0,10);
+  addHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e15, "QCDest_CombRelIso_AES_planB3_e15", "RelIso (AES B3 RT=0 E_{T}>15)", 1000,0,10);
 
 }//end BookHistograms_QCD_planB()
 //---------------------------------------------------------------------------------------------
@@ -2203,6 +2239,11 @@ bool ana::EventLoop(){
 //      }
 
 
+     //Apply PV filter and No scraping event requirement. 
+     // Clean up events
+     if( m_runOn35Xntuples && m_cleanEvents ){
+       //  if( !PrimaryVertexFilter() || !NoScrapingFilter() ) goodrun = false;
+     }
 
 
      if(m_debug || ev<10 || ev%5000==0) {
@@ -2217,8 +2258,6 @@ bool ana::EventLoop(){
 	    << ", EvtSize " << nbytes << endl;
      }
 
-     //Apply PV filter and No scraping event requirement. Commented out for now.
-     //if(!PrimaryVertexFilter() || !NoScrapingFilter() ) continue;
 
 
      
@@ -2512,7 +2551,8 @@ bool ana::EventLoop(){
 
        //Make Et and Eta cuts 
        if (els_et->at(i) > ELE_ETCUT &&
-	   fabs(els_eta->at(i)) < 2.5) {
+	   //fabs(els_scEta->at(i)) < 2.5) {
+	 fabs(els_eta->at(i)) < 2.5) {
 
 	 if(m_debug) cout << "-> this electron has passed ET and ETA cut" << endl;
 
@@ -2534,8 +2574,10 @@ bool ana::EventLoop(){
 	   float d0_corrected = - (-(vx - 0.0322)*vpy + vy*vpx) / vpt ; //d0 = -dxy
 	   //cout << "ele d0:  uncorrected = " << els_d0->at(i) << "  corrected = "<< d0_corrected << endl;
 	 */
-	 float d0_corrected = compute_d0("electron",i); 
-
+	 float d0_corrected;
+	 //if(m_runOn35Xntuples){d0_corrected = (els_dB->at(i)/fabs(els_edB->at(i)));}
+	 //else{d0_corrected = compute_d0("electron",i); }
+	 d0_corrected = compute_d0("electron",i);
 
 
 	 // Store electron d0 information
@@ -2545,7 +2587,9 @@ bool ana::EventLoop(){
 
 
 	 // (6 Mar 09) Apply d0 cut on electron, 200 micron = 0.02cm
-	 if( fabs(d0_corrected) < 0.02 ) {
+	 // 26th April 10: Apply d0 on electorn using significance, < 3
+	 if(fabs(els_dB->at(i)/fabs(els_edB->at(i))) < 3){
+	   //if( fabs(d0_corrected) < 0.02 ) {
 
 	   nBasicD0Ele++;
 	   // Count how many electron passing each type of electron ID	  
@@ -2565,6 +2609,7 @@ bool ana::EventLoop(){
 
 	   
 	   // Count number of good electron passing each eid (ignore those in eta gap: 1.442-1.56)
+	   //if ( fabs(els_scEta->at(i))<1.4442 || fabs(els_eta->at(i))>1.5660 ) {
 	   if ( fabs(els_eta->at(i))<1.442 || fabs(els_eta->at(i))>1.560 ) {
 	     if( els_looseId->at(i) > 0 )        nLooseEle++;
 	     if( els_tightId->at(i) > 0 )        nTightEle++;
@@ -2574,6 +2619,7 @@ bool ana::EventLoop(){
 
 	   //Separate into endcap and barrel
 	   	   
+	   //if (fabs(els_scEta->at(i)) < 1.4442) { //Barrel
 	   if (fabs(els_eta->at(i)) < 1.442) { //Barrel
 	     
 	     // Plot electron ID quantities
@@ -2632,7 +2678,9 @@ bool ana::EventLoop(){
 	     }	     
 	   }// end barrel
 
-	   else if (fabs(els_eta->at(i)) > 1.560 && fabs(els_eta->at(i)) < 2.5) { //Endcap
+	   //use scEta for barrel, but eta for 2.5 limit.
+	   //else if (fabs(els_scEta->at(i)) > 1.5660 && fabs(els_eta->at(i)) < 2.5) { //Endcap
+	     else if (fabs(els_eta->at(i)) > 1.560 && fabs(els_eta->at(i)) < 2.5) { //Endcap
 
 	     // Plot electron ID quantities
 	     // NEW 25-3-2010 (after ET cut, in endcap)
@@ -2761,6 +2809,7 @@ bool ana::EventLoop(){
 	     // Calculate d0 w.r.t beam spot position
 	     float d0_corrected = compute_d0("electron",k);
 	     
+	     //if(fabs(els_d0sig->at(i) < ???){
 	     if( fabs(d0_corrected) < 0.02 ){
 	       nEle_Z_eteta_d0++;
 	     
@@ -2799,7 +2848,7 @@ bool ana::EventLoop(){
        //Make Pt and Eta cuts (consider global muons only)
        if ( mus_id_AllGlobalMuons->at(i) > 0 && 
 	    mus_cm_pt->at(i) > MU_PTCUT &&
-	    fabs(mus_cm_eta->at(i)) < 2.1 ) {
+	    fabs(mus_cm_eta->at(i)) < 2.5 ) {
 	 
 	 // Correct muon d0 using BeamSpot
 	 float mu_d0_corrected = compute_d0("muon",i);
@@ -2814,11 +2863,14 @@ bool ana::EventLoop(){
 
 
 	 //Apply V+jets Muon ID (consider only Global Muons)
-	 if ( (mus_cm_chi2->at(i)/mus_cm_ndof->at(i)) < 10 &&
-	      fabs(mu_d0_corrected) < 0.02 &&
-	      mus_tkHits->at(i) >= 11 &&
-	      mus_hcalvetoDep->at(i) < 6.0 &&  // veto cone energy
-	      mus_ecalvetoDep->at(i) < 4.0 ) {
+// 	 if ( (mus_cm_chi2->at(i)/mus_cm_ndof->at(i)) < 10 &&
+// 	      fabs(mu_d0_corrected) < 0.02 &&
+// 	      mus_tkHits->at(i) >= 11 &&
+// 	      mus_hcalvetoDep->at(i) < 6.0 &&  // veto cone energy
+// 	      mus_ecalvetoDep->at(i) < 4.0 ) {
+
+	 // NOTE: Ref sel doesn't have muon ID cuts
+	 if ( 1 ) {
 
 	   //Store 4 vector for "good" muon and increment counters
 	   TLorentzVector muo(mus_cm_px->at(i),mus_cm_py->at(i),mus_cm_pz->at(i),mus_energy->at(i)); //global muon
@@ -2827,11 +2879,13 @@ bool ana::EventLoop(){
 	   muons.push_back(muo);
 	     
 	     
-	   //Compute Combined RelIso for muons
-	   float CombRelIso = (mus_tIso->at(i) + mus_cIso->at(i) ) / mus_cm_pt->at(i);  //new reliso
+	   //Compute Combined RelIso for muons (DR=0.3)
+	   //	   float CombRelIso = (mus_tIso->at(i) + mus_cIso->at(i) ) / mus_cm_pt->at(i);  //new reliso
+	   float CombRelIso = (mus_iso03_sumPt->at(i) + mus_iso03_emEt->at(i) + mus_iso03_hadEt->at(i) ) / mus_cm_pt->at(i);
 
 	   // Apply isolation cut
-	   bool isIsolated = CombRelIso < 0.05; //new reliso (muon)
+	   //bool isIsolated = CombRelIso < 0.05; //new reliso (muon)
+	   bool isIsolated = CombRelIso < MU_ISOCUT; //new reliso (muon)
 
 	   if (isIsolated) { //Isolated
 
@@ -2863,9 +2917,11 @@ bool ana::EventLoop(){
      if(m_debug) cout << " Starting CONVERSION Veto section"<< endl;
      //bool isConversion = false;
      if (nGoodIsoEle == 1) { // If 1 electron only, check if this electron is a conversion ... if more than one ignore (will be rejected anyawy)
-       isConversion = ConversionFinder(iso_electrons.at(0), mctype, index_selected_ele);
+       //isConversion = ConversionFinder(iso_electrons.at(0), mctype, index_selected_ele);
+       isConversion = ConversionFinder( index_selected_ele);
        if( DoConversionStudies() ){ConversionMCMatching(iso_electrons.at(0), mctype, isConversion);
 	 //OptimiseConversionFinder(iso_electrons.at(0), mctype,index_selected_ele);
+	 //OptimiseConversionFinder( mctype,index_selected_ele);
 	 if(m_useMisslayers) {
 	   Converted_ML[0]->Fill(  els_innerLayerMissingHits->at(index_selected_ele)  );
 	   if(isConversion) Converted_ML[1]->Fill(  els_innerLayerMissingHits->at(index_selected_ele)  );
@@ -2913,10 +2969,11 @@ bool ana::EventLoop(){
 	 if ( jets_pt->at(i) > JET_PTCUT   &&
 	      fabs(jets_eta->at(i)) < 2.4  &&
 	      jets_emf->at(i) > 0.01 )  { //<-- NEW: jets_emf
+	   if(m_runOn35Xntuples){ if(jets_id_hitsInN90->at(i) <= 1 || // added these 23-04-10
+				     jets_id_fHPD->at(i) > 0.98) continue;} //  added these 23-04-10
 	   TLorentzVector jt(jets_px->at(i),jets_py->at(i),jets_pz->at(i),jets_energy->at(i));
 	   nGoodJet++;
 	   jets.push_back(jt);
-
 	 }
        } 
      } else if (m_jetAlgo=="SC5") {
@@ -2988,7 +3045,8 @@ bool ana::EventLoop(){
      // 3H - Do "jet cleaning"
      //-------------------------
      if(m_debug) cout << " Do jet cleaning" << endl;
-	
+
+     /*
      float delR_jet_ele = 9999;
 	
      float jetCleaningEff = -1.0;
@@ -3014,7 +3072,52 @@ bool ana::EventLoop(){
 	 }	    
        }
      }// end jets loop
-	
+     */
+
+
+
+
+
+     //Apply new jet cleaning: only the most isolated electron, except in the case when
+     // there are many isolated electrons, in which case all iso will be used. 
+     float delR_jet_ele = 9999;
+
+     float jetCleaningEff = -1.0;
+     float nJet_beforeCleaning = nGoodJet;
+
+     if(iso_electrons.size()){
+       for(unsigned int i = 0 ; i < jets.size(); ++i) {
+	 for(unsigned int j = 0 ; j < iso_electrons.size(); ++j){
+	   delR_jet_ele = jets.at(i).DeltaR( iso_electrons.at(j) );
+	   if (delR_jet_ele < 0.3) {
+	     nGoodJet--;
+	     jets.erase(jets.begin() + i);
+	     i--;
+	     break;//end electron loop (no need to check for other jets)
+	   }
+	 }
+       }
+     }
+     else if(electrons.size()){//else find most iso electron, but check there are electrons
+     int JC_mostIso_ii = -1;
+     float mostIso = 999999;
+     for (uint i=0; i<ii_electrons.size(); ++i) {
+       float thisIso = electrons_isoval.at(i);
+       if(thisIso < mostIso) { //RelIso           
+	 mostIso = thisIso;
+	 JC_mostIso_ii = i;
+       }
+     }
+       for(unsigned int i = 0 ; i < jets.size(); ++i) {
+	 delR_jet_ele = jets.at(i).DeltaR( electrons.at(JC_mostIso_ii) );
+	 if (delR_jet_ele < 0.3) {
+	   nGoodJet--;
+	   jets.erase(jets.begin() + i);
+	   i--;
+	 }
+       }
+     }
+
 
      if(nGoodJet>=4) pass_4jets = true;
 
@@ -3158,75 +3261,47 @@ bool ana::EventLoop(){
 
 
 
+   
 
 
+     //-----------------------------------------------------------------------------------     
+     //  3K - Z veto (according to Reference Selection):
+     //--------------
+     //  (1) For event with exactly 1 isolated electron, find any "loose" electron defined as:
+     //      - ET>20, 
+     //      - |eta|<2.5,
+     //      - pass "robustLoose" ID,
+     //      - RelIso < 1.0.
+     //  (2) If any di-electron invariant mass falls in window 75-106 GeV, flag as Z.
+     //-----------------------------------------------------------------------------------
 
-     //-----------------------------------------------------------------------------------
-     // 3K - Z veto (normal selection)
-     //-----------------------------------------------------------------------------------
-     // Two components:
-     //  (1) If event contain 2 or more isolated electrons, flag as Z.
-     //  (2) Look for 2 identified electrons (any ID), ET>20, |eta|<2.5, |d0|<200 micron,
-     //      For each pair, calculate invariant mass, if it is withiin 76-106, flag as Z events.
-     //-----------------------------------------------------------------------------------
      if(m_debug) cout << " Starting Z Veto section"<< endl;
 
-     // Component (1)
-     bool isZ_twoIE = false;
-     if (nGoodIsoEle >= 2) {
-       isZ_twoIE = true;
-       if (nGoodIsoEle >= 3) cout << "\n*** Multilepton (>=3) Event!!! ***\n" << endl;
-     }
-     
-     
-     // Component (2)
-     // Do Z veto for ACCEPTED events only....
      bool isZ_mee = false;
 
-     if( fired_single_em  &&  pass_only1_isoele  &&  !isMuon  &&  pass_4jets  &&  pass_met ) {
+     if ( nGoodIsoEle==1 && Nels > 1  ) {
 
-       if ( Nels > 1  ) {
+       for (uint j=0; j<Nels; ++j){ //e loop
+         
+         if(j==index_selected_ele) continue;
+           
+         // find loose ele
+         if( els_et->at(j) < 20.0 ) continue;
+         if( fabs( els_eta->at(j) ) > 2.5 ) continue;
+         if( els_robustLooseId->at(j) < 1 ) continue;
+         if( getRelIso(j) > 1.0 ) continue;
+         
+         TLorentzVector loose(els_px->at(j),els_py->at(j),els_pz->at(j),els_energy->at(j));
+         float mass = ( iso_electrons.at(0) + loose ).M();
+         //cout << "   m(e,e) = " << mass << endl;
+         if(m_studyZveto) fillHistoDataAndMC( h_mass_diele, mass );
+         if ( mass > 76.  &&  mass < 106. ) isZ_mee = true; //within window, flag
+         
+       }//e loop
 
-	 // i) Collect RL ele
-	 //cout << "TEST: N(e) = " << Nels << endl;
-	 vector<TLorentzVector> myIDele; //pass any ID (L,T,RL,RT)
-
-	 for (unsigned int j=0; j<Nels; ++j) { //e loop
-
-	   if( els_et->at(j) < 20.0 ) continue;
-	   if( fabs( els_eta->at(j) ) > 2.5 ) continue;
-	   if( fabs(compute_d0("electron",j)) > 0.02 ) continue;
-	   // If pass any eID, collect this ele
-	   if( els_robustLooseId->at(j) > 0  ||
-	       els_robustTightId->at(j) > 0  ||
-	       els_looseId->at(j)       > 0  ||
-	       els_tightId->at(j)       > 0 ) {
-	     TLorentzVector loose(els_px->at(j),els_py->at(j),els_pz->at(j),els_energy->at(j));
-	     myIDele.push_back(loose);
-	   }
-	 }
-
-	 // ii) if there are two RL, then compute m(e,e)
-	 //cout << "myIDele.size(): "<< myIDele.size() << endl;
-	 if( myIDele.size()>1 ) {
-
-	   for (unsigned int i=0; i<myIDele.size()-1; ++i){ //1st RL ele
-	     for (unsigned int j=i+1; j<myIDele.size(); ++j){ //2nd RL ele
-
-	       float invmass = (myIDele.at(i) + myIDele.at(j)).M();
-	       if(m_studyZveto) fillHistoDataAndMC( h_mass_diele_new, invmass );
-	       if(invmass>76.0 && invmass<106.0) isZ_mee = true;
-	       //cout <<"invmass: " << invmass << endl;
-	     }
-	   }
-	 }//RLele loop
-       
-       }//if more than 1 reco-electron
-       
-     }//pass cuts prior to Z veto
-
-     isZ = isZ_twoIE || isZ_mee;
-   
+     }//if more than 2 electron & pass =1ISO
+     
+     isZ = isZ_mee;     
 
 
 
@@ -3717,7 +3792,8 @@ bool ana::EventLoop(){
      if(CombRelIso>0.1 && nGoodEle>0 ){
        //cout <<"ii_GoodEle_mostIso = "<< ii_GoodEle_mostIso  << endl;
        TLorentzVector eles_temp(els_px->at(ii_GoodEle_mostIso),els_py->at(ii_GoodEle_mostIso),els_pz->at(ii_GoodEle_mostIso),els_energy->at(ii_GoodEle_mostIso));
-       isConversionMIGE = ConversionFinder(eles_temp, mctype, ii_GoodEle_mostIso);
+       //isConversionMIGE = ConversionFinder(eles_temp, mctype, ii_GoodEle_mostIso);
+       isConversionMIGE = ConversionFinder(ii_GoodEle_mostIso);
      }
    
    
@@ -4244,11 +4320,12 @@ bool ana::EventLoop(){
 
    cout << "Integrated luminosity assumed = " << m_intlumi << "/pb" << endl;
    if( GetTrigger() ) cout << "Applied HLT trigger: " << HLTBit << endl;
-   cout << " Electron ET cut =  " << ELE_ETCUT << "  GeV" << endl;
-   cout << "     Muon PT cut =  " << MU_PTCUT  << "  GeV" << endl;
-   cout << "      Jet PT cut =  " << JET_PTCUT << "  GeV" << endl;
-   cout << "      MET    cut =  " << METCUT    << "  GeV" << endl;
-   //cout << "       HT    cut =  " << HTCUT     << "  GeV" << endl;
+   cout << " Electron ET cut  =  " << ELE_ETCUT << "  GeV" << endl;
+   cout << "     Muon PT cut  =  " << MU_PTCUT  << "  GeV" << endl;
+   cout << "     Muon iso cut =  " << MU_ISOCUT  << endl;
+   cout << "      Jet PT cut  =  " << JET_PTCUT << "  GeV" << endl;
+   cout << "      MET    cut  =  " << METCUT    << "  GeV" << endl;
+
    cout << " Electron ID = " << printEleID() << endl;
    cout << " Electron RelIso formula = " ;
    if(useNewReliso) cout << "new"; else cout << "old";
@@ -4825,7 +4902,8 @@ void ana::StudyQCDControlRegion_planA(){
       //if(m_debug) cout << "   calling ConversionFinder()" << endl;
       //cout << "[DEBUG] A2" << endl;
       //	   TLorentzVector eles_temp(els_px->at(0),els_py->at(0),els_pz->at(0),els_energy->at(0));
-      bool this_is_conv = ConversionFinder( electrons.at(0), mctype, 0); //1st good ele
+      //bool this_is_conv = ConversionFinder( electrons.at(0), mctype, 0); //1st good ele
+      bool this_is_conv = ConversionFinder( 0); //1st good ele
 
       if ( this_is_conv ) {
 	if ( this_et > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA2_e20, this_iso, this_weight );
@@ -4916,8 +4994,14 @@ void ana::StudyQCDControlRegion_planB(){
 	// Definition B3: fail RT ID
 	//---------------------------
 	if(m_debug) cout << "    B3" << endl;
-	if ( els_et->at(0) > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e20, this_iso, this_weight );
-	  if ( els_et->at(0) > 30. )  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e30, this_iso, this_weight );
+	if ( els_et->at(0) > 5. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e5, this_iso, this_weight );
+	  if ( els_et->at(0) > 10. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e10, this_iso, this_weight );
+	    if ( els_et->at(0) > 15. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e15, this_iso, this_weight );
+	      if ( els_et->at(0) > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e20, this_iso, this_weight );
+		if ( els_et->at(0) > 30. )  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3_e30, this_iso, this_weight );
+	      }
+	    }
+	  }
 	} 
 	if( fabs(els_eta->at(0))  < 1.442 ){ //BARREL
 	  if ( els_et->at(0) > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3b_e20, this_iso, this_weight );
@@ -6042,209 +6126,6 @@ void ana::fillHisto_PDF_weights( TH1D* h ){
 //                                  Conversion Finder
 //
 //=============================================================================================
-// This was originally ConversionFinder but has been replaced (07-01-10). It is left here until the new routine has been thoroughly tested. 
-bool ana::ConversionFinder2(const TLorentzVector& e1, int mctype, int index_selected_ele)  {
-
-  if(m_debug) cout << "Starting << ConversionFinder2 >>" << endl;
-  bool isthisConversion = false;
-
-  const float bfield=3.8;
-  
-  float phi_ie = e1.Phi();
-  float eta_ie = e1.PseudoRapidity();
-
-  int mytrackref  = static_cast<int>( els_closestCtfTrackRef->at(index_selected_ele) );
-  /*
-  float tphi1;
-  float teta1;
-  if(mytrackref>-1){
-    tphi1 = tracks_phi->at(mytrackref);
-    teta1 = tracks_eta->at(mytrackref);
-    float tEleTrackDelR = calcDeltaR( tphi1, teta1, phi_ie, eta_ie);
-    ///    cout<<"tEleTrackDelR: "<<tEleTrackDelR <<endl;
-    Conv_CheckDelR_GSFTk_ctfTk->Fill(tEleTrackDelR);
-  }
-  else{Conv_CheckDelR_GSFTk_ctfTk->Fill(10);}
-  */
-
-
-  //declare track variables
-  float phi1,eta1,phi2,eta2;
-  float tk1Curvature;
-  float tk2Curvature;
-  float tk1r;
-  float tk2r;
-  float d0;
-  float d02;
-  float tk1x;
-  float tk1y;
-  float tk2x;
-  float tk2y;
-  float distmag;
-  float dist;
-  float dcot;
-  
- 
-  //first loop over tracks, trying to match to the electron
-  for (unsigned int i=0; i<Ntracks; ++i){
-    if(mytrackref > -1){
-      i = mytrackref;
-    }
-
-    phi1 = tracks_phi->at(i);
-    eta1 = tracks_eta->at(i);
-    
-    float EleTrackDelR = calcDeltaR( phi1, eta1, phi_ie, eta_ie);
-    
-    //consider only tracks that fall within a small cone around electron
-    if(EleTrackDelR > 0.3 && mytrackref < 0) continue;
-    
-    //calculate curvature and radius of track
-    tk1Curvature = -0.3*bfield*tracks_chg->at(i)/( 100*( tracks_pt->at(i) ) );
-    tk1r = fabs(1/tk1Curvature);
-
-    /*
-    //  d0 = tracks_d0->at(i);
-    // Calculate d0 w.r.t beam spot position (x,y)=(0.0325839, 0.0001793) (3 Mar 09)
-    float vx = tracks_vx->at(i);
-    float vy = tracks_vy->at(i);
-    float px = tracks_px->at(i);
-    float py = tracks_py->at(i);
-    float pt = tracks_pt->at(i);
-    d0 = - (-(vx-0.0325839)*py + (vy-0.0001793)*px) / pt ; //d0 = -dxy
-    */
-    // NEW (Aug 09)
-    d0 = compute_d0("track",i);
-
-
-
-    //calculate coordinates of centre of track "circle"
-    tk1x = ((1/tk1Curvature) - d0)*cos(phi1);
-    tk1y = ((1/tk1Curvature) - d0)*sin(phi1);
-    //loop over the tracks again, try to find other track in a conversion
-    for (unsigned int j=0; j<Ntracks; ++j){
-      //avoid using the same track:
-      if(i==j) continue;
-      phi2 = tracks_phi->at(j);
-      eta2 = tracks_eta->at(j);
-
-      //For a restriction on the position of the second track with respect to the
-      //electron, uncomment the line following. The main advantage is a slight
-      //reduction in signal loss with very little change in the conversion
-      //rejection rate
-      //if( calcDeltaR( phi2, eta2, phi_ie, eta_ie) > 0.5 ) continue;
-
-      //check the tracks have opposite charges
-      if(tracks_chg->at(i)*tracks_chg->at(j) > 0.0) continue;
-
-
-      tk2Curvature = -0.3*bfield*tracks_chg->at(j)/( 100*( tracks_pt->at(j) ) );
-      tk2r = fabs(1/tk2Curvature);
-
-
-      //d02 = tracks_d0->at(j);
-      // Calculate d0 w.r.t beam spot position (x,y)=(0.0325839, 0.0001793) (3 Mar 09)
-//       float vx2 = tracks_vx->at(j);
-//       float vy2 = tracks_vy->at(j);
-//       float px2 = tracks_px->at(j);
-//       float py2 = tracks_py->at(j);
-//       float pt2 = tracks_pt->at(j);
-//       d02 = - (-(vx2-0.0322)*py2 + vy2*px2) / pt2 ; //d0 = -dxy
-      d02 = compute_d0("track",j);
-
-
-      tk2x = ((1/tk2Curvature) - d02)*cos(phi2);
-      tk2y = ((1/tk2Curvature) - d02)*sin(phi2);
-
-      //calculate distance between curves
-      distmag = (tk2x - tk1x)*(tk2x -tk1x) + (tk2y -tk1y)*(tk2y-tk1y);
-      distmag = sqrt(distmag);
-      dist = distmag-(tk1r+tk2r);
-      dcot = 1/tan(tracks_theta->at(i)) - 1/tan(tracks_theta->at(j));
-
-      // FB/TL (13 Feb 09): update cut values for better performace
-      // studies shown that using the new criteria, acceptance of conversion
-      // events increase from 33% to ~50%, with littler effect on the signal 
-      // rejection (1.4% to 2%)
-      // if( dist > -0.02 && dist < 0.01 && fabs(dcot) < 0.02)
-      if( dist > -0.04 && dist < 0.04 && fabs(dcot) < 0.03)
-	{
-	  //cout <<"Found a Conversion!"<<endl;
-	  isthisConversion = true;
-	  break;
-	}
-
-    }//end of second track loop
-
-    if(isthisConversion) break;
-    if(mytrackref > -1) break;
-  }//end of first track loop
-
-  //856
-  if( DoConversionStudies() ) {
-
-    if ( Nmc_doc==0 ){
-    // print only first 20 occurances
-    static int mm = 0;
-    if(mm==0) cout << "(Printing first 20 occurances.)" << endl;
-    if(mm<20) { cout << "PROBLEM: Nmc_doc = 0. Cannot do conversion studies (involve MC matching)." << endl; ++mm; }
-    }
-    else if ( Nmc_doc>0 ){
-
-      int didConv = 0;
-      if(isthisConversion){
-	didConv = 1;
-      }
-
-      //  int mctype = 1;
-      ConversionArray[mctype][didConv][0]++;
-      
-      float mc_phi;
-      float mc_eta;
-      int ii=0;
-      float tempDelR = 100;
-      
-      
-      for(unsigned int i=0;i<Nmc_doc;++i){
-	mc_phi = mc_doc_phi->at(i);
-	mc_eta = mc_doc_eta->at(i);
-	float empDelR = calcDeltaR( mc_phi, mc_eta, phi_ie, eta_ie);
-	if(empDelR > 0.3) continue;
-	
-	if(empDelR < tempDelR){tempDelR = empDelR;ii=i;}
-      }//end mc particle loop  
-      
-      //     cout << "amtb 4c" << endl;
-      //     cout << "ii="<<ii << endl;
-      //     cout << "Nmc_doc="<< Nmc_doc << endl;
-      //     cout << "mc_doc_id(ii)="<< mc_doc_id->at(ii) << endl;
-      
-      if( fabs( mc_doc_id->at(ii) ) == 11){
-	if(m_debug)  cout << "It matches closest to a real electron" << endl;  
-	ConversionArray[mctype][didConv][1]++;
-      }
-      
-      else if( fabs( mc_doc_id->at(ii) ) == 22){
-	if(m_debug) cout << "It matches closest to a photon" << endl;
-	ConversionArray[mctype][didConv][2]++;
-      }
-      
-      else if( fabs( mc_doc_id->at(ii) ) == 111 || fabs( mc_doc_id->at(ii) ) == 221  ){
-	if(m_debug) cout << "It matches closest to a pi zero or eta" << endl;
-	ConversionArray[mctype][didConv][3]++;
-      }
-      else{ 
-	if(m_debug) cout << "It matches closest to something else" << endl;
-	ConversionArray[mctype][didConv][4]++;
-      }  
-      
-      //end 856
-    }//has genPar
-  }//if DoConversionStudies
-
-  return isthisConversion;
-
-}//end ConversionFinder2
 
 
 //return generated particle match to reco object based on delR
@@ -6264,10 +6145,7 @@ float ana::MCTruthMatch(float eta, float phi){
 }
 
 
-
-
-
-bool ana::ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele) {
+bool ana::ConversionFinder(  int index_selected_ele) {
 
   //Should do no more than return whether the electron passes the conversion algo or not
   //This currently (07-01-10) doesn't actually use mctype or e1. For now leave in case they might be useful for 
@@ -6441,7 +6319,7 @@ void ana::ConversionMCMatching(const TLorentzVector& e1, int mctype, bool isthis
 
 
 //856
-void ana::OptimiseConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele){
+void ana::OptimiseConversionFinder( int mctype, int index_selected_ele){
 
   int mytrackref  = static_cast<int>( els_closestCtfTrackRef->at(index_selected_ele) );
   const float bfield=3.8;
@@ -9813,7 +9691,8 @@ double ana::getTotalEvents( const v3D_double& nevent, const int& cut, const int&
 
 
 float ana::getRelIso(const unsigned int& i) const {
-  return (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i) + els_tIso->at(i))/els_et->at(i);
+  //  return (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i) + els_tIso->at(i))/els_et->at(i);
+  return (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i) + els_dr04TkSumPt->at(i))/els_et->at(i);
 }
 //---------------------------------------------------------------------------------------------
 

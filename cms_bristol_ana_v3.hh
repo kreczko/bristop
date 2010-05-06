@@ -155,6 +155,9 @@ public:
    vector<float>   *els_isEB;
    vector<float>   *els_isEBGap;
    vector<float>   *els_isConvertedPhoton;
+   vector<float>   *els_dB;
+   vector<float>   *els_edB;
+   vector<float>   *els_scEta;
    UInt_t          Njets;
    vector<float>   *jets_energy;
    vector<float>   *jets_et;
@@ -204,6 +207,8 @@ public:
    vector<float>   *jets_ehf;
    vector<float>   *jets_n60;
    vector<float>   *jets_n90;
+   vector<float>   *jets_id_hitsInN90;
+   vector<float>   *jets_id_fHPD;
    vector<float>   *jets_area;
    vector<float>   *jets_mass;
 
@@ -238,6 +243,8 @@ public:
   vector<float>   *jetsKT4_ehf;
   vector<float>   *jetsKT4_n60;
   vector<float>   *jetsKT4_n90;
+  vector<float>   *jetsKT4_id_hitsInN90;
+  vector<float>   *jetsKT4_id_fHPD;
   vector<float>   *jetsKT4_area;
   vector<float>   *jetsKT4_mass;
 
@@ -272,6 +279,8 @@ public:
   vector<float>   *jetsKT6_ehf;
   vector<float>   *jetsKT6_n60;
   vector<float>   *jetsKT6_n90;
+  vector<float>   *jetsKT6_id_hitsInN90;
+  vector<float>   *jetsKT6_id_fHPD;
   vector<float>   *jetsKT6_area;
   vector<float>   *jetsKT6_mass;
 
@@ -306,6 +315,8 @@ public:
    vector<float>   *jetsSC5_ehf;
    vector<float>   *jetsSC5_n60;
    vector<float>   *jetsSC5_n90;
+  vector<float>   *jetsSC5_id_hitsInN90;
+  vector<float>   *jetsSC5_id_fHPD;
    vector<float>   *jetsSC5_area;
    vector<float>   *jetsSC5_mass;
 
@@ -340,6 +351,8 @@ public:
    vector<float>   *jetsSC7_ehf;
    vector<float>   *jetsSC7_n60;
    vector<float>   *jetsSC7_n90;
+  vector<float>   *jetsSC7_id_hitsInN90;
+  vector<float>   *jetsSC7_id_fHPD;
    vector<float>   *jetsSC7_area;
    vector<float>   *jetsSC7_mass;
 
@@ -374,6 +387,8 @@ public:
    vector<float>   *jetsJPTAK5_ehf;
    vector<float>   *jetsJPTAK5_n60;
    vector<float>   *jetsJPTAK5_n90;
+  vector<float>   *jetsJPTAK5_id_hitsInN90;
+  vector<float>   *jetsJPTAK5_id_fHPD;
    vector<float>   *jetsJPTAK5_area;
    vector<float>   *jetsJPTAK5_mass;
 
@@ -642,6 +657,7 @@ public:
    vector<float>   *pv_tracksSize;
    vector<float>   *pv_isValid;
    vector<float>   *pv_isFake;
+   vector<float>   *pv_rho;
    UInt_t          Ntcmets;
    vector<float>   *tcmets_et;
    vector<float>   *tcmets_phi;
@@ -834,6 +850,9 @@ public:
    TBranch        *b_els_isEB;   //!
    TBranch        *b_els_isEBGap;   //!
    TBranch        *b_els_isConvertedPhoton;   //!
+   TBranch        *b_els_dB;   //!
+   TBranch        *b_els_edB;   //!
+   TBranch        *b_els_scEta;   //!
    TBranch        *b_Njets;   //!
    TBranch        *b_jets_energy;   //!
    TBranch        *b_jets_et;   //!
@@ -883,6 +902,8 @@ public:
    TBranch        *b_jets_ehf;   //!
    TBranch        *b_jets_n60;   //!
    TBranch        *b_jets_n90;   //!
+  TBranch        *b_jets_id_hitsInN90;   //!
+  TBranch        *b_jets_id_fHPD;   //!
    TBranch        *b_jets_area;   //!
    TBranch        *b_jets_mass;   //!
 
@@ -917,6 +938,8 @@ public:
    TBranch        *b_jetsKT4_ehf;   //!
    TBranch        *b_jetsKT4_n60;   //!
    TBranch        *b_jetsKT4_n90;   //!
+  TBranch        *b_jetsKT4_id_hitsInN90;   //!
+  TBranch        *b_jetsKT4_id_fHPD;   //!
    TBranch        *b_jetsKT4_area;   //!
    TBranch        *b_jetsKT4_mass;   //!
 
@@ -951,6 +974,8 @@ public:
    TBranch        *b_jetsKT6_ehf;   //!
    TBranch        *b_jetsKT6_n60;   //!
    TBranch        *b_jetsKT6_n90;   //!
+  TBranch        *b_jetsKT6_id_hitsInN90;   //!
+  TBranch        *b_jetsKT6_id_fHPD;   //!
    TBranch        *b_jetsKT6_area;   //!
    TBranch        *b_jetsKT6_mass;   //!
 
@@ -986,6 +1011,8 @@ public:
    TBranch        *b_jetsSC5_ehf;   //!
    TBranch        *b_jetsSC5_n60;   //!
    TBranch        *b_jetsSC5_n90;   //!
+  TBranch        *b_jetsSC5_id_hitsInN90;   //!
+  TBranch        *b_jetsSC5_id_fHPD;   //!
    TBranch        *b_jetsSC5_area;   //!
    TBranch        *b_jetsSC5_mass;   //!
 
@@ -1020,6 +1047,8 @@ public:
    TBranch        *b_jetsSC7_ehf;   //!
    TBranch        *b_jetsSC7_n60;   //!
    TBranch        *b_jetsSC7_n90;   //!
+  TBranch        *b_jetsSC7_id_hitsInN90;   //!
+  TBranch        *b_jetsSC7_id_fHPD;   //!
    TBranch        *b_jetsSC7_area;   //!
    TBranch        *b_jetsSC7_mass;   //!
 
@@ -1054,6 +1083,8 @@ public:
    TBranch        *b_jetsJPTAK5_ehf;   //!
    TBranch        *b_jetsJPTAK5_n60;   //!
    TBranch        *b_jetsJPTAK5_n90;   //!
+  TBranch        *b_jetsJPTAK5_id_hitsInN90;   //!
+  TBranch        *b_jetsJPTAK5_id_fHPD;   //!
    TBranch        *b_jetsJPTAK5_area;   //!
    TBranch        *b_jetsJPTAK5_mass;   //!
  
@@ -1327,6 +1358,7 @@ public:
    TBranch        *b_pv_tracksSize;   //!
    TBranch        *b_pv_isValid;   //!
    TBranch        *b_pv_isFake;   //!
+   TBranch        *b_pv_rho;   //!
    TBranch        *b_Ntcmets;   //!
    TBranch        *b_tcmets_et;   //!
    TBranch        *b_tcmets_phi;   //!
@@ -1517,6 +1549,7 @@ public:
 
   void    SetEleETcut(float);
   void    SetMuonPTcut(float);
+  void    SetMuonISOcut(float);
   void    SetJetPTcut(float);
   void    SetMETcut(float);
   void    SetHTcut(float);
@@ -1547,7 +1580,8 @@ public:
   void SetIntLuminosity(double val)    { m_intlumi           = val; };
   void SetRunOnSD(bool val)            { m_runOnSD           = val; };
   void SetRunOnMyHLTskim(bool val)     { m_runOnMyHLTskim    = val; };
-  void SetRunOnMy35XNtuples(bool val)  { m_runOn35Xntuples   = val; };
+  void SetRunOn35Xntuples(bool val)    { m_runOn35Xntuples   = val; };
+  void CleanEvents(bool val)           { m_cleanEvents       = val; };
   void PrintGenParticles(int nevent);
 
   //switch to preclue missing layers as these are not in 314 data samples
@@ -1677,8 +1711,7 @@ private:
   string printTimeNow() const;
 
   // conversion
-  bool  ConversionFinder(const TLorentzVector& e1, int mctype, int index_selected_ele);
-  bool  ConversionFinder2(const TLorentzVector& e1, int mctype, int index_selected_ele);
+  bool  ConversionFinder( int index_selected_ele);
   void  ConversionMCMatching(const TLorentzVector& e1, int mctype, bool isthisConversion);
   float MCTruthMatch(float eta, float phi);
 
@@ -1763,7 +1796,7 @@ private:
   void PrintConversionTable();
   int ConversionCounter;
   int ConversionArray[23][2][6];
-  void OptimiseConversionFinder(const TLorentzVector& e1, int mctype,int index_selected_ele);  
+  void OptimiseConversionFinder(int mctype,int index_selected_ele);  
 
   vector<TH2D*> Conv_Opti;  //[2];
   vector<TH2D*> Conv_Optis; //[2];
@@ -1801,6 +1834,7 @@ private:
   bool   m_runOnSD;
   bool   m_runOnMyHLTskim;
   bool   m_runOn35Xntuples;
+  bool   m_cleanEvents;
   bool   m_useMisslayers;
   int    m_muonCutNum;
   int    m_ntoy;
@@ -1814,6 +1848,7 @@ private:
   // (2) cuts
   float  ELE_ETCUT;
   float  MU_PTCUT;
+  float  MU_ISOCUT;
   float  JET_PTCUT;
   float  METCUT;
   float  HTCUT;
@@ -2206,6 +2241,9 @@ private:
   v2D_TH1       h_QCDest_CombRelIso_AES_planB7_e30; //[7][nclass]
   v2D_TH1       h_QCDest_CombRelIso_AES_planB8_e20; //[7][nclass]//d0 > 200um, fail RT
   v2D_TH1       h_QCDest_CombRelIso_AES_planB8_e30; //[7][nclass]
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB3_e5; //[7][nclass] fail RT ID, ET>5
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB3_e10; //[7][nclass]
+  v2D_TH1       h_QCDest_CombRelIso_AES_planB3_e15; //[7][nclass]
 
 
   // Wjet estimation
@@ -2384,6 +2422,9 @@ void ana::Init(){
    els_isEBGap = 0;
    els_isConvertedPhoton = 0;
    els_innerLayerMissingHits = 0;
+   els_dB = 0;
+   els_edB = 0;
+   els_scEta = 0;
    jets_energy = 0;
    jets_et = 0;
    jets_eta = 0;
@@ -2432,6 +2473,8 @@ void ana::Init(){
    jets_ehf = 0;
    jets_n60 = 0;
    jets_n90 = 0;
+   jets_id_hitsInN90 = 0;
+   jets_id_fHPD = 0;
    jets_area = 0;
    jets_mass = 0;
 
@@ -2465,6 +2508,8 @@ void ana::Init(){
    jetsKT4_ehf = 0;
    jetsKT4_n60 = 0;
    jetsKT4_n90 = 0;
+   jetsKT4_id_hitsInN90 = 0;
+   jetsKT4_id_fHPD = 0;
    jetsKT4_area = 0;
    jetsKT4_mass = 0;
 
@@ -2498,6 +2543,8 @@ void ana::Init(){
    jetsKT6_ehf = 0;
    jetsKT6_n60 = 0;
    jetsKT6_n90 = 0;
+   jetsKT6_id_hitsInN90 = 0;
+   jetsKT6_id_fHPD = 0;
    jetsKT6_area = 0;
    jetsKT6_mass = 0;
 
@@ -2531,6 +2578,8 @@ void ana::Init(){
    jetsSC5_ehf = 0;
    jetsSC5_n60 = 0;
    jetsSC5_n90 = 0;
+   jetsSC5_id_hitsInN90 = 0;
+   jetsSC5_id_fHPD = 0;
    jetsSC5_area = 0;
    jetsSC5_mass = 0;
 
@@ -2564,6 +2613,8 @@ void ana::Init(){
    jetsSC7_ehf = 0;
    jetsSC7_n60 = 0;
    jetsSC7_n90 = 0;
+   jetsSC7_id_hitsInN90 = 0;
+   jetsSC7_id_fHPD = 0;
    jetsSC7_area = 0;
    jetsSC7_mass = 0;
 
@@ -2597,6 +2648,8 @@ void ana::Init(){
    jetsJPTAK5_ehf = 0;
    jetsJPTAK5_n60 = 0;
    jetsJPTAK5_n90 = 0;
+   jetsJPTAK5_id_hitsInN90 = 0;
+   jetsJPTAK5_id_fHPD = 0;
    jetsJPTAK5_area = 0;
    jetsJPTAK5_mass = 0;
 
@@ -2856,6 +2909,7 @@ void ana::Init(){
    pv_tracksSize = 0;
    pv_isValid = 0;
    pv_isFake = 0;
+   pv_rho = 0;
    tcmets_et = 0;
    tcmets_phi = 0;
    tcmets_ex = 0;
@@ -3534,6 +3588,22 @@ void ana::Init(){
      chain->SetBranchAddress("pv_tracksSize", &pv_tracksSize, &b_pv_tracksSize);
      chain->SetBranchAddress("pv_isValid", &pv_isValid, &b_pv_isValid);
      chain->SetBranchAddress("pv_isFake", &pv_isFake, &b_pv_isFake);
+     chain->SetBranchAddress("pv_rho", &pv_rho, &b_pv_rho);
+     chain->SetBranchAddress("els_dB", &els_dB, &b_els_dB);
+     chain->SetBranchAddress("els_edB", &els_edB, &b_els_edB);
+     chain->SetBranchAddress("els_scEta", &els_scEta, &b_els_scEta);
+     chain->SetBranchAddress("jetsJPTAK5_id_hitsInN90", &jetsJPTAK5_id_hitsInN90, &b_jetsJPTAK5_id_hitsInN90);
+     chain->SetBranchAddress("jetsJPTAK5_id_fHPD", &jetsJPTAK5_id_fHPD, &b_jetsJPTAK5_id_fHPD);
+     chain->SetBranchAddress("jetsSC7_id_hitsInN90", &jetsSC7_id_hitsInN90, &b_jetsSC7_id_hitsInN90);
+     chain->SetBranchAddress("jetsSC7_id_fHPD", &jetsSC7_id_fHPD, &b_jetsSC7_id_fHPD);
+     chain->SetBranchAddress("jetsSC5_id_hitsInN90", &jetsSC5_id_hitsInN90, &b_jetsSC5_id_hitsInN90);
+     chain->SetBranchAddress("jetsSC5_id_fHPD", &jetsSC5_id_fHPD, &b_jetsSC5_id_fHPD);
+     chain->SetBranchAddress("jetsKT6_id_hitsInN90", &jetsKT6_id_hitsInN90, &b_jetsKT6_id_hitsInN90);
+     chain->SetBranchAddress("jetsKT6_id_fHPD", &jetsKT6_id_fHPD, &b_jetsKT6_id_fHPD);
+     chain->SetBranchAddress("jets_id_hitsInN90", &jets_id_hitsInN90, &b_jets_id_hitsInN90);
+     chain->SetBranchAddress("jets_id_fHPD", &jets_id_fHPD, &b_jets_id_fHPD);
+     chain->SetBranchAddress("jetsKT4_id_hitsInN90;", &jetsKT4_id_hitsInN90, &b_jetsKT4_id_hitsInN90);
+     chain->SetBranchAddress("jetsKT4_id_fHPD;", &jetsKT4_id_fHPD, &b_jetsKT4_id_fHPD);
    }
    chain->SetBranchAddress("Ntracks", &Ntracks, &b_Ntracks);
    chain->SetBranchAddress("tracks_chi2", &tracks_chi2, &b_tracks_chi2);
