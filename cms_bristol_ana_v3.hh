@@ -118,9 +118,9 @@ public:
 	 * Enum for 1-D histograms
 	 */
 	enum EHist {
-		h_neutrino_pz, h_neutrino_pz_mc, h_mttbar, h_mttbar_btag_fake, h_mttbar_matched, h_mttbar_mc, h_mttbar_mc_smeared,
-		h_mttbar_diff_reco_and_mc, h_mZprime_mc, h_mWlep, h_mWlep_btag_fake, h_mWlep_mc, h_mWhad, h_mWhad_btag_fake, h_mWhad_mc,
-		h_minDeltaR_ele_Jet, h_ptRel_ele_jet, h_mtlep, h_mtlep_btag_fake, h_mtlep_mc, h_mthad, h_mthad_btag_fake, h_mthad_mc,
+		h_neutrino_pz, h_neutrino_pz_mc, h_mttbar_matched, h_mttbar_mc, h_mttbar_mc_smeared,
+		h_mttbar_diff_reco_and_mc, h_mZprime_mc, h_mWlep, h_mWlep_mc, h_mWhad_mc,
+		h_minDeltaR_ele_Jet, h_ptRel_ele_jet, h_mtlep_mc, h_mthad_mc,
 		h_thad_pt, h_thad_pt_mc, h_tlep_pt, h_tlep_pt_mc, h_angle_b_ele, h_ptratio, h_pttbar, h_htsystem, h_angle_b_ele_matched,
 		h_mtlep_matched, h_mthad_matched, h_mWhad_matched, h_mWlep_matched, h_ptratio_matched, h_ptratio2_matched, h_ptratio2_mc,
 		h_pttbar_matched, h_htsystem_matched, h_Chi2Leptonic, h_Chi2Leptonic_matched, h_Chi2Hadronic, h_Chi2Hadronic_matched,
@@ -143,7 +143,9 @@ public:
 		h_btag_JetProb_g, h_btag_secondaryVertex_b, h_btag_secondaryVertex_c, h_btag_secondaryVertex_uds,
 		h_btag_secondaryVertex_g, h_btag_softEle_b, h_btag_softEle_c, h_btag_softEle_uds, h_btag_softEle_g, h_btag_softMuon_b,
 		h_btag_softMuon_c, h_btag_softMuon_uds, h_btag_softMuon_g, h_btag_softMuonNoIP_b, h_btag_softMuonNoIP_c,
-		h_btag_softMuonNoIP_uds, h_btag_softMuonNoIP_g, h_numberOfBtags, NUMBER_OF_1D_HISTOGRAMS
+		h_btag_softMuonNoIP_uds, h_btag_softMuonNoIP_g, h_numberOfBtags, h_hadTop_maxPT_mass_4j, h_hadTop_maxPT_pt_4j,
+		h_hadTop_maxPT_mass_nonIso_4j, h_hadTop_maxPT_pt_nonIso_4j, h_m3, h_m3_control, h_hadTop_maxPT_mass_4j_1000,
+		h_hadTop_maxPT_mass_nonIso_4j_1000, h_m3_1000, h_m3_control_1000, NUMBER_OF_1D_HISTOGRAMS
 	};
 
 	/**
@@ -177,6 +179,9 @@ public:
 		h_QCDest_CombRelIso_NES_hiMET_barrel, h_QCDest_CombRelIso_NES_hiMET_endcap, NUMBER_OF_NLEVEL_JBINNED_1D_HISTOGRAMS
 	};
 
+	enum Ebtag1DHists {
+		h_mttbar,h_mWhad,h_mtlep,h_mthad,NUMBER_OF_BTAG_1D_HISTOGRAMS
+	};
 	/**
 	 * Enum for 2-D histograms
 	 */
@@ -211,7 +216,7 @@ public:
 	};
 
 	enum EBTAG {
-		btag_fake, btag_TC_highEff, btag_TC_highPur, btag_JetBProb, btag_JetProb, btag_secondaryVertex, btag_softEle,
+		btag_none, btag_fake, btag_TC_highEff, btag_TC_highPur, btag_JetBProb, btag_JetProb, btag_secondaryVertex, btag_softEle,
 		btag_softMuon, btag_softMuonNoIP, NUMBER_OF_BTAGS
 	};
 private:
@@ -220,6 +225,7 @@ private:
 	 * vector for 1D histograms
 	 */
 	vector<vector<TH1F*> > fasthist_;
+	vector<vector<vector<TH1F*> > > btag_hist_;
 	/**
 	 * vector for 1D histograms
 	 */
@@ -254,13 +260,18 @@ private:
 	 * Events weights for different MCTypes
 	 */
 	vector<double> fastWeight_;
-	ushort number_of_jets_to_use_for_reco;
+	short number_of_jets_to_use_for_reco;
+	bool useIsoElectronForReco;
 	std::vector<std::vector<double> > btag_information;
 public:
 
-	void SetNumberOfJetsUsedInReco(ushort number) {
+	void SetNumberOfJetsUsedInReco(short number) {
 		number_of_jets_to_use_for_reco = number;
 	}
+
+	void UseIsoElectronForReco(bool flag) {
+		useIsoElectronForReco = flag;
+		}
 	/**
 	 * Set electron ID
 	 * @param val new electron ID
@@ -394,6 +405,7 @@ private:
 	//			const float, const float);
 	//	void addHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const string, const string, const int, const float, const float);
 	void addHisto_Njet_DataAndMC(ushort, ushort, const string, const string, const int, const float, const float);
+	void addHisto_btag_DataAndMC(ushort, ushort, const string, const string, const int, const float, const float);
 	void addHistoDataAndMC(ushort, ushort, const string, const string, const int, const float, const float);
 	void addHistoDataAndMC(ushort, ushort, const string, const string, const int, const float, const float, const int,
 			const float, const float);
@@ -413,6 +425,7 @@ private:
 	void bookElectronCountHistograms(ushort type);
 	void bookNewKinematicHistograms(ushort type);
 	void bookQCDEstimationHistograms(ushort type, TDirectory *parent);
+	void bookWjetsEstimationHistograms(ushort type, TDirectory *parent);
 	void bookBtagHistograms(ushort type, TDirectory *parent);
 
 	//	const char* dynTitle(string title, ushort type);
@@ -428,6 +441,7 @@ private:
 	//	void fillHistoDataAndMC(TH2F* h[], const float v1, const float v2, const double weight) const;
 	//	void fillHisto_Njet_DataAndMC(TH1F* h[7][mcsize], const float value, const double w);
 	void fillHisto_Njet_DataAndMC(ushort hist, const float value, const double w);
+	void fillHisto_btag_DataAndMC(ushort btag, ushort hist, const float value, const double w);
 	void fillHisto_PDF_weights(TH1F* h);
 	void fillMCTopEventHists(double reco_mttbar);
 	void fillBtagHistograms(std::vector<TLorentzVector> jets);//TODO: pass size instead of whole vector
@@ -441,7 +455,7 @@ private:
 	void reco_hadronicTop_highestTopPT(const std::vector<TLorentzVector>&, const int nGoodIsoEle);
 	pair<double, double> compute_M3(const std::vector<TLorentzVector>&) const;
 	void reco_Mttbar(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
-	void reco_Mttbar_btagged(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
+//	void reco_Mttbar_btagged(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
 	void reco_Mttbar_matched(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
 	TLorentzVector reconstruct_neutrino(const TLorentzVector&, const TLorentzVector&);
 	pair<TLorentzVector, TLorentzVector> reconstruct_neutrinos(const TLorentzVector&, const TLorentzVector&);
@@ -573,49 +587,46 @@ private:
 	string sysSample;
 	bool m_studyPDFunc;
 
-	//	map<string, double> cross_section;
-	//	map<string, long> nInitialEventMC; //initial number of event, used to compute event weight
-	//	map<string, double> weightMap;
 	// Wjet estimation
-	TH1D *h_hadTop_maxPT_mass_4j; // 960 bins (0-960)
-	TH1D *h_hadTop_maxPT_pt_4j;
-	TH1D *h_hadTop_maxPT_mass_nonIso_4j;
-	TH1D *h_hadTop_maxPT_pt_nonIso_4j;
-	TH1D *h_m3_tt;
-	TH1D *h_m3_wj;
-	TH1D *h_m3_zj;
-	TH1D *h_m3_qcd;
-	TH1D *h_m3_vqq;
-	TH1D *h_m3_singletop;
-	TH1D *h_m3_bce[3];
-	TH1D *h_m3_enri[3];
-	TH1D *h_m3_tt_control;
-	TH1D *h_m3_wj_control;
-	TH1D *h_m3_zj_control;
-	TH1D *h_m3_qcd_control;
-	TH1D *h_m3_vqq_control;
-	TH1D *h_m3_singletop_control;
-	TH1D *h_m3_bce_control[3];
-	TH1D *h_m3_enri_control[3];
+	//	TH1D *h_hadTop_maxPT_mass_4j; // 960 bins (0-960)
+	//	TH1D *h_hadTop_maxPT_pt_4j;
+	//	TH1D *h_hadTop_maxPT_mass_nonIso_4j;
+	//	TH1D *h_hadTop_maxPT_pt_nonIso_4j;
+	//	TH1D *h_m3_tt;
+	//	TH1D *h_m3_wj;
+	//	TH1D *h_m3_zj;
+	//	TH1D *h_m3_qcd;
+	//	TH1D *h_m3_vqq;
+	//	TH1D *h_m3_singletop;
+	//	TH1D *h_m3_bce[3];
+	//	TH1D *h_m3_enri[3];
+	//	TH1D *h_m3_tt_control;
+	//	TH1D *h_m3_wj_control;
+	//	TH1D *h_m3_zj_control;
+	//	TH1D *h_m3_qcd_control;
+	//	TH1D *h_m3_vqq_control;
+	//	TH1D *h_m3_singletop_control;
+	//	TH1D *h_m3_bce_control[3];
+	//	TH1D *h_m3_enri_control[3];
 	// 1000 bins (0-1000)
-	TH1D *h_hadTop_maxPT_mass_4j_1000;
-	TH1D *h_hadTop_maxPT_mass_nonIso_4j_1000;
-	TH1D *h_m3_tt_1000;
-	TH1D *h_m3_wj_1000;
-	TH1D *h_m3_zj_1000;
-	TH1D *h_m3_qcd_1000;
-	TH1D *h_m3_vqq_1000;
-	TH1D *h_m3_singletop_1000;
-	TH1D *h_m3_bce_1000[3];
-	TH1D *h_m3_enri_1000[3];
-	TH1D *h_m3_tt_control_1000;
-	TH1D *h_m3_wj_control_1000;
-	TH1D *h_m3_zj_control_1000;
-	TH1D *h_m3_qcd_control_1000;
-	TH1D *h_m3_vqq_control_1000;
-	TH1D *h_m3_singletop_control_1000;
-	TH1D *h_m3_bce_control_1000[3];
-	TH1D *h_m3_enri_control_1000[3];
+	//	TH1D *h_hadTop_maxPT_mass_4j_1000;
+	//	TH1D *h_hadTop_maxPT_mass_nonIso_4j_1000;
+	//	TH1D *h_m3_tt_1000;
+	//	TH1D *h_m3_wj_1000;
+	//	TH1D *h_m3_zj_1000;
+	//	TH1D *h_m3_qcd_1000;
+	//	TH1D *h_m3_vqq_1000;
+	//	TH1D *h_m3_singletop_1000;
+	//	TH1D *h_m3_bce_1000[3];
+	//	TH1D *h_m3_enri_1000[3];
+	//	TH1D *h_m3_tt_control_1000;
+	//	TH1D *h_m3_wj_control_1000;
+	//	TH1D *h_m3_zj_control_1000;
+	//	TH1D *h_m3_qcd_control_1000;
+	//	TH1D *h_m3_vqq_control_1000;
+	//	TH1D *h_m3_singletop_control_1000;
+	//	TH1D *h_m3_bce_control_1000[3];
+	//	TH1D *h_m3_enri_control_1000[3];
 	int m_ntoy;
 
 	// MC flag
