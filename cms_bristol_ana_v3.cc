@@ -8814,9 +8814,9 @@ void ana::reco_Mttbar(const vector<TLorentzVector>& jets, const TLorentzVector& 
 			if (!GetBtagFlag(blep_id, btag))
 				continue;
 			for (ushort bhad_id = 0; bhad_id < njets; bhad_id++) {//get hadronic b-jet
-				if (!GetBtagFlag(bhad_id, btag))
-					continue;
 				if (bhad_id == blep_id)
+					continue;
+				if (!GetBtagFlag(bhad_id, btag))
 					continue;
 				for (ushort quark1_id = 0; quark1_id < njets; quark1_id++) {//get quark from W decay
 					if (quark1_id == blep_id || quark1_id == bhad_id)
