@@ -553,12 +553,12 @@ private:
 	int nfile;
 	string outputHistFileName;
 	string outputTextFileName;
-	double this_weight; // current event weight
+	double weight; // current event weight
 	int m_nGoodJet;
 	float m_QCDest_reliso_bin_width;
 	bool m_doValidation;
 	bool m_plotRelisoNES;
-	//	bool m_debug;
+	//	bool debug_flag;
 	bool m_ConversionStudies;
 	//	string m_jetAlgo;
 	//	string m_metAlgo;
