@@ -1311,7 +1311,7 @@ protected:
 	TBranch *b_PDFWcteq66_43; //!
 	TBranch *b_PDFWcteq66_44; //!
 
-	bool datafile, m_useMisslayers, checkTrig, m_studyPDFunc, m_debug;
+	bool datafile, m_useMisslayers, checkTrig, m_studyPDFunc, debug_flag;
 	string m_jetAlgo, m_metAlgo, HLTBit;
 
 	void Init(); //initialize tree branches

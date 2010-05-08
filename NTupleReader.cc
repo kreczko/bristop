@@ -12,11 +12,11 @@ NTupleReader::NTupleReader() {
 }
 
 bool NTupleReader::GetDebug() const {
-	return m_debug;
+	return this->debug_flag;
 }
 
 void NTupleReader::SetDebug(bool val) {
-	m_debug = val;
+	this->debug_flag = val;
 }
 
 bool NTupleReader::IsData() const {
@@ -1428,7 +1428,7 @@ void NTupleReader::ReadSelectedBranches() const {
 		if (m_studyPDFunc) {
 			for (short i = 0; i <= 44; i++) {
 				string pdf = Form("PDFWcteq66_%u", i);//unsigned %u
-				if (m_debug)
+				if (this->debug_flag)
 					cout << " pdf  " << pdf << endl;
 				chain->SetBranchStatus(pdf.c_str(), 1);
 			}
