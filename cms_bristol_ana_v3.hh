@@ -7,10 +7,9 @@
 #include "TBranch.h"
 #include "TLorentzVector.h"
 #include "NTupleReader.h"
-
+#include "Tools/Logger.hh"
 #include <vector>
 #include <iostream>
-#include <map>
 //FIXME: remove using namespace from header file
 using namespace std;
 typedef unsigned short ushort;
@@ -49,7 +48,7 @@ const string mclabel[] = { "data", "signal", "signalJ", "W+jets", "Z+jets", "enr
 		"Zprime_M4TeV_W40GeV", "Zprime_M4TeV_W400GeV", "QCD", "singleTop" };
 const short int mcsize = sizeof(mcname) / sizeof(mcname[0]);
 const int nmctype(mcsize + 8); //extend to include wj, zj, QCD, VQQ, single top
-const int nstage(mcsize + 8); //add >=1Tele
+const int nstage(16); //add >=1Tele
 
 
 class ana: public NTupleReader {
@@ -118,19 +117,18 @@ public:
 	 * Enum for 1-D histograms
 	 */
 	enum EHist {
-		h_neutrino_pz, h_neutrino_pz_mc, h_mttbar_matched, h_mttbar_mc, h_mttbar_mc_smeared,
-		h_mttbar_diff_reco_and_mc, h_mZprime_mc, h_mWlep, h_mWlep_mc, h_mWhad_mc,
-		h_minDeltaR_ele_Jet, h_ptRel_ele_jet, h_mtlep_mc, h_mthad_mc,
-		h_thad_pt, h_thad_pt_mc, h_tlep_pt, h_tlep_pt_mc, h_angle_b_ele, h_ptratio, h_pttbar, h_htsystem, h_angle_b_ele_matched,
+		h_neutrino_pz, h_neutrino_pz_mc, h_mttbar_matched, h_mttbar_mc, h_mttbar_mc_smeared, h_mttbar_diff_reco_and_mc,
+		h_mZprime_mc, h_mWlep, h_mWlep_mc, h_mWhad_mc, h_minDeltaR_ele_Jet, h_ptRel_ele_jet, h_mtlep_mc, h_mthad_mc, h_thad_pt,
+		h_thad_pt_mc, h_tlep_pt, h_tlep_pt_mc, h_angle_b_ele, h_ptratio, h_pttbar, h_htsystem, h_angle_b_ele_matched,
 		h_mtlep_matched, h_mthad_matched, h_mWhad_matched, h_mWlep_matched, h_ptratio_matched, h_ptratio2_matched, h_ptratio2_mc,
 		h_pttbar_matched, h_htsystem_matched, h_Chi2Leptonic, h_Chi2Leptonic_matched, h_Chi2Hadronic, h_Chi2Hadronic_matched,
 		h_Chi2Global, h_Chi2Global_matched, h_Chi2Total, h_Chi2Total_matched, h_tlep_pt_matched, h_thad_pt_matched,
 		h_angle_b_ele_mc, h_ptratio_mc, h_pttbar_mc, h_htsystem_mc, h_Chi2Leptonic_mc, h_Chi2Hadronic_mc, h_Chi2Global_mc,
 		h_Chi2Total_mc,/*end of exotic top*/
-		h_nele, h_ele_ET_all, kele_ET_1, kele_ET_2, kele_ET_3, kele_eta_all, kele_eta_1, kele_eta_2, kele_eta_3, kele_phi_all,
-		kele_phi_1, kele_phi_2, kele_phi_3, kele_iso_all, kele_iso_1, kele_iso_2, kele_iso_3, knele_cuts, h_eid,/*electrons*/
-		knjets, kjet_pt_all, kjet_pt_1, kjet_pt_2, kjet_pt_3, kjet_pt_4, kjet_eta_all, kjet_eta_1, kjet_eta_2, kjet_eta_3,
-		kjet_eta_4, kjet_phi_all, kjet_phi_1, kjet_phi_2, h_jet_phi_3, h_jet_phi_4,/*jets*/h_metAlone, h_metAlone_phi,
+		h_nele, h_ele_ET_all, h_ele_ET_1, h_ele_ET_2, h_ele_ET_3, h_ele_eta_all, h_ele_eta_1, h_ele_eta_2, h_ele_eta_3, h_ele_phi_all,
+		h_ele_phi_1, h_ele_phi_2, h_ele_phi_3, h_ele_iso_all, h_ele_iso_1, h_ele_iso_2, h_ele_iso_3, h_nele_cuts, h_eid,/*electrons*/
+		h_njets, h_jet_pt_all, h_jet_pt_1, h_jet_pt_2, h_jet_pt_3, h_jet_pt_4, h_jet_eta_all, h_jet_eta_1, h_jet_eta_2, h_jet_eta_3,
+		h_jet_eta_4, h_jet_phi_all, h_jet_phi_1, h_jet_phi_2, h_jet_phi_3, h_jet_phi_4,/*jets*/h_metAlone, h_metAlone_phi,
 		h_DRemu_selE_GoodMu, h_DRemu_selE_GoodMu_pass, h_exp_ele_et, h_exp_ele_eta, h_exp_j0_pt, h_exp_j1_pt, h_exp_DRej,
 		h_exp_DPhiej, h_exp_DRjj, h_exp_DPhijj, h_nGenBasicEle_Zee_allj, h_Zee_eta, h_Zee_pt, h_Z_photon_eta, h_Z_photon_et,
 		h_Zee_photon_eta, h_Zee_photon_et, h_Z_Nphotons, h_Zee_Nphotons, h_mass_diele, h_mass_diele_new, h_mass_diele_lowMet_1j,
@@ -180,7 +178,7 @@ public:
 	};
 
 	enum Ebtag1DHists {
-		h_mttbar,h_mWhad,h_mtlep,h_mthad,NUMBER_OF_BTAG_1D_HISTOGRAMS
+		h_mttbar, h_mWhad, h_mtlep, h_mthad, NUMBER_OF_BTAG_1D_HISTOGRAMS
 	};
 	/**
 	 * Enum for 2-D histograms
@@ -215,11 +213,12 @@ public:
 		NUMBER_OF_LEVELS
 	};
 
-	enum EBTAG {
-		btag_none, btag_fake, btag_TC_highEff, btag_TC_highPur, btag_JetBProb, btag_JetProb, btag_secondaryVertex, btag_softEle,
-		btag_softMuon, btag_softMuonNoIP, NUMBER_OF_BTAGS
+	enum Enum_BTAGS {
+		btag_type_none, btag_type_fake, btag_type_TrackCount_highEff, btag_type_TrackCount_highPur, btag_type_JetBProb,
+		btag_type_JetProb, btag_type_secondaryVertex, btag_softEle, btag_type_softMuon, btag_type_softMuonNoIP, NUMBER_OF_BTAGS
 	};
 private:
+	Logger *logger;
 	vector<string> mc_names;
 	/**
 	 * vector for 1D histograms
@@ -263,15 +262,18 @@ private:
 	short number_of_jets_to_use_for_reco;
 	bool useIsoElectronForReco;
 	std::vector<std::vector<double> > btag_information;
+
+	ushort N_positive_btags, N_negative_btags;
 public:
 
+	void ResetBtagCount(const std::vector<TLorentzVector> & jets, const ushort btag_type);
 	void SetNumberOfJetsUsedInReco(short number) {
 		number_of_jets_to_use_for_reco = number;
 	}
 
 	void UseIsoElectronForReco(bool flag) {
 		useIsoElectronForReco = flag;
-		}
+	}
 	/**
 	 * Set electron ID
 	 * @param val new electron ID
@@ -455,7 +457,7 @@ private:
 	void reco_hadronicTop_highestTopPT(const std::vector<TLorentzVector>&, const int nGoodIsoEle);
 	pair<double, double> compute_M3(const std::vector<TLorentzVector>&) const;
 	void reco_Mttbar(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
-//	void reco_Mttbar_btagged(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
+	//	void reco_Mttbar_btagged(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
 	void reco_Mttbar_matched(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
 	TLorentzVector reconstruct_neutrino(const TLorentzVector&, const TLorentzVector&);
 	pair<TLorentzVector, TLorentzVector> reconstruct_neutrinos(const TLorentzVector&, const TLorentzVector&);
