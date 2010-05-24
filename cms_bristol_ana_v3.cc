@@ -3,10 +3,39 @@
 //        2) add WW,ZZ,WZ.
 //        3) adapt cut to conform to Reference Selection of Top Lepton+Jets
 //        4) exploit "goodrun" (stage 1) for event cleaning: NoScraping, goodPV
-//        5) Synch the muon veto with the current baseline from https://twiki.cern.ch/twiki/bin/view/CMS/TopLeptonPlusJetsRefSel_el
+//
+//  ask Frankie if he wants the d0 for tracks and ele in conversion finder to use BS or the whatever is chosen.
 //#====================================================#
 //# Last update:
-//  26 Apr 2010: -  
+//
+// 21 May 2010: (TL): Bug Fix. Added absolute value for els_scEta in eleInBarrel() function.
+// 20 May 2010: (TL) Added more event info to print out if we find interesting event in data!
+// 17 May 2010: (TL) Added skim eff for spring10 bce1.
+// 14 May 2010: (TL) add more d0 plots: pass all cuts except nj.
+// 13 May 2010: (TL) comment out SC5 and SC7 branches.
+// 12 May 2010: (TL) add some functions to get different d0s: get_d0_BS(),get_d0_PV() etc.
+//               - compute_d0 is essentially renamed to get_d0_BS(). 
+//               - keep compute_d0 to mean: get the type of d0 we want to cut on.
+//               - added string m_d0RefPoint to specify which d0 to use: BS, PV or beam-constrained PV.
+//
+//  12 May 2010: - Swapped round trigger and goodrun (=good primary vertex) cuts.
+//               - Added Missing layer < 1 cut after conversion veto algorithm. 
+//
+//  10 May 2010: - Added Spring10 HLT skim numbers to RunOnHLT skim section. Made change so that if runon25X is true, the spring10
+//                 skim numbers will be used, otherwise, the summer09 skims will be used.  
+//               - Added Setd0Cut(float) function to set ELE_D0CUT variable used to cut on d0. Replaced all instance of 0.02 with ELE_D0CUT.
+//               - Introduced bool m_used0Significance to choose whether using absolute d0 or sig. Changed output of compute_d0() accordingly.  
+//
+//  07 May 2010: - Corrected a couple of bugs due to new branches.
+//               - Fixed problem with lumiblock/lumiBlock. When running on 35X and future samples where it is
+//                 lumiblock, the code will set this appropriately.
+//               - Added function to use d0Significance.
+//  07 May 2010: TL. Added ele d0 plots (ed0_bs etc)                                                    
+//               - use supercluster ETA when excluding electron in gap. Still use eta for 2.5.          
+//               - when run on old summer09 sample, use the old els_eta.                                
+//               - add functions: eleInBarrel(), eleInEndcap(), eleInGap(). 
+//
+//  26 Apr 2010: - Tidied up conversion code - removed redundant function, and altered parameters  
 //
 //  21 Apr 2010: - Made changes to jet cleaning (3H). Cleans using most isolated electron, but all isolated electrons 
 //                 if there is more than one.
@@ -136,9 +165,14 @@ using namespace RooFit;
 // define type
 typedef unsigned int uint;
 
+
+// TEMPORARY
+//const bool has_d0_pvbs = false; //on latest data //moved to configurable
+
+
 // Global variables/constants
 //-----------------------------
-const int nstage(13);
+const int nstage(14);
 const int ntjet(5);
 //const int nmctype(23); //extend to include wj, zj, QCD, VQQ, single top
 const int nmctype(23+5); //extend to include tt0j-tt4j
@@ -159,7 +193,7 @@ const int nclass(16); //data+mc (incl vqq)
 int ntype(1);//renamed from nhisto //FIXME
 
 const int myprec(1); //no of decimal point for weighted nEvent
-const int ncutshown(13); //11:BARREL, 12:1BTag, 13:2BTag (incl 4j)
+const int ncutshown(14); //11:BARREL, 12:1BTag, 13:2BTag (incl 4j)
 const int nbm3 = 960;
 const bool m3_use_1000_bins = false;
 
@@ -386,6 +420,9 @@ void ana::SetHTcut(float cut){
   HTCUT = cut;
   nCutSetInScript++;
 }
+void ana::Setd0Cut(float cut){
+  ELE_D0CUT = cut;
+}
 
 void ana::PrintCuts() const {
   
@@ -406,11 +443,19 @@ void ana::PrintCuts() const {
   }
   cout << "\n This run will use the following cut values:\n"<< endl;
   cout << " ELECTRON et cut  =  " << ELE_ETCUT << "  GeV" << endl;
+  cout << " ELECTRON ID      =  " << printEleID() << endl;
+  cout << " ELECTRON |d0|    <  " << ELE_D0CUT;
+  if(m_used0Significance)   cout << " (d0 ";
+  else                      cout << " (d0 significance ";
+  if(m_d0RefPoint=="BS")             cout << "w.r.t Beam Spot)";
+  else if(m_d0RefPoint=="PV")        cout << "w.r.t primary vertex)";
+  else if(m_d0RefPoint=="PVwithBS")  cout << "w.r.t beam-constrained primary vertex)";
+  cout << endl;
   cout << "     MUON pt cut  =  " << MU_PTCUT  << "  GeV" << endl;
   cout << "     MUON iso cut =  " << MU_ISOCUT << endl;
   cout << "      JET pt cut  =  " << JET_PTCUT << "  GeV" << endl;
   cout << "      MET    cut  =  " << METCUT    << "  GeV" << endl;
-  cout << " ELECTRON ID requirement  =  " << printEleID() << endl;
+
   cout << "\n***********************************************" << endl;
   cout << "\n  HT cut in AES:  " << AES_HT_cut << " GeV";
   cout << "\n MET cut in AES:  " << AES_MET_cut << " GeV" << endl;
@@ -427,6 +472,10 @@ void ana::PrintCuts() const {
   }
   if( m_applyMETcut && m_rejectEndcapEle ) {
     cout << "\n  Run with Plan C:  Both MET and Eta(e) <1.442 cuts are used" << endl;
+    cout << "\n***********************************************" << endl;
+  }
+  if(m_useMisslayers){
+    cout << "\n Cutting on number of missing layers of electron track, ML<0" << endl;
     cout << "\n***********************************************" << endl;
   }
 
@@ -601,6 +650,8 @@ void ana::SetEventWeightMap(){ //only if run on MC
    
    //OctX for SD
    if( m_runOnSD ){
+     cout<< "\nBegin running on Secondary Dataset samples. This is relevant only if using the 314 samples.";
+     cout<<"If this is not what you intended, please abort as the weights will be set incorrectly"<<endl;
      double skimEff_ttbar  = 1.0;
      double skimEff_wenu   = 1.0;
      double skimEff_zee    = 1.0;
@@ -678,25 +729,64 @@ void ana::SetEventWeightMap(){ //only if run on MC
 
    // for summer09 7TeV madgraph HLTskim
    if( m_runOnMyHLTskim ) {
-     cout << "\nSummer09 7 TeV, Madgraph my HLT skim efficiency:" << endl;
-     cout << "(note: nexp = Ninit * w / skim eff)" << endl;
 
-     /// Define                   N_skim / N_ori    * pres     
-     // skimEffMap["ttjet"] =    610804 /   983964. ; //old
-     skimEffMap["ttjet"] =    912700 /  1477769. ; //new 7 Apr 2010
-     skimEffMap["wjet"]  =   2573745 / 10054895. ;
-     skimEffMap["zjet"]  =    385443 /  1084921. ;
+     if(m_runOn35Xntuples){//running on HLT Spring10 skims (35X)
 
-     // multiply to weight so that Nexp = Npass * w;
-     weightMap["ttjet"] *= GetSkimEff("ttjet");
-     weightMap["wjet"]  *= GetSkimEff("wjet"); 
-     weightMap["zjet"]  *= GetSkimEff("zjet"); 
+       cout << "\nSpring10 7 TeV, my HLT skim efficiency:" << endl;
+       cout << "(note: nexp = Ninit * w / skim eff)" << endl;
 
-     cout << "  skim eff    ttjet      " << GetSkimEff("ttjet") << endl;
-     cout << "  skim eff    wjet       " << GetSkimEff("wjet")  << endl;
-     cout << "  skim eff    zjet       " << GetSkimEff("zjet")  << endl;
-     cout << endl;
-   }
+       skimEffMap["ttjet"]  =   916240 / 1483404.;
+       //skimEffMap["wjet"]   = 1.;
+       //skimEffMap["zjet"]   = 1.;
+
+       skimEffMap["enri1"]  =  5892651 / 31999839. ;
+       skimEffMap["enri2"]  = 10014709 / 35577278. ;
+       skimEffMap["enri3"]  =  2467874 /  5494911. ;
+       skimEffMap["bce1"]   =   650297 /  2491463. ;
+       skimEffMap["bce2"]   =   891586 /  2400597. ;
+       skimEffMap["bce3"]   =   751618 /  1208674. ;
+
+       // multiply to weight so that Nexp = Npass * w;
+       weightMap["ttjet"] *=  GetSkimEff("ttjet");
+       //weightMap["wjet"]  *=  GetSkimEff("wjet"); 
+       //weightMap["zjet"]  *=  GetSkimEff("zjet"); 
+       weightMap["enri1"] *=  GetSkimEff("enri1");
+       weightMap["enri2"] *=  GetSkimEff("enri2");
+       weightMap["enri3"] *=  GetSkimEff("enri3");
+       weightMap["bce1"]  *=  GetSkimEff("bce1");
+       weightMap["bce2"]  *=  GetSkimEff("bce2");
+       weightMap["bce3"]  *=  GetSkimEff("bce3");
+
+       cout << "  skim eff    ttjet      " << GetSkimEff("ttjet") << endl;
+       //cout << "  skim eff    wjet       " << GetSkimEff("wjet")  << endl;
+       //cout << "  skim eff    zjet       " << GetSkimEff("zjet")  << endl;
+       cout << "  skim eff    enri1      " << GetSkimEff("enri1")  << endl;
+       cout << "  skim eff    enri2      " << GetSkimEff("enri2")  << endl;
+       cout << "  skim eff    enri3      " << GetSkimEff("enri3")  << endl;
+       cout << "  skim eff    bce1       " << GetSkimEff("bce1")  << endl;
+       cout << "  skim eff    bce2       " << GetSkimEff("bce2")  << endl;
+       cout << "  skim eff    bce3       " << GetSkimEff("bce3")  << endl;
+       
+     }else{
+       //if not running on spring10 skims, running on summer09 skims (31X)
+       cout << "\nSummer09 7 TeV, Madgraph my HLT skim efficiency:" << endl;
+       cout << "(note: nexp = Ninit * w / skim eff)" << endl;
+       
+       /// Define                   N_skim / N_ori    * pres     
+       skimEffMap["ttjet"] =    912700 /  1477769. ; //new 7 Apr 2010
+       skimEffMap["wjet"]  =   2573745 / 10054895. ;
+       skimEffMap["zjet"]  =    385443 /  1084921. ;
+
+       // multiply to weight so that Nexp = Npass * w;
+       weightMap["ttjet"] *= GetSkimEff("ttjet");
+       weightMap["wjet"]  *= GetSkimEff("wjet"); 
+       weightMap["zjet"]  *= GetSkimEff("zjet"); 
+      
+     }//skim for 31X, MG
+     
+     cout << endl;     
+
+  }//runOnHLTskim
 
 }//End SetEventWeightMap
 //---------------------------------------------------------------------------------------------
@@ -746,7 +836,10 @@ double ana::GetSkimEff(const string& mc) const {
 long ana::GetNinitBeforeSkim(const string& mc) const {
 
   // Note: if no events in ntuple, get 0;
-  return long(GetNinit(mc)/GetSkimEff(mc) + 0.5);
+  if(GetNinit(mc)==0) 
+    return 0;
+  else
+    return long(GetNinit(mc)/GetSkimEff(mc) + 0.5);
 }
 //---------------------------------------------------------------------------------------------
 
@@ -794,10 +887,13 @@ ana::ana(){
    m_metAlgo                 = "calojet_mujes";
    m_applyMETcut             = true;
    m_rejectEndcapEle         = true;
-   m_runOnSD                 = true;
+   m_runOnSD                 = false;
    m_runOnMyHLTskim          = true;
    m_runOn35Xntuples         = false;
+   m_ntupleHasD0PVBS         = false;
    m_cleanEvents             = false;
+   m_used0Significance       = false;
+   m_d0RefPoint              = "BS";
    m_useMisslayers           = false;
    m_muonCutNum              = 0;
    m_ntoy                    = 2;
@@ -816,6 +912,7 @@ ana::ana(){
    JET_PTCUT                = 30.0;
    METCUT                   = 30.0;
    HTCUT                    = 0.0;
+   ELE_D0CUT                = 0.02;
    nCutSetInScript          = 0;
    m_eID                    = robustTight; //enum
    AES_HT_cut               = 200.0;
@@ -853,7 +950,8 @@ ana::ana(){
      }
    }
    // end 856
-
+   counter = 0;
+   nEventsAvail = 0;
    mycounter = 0;
 
 }//end Constructor
@@ -886,10 +984,13 @@ void ana::ReadSelectedBranches() const {
    chain->SetBranchStatus("*",0); //disable all branches
    chain->SetBranchStatus("run",1);
    chain->SetBranchStatus("event",1);
-   chain->SetBranchStatus("lumiBlock",1);
+   if(m_runOn35Xntuples) chain->SetBranchStatus("lumiblock",1);
+   else{chain->SetBranchStatus("lumiBlock",1);}
    chain->SetBranchStatus("beamSpot_x",1); //beam spot
    chain->SetBranchStatus("beamSpot_y",1);
    chain->SetBranchStatus("Nels",1); //electrons
+   chain->SetBranchStatus("NbeamSpot",1);//6MAY10
+   chain->SetBranchStatus("beamSpot_beamWidthX",1);//6MAY10
    chain->SetBranchStatus("els_px",1);
    chain->SetBranchStatus("els_py",1);
    chain->SetBranchStatus("els_pz",1);
@@ -915,6 +1016,7 @@ void ana::ReadSelectedBranches() const {
    chain->SetBranchStatus("els_dr04EcalRecHitSumEt",1);
    chain->SetBranchStatus("els_dr04HcalTowerSumEt",1);
    chain->SetBranchStatus("els_d0dum",1);
+   chain->SetBranchStatus("els_d0dumError",1);//6MAY10
    chain->SetBranchStatus("els_vx",1);
    chain->SetBranchStatus("els_vy",1);
    chain->SetBranchStatus("els_vpx",1);
@@ -937,6 +1039,7 @@ void ana::ReadSelectedBranches() const {
    chain->SetBranchStatus("mus_cm_chi2",1);
    chain->SetBranchStatus("mus_cm_ndof",1);
    chain->SetBranchStatus("mus_cm_d0dum",1);
+   chain->SetBranchStatus("mus_cm_d0dumErr",1);
    chain->SetBranchStatus("mus_tk_vx",1);
    chain->SetBranchStatus("mus_tk_vy",1);
    chain->SetBranchStatus("mus_tk_px",1);
@@ -962,8 +1065,8 @@ void ana::ReadSelectedBranches() const {
      chain->SetBranchStatus("jets_emf",1);
      chain->SetBranchStatus("jets_n90",1);
      if(m_runOn35Xntuples){
-       //chain->SetBranchStatus("jets_id_hitsInN90",1);
-       //chain->SetBranchStatus("jets_id_fHPD",1);
+       chain->SetBranchStatus("jets_id_hitsInN90",1);
+       chain->SetBranchStatus("jets_id_fHPD",1);
      }
      chain->SetBranchStatus("jets_btag_TC_highPur",1);//btag
      chain->SetBranchStatus("jets_btag_TC_highEff",1);
@@ -999,6 +1102,10 @@ void ana::ReadSelectedBranches() const {
    chain->SetBranchStatus("mets_gen_phi",1);
    chain->SetBranchStatus("mets_ex",1);
    chain->SetBranchStatus("mets_ey",1);
+   chain->SetBranchStatus("PFMets_ex",1);
+   chain->SetBranchStatus("PFMets_ey",1);
+   chain->SetBranchStatus("tcmets_ex",1);
+   chain->SetBranchStatus("tcmets_ey",1);
    /*
    if(m_metAlgo=="Default") { //muCor caloMET
      chain->SetBranchStatus("Nmets",1);
@@ -1010,14 +1117,17 @@ void ana::ReadSelectedBranches() const {
      chain->SetBranchStatus("mets_et",1);
      chain->SetBranchStatus("mets_phi",1);
    */
+   chain->SetBranchStatus("PFMets_et",1);
+   chain->SetBranchStatus("tcmets_et",1);
+
    if (m_metAlgo=="tcmet"){  //tcMET
      chain->SetBranchStatus("Ntcmets",1);
-     chain->SetBranchStatus("tcmets_et",1);
+     //chain->SetBranchStatus("tcmets_et",1);
      chain->SetBranchStatus("tcmets_phi",1);
 
    } else if (m_metAlgo=="pfmet"){  //PFMET
      chain->SetBranchStatus("NPFMets",1);
-     chain->SetBranchStatus("PFMets_et",1);
+     //chain->SetBranchStatus("PFMets_et",1);
      chain->SetBranchStatus("PFMets_phi",1);
  
    } else if (m_metAlgo=="SC5" || m_metAlgo=="SC7" ||
@@ -1079,15 +1189,30 @@ void ana::ReadSelectedBranches() const {
      chain->SetBranchStatus(HLTBit.c_str(),1);
    }
 
-   if(m_runOn35Xntuples && m_cleanEvents){
-     chain->SetBranchStatus("Npv",1);
-     chain->SetBranchStatus("pv_z",1);
-     chain->SetBranchStatus("pv_isFake",1);
-     chain->SetBranchStatus("pv_ndof",1);
+   if(m_runOn35Xntuples){
+     if( m_cleanEvents ){//6MAY10
+       chain->SetBranchStatus("Npv",1);
+       chain->SetBranchStatus("pv_z",1);
+       chain->SetBranchStatus("pv_isFake",1);
+       chain->SetBranchStatus("pv_ndof",1);
+       chain->SetBranchStatus("pv_rho",1);//missing rho
+     }
      chain->SetBranchStatus("els_dB",1);
      chain->SetBranchStatus("els_edB",1);
+
+     chain->SetBranchStatus("mus_dB",1); //muon d0(PV)
+     chain->SetBranchStatus("mus_edB",1);
+
      chain->SetBranchStatus("els_scEta",1);
-     chain->SetBranchStatus("pv_rho",1);//missing rho
+     chain->SetBranchStatus("pv_x",1);
+     chain->SetBranchStatus("pv_y",1);
+
+     if(m_ntupleHasD0PVBS){
+       chain->SetBranchStatus("pvB_x",1);
+       chain->SetBranchStatus("pvB_y",1);
+       chain->SetBranchStatus("els2_d0_pvbs",1); //to be added
+       chain->SetBranchStatus("els2_ed0_pvbs",1);     
+     }
    }
 
 }//end ReadSelectedBranches
@@ -1520,8 +1645,57 @@ void ana::BookHistograms_ed0() {
 
    TDirectory *dir_ed0 = histf->mkdir("electron_d0","electron d0 (wrt BeamSpot)");
    dir_ed0->cd();
+
+   const int    aNB =  100; //absolue Nbin
+   const double aLO =  0.0; //absolue Low
+   const double aUP =  0.1; //absolue UP
+
+   const int    rNB =  100; //relative(=d0 significance) Nbin
+   const double rLO =    0; // Low
+   const double rUP =    8; // UP
+
+   const int    eNB =  100; //error
+   const double eLO =    0; // Low
+   const double eUP = 0.05; // UP
+
+
    addHistoDataAndMC( h_ed0,      "ed0",      "ele |d0| (pass ET,eta cut)",     3000, 0, 0.3);
    addHistoDataAndMC( h_ed0_pass, "ed0_pass", "ele |d0| (pass all cuts, >=4j)", 3000, 0, 0.3);
+   // NEW 6MAY10
+
+   // (1) d0 (absolute)
+   addHistoDataAndMC( h_ed0_bs,       "ed0_bs",       "ele |d0(BS)| (pass ET,eta cut)",      aNB, aLO, aUP);
+   addHistoDataAndMC( h_ed0_pv,       "ed0_pv",       "ele |d0(PV)| (pass ET,eta cut)",      aNB, aLO, aUP);
+   addHistoDataAndMC( h_ed0_pvB,      "ed0_pvB",      "ele |d0(PVb)| (pass ET,eta cut)",     aNB, aLO, aUP);
+   addHistoDataAndMC( h_ed0_pass_bs,  "ed0_pass_bs",  "ele |d0(BS)| (pass all cuts, >=4j)",  aNB, aLO, aUP);
+   addHistoDataAndMC( h_ed0_pass_pv,  "ed0_pass_pv",  "ele |d0(PV)| (pass all cuts, >=4j)",  aNB, aLO, aUP);
+   addHistoDataAndMC( h_ed0_pass_pvB, "ed0_pass_pvB", "ele |d0(PVb)| (pass all cuts, >=4j)", aNB, aLO, aUP);
+   addHistoDataAndMC( h_ed0_pass_allj_bs,  "ed0_pass_allj_bs",  "ele |d0(BS)| (pass all cuts, allj)",  aNB, aLO, aUP);
+   addHistoDataAndMC( h_ed0_pass_allj_pv,  "ed0_pass_allj_pv",  "ele |d0(PV)| (pass all cuts, allj)",  aNB, aLO, aUP);
+   addHistoDataAndMC( h_ed0_pass_allj_pvB, "ed0_pass_allj_pvB", "ele |d0(PVb)| (pass all cuts, allj)", aNB, aLO, aUP);
+
+   // (2) d0 error
+   addHistoDataAndMC( h_ed0err_bs,       "ed0err_bs",       "ele d0err(BS) (pass ET,eta cut)",      eNB, eLO, eUP);
+   addHistoDataAndMC( h_ed0err_pv,       "ed0err_pv",       "ele d0err(PV) (pass ET,eta cut)",      eNB, eLO, eUP);
+   addHistoDataAndMC( h_ed0err_pvB,      "ed0err_pvB",      "ele d0err(PVb) (pass ET,eta cut)",     eNB, eLO, eUP);
+   addHistoDataAndMC( h_ed0err_pass_bs,  "ed0err_pass_bs",  "ele d0err(BS) (pass all cuts, >=4j)",  eNB, eLO, eUP);
+   addHistoDataAndMC( h_ed0err_pass_pv,  "ed0err_pass_pv",  "ele d0err(PV) (pass all cuts, >=4j)",  eNB, eLO, eUP);
+   addHistoDataAndMC( h_ed0err_pass_pvB, "ed0err_pass_pvB", "ele d0err(PVb) (pass all cuts, >=4j)", eNB, eLO, eUP);
+   addHistoDataAndMC( h_ed0err_pass_allj_bs,  "ed0err_pass_allj_bs",  "ele d0err(BS) (pass all cuts, allj)",  eNB, eLO, eUP);
+   addHistoDataAndMC( h_ed0err_pass_allj_pv,  "ed0err_pass_allj_pv",  "ele d0err(PV) (pass all cuts, allj)",  eNB, eLO, eUP);
+   addHistoDataAndMC( h_ed0err_pass_allj_pvB, "ed0err_pass_allj_pvB", "ele d0err(PVb) (pass all cuts, allj)", eNB, eLO, eUP);
+
+   // (3) d0 Significance
+   addHistoDataAndMC( h_ed0sig_bs,       "ed0sig_bs",       "ele |d0sig(BS)| (pass ET,eta cut)",      rNB, rLO, rUP);
+   addHistoDataAndMC( h_ed0sig_pv,       "ed0sig_pv",       "ele |d0sig(PV)| (pass ET,eta cut)",      rNB, rLO, rUP);
+   addHistoDataAndMC( h_ed0sig_pvB,      "ed0sig_pvB",      "ele |d0sig(PVb)| (pass ET,eta cut)",     rNB, rLO, rUP);
+   addHistoDataAndMC( h_ed0sig_pass_bs,  "ed0sig_pass_bs",  "ele |d0sig(BS)| (pass all cuts, >=4j)",  rNB, rLO, rUP);
+   addHistoDataAndMC( h_ed0sig_pass_pv,  "ed0sig_pass_pv",  "ele |d0sig(PV)| (pass all cuts, >=4j)",  rNB, rLO, rUP);
+   addHistoDataAndMC( h_ed0sig_pass_pvB, "ed0sig_pass_pvB", "ele |d0sig(PVb)| (pass all cuts, >=4j)", rNB, rLO, rUP);
+   addHistoDataAndMC( h_ed0sig_pass_allj_bs,  "ed0sig_pass_allj_bs",  "ele |d0sig(BS)| (pass all cuts, allj)",  rNB, rLO, rUP);
+   addHistoDataAndMC( h_ed0sig_pass_allj_pv,  "ed0sig_pass_allj_pv",  "ele |d0sig(PV)| (pass all cuts, allj)",  rNB, rLO, rUP);
+   addHistoDataAndMC( h_ed0sig_pass_allj_pvB, "ed0sig_pass_allj_pvB", "ele |d0sig(PVb)| (pass all cuts, allj)", rNB, rLO, rUP);
+
    histf->cd();
 
 }//end BookHistograms_ed0()
@@ -1976,15 +2150,16 @@ bool ana::Begin(){
    if(m_debug) cout << "Starting Begin()"<< endl;
 
    if(nfile==0) { cout << "No input file found, stop."<< endl; return false; }
+   cout << "\n  There are " << nfile << " input files\n" << endl;
 
    CheckAvailableJetMET();
 
    Init(); //initialize branch
 
    // Get the number of events/entries in the file chain
-   Long64_t nEvents = chain->GetEntries(); 
-   //   Long64_t nEventsAvail = nEvents;
-   if(nEvents==0) { cout << "No input event found, stop." << endl; return false; }
+   nEventsAvail = chain->GetEntries(); //private
+
+   if(nEventsAvail==0) { cout << "No input event found, stop." << endl; return false; }
 
    if(GetTrigger()) { chain->AddFriend(chain2); }
 
@@ -2003,10 +2178,20 @@ bool ana::Begin(){
 //=============================================================================================
 bool ana::EventLoop(){ 
   
+   if(nEventsAvail==0) return false;
 
    // Get the number of events/entries in the file chain
-   Long64_t nEvents = chain->GetEntries(); 
-   Long64_t nEventsAvail = nEvents;
+   Long64_t nEvents = nEventsAvail;//chain->GetEntries(); 
+   //Long64_t nEventsAvail = nEvents;
+
+
+
+   // Do some check
+   if(m_used0Significance && !m_runOn35Xntuples){
+     cout << " ERROR! You have set to use d0 significance but not running on 35X ntuples!"<< endl;
+     cout << " Check your run.C."<< endl;
+     return 0;
+   }
 
 
    WriteHeaderInfo();
@@ -2035,8 +2220,8 @@ bool ana::EventLoop(){
    //-----------
    //vector<string> ve;
    ve.push_back("INITIAL   ");
-   ve.push_back("GOODRUN   ");
    ve.push_back("TRIGGER   ");
+   ve.push_back("GOODRUN   ");
    ve.push_back("$\\ge$1TEle"); //NEW
    ve.push_back("$\\ge$1TISO");
    ve.push_back("=1TISO    ");
@@ -2044,6 +2229,7 @@ bool ana::EventLoop(){
    ve.push_back("MET       ");
    ve.push_back("!Z        ");
    ve.push_back("!CONV     ");
+   ve.push_back("Mis. Layer");
    if( !m_rejectEndcapEle ) ve.push_back("!DIFFZ    ");
    else ve.push_back("BARREL    ");
    //ve.push_back("TAGGABLE  ");
@@ -2163,9 +2349,11 @@ bool ana::EventLoop(){
 
 
 
+   // flag when running on DATA, print event details when find something interesting
+   // like Good Electron
+   bool printEventDetails = false;
 
-
-
+   if(m_debug) cout << "\n One step before main Event Loop"<< endl;
 
    //----------------------------------------------------------------------------
    //                   Beginning  of  Event  Loop
@@ -2173,15 +2361,21 @@ bool ana::EventLoop(){
 
    for(Long64_t ev=0; ev<nEvents; ++ev) {
 
+     if(m_debug) cout << "[DEBUG] event " << ev+1 << ", load tree" << endl;
+
 
      // NB: LoadTree will complain (harmlessly) about unknown branch if SetBranchAddress  
      //     was called for a branch not present in the ntuple
      Long64_t lflag = chain->LoadTree(ev);
      if (lflag < 0) break;
 
+     if(m_debug) cout << "[DEBUG] increment counter" << endl;
+     
      ++counter;
      //if(counter<900) continue;
 
+
+     if(m_debug) cout << "[DEBUG] chain->GetEntry()" << endl;
 
      int nbytes = chain->GetEntry(ev);
      if(ev>100) m_debug = false; // turn off m_debug message after 100 events
@@ -2222,6 +2416,8 @@ bool ana::EventLoop(){
      m_nbtag_TCHE              = 0;
      m_nbtag_TCHP              = 0;
      m_nbtag_SSV               = 0;
+
+     printEventDetails = false;
      //-----------------------------------------------------------
 
 
@@ -2233,16 +2429,11 @@ bool ana::EventLoop(){
 
      goodrun = true;
 
-//      if( IsData() && usegoodrun ) {
-//        // use only good runs
-//        //goodrun = mytool->good_run(run);
-//      }
-
 
      //Apply PV filter and No scraping event requirement. 
      // Clean up events
      if( m_runOn35Xntuples && m_cleanEvents ){
-       //  if( !PrimaryVertexFilter() || !NoScrapingFilter() ) goodrun = false;
+       if( !PrimaryVertexFilter() || !NoScrapingFilter() ) goodrun = false;
      }
 
 
@@ -2483,6 +2674,12 @@ bool ana::EventLoop(){
      int nGoodNonIsoEle_barrel = 0;
      int nGoodNonIsoEle_endcap = 0;     
      float this_isoele_d0 = 0;
+     float this_isoele_d0_bs = 0;//6MAY10
+     float this_isoele_d0_pv = 0;//6MAY10
+     float this_isoele_d0_pvB = 0;//6MAY10
+     float this_isoele_d0err_bs = 0;//6MAY10
+     float this_isoele_d0err_pv = 0;//6MAY10  
+     float this_isoele_d0err_pvB = 0;//6MAY10  
 
      int nHighETEle = 0; //pass et
      int nBasicEle = 0; //pass et,eta
@@ -2490,7 +2687,8 @@ bool ana::EventLoop(){
      int nLooseEle = 0; //pass et,eta,d0,id
      int nTightEle = 0;
      int nRobustLooseEle = 0;
-   
+
+     int nIsoE = 0;
 
      // basic
      fillHistoDataAndMC( h_nele, Nels );
@@ -2577,7 +2775,8 @@ bool ana::EventLoop(){
 	 float d0_corrected;
 	 //if(m_runOn35Xntuples){d0_corrected = (els_dB->at(i)/fabs(els_edB->at(i)));}
 	 //else{d0_corrected = compute_d0("electron",i); }
-	 d0_corrected = compute_d0("electron",i);
+	 d0_corrected = get_d0("electron",i);
+	 
 
 
 	 // Store electron d0 information
@@ -2585,11 +2784,50 @@ bool ana::EventLoop(){
 	 fillHistoDataAndMC( h_ed0_unCor, fabs(els_d0dum->at(i)) );
 	 fillHistoDataAndMC( h_ed0,       fabs(d0_corrected)     );
 
+	 if(m_debug) cout << "-> After electron d0 histograms" << endl;
 
+         // --- TL NEW 6MAY10 ---                                                                                                  
+         float d0__BS          ;
+         float d0__PV          ;
+         float d0__PVwithBS    ;
+         float d0err__BS       ;
+         float d0err__PV       ;
+         float d0err__PVwithBS ;
+
+	 if(m_runOn35Xntuples){
+
+           if(m_debug) cout << "-> get various d0" << endl;
+
+           d0__BS           =  get_d0_BS("electron",i);
+           d0__PV           =  get_d0_PV("electron",i);
+           d0__PVwithBS     =  get_d0_PVwithBS("electron",i);
+
+           d0err__BS        =  get_d0err_BS("electron",i);
+           d0err__PV        =  get_d0err_PV("electron",i);
+           d0err__PVwithBS  =  get_d0err_PVwithBS("electron",i);
+
+	   // take absolute value, |d0| (becase dB is only positive)
+	   d0__BS       = fabs(d0__BS);
+	   d0__PV       = fabs(d0__PV);
+	   d0__PVwithBS = fabs(d0__PVwithBS);
+	   
+	   fillHistoDataAndMC( h_ed0_bs,       d0__BS        );
+	   fillHistoDataAndMC( h_ed0_pv,       d0__PV        );
+	   fillHistoDataAndMC( h_ed0_pvB,      d0__PVwithBS  );
+
+	   fillHistoDataAndMC( h_ed0err_bs,    d0err__BS        );
+	   fillHistoDataAndMC( h_ed0err_pv,    d0err__PV        );
+	   fillHistoDataAndMC( h_ed0err_pvB,   d0err__PVwithBS  );
+
+           fillHistoDataAndMC( h_ed0sig_bs,    d0__BS      /d0err__BS  );
+           fillHistoDataAndMC( h_ed0sig_pv,    d0__PV      /d0err__PV  );
+           fillHistoDataAndMC( h_ed0sig_pvB,   d0__PVwithBS/d0err__PVwithBS  );
+         }
+
+         // --- TL 6MAY10 ----        
 	 // (6 Mar 09) Apply d0 cut on electron, 200 micron = 0.02cm
-	 // 26th April 10: Apply d0 on electorn using significance, < 3
-	 if(fabs(els_dB->at(i)/fabs(els_edB->at(i))) < 3){
-	   //if( fabs(d0_corrected) < 0.02 ) {
+	 //if( fabs(d0_corrected) < 0.02 ) {
+	 if( fabs(d0_corrected) < ELE_D0CUT ) {
 
 	   nBasicD0Ele++;
 	   // Count how many electron passing each type of electron ID	  
@@ -2610,17 +2848,77 @@ bool ana::EventLoop(){
 	   
 	   // Count number of good electron passing each eid (ignore those in eta gap: 1.442-1.56)
 	   //if ( fabs(els_scEta->at(i))<1.4442 || fabs(els_eta->at(i))>1.5660 ) {
-	   if ( fabs(els_eta->at(i))<1.442 || fabs(els_eta->at(i))>1.560 ) {
+	   //if ( fabs(els_eta->at(i))<1.442 || fabs(els_eta->at(i))>1.560 ) {
+	   if ( eleInBarrel(i) || eleInEndcap(i) ) {//TL 7MAY10
 	     if( els_looseId->at(i) > 0 )        nLooseEle++;
 	     if( els_tightId->at(i) > 0 )        nTightEle++;
 	     if( els_robustLooseId->at(i) > 0 )  nRobustLooseEle++;
 	   }
 	   
 
-	   //Separate into endcap and barrel
-	   	   
+	   //------------------------------------------------------------------
+	   // print out info about Good Ele candidate found in DATA
+	   //------------------------------------------------------------------
+	   if( passEleID(i) && IsData() ) {
+
+	     nIsoE++;
+	     cout << "************************************"<< endl;
+	     if(isIsolated){
+	       cout << " Found a Good Isolated Electron candidate (" << nIsoE << ")" << endl;
+	     }else{
+	       cout << " Found a Good (non-iso) Electron candidate" << endl;
+	     }
+	     printRunEvNumber();
+	     //cout << "  << Run "<< run << ", Event "<< event << ", LumiSection " << lumiBlock << " >>" << endl;
+	     //cout << " in file " << chain->GetCurrentFile()->GetName() << endl;
+	     cout << " electron        ET:  " << els_et->at(i) << " GeV" << endl;
+	     cout << "                eta:  " << els_eta->at(i) << " , sc_eta: " << els_scEta->at(i) ;
+	     if( eleInBarrel(i) ) cout << " (in BARREL)"<< endl;
+	     if( eleInEndcap(i) ) cout << " (in ENDCAP)"<< endl;
+	     if( eleInGap(i)    ) cout << " (in GAP)"   << endl;
+	     cout << "                phi:  " << els_phi->at(i) << endl;
+	     cout << "         ID     H/E:  " << els_hadOverEm->at(i) << endl;
+	     cout << "         ID  detain:  " << els_dEtaIn->at(i) << endl;
+	     cout << "         ID  dphiin:  " << els_dPhiIn->at(i) << endl;
+	     cout << "         ID   sieie:  " << els_sigmaIEtaIEta->at(i) << endl;
+	     cout << "                |d0|:  " << d0_corrected<< endl;
+	     cout << "            abs |d0|:  " << d0__BS << " (BS), " << d0__PV << " (PV), "<< d0__PVwithBS << " (PVwithBS)"<< endl;
+	     cout << "       error of |d0|:  " << d0err__BS << " (BS), " << d0err__PV << " (PV), "<< d0err__PVwithBS << " (PVwithBS)"<< endl;
+	     cout << "          |d0|/error:  " << d0__BS/d0err__BS << " (BS), " 
+		  << d0__PV/d0err__PV << " (PV), "
+		  << d0__PVwithBS/d0err__PVwithBS << " (PVwithBS)"<< endl;
+	     cout << "      tkIso (dr0.4):  " << els_dr04TkSumPt->at(i) << endl;
+	     cout << "    ecalIso (dr0.4):  " << els_dr04EcalRecHitSumEt->at(i) << endl;
+	     cout << "    hcalIso (dr0.4):  " << els_dr04HcalTowerSumEt->at(i) << endl;
+	     cout << "     reliso (dr0.4):  " << CombRelIso << endl;
+	     cout << "************************************" << endl;
+	     
+	     TVector2 e2v( els_px->at(i), els_py->at(i) );
+	     TVector2 met2v( mets_ex->at(0), mets_ey->at(0) );
+	     TVector2 pfmet2v( PFMets_ex->at(0), PFMets_ey->at(0) );
+	     TVector2 tcmet2v( tcmets_ex->at(0), tcmets_ey->at(0) );
+
+	     double a_mtw    = compute_mtw( e2v, met2v ); 
+	     double a_mtw_pf = compute_mtw( e2v, pfmet2v ); 
+	     double a_mtw_tc = compute_mtw( e2v, tcmet2v ); 
+
+	     cout << "************************************" << endl;
+	     cout << "   MT(e,calomet): " << a_mtw    << " GeV  (calomet: " << mets_et->at(0)   << " GeV)" << endl;
+	     cout << "   MT(e,pfmet):   " << a_mtw_pf << " GeV  (pfmet:   " << PFMets_et->at(0) << " GeV)" << endl;
+	     cout << "   MT(e,tcmet):   " << a_mtw_tc << " GeV  (tcmet:   " << tcmets_et->at(0) << " GeV)" << endl;
+	     cout << "************************************"<< endl;
+	     printEventDetails = true;
+	   
+	   }//passID in data
+	   
+
+
+	   //----------------------------------	   
+	   // Separate into endcap and barrel
+	   //----------------------------------	   
 	   //if (fabs(els_scEta->at(i)) < 1.4442) { //Barrel
-	   if (fabs(els_eta->at(i)) < 1.442) { //Barrel
+	   //if (fabs(els_eta->at(i)) < 1.442) { //Barrel
+	   if ( eleInBarrel(i) ) { //Barrel TL 7MAY10
 	     
 	     // Plot electron ID quantities
 	     // NEW 25-3-2010 (after ET cut, in barrel)
@@ -2661,13 +2959,26 @@ bool ana::EventLoop(){
 
 	       if (isIsolated) { //Isolated
 		 
+		 if(IsData()) {
+		   cout << "--> Found an isolated electron in Barrel region\n" << endl;
+		   //printRunEvNumber();
+		 }
 		 //Store 4 vector for isolated electron and increment counters
 		 nGoodIsoEle_barrel++;	       
 		 nGoodIsoEle++;	       
 		 iso_electrons.push_back(ele);
 		 iso_electrons_barrel.push_back(ele);
 		 this_isoele_d0 = fabs(d0_corrected);
+
+		 this_isoele_d0_bs     = d0__BS;         //6MAY10
+                 this_isoele_d0_pv     = d0__PV;         //6MAY10
+                 this_isoele_d0_pvB    = d0__PVwithBS;   //6MAY10
+                 this_isoele_d0err_bs  = d0err__BS;      //6MAY10
+                 this_isoele_d0err_pv  = d0err__PV;      //6MAY10
+                 this_isoele_d0err_pvB = d0err__PVwithBS;//6MAY10
+
 		 index_selected_ele = i;
+
 	       }
 	       else { //Non-Isolated
 		 
@@ -2675,12 +2986,11 @@ bool ana::EventLoop(){
 		 nGoodNonIsoEle++;	       
 	       }
 
-	     }	     
+	     }     
 	   }// end barrel
 
-	   //use scEta for barrel, but eta for 2.5 limit.
-	   //else if (fabs(els_scEta->at(i)) > 1.5660 && fabs(els_eta->at(i)) < 2.5) { //Endcap
-	     else if (fabs(els_eta->at(i)) > 1.560 && fabs(els_eta->at(i)) < 2.5) { //Endcap
+	   
+	   else if ( eleInEndcap(i) ) { //Endcap TL 7MAY10 
 
 	     // Plot electron ID quantities
 	     // NEW 25-3-2010 (after ET cut, in endcap)
@@ -2719,12 +3029,24 @@ bool ana::EventLoop(){
 
 	       if (isIsolated) { //Isolated (endcap)
 
+		 if(IsData()) {
+		   cout << "--> Found an isolated electron in Endcap region\n" << endl;
+		   //printRunEvNumber();
+		 }
 		 //Store 4 vector for isolated electron and increment counters
 		 nGoodIsoEle_endcap++;	       
 		 nGoodIsoEle++;	       
 		 iso_electrons.push_back(ele);
 		 iso_electrons_endcap.push_back(ele);
 		 this_isoele_d0 = fabs(d0_corrected);
+
+		 this_isoele_d0_bs     = d0__BS;         //6MAY10
+                 this_isoele_d0_pv     = d0__PV;         //6MAY10
+                 this_isoele_d0_pvB    = d0__PVwithBS;   //6MAY10
+                 this_isoele_d0err_bs  = d0err__BS;      //6MAY10
+                 this_isoele_d0err_pv  = d0err__PV;      //6MAY10
+                 this_isoele_d0err_pvB = d0err__PVwithBS;//6MAY10
+
 		 index_selected_ele = i;
 	       }
 	       else { //Non-Isolated
@@ -2739,6 +3061,7 @@ bool ana::EventLoop(){
 	   else { //Electrons in Gap
 	   }
 	 }// end d0 cut
+	   if(m_debug) cout << "-> outside of d0 cut" << endl;//6MAY10   
        }// end et,eta cuts
      }// end electrons loop 
 
@@ -2807,10 +3130,11 @@ bool ana::EventLoop(){
 	     nEle_Z_eteta++;
 	     
 	     // Calculate d0 w.r.t beam spot position
-	     float d0_corrected = compute_d0("electron",k);
+	     //	     float d0_corrected = compute_d0("electron",k);
+	     float d0_corrected = get_d0("electron",k);
 	     
-	     //if(fabs(els_d0sig->at(i) < ???){
-	     if( fabs(d0_corrected) < 0.02 ){
+	     //if( fabs(d0_corrected) < 0.02 ){
+	     if( fabs(d0_corrected) < ELE_D0CUT ){
 	       nEle_Z_eteta_d0++;
 	     
 	       if(els_robustLooseId->at(k)) nEle_Z_eteta_d0_RL++;
@@ -2851,7 +3175,8 @@ bool ana::EventLoop(){
 	    fabs(mus_cm_eta->at(i)) < 2.5 ) {
 	 
 	 // Correct muon d0 using BeamSpot
-	 float mu_d0_corrected = compute_d0("muon",i);
+	 //	 float mu_d0_corrected = compute_d0("muon",i);
+	 float mu_d0_corrected = get_d0("muon",i);
 
 
 	 //Plot Muon ID quantities	 
@@ -2935,8 +3260,8 @@ bool ana::EventLoop(){
      //-----------------------------------------
      // 3E - Set barrel ele flag (1st iso ele)
      //-----------------------------------------
-     if( iso_electrons.size()>0 && fabs(iso_electrons.at(0).Eta())<1.442  ) pass_barrel = true;
-
+     //if( iso_electrons.size()>0 && fabs(iso_electrons.at(0).Eta())<1.442  ) pass_barrel = true;
+     if( iso_electrons_barrel.size()>0 ) pass_barrel = true;//7MAY10
 
 
 
@@ -2976,26 +3301,26 @@ bool ana::EventLoop(){
 	   jets.push_back(jt);
 	 }
        } 
-     } else if (m_jetAlgo=="SC5") {
-       for(unsigned int i = 0; i<NjetsSC5; ++i) {
-	 if (jetsSC5_pt->at(i) > JET_PTCUT &&
-	     fabs(jetsSC5_eta->at(i)) < 2.4 &&
-	     jetsSC5_emf->at(i) > 0.01 )  {
-	   TLorentzVector jt(jetsSC5_px->at(i),jetsSC5_py->at(i),jetsSC5_pz->at(i),jetsSC5_energy->at(i));
-	   nGoodJet++;
-	   jets.push_back(jt);
-	 }
-       }
-     } else if (m_jetAlgo=="SC7") {
-       for(unsigned int i = 0; i<NjetsSC7; ++i) {
-	 if (jetsSC7_pt->at(i) > JET_PTCUT &&
-	     fabs(jetsSC7_eta->at(i)) < 2.4 &&
-	     jetsSC7_emf->at(i) > 0.01 )  {
-	   TLorentzVector jt(jetsSC7_px->at(i),jetsSC7_py->at(i),jetsSC7_pz->at(i),jetsSC7_energy->at(i));
-	   nGoodJet++;
-	   jets.push_back(jt);
-	 }
-       }
+//      } else if (m_jetAlgo=="SC5") {
+//        for(unsigned int i = 0; i<NjetsSC5; ++i) {
+// 	 if (jetsSC5_pt->at(i) > JET_PTCUT &&
+// 	     fabs(jetsSC5_eta->at(i)) < 2.4 &&
+// 	     jetsSC5_emf->at(i) > 0.01 )  {
+// 	   TLorentzVector jt(jetsSC5_px->at(i),jetsSC5_py->at(i),jetsSC5_pz->at(i),jetsSC5_energy->at(i));
+// 	   nGoodJet++;
+// 	   jets.push_back(jt);
+// 	 }
+//        }
+//      } else if (m_jetAlgo=="SC7") {
+//        for(unsigned int i = 0; i<NjetsSC7; ++i) {
+// 	 if (jetsSC7_pt->at(i) > JET_PTCUT &&
+// 	     fabs(jetsSC7_eta->at(i)) < 2.4 &&
+// 	     jetsSC7_emf->at(i) > 0.01 )  {
+// 	   TLorentzVector jt(jetsSC7_px->at(i),jetsSC7_py->at(i),jetsSC7_pz->at(i),jetsSC7_energy->at(i));
+// 	   nGoodJet++;
+// 	   jets.push_back(jt);
+// 	 }
+//        }
      } else if (m_jetAlgo=="KT4") {
        for(unsigned int i = 0; i<NjetsKT4; ++i) {
 	 if (jetsKT4_pt->at(i) > JET_PTCUT &&
@@ -3183,15 +3508,15 @@ bool ana::EventLoop(){
      } else if (m_metAlgo=="calomet_mujes") {
        this_met     = mets_et->at(0);
        this_met_phi = mets_phi->at(0);
+       
+//      } else if (m_metAlgo=="SC5") {
+//        this_met     = metsSC5_et->at(0);
+//        this_met_phi = metsSC5_phi->at(0);
 
-     } else if (m_metAlgo=="SC5") {
-       this_met     = metsSC5_et->at(0);
-       this_met_phi = metsSC5_phi->at(0);
-
-     } else if (m_metAlgo=="SC7") {
-       this_met     = metsSC7_et->at(0);
-       this_met_phi = metsSC7_phi->at(0);
-
+//      } else if (m_metAlgo=="SC7") {
+//        this_met     = metsSC7_et->at(0);
+//        this_met_phi = metsSC7_phi->at(0);
+       
      } else if (m_metAlgo=="KT4") {
        this_met     = metsKT4_et->at(0);
        this_met_phi = metsKT4_phi->at(0);
@@ -3251,6 +3576,7 @@ bool ana::EventLoop(){
 
 
 
+     
 
      //--------------------------
      // 3J - Order jets in PT
@@ -3380,6 +3706,25 @@ bool ana::EventLoop(){
 
 
 
+     //---------------------------------------------------
+     // If found interesting event, pring out more info
+     //---------------------------------------------------
+     if(printEventDetails){
+       cout << "\n  Number of good calo jets: " << nGoodJet << endl;
+       for(int i=0; i<nGoodJet; i++){
+	 cout << "   jet #" << i+1 << ":  PT = " << jets[i].Pt() << ", eta = " << jets[i].Eta() ;
+	 cout << ", phi = " << jets[i].Phi() << endl;;
+       }      
+       cout << "************************************" << endl;
+       cout << "  HT : " << ht << " GeV (= ET(isol e) + PT(isol mu) + PT(good clean calojets) + caloMET)" << endl;
+       cout << "************************************" << endl;
+     }
+
+
+
+
+
+
      //------------------------------------------------------------------------------------
      // 5 -  produce validation plots
      //-------------------------------
@@ -3410,12 +3755,14 @@ bool ana::EventLoop(){
 	 bool eleBoolcuts[9] = {1, fired_single_em, pass_goodele, pass_isoele, pass_only1_isoele,
 				!isMuon, pass_met, !isZ, !isConversion};
 	 
-	 float d0_corrected = fabs(compute_d0("electron",i)); //abs
+	 //float d0_corrected = fabs(compute_d0("electron",i)); //abs
+	 float d0_corrected = fabs(get_d0("electron",i));
+
 	 float RelCalIso = (els_dr04EcalRecHitSumEt->at(i) + els_dr04HcalTowerSumEt->at(i))/els_et->at(i);
 	 float RelTrkIso = els_tIso->at(i)/els_et->at(i);
 	 
 	 if( (RelCalIso+RelTrkIso) > 0.1 ) { eleBoolcuts[3] = 0; }
-	 if(els_et->at(i) < ELE_ETCUT || d0_corrected > 0.02) { eleBoolcuts[2] = 0; }
+	 if(els_et->at(i) < ELE_ETCUT || d0_corrected > ELE_D0CUT) { eleBoolcuts[2] = 0; }
 	 if ( passEleID(i)==false || fabs(els_eta->at(i))>2.5 ) { eleBoolcuts[2] = 0; }
 
 	 valid_fillHisto( valid_eleEt,     eleBoolcuts,  els_et->at(i)         );
@@ -3513,12 +3860,12 @@ bool ana::EventLoop(){
 
      if(m_debug) cout << " Applying event selection" << endl;
 
-     if(goodrun) { //Event in GOOD run list
+     if(fired_single_em) {  //Trigger
        FillEventCounter(1, ntj, mctype);
-
-       if(fired_single_em) {  //Trigger
+       
+       if(goodrun) { //Event in GOOD run list
 	 FillEventCounter(2, ntj, mctype);
-
+	 
 	 // Electron checks
 	 if(nGoodEle > 0){
 	   FillEventCounter(3, ntj, mctype);
@@ -3542,18 +3889,21 @@ bool ana::EventLoop(){
 		     if(!isConversion){  //Conversion Veto
 		       FillEventCounter(9, ntj, mctype);
 
-		       if( ( m_rejectEndcapEle==false && !isDifferentInteraction ) ||  // PV check (DIFFZ)
-			   ( m_rejectEndcapEle==true  && pass_barrel ) ) {     // ele eta cut
-
+		       if(  !m_useMisslayers || (m_useMisslayers && els_innerLayerMissingHits->at(index_selected_ele) <1) ){
 			 FillEventCounter(10, ntj, mctype);
-			 e_plus_jet_pass = true;
 
-			 if(m_nbtag_SSV >= 1){ //at least one +tag
+			 if( ( m_rejectEndcapEle==false && !isDifferentInteraction ) ||  // PV check (DIFFZ)
+			     ( m_rejectEndcapEle==true  && pass_barrel ) ) {     // ele eta cut
+			   
 			   FillEventCounter(11, ntj, mctype);
-
-			   if(m_nbtag_SSV >= 2){ //at least two +tag			     
+			   e_plus_jet_pass = true;
+			   
+			   if(m_nbtag_SSV >= 1){ //at least one +tag
 			     FillEventCounter(12, ntj, mctype);
-			   }
+			     
+			     if(m_nbtag_SSV >= 2){ //at least two +tag			     
+			       FillEventCounter(13, ntj, mctype);
+			     }
 			   /*
 			   if(ntaggable > 0){ // taggable
 			     e_plus_jet[12][ntj][mctype]++;
@@ -3585,7 +3935,7 @@ bool ana::EventLoop(){
 	 }
        }
      }
-
+     }
 
      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -3608,22 +3958,46 @@ bool ana::EventLoop(){
 
 
      //E+jets Analysis
-     if(e_plus_jet_pass && nGoodJet >= 4) {
+     if(e_plus_jet_pass ) {
+       
+       fillHistoDataAndMC( h_ed0_pass_allj_bs,      this_isoele_d0_bs     );
+       fillHistoDataAndMC( h_ed0_pass_allj_pv,      this_isoele_d0_pv     );
+       fillHistoDataAndMC( h_ed0_pass_allj_pvB,     this_isoele_d0_pvB    );
+      
+       fillHistoDataAndMC( h_ed0err_pass_allj_bs,   this_isoele_d0err_bs     );
+       fillHistoDataAndMC( h_ed0err_pass_allj_pv,   this_isoele_d0err_pv     );
+       fillHistoDataAndMC( h_ed0err_pass_allj_pvB,  this_isoele_d0err_pvB    );
+
+       fillHistoDataAndMC( h_ed0sig_pass_allj_bs,   this_isoele_d0_bs  / this_isoele_d0err_bs   );
+       fillHistoDataAndMC( h_ed0sig_pass_allj_pv,   this_isoele_d0_pv  / this_isoele_d0err_pv   );
+       fillHistoDataAndMC( h_ed0sig_pass_allj_pvB,  this_isoele_d0_pvB / this_isoele_d0err_pvB  );
+
+       if(nGoodJet >= 4) { // REQUIRE AT LEAST 4 JETS
 	  
-       ++counter_pass;
-
-       //Sample hist
-       // pass_ht->Fill(ht, this_weight);
-       // pass_met->Fill(this_met, this_weight);
-       fillHistoDataAndMC( h_ed0_pass, this_isoele_d0 );
-
-       //Print out for each selected event
-       fprintf(outfile,"%7d %6d %10d %10d %8d %8lld %5dj %11.2f %8.2f %8.2f %8s   %s\n",
-	       counter_pass, run, event, lumiBlock, chain->GetTreeNumber(), 
-	       lflag, nGoodJet, jets.at(0).Pt(), this_met, ht, this_mc.c_str(),
-	       chain->GetCurrentFile()->GetName());
-       interestingFiles.insert( chain->GetCurrentFile()->GetName() );
-     }
+	 ++counter_pass;
+	 
+	 fillHistoDataAndMC( h_ed0_pass, this_isoele_d0 );
+	 
+	 fillHistoDataAndMC( h_ed0_pass_bs,     this_isoele_d0_bs );
+	 fillHistoDataAndMC( h_ed0_pass_pv,     this_isoele_d0_pv );
+	 fillHistoDataAndMC( h_ed0_pass_pvB,    this_isoele_d0_pvB );
+	 
+	 fillHistoDataAndMC( h_ed0err_pass_bs,  this_isoele_d0err_bs );
+	 fillHistoDataAndMC( h_ed0err_pass_pv,  this_isoele_d0err_pv );
+	 fillHistoDataAndMC( h_ed0err_pass_pvB, this_isoele_d0err_pvB );
+	 
+	 fillHistoDataAndMC( h_ed0sig_pass_bs,  this_isoele_d0_bs  / this_isoele_d0err_bs  );
+	 fillHistoDataAndMC( h_ed0sig_pass_pv,  this_isoele_d0_pv  / this_isoele_d0err_pv  );
+	 fillHistoDataAndMC( h_ed0sig_pass_pvB, this_isoele_d0_pvB / this_isoele_d0err_pvB );
+	 
+	 //Print out for each selected event
+	 fprintf(outfile,"%7d %6d %10d %10d %8d %8lld %5dj %11.2f %8.2f %8.2f %8s   %s\n",
+		 counter_pass, run, event, lumiBlock, chain->GetTreeNumber(), 
+		 lflag, nGoodJet, jets.at(0).Pt(), this_met, ht, this_mc.c_str(),
+		 chain->GetCurrentFile()->GetName());
+	 interestingFiles.insert( chain->GetCurrentFile()->GetName() );
+       }//4j
+     }//epj pass
 
 
 
@@ -3817,8 +4191,8 @@ bool ana::EventLoop(){
        if ( m_applyMETcut && !pass_met ) passALL = false;
 
        // Apply eta cut if specified (optional)
-       if ( m_rejectEndcapEle && fabs( els_eta->at(ii_GoodEle_mostIso) ) > 1.442 ) passALL = false;
-     
+       //if ( m_rejectEndcapEle && fabs( els_eta->at(ii_GoodEle_mostIso) ) > 1.442 ) passALL = false;
+       if ( m_rejectEndcapEle && eleInBarrel(ii_GoodEle_mostIso)==false ) passALL = false;//TL 7MAY10
 
        if (passALL) {
 	 if(m_debug) cout << "QCDest: event pass all cuts (except isol and nj), make isolation plots" << endl;
@@ -3878,8 +4252,8 @@ bool ana::EventLoop(){
 	   if( fabs( els_eta->at(i) ) > 2.5 ) continue;
 	   if( fabs( els_eta->at(i) ) > 1.442 &&
 	       fabs( els_eta->at(i) ) < 1.56 ) continue; //ignore gap
-	   if( fabs(compute_d0("electron",i)) > 0.02 ) continue;
-	   //if( els_robustTightId->at(i) < 1 ) continue;
+	   //if( fabs(compute_d0("electron",i)) > ELE_D0CUT ) continue;
+	   if( fabs(get_d0("electron",i)) > ELE_D0CUT ) continue;
 	   if ( passEleID(i) == false )  continue;
 
 	   for (unsigned int j=0; j<Nels; ++j){ //2nd e loop
@@ -3888,7 +4262,8 @@ bool ana::EventLoop(){
 	     // Require "loose" electron: consider only electrons with ET>20 GeV, eta<2.5, d0<200um, RobustLoose
 	     if( els_et->at(j) < 20.0 ) continue;
 	     if( fabs( els_eta->at(j) ) > 2.5 ) continue;
-	     if( fabs(compute_d0("electron",j)) > 0.02 ) continue; //d0 cut
+	     //if( fabs(compute_d0("electron",j)) > ELE_D0CUT ) continue; //d0 cut
+	     if( fabs(get_d0("electron",j)) > ELE_D0CUT ) continue; //d0 cut
 	     if( els_robustLooseId->at(j) < 1 ) continue;
 	     
 	     TLorentzVector tight(els_px->at(i),els_py->at(i),els_pz->at(i),els_energy->at(i));
@@ -4318,21 +4693,22 @@ bool ana::EventLoop(){
    cout << "                             Summary Information";
    cout << "\n%------------------------------------------------------------------------------------\n";
 
-   cout << "Integrated luminosity assumed = " << m_intlumi << "/pb" << endl;
-   if( GetTrigger() ) cout << "Applied HLT trigger: " << HLTBit << endl;
-   cout << " Electron ET cut  =  " << ELE_ETCUT << "  GeV" << endl;
-   cout << "     Muon PT cut  =  " << MU_PTCUT  << "  GeV" << endl;
-   cout << "     Muon iso cut =  " << MU_ISOCUT  << endl;
-   cout << "      Jet PT cut  =  " << JET_PTCUT << "  GeV" << endl;
-   cout << "      MET    cut  =  " << METCUT    << "  GeV" << endl;
+//    cout << "Integrated luminosity assumed = " << m_intlumi << "/pb" << endl;
+//    if( GetTrigger() ) cout << "Applied HLT trigger: " << HLTBit << endl;
+//    cout << " Electron ET cut  =  " << ELE_ETCUT << "  GeV" << endl;
+//    cout << " Electron ID      = " << printEleID() << endl;
+//    cout << " Electron d0      =  " << m_d0RefPoint << ", cut = " << ELE_D0CUT << endl;
+//    cout << "     Muon PT cut  =  " << MU_PTCUT  << "  GeV" << endl;
+//    cout << "     Muon iso cut =  " << MU_ISOCUT  << endl;
+//    cout << "      Jet PT cut  =  " << JET_PTCUT << "  GeV" << endl;
+//    cout << "      MET    cut  =  " << METCUT    << "  GeV" << endl;
 
-   cout << " Electron ID = " << printEleID() << endl;
-   cout << " Electron RelIso formula = " ;
-   if(useNewReliso) cout << "new"; else cout << "old";
-   if(!m_applyMETcut && m_rejectEndcapEle) 
-     cout << "\n Using plan B, does not use MET, use barrel ele only (eta<1.442)" << endl;
-   if(m_applyMETcut && m_rejectEndcapEle) 
-     cout << "\n Using plan C, both MET & ele eta cuts are used (eta<1.442)" << endl;
+//   cout << " Electron RelIso formula = " ;
+//    if(useNewReliso) cout << "new"; else cout << "old";
+//    if(!m_applyMETcut && m_rejectEndcapEle) 
+//      cout << "\n Using plan B, does not use MET, use barrel ele only (eta<1.442)" << endl;
+//    if(m_applyMETcut && m_rejectEndcapEle) 
+//      cout << "\n Using plan C, both MET & ele eta cuts are used (eta<1.442)" << endl;
    cout << "\n\\end{verbatim}\n"<< endl;
 
 
@@ -4720,24 +5096,26 @@ void ana::StudyRelisoNESatEachStage(){
       float tmpRelIso = getRelIso(ie);
 
       // barrel or endcap?
-      bool inBarrel =  fabs(els_eta->at(ie)) < 1.5 ;
-
+      //bool inBarrel =  fabs(els_eta->at(ie)) < 1.5 ;
+      bool inBarrel = eleInBarrel(ie); //7MAY10                                                                                    
+      bool inEndcap = eleInEndcap(ie); //7MAY10  
 
       iso_fillHisto_NES( 0, tmpRelIso, this_met, inBarrel );
 
 
       // fill only for electrons with at least 30 GeV ET, and pass eta cut
       if( els_et->at(ie) > ELE_ETCUT && fabs(els_eta->at(ie)) < 2.5 &&
-	  ( fabs(els_eta->at(ie)) < 1.442 || fabs(els_eta->at(ie)) > 1.56 ) ) {
-
+	  //  ( fabs(els_eta->at(ie)) < 1.442 || fabs(els_eta->at(ie)) > 1.56 ) ) {
+	  (inBarrel || inEndcap ) ) { //7MAY10
 
 	iso_fillHisto_NES( 1, tmpRelIso, this_met, inBarrel );
 
 
-	// Calculate d0 w.r.t beam spot
-	float d0_corrected  = compute_d0("electron",ie);
+	// Calculate d0
+	//float d0_corrected  = compute_d0("electron",ie);
+	float d0_corrected  = get_d0("electron",ie);
 
-	if( fabs(d0_corrected) < 0.02 ){  // d0 cut
+	if( fabs(d0_corrected) < ELE_D0CUT ){  // d0 cut
 	     
 	  iso_fillHisto_NES( 2, tmpRelIso, this_met, inBarrel );
 
@@ -4755,8 +5133,9 @@ void ana::StudyRelisoNESatEachStage(){
 	  // 31X: eID cuts have changed!!! values need to be updated!  TODO
 	  //
 
-	  if( fabs(els_eta->at(ie)) < 1.442 ) {  // barrel
-
+	  //if( fabs(els_eta->at(ie)) < 1.442 ) {  // barrel
+	  if( inBarrel ) {  // barrel //7MAY10 
+	   
 	    // Updated eID cut values: tight Fixed Threshold "RobustTight"
 	    // ref: https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideCutBasedElectronID
 	    if(     els_hadOverEm->at(ie) < 0.01   ) pass_eid_c1 = true;
@@ -4764,8 +5143,8 @@ void ana::StudyRelisoNESatEachStage(){
 	    if(  fabs(els_dPhiIn->at(ie)) < 0.025  ) pass_eid_c3 = true;	       
 	    if( els_sigmaIEtaIEta->at(ie) < 0.0099 ) pass_eid_c4 = true;	      
 	  }
-	  else if ( fabs(els_eta->at(ie)) > 1.56 ) { // endcap
-
+	  //else if ( fabs(els_eta->at(ie)) > 1.56 ) { // endcap
+	  else{//7May10
 	    if(     els_hadOverEm->at(ie) < 0.01   ) pass_eid_c1 = true;
 	    if(  fabs(els_dEtaIn->at(ie)) < 0.0066 ) pass_eid_c2 = true;
 	    if(  fabs(els_dPhiIn->at(ie)) < 0.020  ) pass_eid_c3 = true;
@@ -4809,7 +5188,8 @@ void ana::StudyRelisoNESatEachStage(){
       // barrel or endcap?
       if(ii_GoodEle_mostIso < 0) cout << "error/warning: could not find most isolated GoodEle." << endl;
 
-      bool inBarrel =  fabs(els_eta->at(ii_GoodEle_mostIso)) < 1.5 ;
+      //bool inBarrel =  fabs(els_eta->at(ii_GoodEle_mostIso)) < 1.5 ;
+      bool inBarrel = eleInBarrel(ii_GoodEle_mostIso);
 
       // cout << "** CombRelIso = " << CombRelIso << endl;
 
@@ -4903,7 +5283,7 @@ void ana::StudyQCDControlRegion_planA(){
       //cout << "[DEBUG] A2" << endl;
       //	   TLorentzVector eles_temp(els_px->at(0),els_py->at(0),els_pz->at(0),els_energy->at(0));
       //bool this_is_conv = ConversionFinder( electrons.at(0), mctype, 0); //1st good ele
-      bool this_is_conv = ConversionFinder( 0); //1st good ele
+      bool this_is_conv = ConversionFinder( theGE ); //1st good ele
 
       if ( this_is_conv ) {
 	if ( this_et > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA2_e20, this_iso, this_weight );
@@ -4913,7 +5293,8 @@ void ana::StudyQCDControlRegion_planA(){
 
       // A3: invert d0 (>200 um)
       //cout << "[DEBUG] A3" << endl;
-      if ( fabs(compute_d0("electron",theGE)) > 0.02 ) {
+      //if ( fabs(compute_d0("electron",theGE)) > ELE_D0CUT ) {
+      if ( fabs(get_d0("electron",theGE)) > ELE_D0CUT ) {
 	if ( this_et > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA3_e20, this_iso, this_weight );
 	  if ( this_et > 30. ) fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planA3_e30, this_iso, this_weight );
 	}
@@ -4968,8 +5349,8 @@ void ana::StudyQCDControlRegion_planB(){
     if(m_debug) cout << "  passing selections" << endl;
 
     // common criteria for B1 & 2
-    if(  fabs(els_eta->at(0))           < 2.5  &&
-	 fabs(compute_d0("electron",0)) < 0.02     ) {
+    if(  fabs(els_eta->at(0))       < 2.5  &&
+	 fabs(get_d0("electron",0)) < ELE_D0CUT     ) {
 	   
       if(m_debug) cout << "  passing ele eta and d0 cuts" << endl;
 	     
@@ -5003,7 +5384,8 @@ void ana::StudyQCDControlRegion_planB(){
 	    }
 	  }
 	} 
-	if( fabs(els_eta->at(0))  < 1.442 ){ //BARREL
+	if( eleInBarrel(0) ){ //BARREL 7MAY10
+	//if( fabs(els_eta->at(0))  < 1.442 ){ //BARREL
 	  if ( els_et->at(0) > 20. ) { fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3b_e20, this_iso, this_weight );
 	    if ( els_et->at(0) > 30. )  fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_planB3b_e30, this_iso, this_weight );
 	  }
@@ -5027,7 +5409,8 @@ void ana::StudyQCDControlRegion_planB(){
     if(m_debug) cout << "    B7" << endl;
     if(  els_et->at(0) > 20.  && 
 	 fabs(els_eta->at(0)) < 2.5  &&
-	 fabs(compute_d0("electron",0)) > 0.02 ) { //<---
+	 //fabs(compute_d0("electron",0)) > ELE_D0CUT ) { //<---
+	 fabs(get_d0("electron",0)) > ELE_D0CUT ) { //<---
 	   
       const double this_iso = getRelIso(0);
 	   
@@ -6156,7 +6539,7 @@ bool ana::ConversionFinder(  int index_selected_ele) {
   bool isthisConversion = false;
 
   //if the electron has 3 or more missing layers, declare it a conversion
-  if(m_useMisslayers) { if( els_innerLayerMissingHits->at(index_selected_ele) > 0 ) return true; }
+  //if(m_useMisslayers) { if( els_innerLayerMissingHits->at(index_selected_ele) > 0 ) return true; }
   //else, continue the routine. Note, we may want to apply this separately to the routine. For now, leave it here (07-01-10)
 
 
@@ -6188,7 +6571,7 @@ bool ana::ConversionFinder(  int index_selected_ele) {
     phi1 = tracks_phi->at(mytrackref);
     eta1 = tracks_eta->at(mytrackref);
     charge1 = tracks_chg->at(mytrackref);
-    d0 = compute_d0("track",mytrackref);
+    d0 = compute_d0("track",mytrackref); //****** TL 12MAY ***** check with Frankie    
     tk1Curvature = -0.3*bfield*charge1/( 100*( tracks_pt->at(mytrackref) ) );
     theta1 = tracks_theta->at(mytrackref);
     if(m_useMisslayers) NumMissLayers = tracks_innerLayerMissingHits->at(mytrackref); 
@@ -6197,7 +6580,7 @@ bool ana::ConversionFinder(  int index_selected_ele) {
     phi1 = els_tk_phi->at(index_selected_ele);
     eta1 = els_tk_eta->at(index_selected_ele);
     charge1 = els_tk_charge->at(index_selected_ele);
-    d0 = compute_d0("electron",index_selected_ele);
+    d0 = compute_d0("electronConv",index_selected_ele); //****** TL 12MAY ***** check
     tk1Curvature = -0.3*bfield*charge1/( 100*( els_tk_pt->at(index_selected_ele) ) );
     theta1 = els_tk_theta->at(index_selected_ele);
     if(m_useMisslayers) NumMissLayers = els_innerLayerMissingHits->at(index_selected_ele);
@@ -6223,8 +6606,7 @@ bool ana::ConversionFinder(  int index_selected_ele) {
     tk2Curvature = -0.3*bfield*tracks_chg->at(j)/( 100*( tracks_pt->at(j) ) );
     tk2r = fabs(1/tk2Curvature);
     
-    d02 = compute_d0("track",j);
-    
+    d02 = compute_d0("track",j); //****** TL 12MAY ***** check with Frankie
     
     tk2x = ((1/tk2Curvature) - d02)*cos(phi2);
     tk2y = ((1/tk2Curvature) - d02)*sin(phi2);
@@ -6351,7 +6733,7 @@ void ana::OptimiseConversionFinder( int mctype, int index_selected_ele){
     phi1 = tracks_phi->at(mytrackref);
     eta1 = tracks_eta->at(mytrackref);
     charge1 = tracks_chg->at(mytrackref);
-    d0 = compute_d0("track",mytrackref);
+    d0 = compute_d0("track",mytrackref);//************
     tk1Curvature = -0.3*bfield*charge1/( 100*( tracks_pt->at(mytrackref) ) );
     theta1 = tracks_theta->at(mytrackref);
     if(m_useMisslayers) NumMissLayers = tracks_innerLayerMissingHits->at(mytrackref);
@@ -6360,7 +6742,7 @@ void ana::OptimiseConversionFinder( int mctype, int index_selected_ele){
     phi1 = els_tk_phi->at(index_selected_ele);
     eta1 = els_tk_eta->at(index_selected_ele);
     charge1 = els_tk_charge->at(index_selected_ele);
-    d0 = compute_d0("electron",index_selected_ele);
+    d0 = compute_d0("electronConv",index_selected_ele);//************* 12May
     tk1Curvature = -0.3*bfield*charge1/( 100*( els_tk_pt->at(index_selected_ele) ) );
     theta1 = els_tk_theta->at(index_selected_ele);
     if(m_useMisslayers) NumMissLayers = els_innerLayerMissingHits->at(index_selected_ele);
@@ -7940,6 +8322,17 @@ void ana::PrintEventCounter() const {
 
   if(m_debug) cout << "Starting << PrintEventCounter >>" << endl;
 
+  // only print out those that have non-0 inputevents
+  // set flag
+  bool flag[nmctype];
+  for(int k=0; k<nmctype; ++k){
+    // find the Ninit for each mctype
+    int thisTotal=0;
+    for(int j=0; j<ntjet; ++j) thisTotal += e_plus_jet[0][j][k];
+    if ( thisTotal == 0 ) flag[k]=false;
+    else                  flag[k]=true;
+  }
+
   for(int i=0; i < nstage; ++i){
 
     cout << "\n CUT " << i << ":  " << ve.at(i) << endl;
@@ -7951,8 +8344,11 @@ void ana::PrintEventCounter() const {
 	 << setw(10) << ">=4j"
 	 << setw(10) << "allj" << "\n" << endl;
     
+    // only print out those that have non-0 inputevents
     for(int k=0; k < nmctype; ++k){
-
+      
+      if(!flag[k]) continue;
+      
       cout << setw(12) << mymcname[k] << setw(4) << k << right ;
       int sumjet=0;
       for(int j=0; j < ntjet; ++j){
@@ -8800,7 +9196,10 @@ double ana::GetBinomialUncertainty(const double& eff, const int& Ninitial) const
 
 double ana::GetBayesUncertainty(const int& Ninitial) const{
 
-  if(Ninitial==0) return 0; //NEW, added by TL (Ask FB to check)
+  if(Ninitial<=0) {
+    cout << "[GetBayesUncertainty] Ninitial<=0! value is" << Ninitial << endl;
+    return 0; //NEW, added by TL (Ask FB to check)
+  }
   
   TH1D *h_total = new TH1D("total","events that are incident",1,0,1);
   h_total->SetBinContent( 1, Ninitial );
@@ -9516,14 +9915,51 @@ bool ana::is_mc_present( const int& code ) const {
 //---------------------------------------------------------------------------------------------
 
 //--------- compute (signed) d0 corrected w.r.t Beam Spot -------------------------------------
-float ana::compute_d0 ( const string& lepton, const int& i ) const {
+float ana::get_d0 ( const string& lepton, const int& i ) const {
+
+  // first check if lepton is electron or muon
+  if( lepton!="electron" && lepton!="muon" &&
+      lepton!="track"    && lepton!="electronConv") {
+    cout << "[d0]: wrong lepton type! Has to be 'electron', 'muon', 'electronConv', or 'track'";
+    return -1;
+  }
+
+  // track or ele in conversion finder
+  if( lepton=="track" || lepton=="electronConv") {
+    return compute_d0(lepton,i);
+  }
+
+  // ele or muon
+  float d0 = 999;
   
+  // first get the absolute d0  
+  if     (m_d0RefPoint=="BS")       d0 = get_d0_BS(lepton,i);
+  else if(m_d0RefPoint=="PV")       d0 = get_d0_PV(lepton,i);
+  else if(m_d0RefPoint=="PVwithBS") d0 = get_d0_PVwithBS(lepton,i);
+  
+  // then if want the significance, divde by the error
+  if( m_used0Significance ) {
+    if     (m_d0RefPoint=="BS")        d0 /= get_d0err_BS(lepton,i);
+    else if(m_d0RefPoint=="PV")        d0 /= get_d0err_PV(lepton,i);
+    else if(m_d0RefPoint=="PVwithBS")  d0 /= get_d0err_PVwithBS(lepton,i);
+  }
+  return d0;
+}
+
+//---------------------------------------------------------------------------------------------
+// compute absolute d0 corrected w.r.t 
+//  (a) BS 
+//  (b) PV 
+//  (c) PVwithBS
+//float ana::compute_d0( const string& lepton, const int& i ) const {
+float ana::compute_d0( const string& lepton, const int& i, string ref ) const {
+
   float vx = 0;
   float vy = 0;
   float px = 0;
   float py = 0;
 
-  if (lepton=="electron") {
+  if (lepton=="electron" || lepton=="electronConv") {
     vx = els_vx->at(i);
     vy = els_vy->at(i);
     px = els_vpx->at(i);
@@ -9542,15 +9978,128 @@ float ana::compute_d0 ( const string& lepton, const int& i ) const {
     py = tracks_py->at(i);
   }
 
-  float refx = beamSpot_x->at(0);
-  float refy = beamSpot_y->at(0);
+  // Get the Reference Point
+  float refx = 0;
+  float refy = 0;
+
+  // use the chosen RefPoint unless call by user
+  if(ref=="BS") {
+    refx = beamSpot_x->at(0);
+    refy = beamSpot_y->at(0);
+  }else if(ref=="PV") {
+    refx = pv_x->at(0);
+    refy = pv_y->at(0);
+  }else if(ref=="PVwithBS") {
+    refx = pvB_x->at(0);
+    refy = pvB_y->at(0);
+  }  
   
+
   float d0_corrected = - (-(vx - refx)*py + (vy - refy)*px) / TMath::Hypot(px,py) ; //d0 = -dxy 
   //cout << "d0 corrected (px,py):  " << d0_corrected << endl;
+  /*
+  if(lepton=="electron"){
+    cout << "d0 (BS):  " << d0_corrected << endl;
 
+    refx = pv_x->at(0);
+    refy = pv_y->at(0);
+    d0_corrected = - (-(vx - refx)*py + (vy - refy)*px) / TMath::Hypot(px,py) ; //d0 = -dxy 
+    
+    cout << "d0 (PV):  " << d0_corrected << endl;
+    cout << "dB:       " << els_dB->at(i) << endl << endl;
+  }
+  */
+  //if(m_used0Significance && lepton=="electron") d0_corrected = ( els_dB->at(i)/els_edB->at(i) );
+ 
   return d0_corrected;
+
 }//end compute_d0
 //---------------------------------------------------------------------------------------------
+
+// NEW 6MAY10 TL
+// compute d0 significance w.r.t Beam Spot
+// Ref:
+float ana::compute_d0err_BS(const string &lepton, const int& i) const {
+
+  //  double d0_sigma = sqrt( Track->d0Error()^2 + beamSpot.BeamWidthX()^2 );
+  float d0dumError = 0;
+  if(lepton=="electron") d0dumError = els_d0dumError->at(i);
+  else                   d0dumError = mus_cm_d0dumErr->at(i);
+  if(m_debug) {
+    if(lepton=="electron")
+      cout << " els_d0dumError->at(i):      " <<  els_d0dumError->at(i) << endl;
+    else
+      cout << " mus_cm_d0dumErr->at(i):   " <<  mus_cm_d0dumErr->at(i) << endl;
+    cout << " beamSpot_beamWidthX->at(0): " <<  beamSpot_beamWidthX->at(0) << endl;
+  }
+  if(NbeamSpot>0){
+    float d0_sigma = TMath::Hypot( d0dumError, beamSpot_beamWidthX->at(0) );
+    return d0_sigma;
+  }
+  return 999;
+}
+//---------------------------------------------------------------------------------------------
+
+// Get d0 w.r.t. Beam spot
+float ana::get_d0_BS( const string& lepton, const int& i ) const {
+  return compute_d0(lepton,i,"BS");
+}
+//---------------------------------------------------------------------------------------------
+
+// Get d0 significance w.r.t. Beam spot
+float ana::get_d0err_BS( const string& lepton, const int& i ) const {
+  return compute_d0err_BS(lepton,i);
+}
+//---------------------------------------------------------------------------------------------
+
+float ana::get_d0_PV( const string& lepton, const int& i ) const {
+  if(lepton=="electron") return els_dB->at(i);
+  else                   return mus_dB->at(i);
+}
+//---------------------------------------------------------------------------------------------
+float ana::get_d0err_PV( const string& lepton, const int& i ) const {
+  if(lepton=="electron") return els_edB->at(i);
+  else                   return mus_edB->at(i);
+}
+//---------------------------------------------------------------------------------------------
+
+float ana::get_d0_PVwithBS ( const string& lepton, const int& i ) const {
+
+  if(!m_ntupleHasD0PVBS) return 999;
+
+  if(lepton=="electron") {
+    return els2_d0_pvbs->at(i);
+  }
+  else {
+    cout << "[get_d0_PVwithBS] no muon d0 w.r.t beam-constrained PV yet. To be added! Returning 999."<< endl;
+    cout << "lepton=" << lepton << endl;
+    //return mus2_d0_pvbs->at(i);
+    return 999;
+  }
+  return 999;
+}
+//---------------------------------------------------------------------------------------------
+
+float ana::get_d0err_PVwithBS ( const string& lepton, const int& i ) const {
+
+  if(!m_ntupleHasD0PVBS) return 999;
+
+  if(lepton=="electron") {
+    return els2_ed0_pvbs->at(i);
+  }
+  else {
+    cout << "[get_d0err_PVwithBS] no muon d0 significance  w.r.t beam-constrained PV yet. To be added! Returning 999."<< endl;
+    cout << "lepton=" << lepton << endl;
+    //return mus2_d0_pvbs->at(i)/mus2_d0_pvbs->at(i);
+    return 999;
+  }
+  return 999;
+}
+//---------------------------------------------------------------------------------------------
+
+
+
+
 
 //--------- compute mT(W) given electron 2-vector and MET -------------------------------------
 float ana::compute_mtw ( const TVector2& e, const TVector2& miss ) const {
@@ -9730,6 +10279,48 @@ string ana::printTimeNow() const {
   return now.AsSQLString();
 }
 //---------------------------------------------------------------------------------------------
+
+void ana::printRunEvNumber() const{
+  cout << "  in << Run "<< run << ", Event "<< event << ", LumiSection " << lumiBlock << " >>" << endl;
+  cout << "  in file " << chain->GetCurrentFile()->GetName() << endl;
+}
+//---------------------------------------------------------------------------------------------
+
+//7MAY10                                                                                                                           
+bool ana::eleInBarrel(const int& i)const{
+  if(!m_runOn35Xntuples){ //old                                                                                                    
+    if( fabs(els_eta->at(i)) < 1.442) return true;
+    else  return false;
+  }else{ //new                                                                                                                     
+    if( fabs(els_scEta->at(i)) < 1.4442 ) return true;
+    else  return false;
+  }
+}
+//---------------------------------------------------------------------------------------------                                    
+
+//7MAY10                                                                                                                           
+bool ana::eleInEndcap(const int& i)const{
+  if(!m_runOn35Xntuples){ //old                                                                                                    
+    if( fabs(els_eta->at(i)) > 1.56 && fabs(els_eta->at(i)) < 2.5) return true;
+    else  return false;
+  }else{ //new                                                                                                                     
+    if( fabs(els_scEta->at(i)) > 1.566 && fabs(els_eta->at(i)) < 2.5) return true;
+    else  return false;
+  }
+}
+//---------------------------------------------------------------------------------------------                                    
+
+//7MAY10                                                                                                                           
+bool ana::eleInGap(const int& i)const{
+
+  // true if ele in 2.5 but not in barrel or endcap                                                                                
+  if ( fabs(els_eta->at(i)) < 2.5 && eleInBarrel(i)==false && eleInEndcap(i)==false )
+    return true;
+  else
+    return false;
+}
+//---------------------------------------------------------------------------------------------                                    
+
 
 void ana::DoBTagging(const vector<TLorentzVector>& electrons){
   // .. TO DO ...
