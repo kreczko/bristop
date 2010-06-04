@@ -1577,7 +1577,7 @@ public:
   void    Setd0Cut(float);
 
   // electron ID
-  enum  eID { robustTight, robustLoose, loose, tight, none };
+  enum  eID { robustTight, robustLoose, loose, tight, none, VBTF_W70 };
   void    SetEleID(eID val) { m_eID = val;};
 
   void    SetAESHTcut(float cut)     { AES_HT_cut        = cut; };
@@ -1744,12 +1744,14 @@ private:
   float  compute_mtw(const TVector2&, const TVector2&) const;
   float  getRelIso(const unsigned int&) const; 
   bool   passEleID(const unsigned int&) const;
+  bool   passEleID_VBTF_W70(const unsigned int&) const;
   bool   passHLT() const;
   string printTimeNow() const;
-  void   printRunEvNumber() const;
+  void   printRunEvNumber();
   bool   eleInBarrel(const int&) const;//7MAY10                                                                                    
   bool   eleInEndcap(const int&) const;//7MAY10                                                                                    
   bool   eleInGap(const int&) const;//7MAY10    
+  string eleEtaRegion(const int&) const;
 
   // conversion
   bool  ConversionFinder( int index_selected_ele);
@@ -1783,6 +1785,8 @@ private:
   //  After main loop
   //-------------------
   // event-count tables
+  void PrintNumIsolated() const;
+  void GetNumIso(const int&) const;
   void FillEventCounter(const int&, const int&, const int&);
   void PrintEventCounter() const;
   void DrawEventPerNjetTable() const;
@@ -1803,6 +1807,7 @@ private:
   // print event-count tables (with errors)
   //  void PrintErrorTables( vector<string> ve ) const;
   ofstream myfile;
+  ofstream myfile2;
   void CalculateErrors() ;
   void TESTPrintErrorTables() ;//TEST debug
   void PrintErrorTables() ;
@@ -1933,9 +1938,10 @@ private:
   bool   isZ;                    //7  false=pass_z_veto
   bool   pass_4jets;             //8
   bool   pass_met;               //9  OK
-  bool   isConversion;           //10 a false=pass_conv_veto
-  bool   pass_barrel;            //10 b
-  bool   isDifferentInteraction; //11  false=pass_vertex_z
+  bool   pass_missHits;          //10 a OK
+  bool   isConversion;           //10 b false=pass_conv_veto
+  bool   pass_barrel;            //10 c
+  //bool   isDifferentInteraction; //11  false=pass_vertex_z
   bool   pass_1btag;             //12
   bool   pass_2btag;             //13
 
@@ -2213,6 +2219,7 @@ private:
   TH2D         *h_Zee_photon_eteta_2D;			
   TH1D         *h_Z_Nphotons;
   TH1D         *h_Zee_Nphotons;
+  vector<TH1*>  h_mass_Zee;            //[nclass];
   vector<TH1*>  h_mass_diele;            //[nclass];
   vector<TH1*>  h_mass_diele_new;        //[nclass];
   vector<TH1*>  h_mass_diele_lowMet_1j;  //[nclass];
@@ -2278,6 +2285,7 @@ private:
 
   // QCD estimation
   v2D_TH1       h_QCDest_CombRelIso;    //[7][nclass];     //"new" formulation (0-infinity)
+  v2D_TH1       h_QCDest_CombRelIsoUW;    //[7][nclass];     //"new" formulation (0-infinity) unweighted
   // dir /AES/
   v2D_TH1       h_QCDest_CombRelIso_AES;    //[7][nclass];  //ALL AES
   v2D_TH1       h_QCDest_CombRelIso_AES_minusMET;    //[7][nclass];  // AES except MET cut
