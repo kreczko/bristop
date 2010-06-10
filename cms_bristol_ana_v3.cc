@@ -3,9 +3,22 @@
 //        2) add WW,ZZ,WZ.
 //        3) adapt cut to conform to Reference Selection of Top Lepton+Jets
 //        4) exploit "goodrun" (stage 1) for event cleaning: NoScraping, goodPV
-//
 //#====================================================#
 //# Last update:
+//
+//  9 Jun 2010: - fix bug, line 3300, isConversion should be set to false when not applycing conv veto.
+//  8 Jun 2010: - fix bug, line 4253 should be "!mige_isConversion", missing exclamatino mark.
+//  7 Jun 2010: - small update of VBTF W70 ID.
+//              - add switch for conversion veto (dist/dcot): ApplyConversionVeto(m_applyConVeto); default is on.
+//              - switch to new spring10 enri3,bce3 ntuples (skim eff updated).
+//              - modify EstimateWjets() so that it will run without single top MC.
+//                --> Add Option IncludeSingleTopInM3Fit()
+//
+//  6 Jun 2010: - update Reliso NES code to conform to new selection.
+//              - fix bug with ttbar acceptance table (4j).
+//              - Added wjet HLTskim eff (spring10_7TeV_new).
+//              - Added mige_pass_missHits flag; Renamed isConversionMIGE to mige_isConversion.
+//              [TEMP 6JUN]: take out conversin veto to study RelIso, ie Sel02 only.
 //
 //  3 Jun 2010: - Fixed bug. Added functions PrintNumIsolated() and GetNumIso().
 //              - Adapt to SelV2: ele iso cone 0.4 -> 0.3. Moved up Missing Hits cut after =1ISO.
@@ -452,6 +465,9 @@ void ana::PrintCuts() const {
   cout << "***********************************************\n" << endl;
   if(checkTrig) cout << "  Trigger required :   " << HLTBit << endl;
   else          cout << "  Trigger not required" << endl;
+  if( m_cleanEvents ){
+    cout << "\n  Cleaning events: one good PV, No Scraping" << endl;
+  }
   cout << "\n***********************************************" << endl;
   if(nCutSetInScript<4) {
     cout << "\n  WARNING! WARNING! YOU HAVE NOT SET ALL 4 CUTS!!!" << endl;
@@ -491,6 +507,9 @@ void ana::PrintCuts() const {
   if( m_applyMETcut && m_rejectEndcapEle ) {
     cout << "\n  Run with Plan C:  Both MET and Eta(e) <1.442 cuts are used" << endl;
     cout << "\n***********************************************" << endl;
+  }
+  if(m_applyConVeto){
+    cout << "\n Applying geometrical conversion veto (dist/dcot)" << endl;
   }
   if(m_useMisslayers){
     cout << "\n Cutting on number of missing layers of electron track, ML<1" << endl;
@@ -753,20 +772,21 @@ void ana::SetEventWeightMap(){ //only if run on MC
        cout << "\nSpring10 7 TeV, my HLT skim efficiency:" << endl;
        cout << "(note: nexp = Ninit * w / skim eff)" << endl;
 
-       skimEffMap["ttjet"]  =  1081514 / 1483404. ; //new, updated 2Jun
-       //skimEffMap["wjet"]   = 1.;
-       skimEffMap["zjet"]   =   400392 / 1084921. ; //new, updated 2Jun
+       skimEffMap["ttjet"]  =  1081514 /  1483404. ; //new, updated 2Jun
+       skimEffMap["wjet"]   =  2670597 / 10068895. ; //new, updated 6 Jun
+       skimEffMap["zjet"]   =   400392 /  1084921. ; //new, updated 2Jun
 
        skimEffMap["enri1"]  =  5892651 / 31999839. ;
        skimEffMap["enri2"]  = 10034403 / 35647278. ; //updated 2Jun
-       skimEffMap["enri3"]  =  2467874 /  5494911. ;
+       skimEffMap["enri3"]  =  2965768 /  5546413. ; //NEW (v3)
+
        skimEffMap["bce1"]   =   646434 /  2476463. ; //updated 2Jun
        skimEffMap["bce2"]   =   874890 /  2355597. ; //updated 2Jun
-       skimEffMap["bce3"]   =   751618 /  1208674. ;
+       skimEffMap["bce3"]   =   882021  / 1208674. ; //NEW
 
        // multiply to weight so that Nexp = Npass * w;
        weightMap["ttjet"] *=  GetSkimEff("ttjet");
-       //weightMap["wjet"]  *=  GetSkimEff("wjet"); 
+       weightMap["wjet"]  *=  GetSkimEff("wjet"); 
        weightMap["zjet"]  *=  GetSkimEff("zjet"); 
        weightMap["enri1"] *=  GetSkimEff("enri1");
        weightMap["enri2"] *=  GetSkimEff("enri2");
@@ -776,7 +796,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
        weightMap["bce3"]  *=  GetSkimEff("bce3");
 
        cout << "  skim eff    ttjet      " << GetSkimEff("ttjet") << endl;
-       //cout << "  skim eff    wjet       " << GetSkimEff("wjet")  << endl;
+       cout << "  skim eff    wjet       " << GetSkimEff("wjet")  << endl;
        cout << "  skim eff    zjet       " << GetSkimEff("zjet")  << endl;
        cout << "  skim eff    enri1      " << GetSkimEff("enri1")  << endl;
        cout << "  skim eff    enri2      " << GetSkimEff("enri2")  << endl;
@@ -913,9 +933,11 @@ ana::ana(){
    m_used0Significance       = false;
    m_d0RefPoint              = "BS";
    m_useMisslayers           = false;
+   m_applyConVeto            = true;
    m_muonCutNum              = 0;
    m_ntoy                    = 2;
    m_intlumiForM3            = 10.0; //pb-1
+   m_inclStopM3              = false;
    useNewReliso            = true;
    doSystematics           = "";
    sysSample               = "";
@@ -2251,7 +2273,8 @@ bool ana::EventLoop(){
    ve.push_back("!Z        ");
    if(m_applyMETcut) ve.push_back("MET       ");
    else              ve.push_back("MET x     ");
-   ve.push_back("!CONV     ");
+   if(m_applyConVeto) ve.push_back("!CONV     ");
+   else               ve.push_back("!CONV x   ");
    //   if( !m_rejectEndcapEle ) ve.push_back("!DIFFZ    ");
    //   else ve.push_back("BARREL    ");
    if(m_rejectEndcapEle) ve.push_back("BARREL    ");
@@ -2684,10 +2707,10 @@ bool ana::EventLoop(){
      // 3A - Find number of electrons
      if(m_debug) cout << " Starting ELECTRON section"<< endl;
 
-     nGoodEle = 0; //private
+     nGoodEle = 0; //private var
      int nGoodEle_barrel = 0;
      int nGoodEle_endcap = 0;
-     int nGoodIsoEle = 0;
+     nGoodIsoEle = 0; //private var
      int nGoodIsoEle_barrel = 0;
      int nGoodIsoEle_endcap = 0;
      int nGoodNonIsoEle = 0;
@@ -3273,7 +3296,10 @@ bool ana::EventLoop(){
      //-------------------------------
      if(m_debug) cout << " Starting CONVERSION Veto section"<< endl;
      //bool isConversion = false;
-     if (nGoodIsoEle == 1) { // If 1 electron only, check if this electron is a conversion ... if more than one ignore (will be rejected anyawy)
+     
+     if(!m_applyConVeto) isConversion = false; //FIX 9JUN
+
+     if (m_applyConVeto && nGoodIsoEle == 1) { // If 1 electron only, check if this electron is a conversion ... if more than one ignore (will be rejected anyawy)
        //isConversion = ConversionFinder(iso_electrons.at(0), mctype, index_selected_ele);
        isConversion = ConversionFinder( index_selected_ele);
        if( DoConversionStudies() ){ConversionMCMatching(iso_electrons.at(0), mctype, isConversion);
@@ -3930,16 +3956,17 @@ bool ana::EventLoop(){
 		     FillEventCounter(8, ntj, mctype);
 		     
 		     if( pass_met ){  // MET
-		       FillEventCounter(9, ntj, mctype);		       
-		       		       
+		       FillEventCounter(9, ntj, mctype);	       
+		       	
+		       //       e_plus_jet_pass = true; //TEMP 6JUN
+			   	       
 		       if(!isConversion){  //Conversion Veto
 			 FillEventCounter(10, ntj, mctype);
 			 
 			 if( pass_barrel ){  // ele eta cut			   
 			   FillEventCounter(11, ntj, mctype);
-			   e_plus_jet_pass = true;
-			   
-			   if(pass_4jets) nDebugIsoTable++;
+
+			   e_plus_jet_pass = true; //TEMP 6JUN
 			   
 			   if(m_nbtag_SSV >= 1){ //at least one +tag
 			     FillEventCounter(12, ntj, mctype);
@@ -3967,6 +3994,11 @@ bool ana::EventLoop(){
      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      
      if(m_debug) cout << " Starting << ANALYSIS >>" << endl;
+
+
+     if(e_plus_jet_pass && pass_4jets) nDebugIsoTable++;
+
+
 
      if(goodrun && fired_single_em && nGoodEle > 0){
        fillHistoDataAndMC( h_met_ante_ISO,    this_met       ); //user-chosen MET
@@ -4184,14 +4216,27 @@ bool ana::EventLoop(){
      
      // NEW 27-3: changed isConversion hereafter to isConversionGE to avoid 
      //           confusion with previous setting of isConversion flag.
-     bool isConversionMIGE = isConversion; //M.I.G.E. = 'Most Isolated Good Electron'
-     if(CombRelIso>0.1 && nGoodEle>0 ){
+     //bool isConversionMIGE = isConversion; //M.I.G.E. = 'Most Isolated Good Electron'
+
+     mige_isConversion = isConversion;
+
+     if ( m_applyConVeto && 
+	  CombRelIso>0.1 && nGoodEle>0 ){
        //cout <<"ii_GoodEle_mostIso = "<< ii_GoodEle_mostIso  << endl;
        TLorentzVector eles_temp(els_px->at(ii_GoodEle_mostIso),els_py->at(ii_GoodEle_mostIso),els_pz->at(ii_GoodEle_mostIso),els_energy->at(ii_GoodEle_mostIso));
        //isConversionMIGE = ConversionFinder(eles_temp, mctype, ii_GoodEle_mostIso);
-       isConversionMIGE = ConversionFinder(ii_GoodEle_mostIso);
+       //isConversionMIGE = ConversionFinder(ii_GoodEle_mostIso);
+       mige_isConversion = ConversionFinder(ii_GoodEle_mostIso);
      }
    
+     // MIGE: missing hits
+     mige_pass_missHits = true;
+     
+     if( m_useMisslayers  &&  nGoodEle>0   && 
+	 els_innerLayerMissingHits->at(ii_GoodEle_mostIso) > 0 ) 
+       mige_pass_missHits = false;
+
+
    
      //-------------------------------------------------------------------
      //
@@ -4207,17 +4252,16 @@ bool ana::EventLoop(){
      // TL 2 Jun: added pass_missHits
      // NOTE: Do not consider events with 2 or more Isolated electrons
      if( goodrun  &&  fired_single_em  &&  nGoodEle>0   &&  nGoodIsoEle<2  &&
-	 !isMuon  &&  !isZ    &&    !isConversionMIGE ) {
+	 !isMuon  &&  !isZ   &&  !mige_isConversion  ) {
        
 
        // Apply missing ET cut (Normal Selection)
        bool passALL = true;
-       if ( m_applyMETcut && !pass_met ) passALL = false;
+       if ( pass_met==false ) passALL = false;
 
        // Apply missing hits cut
-       if( m_useMisslayers && els_innerLayerMissingHits->at(ii_GoodEle_mostIso) > 0 )
-	 passALL = false;
-       
+       if( mige_pass_missHits==false ) passALL = false;
+      
        // Apply eta cut if specified (optional)
        //if ( m_rejectEndcapEle && fabs( els_eta->at(ii_GoodEle_mostIso) ) > 1.442 ) passALL = false;
        if ( m_rejectEndcapEle && eleInBarrel(ii_GoodEle_mostIso)==false ) passALL = false;//TL 7MAY10
@@ -4253,7 +4297,7 @@ bool ana::EventLoop(){
 	 cout << "goodrun: " << goodrun << endl;
 	 cout << " CombRelIso: " << CombRelIso << endl;
 	 cout << " isConversion:     " << isConversion     << endl;
-	 cout << " isConversionMIGE: " << isConversionMIGE << endl;
+	 cout << " isConversionMIGE: " << mige_isConversion << endl;
 	 cout << "nGoodEle:    " << nGoodEle << endl;
 	 cout << "nGoodIsoEle: " << nGoodIsoEle << endl;
 	 cout << "pass_met: " << pass_met << endl;
@@ -5137,6 +5181,10 @@ void ana::SetLocalMCFlagAndType(){
 
 // --------------------------------------------------------------------------------------------
 // Study MET and Reliso (and their correlation) in NES at each stage of cut
+//
+// Note: This function should be merged with the code where QCDest_CombRelIso histo are filled.
+//       to avoid repetition and mistake. But leave it for now.
+//
 // --------------------------------------------------------------------------------------------
 void ana::StudyRelisoNESatEachStage(){
 
@@ -5195,17 +5243,30 @@ void ana::StudyRelisoNESatEachStage(){
 	   
 	    // Updated eID cut values: tight Fixed Threshold "RobustTight"
 	    // ref: https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideCutBasedElectronID
-	    if(     els_hadOverEm->at(ie) < 0.01   ) pass_eid_c1 = true;
-	    if(  fabs(els_dEtaIn->at(ie)) < 0.0040 ) pass_eid_c2 = true;
-	    if(  fabs(els_dPhiIn->at(ie)) < 0.025  ) pass_eid_c3 = true;	       
-	    if( els_sigmaIEtaIEta->at(ie) < 0.0099 ) pass_eid_c4 = true;	      
+	    // 	    if(     els_hadOverEm->at(ie) < 0.01   ) pass_eid_c1 = true;
+	    // 	    if(  fabs(els_dEtaIn->at(ie)) < 0.0040 ) pass_eid_c2 = true;
+	    // 	    if(  fabs(els_dPhiIn->at(ie)) < 0.025  ) pass_eid_c3 = true;	       
+	    // 	    if( els_sigmaIEtaIEta->at(ie) < 0.0099 ) pass_eid_c4 = true;	    
+	    // VBTF W70
+	    if(     els_hadOverEm->at(ie) < 0.025 ) pass_eid_c1 = true;
+	    if(  fabs(els_dEtaIn->at(ie)) < 0.004 ) pass_eid_c2 = true;
+	    if(  fabs(els_dPhiIn->at(ie)) < 0.03  ) pass_eid_c3 = true;	       
+	    if( els_sigmaIEtaIEta->at(ie) < 0.01  ) pass_eid_c4 = true;
+
 	  }
 	  //else if ( fabs(els_eta->at(ie)) > 1.56 ) { // endcap
 	  else{//7May10
-	    if(     els_hadOverEm->at(ie) < 0.01   ) pass_eid_c1 = true;
-	    if(  fabs(els_dEtaIn->at(ie)) < 0.0066 ) pass_eid_c2 = true;
-	    if(  fabs(els_dPhiIn->at(ie)) < 0.020  ) pass_eid_c3 = true;
-	    if( els_sigmaIEtaIEta->at(ie) < 0.028  ) pass_eid_c4 = true;
+	    // RobustTight ID
+	    // 	    if(     els_hadOverEm->at(ie) < 0.01   ) pass_eid_c1 = true;
+	    // 	    if(  fabs(els_dEtaIn->at(ie)) < 0.0066 ) pass_eid_c2 = true;
+	    // 	    if(  fabs(els_dPhiIn->at(ie)) < 0.020  ) pass_eid_c3 = true;
+	    // 	    if( els_sigmaIEtaIEta->at(ie) < 0.028  ) pass_eid_c4 = true;
+	    // VBTF W70
+	    if(     els_hadOverEm->at(ie) < 0.025 ) pass_eid_c1 = true;
+	    if(  fabs(els_dEtaIn->at(ie)) < 0.005 ) pass_eid_c2 = true;
+	    if(  fabs(els_dPhiIn->at(ie)) < 0.02  ) pass_eid_c3 = true;
+	    if( els_sigmaIEtaIEta->at(ie) < 0.03  ) pass_eid_c4 = true;
+
 	  }
 	     
 	  pass_eid = pass_eid_c0 && pass_eid_c1 &&  pass_eid_c2 && pass_eid_c3 && pass_eid_c4; //all 5
@@ -5240,13 +5301,15 @@ void ana::StudyRelisoNESatEachStage(){
     }// loop over Nels
 	 
 
-    if(  nGoodEle>0  ) {
+    if(  nGoodEle>0  &&  nGoodIsoEle<2  ) {
 
       // barrel or endcap?
       if(ii_GoodEle_mostIso < 0) cout << "error/warning: could not find most isolated GoodEle." << endl;
 
-      //bool inBarrel =  fabs(els_eta->at(ii_GoodEle_mostIso)) < 1.5 ;
-      bool inBarrel = eleInBarrel(ii_GoodEle_mostIso);
+      // mige = 'Most Isolated Good Electron'
+      bool mige_inBarrel = eleInBarrel(ii_GoodEle_mostIso);
+      //mige_pass_missHits = els_innerLayerMissingHits->at(ii_GoodEle_mostIso)==0;
+      //bool mige_isConv = els_innerLayerMissingHits->at(ii_GoodEle_mostIso)==0;
 
       // cout << "** CombRelIso = " << CombRelIso << endl;
 
@@ -5261,19 +5324,20 @@ void ana::StudyRelisoNESatEachStage(){
 	 
       if(m_debug) cout << "-> Filling Reliso NES histograms, L2" << endl;
 
-      iso_fillHisto_NES( 8, CombRelIso, this_met, inBarrel );
+      iso_fillHisto_NES( 8, CombRelIso, this_met, mige_inBarrel );
 
-      if( !isMuon  &&  !isZ ) {
+      //  if( !isMuon  &&  !isZ ) {
+      if( mige_pass_missHits  &&  !isMuon  &&  !isZ  ) { //<-- add missing hit cuts, 6 Jun
 
 	if(m_debug) cout << "-> Filling Reliso NES histograms, L3" << endl;
 
-	iso_fillHisto_NES( 9, CombRelIso, this_met, inBarrel );
+	iso_fillHisto_NES( 9, CombRelIso, this_met, mige_inBarrel );
 
-	if( !isConversion  &&  pass_barrel ) {
+	if( !mige_isConversion ) { //this is a private variable
 
 	  if(m_debug) cout << "-> Filling Reliso NES histograms, L4" << endl;
 
-	  iso_fillHisto_NES( 10, CombRelIso, this_met, inBarrel );
+	  iso_fillHisto_NES( 10, CombRelIso, this_met, mige_inBarrel );
 	}
       }
     }//nGoodEle > 0
@@ -6247,7 +6311,7 @@ void ana::iso_addHisto_nlevel_nj_nmc(v3D_TH1& h,
 				      "L1d3 eID |#Delta#phi_{in}|",
 				      "L1d4 eID #sigma_{i#eta i#eta}",
 				      "L1d5 eID",
-				      "L2 GoodEle","L3 MuZVeto","L4 Conv"};
+				      "L2 GoodEle","L3 MHMuZVeto","L4 ConvEB"};
   h.resize(nLevel);
 
   for (int k=0; k<nLevel; ++k) {//nlevel
@@ -6293,7 +6357,7 @@ void ana::iso_addHisto_nlevel_nj_nmc(v3D_TH2& h,
 				      "L1d3 eID |#Delta#phi_{in}|",
 				      "L1d4 eID #sigma_{i#eta i#eta}",
 				      "L1d5 eID",
-				      "L2 GoodEle","L3 MuZVeto","L4 Conv"};
+				      "L2 GoodEle","L3 MHMuZVeto","L4 Conv"};
   h.resize(nLevel);
 
   for (int k=0; k<nLevel; ++k) {//nlevel
@@ -7274,6 +7338,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   cout << "pointer tt: "<< h_m3_tt << endl;
   cout << "pointer wj: "<< h_m3_wj << endl;
   cout << "pointer zj: "<< h_m3_zj << endl;
+  cout << "pointer stop: "<< h_m3_stop << endl;
   //cout << "pointer qcd: "<< h_m3_qcd << endl;
   if(h_m3_tt>0)  h_m3_tt->ls();
   if(h_m3_wj>0)  h_m3_wj->ls();
@@ -7284,30 +7349,57 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   }
   // If we don't find the m3 histograms, stop execution of code.
   if ( IsData()==false ) {
-    if (h_m3_zj==0 || h_m3_stop==0)  {
-      cout << "Warning: could not find some m3 histogram(s). Exit EstimateWjets()" << endl;
+    if (h_m3_zj==0 ) {
+      cout << "Warning: could not find  m3__zj  histogram(s). Exit EstimateWjets()" << endl;
       return false;
+    }
+    if (m_inclStopM3 && h_m3_stop==0) {
+      cout << "Warning: could not find  m3__singleTop  histogram(s). Exit EstimateWjets()" << endl;
+      return false;
+    }
+    if(!m_inclStopM3){
+      //make dummy h_m3_stop
+      h_m3_stop = (TH1D*)h_m3_tt->Clone("h_m3_stop"); //clone
+      h_m3_stop->Reset(); //this makes it 0 entry, but retain the x-axis range
     }
   }
 
 
+
+
   // Define (default) fit templates
   //--------------------------------
-  TH1D *temp_tt = (TH1D*)h_m3_tt->Clone("temp_tt");
-  TH1D *temp_wj = (TH1D*)h_m3_wj->Clone("temp_wj");
-  TH1D *temp_stop = (TH1D*)h_m3_stop->Clone("temp_stop");
-  TH1D *temp_qcd = (TH1D*)control_all->Clone("temp_qcd");
+  TH1D *temp_tt(0);
+  TH1D *temp_wj(0);
+  TH1D *temp_qcd(0);
+  TH1D *temp_stop(0);
 
-
-
+  temp_tt  = (TH1D*)h_m3_tt->Clone("temp_tt");
+  temp_wj  = (TH1D*)h_m3_wj->Clone("temp_wj");
+  temp_qcd = (TH1D*)control_all->Clone("temp_qcd");
+  temp_stop = (TH1D*)h_m3_stop->Clone("temp_stop");
+  /*
+  cout << "about to clone h_m3_stop" << endl;
+  if(m_inclStopM3) {
+    temp_stop = (TH1D*)h_m3_stop->Clone("temp_stop");
+  }
+  */
 
   // Define (default) pseudodata models
   //------------------------------------
-  TH1D *model_tt = (TH1D*)h_m3_tt->Clone("model_tt");
-  TH1D *model_wj = (TH1D*)h_m3_wj->Clone("model_wj");
-  TH1D *model_zj = (TH1D*)h_m3_zj->Clone("model_zj");
-  TH1D *model_stop = (TH1D*)h_m3_stop->Clone("model_stop");
-  TH1D *model_qcd = (TH1D*)control_all->Clone("model_qcd");
+  TH1D *model_tt(0);
+  TH1D *model_wj(0);
+  TH1D *model_zj(0);
+  TH1D *model_qcd(0);
+  TH1D *model_stop(0);
+
+  model_tt  = (TH1D*)h_m3_tt->Clone("model_tt");
+  model_wj  = (TH1D*)h_m3_wj->Clone("model_wj");
+  model_zj  = (TH1D*)h_m3_zj->Clone("model_zj");
+  model_qcd = (TH1D*)control_all->Clone("model_qcd");
+  model_stop = (TH1D*)h_m3_stop->Clone("model_stop");
+  //cout << "about to clone h_m3_stop" << endl;
+  //if(m_inclStopM3) model_stop = (TH1D*)h_m3_stop->Clone("model_stop");
 
 
 
@@ -7435,13 +7527,15 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   temp_tt->Rebin(rB); 
   temp_wj->Rebin(rB);
   temp_qcd->Rebin(rB);
+  //  if(m_inclStopM3) temp_stop->Rebin(rB); 
   temp_stop->Rebin(rB); 
  
-  model_tt->Rebin(rB); 
+  model_tt->Rebin(rB);
   model_wj->Rebin(rB);
   model_zj->Rebin(rB);
   model_qcd->Rebin(rB);
-  model_stop->Rebin(rB); 
+  //  if(m_inclStopM3) model_stop->Rebin(rB);
+  model_stop->Rebin(rB);
 
   if(temp_tt->GetNbinsX()==75)  temp_tt->Rebin(6);
   if(model_tt->GetNbinsX()==75) model_tt->Rebin(6);
@@ -7904,9 +7998,10 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
       if (doSystematics=="addZj_fitWithWjShape"){
 	h_m3_sum_toy->Add( h_m3_zj_toy );
       }
+      //if(m_inclStopM3) h_m3_sum_toy->Add( h_m3_stop_toy );
       h_m3_sum_toy->Add( h_m3_stop_toy );
-      h_m3_sum_toy->Add( h_m3_qcd_toy );
 
+      h_m3_sum_toy->Add( h_m3_qcd_toy );
 
       if (n<5) {
 	h_m3_sum_toy_keep[n]     = (TH1D*)h_m3_sum_toy->Clone(Form("h_m3_sum_toy_%d",n+1));
@@ -9016,7 +9111,8 @@ void ana::DrawSignalAcceptanceTable( vector<string> ve ) const {
     
     if(h==3) {
       cout << "\\\\[5mm]" << endl;
-      ve.at(6) = "!MUON"; //reset
+      //ve.at(6) = "!MUON"; //reset
+      ve.at(m_muonCutNum) = "!MUON";//reset
     }
     
   }//cut on 3 or 4 jet
@@ -10452,7 +10548,7 @@ bool ana::passEleID_VBTF_W70(const uint& i) const{
   if( eleInBarrel(i) ){
     if( els_sigmaIEtaIEta->at(i) < 0.01  &&
 	fabs(els_dPhiIn->at(i))  < 0.03  &&
-	fabs(els_dEtaIn->at(i))  < 0.003 &&
+	fabs(els_dEtaIn->at(i))  < 0.004 &&
 	els_hadOverEm->at(i)     < 0.025 ) return true;
     else return false;
   }
@@ -10460,7 +10556,7 @@ bool ana::passEleID_VBTF_W70(const uint& i) const{
     if( els_sigmaIEtaIEta->at(i) < 0.03  &&
 	fabs(els_dPhiIn->at(i))  < 0.02  &&
 	fabs(els_dEtaIn->at(i))  < 0.005 &&
-	els_hadOverEm->at(i)     < 0.012 ) return true;
+	els_hadOverEm->at(i)     < 0.025 ) return true;
     else return false;
   }
   return false;

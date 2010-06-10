@@ -1567,6 +1567,7 @@ public:
   bool    EstimateWjets(const string data, const string mc=""); // run W+jets estimation
   void    SetNtoyForM3Fit( int val ) { m_ntoy = val; } ; //number of toy exp to run for m3
   void    SetIntLumiForM3(double val) { m_intlumiForM3 = val; }; //scale factor = intlumi wanted / original run
+  void    IncludeSingleTopInM3Fit(bool f) { m_inclStopM3 = f; } ;
 
   void    SetEleETcut(float);
   void    SetMuonPTcut(float);
@@ -1611,6 +1612,7 @@ public:
 
   //switch to preclue missing layers as these are not in 314 data samples
   void UseMissLayers(bool val)         { m_useMisslayers     = val; };
+  void ApplyConversionVeto(bool val)   { m_applyConVeto      = val; };
 
   void SignalIsAlpgen(bool val)        { signal_is_Alpgen    = val; };
   void SignalAlpgenThreshold(unsigned int val) { signal_Alpgen_matching_threshold = val; };
@@ -1885,9 +1887,11 @@ private:
   bool   m_used0Significance;
   string m_d0RefPoint;
   bool   m_useMisslayers;
+  bool   m_applyConVeto;
   int    m_muonCutNum;
   int    m_ntoy;
   double m_intlumiForM3;
+  bool   m_inclStopM3;
   bool   useNewReliso;
   string doSystematics;
   string sysSample;
@@ -1915,6 +1919,7 @@ private:
   double this_m3;
   string this_mc;
   int    nGoodEle;
+  int    nGoodIsoEle;
   int    nGoodJet;  //number of cleaned, good jets
   int    mctype;
   int    m_nbtag_TCHE;
@@ -1944,6 +1949,10 @@ private:
   //bool   isDifferentInteraction; //11  false=pass_vertex_z
   bool   pass_1btag;             //12
   bool   pass_2btag;             //13
+  // MIGE flags (Most Isolated Good Ele)
+  bool   mige_isConversion;  //renamed from isConversionMIGE
+  bool   mige_pass_missHits;
+
 
 
   // (5) event counts
