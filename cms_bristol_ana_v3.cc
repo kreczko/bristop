@@ -3,9 +3,11 @@
 //        2) add WW,ZZ,WZ.
 //        3) adapt cut to conform to Reference Selection of Top Lepton+Jets
 //        4) exploit "goodrun" (stage 1) for event cleaning: NoScraping, goodPV
+//        5) switch to els3_dB for abs d0(BS) in get_d0_BS(). Need v2 ntuple.
 //#====================================================#
 //# Last update:
 //
+// 11 Jun 2010: add HLT_Photon10_L1R.
 //  9 Jun 2010: - fix bug, line 3300, isConversion should be set to false when not applycing conv veto.
 //  8 Jun 2010: - fix bug, line 4253 should be "!mige_isConversion", missing exclamatino mark.
 //  7 Jun 2010: - small update of VBTF W70 ID.
@@ -10318,6 +10320,7 @@ float ana::compute_d0err_BS(const string &lepton, const int& i) const {
 // Get d0 w.r.t. Beam spot
 float ana::get_d0_BS( const string& lepton, const int& i ) const {
   return compute_d0(lepton,i,"BS");
+  //return els3_dB->at();
 }
 //---------------------------------------------------------------------------------------------
 
@@ -10566,6 +10569,7 @@ bool ana::passEleID_VBTF_W70(const uint& i) const{
 bool ana::passHLT() const {
   if ( HLTBit=="HLT_Ele15_LW_L1R" ) return (bool)HLT_Ele15_LW_L1R;
   if ( HLTBit=="HLT_Ele15_SW_L1R" ) return (bool)HLT_Ele15_SW_L1R;
+  if ( HLTBit=="HLT_Photon10_L1R" ) return (bool)HLT_Photon10_L1R;
   return false;
 }
 //---------------------------------------------------------------------------------------------

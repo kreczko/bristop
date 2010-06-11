@@ -1440,6 +1440,7 @@ public:
   Double_t        HLT_Ele15_SW_L1R;
   Double_t        HLT_Ele15_SiStrip_L1R;
   Double_t        HLT_Ele20_LW_L1R;
+  Double_t        HLT_Photon10_L1R; //NEW
 
   TBranch        *b_HLT_Ele10_LW_EleId_L1R;   //!
   TBranch        *b_HLT_Ele10_SW_L1R;   //!
@@ -1448,6 +1449,7 @@ public:
   TBranch        *b_HLT_Ele15_SW_L1R;   //!
   TBranch        *b_HLT_Ele15_SiStrip_L1R;   //!
   TBranch        *b_HLT_Ele20_LW_L1R;   //!
+  TBranch        *b_HLT_Photon10_L1R;   //NEW
 
   // PDF Weights
   //------------
@@ -3794,6 +3796,7 @@ void ana::Init(){
    if( GetTrigger() ) {
      if(HLTBit=="HLT_Ele15_LW_L1R") chain2->SetBranchAddress("HLT_Ele15_LW_L1R", &HLT_Ele15_LW_L1R, &b_HLT_Ele15_LW_L1R); //v2 (1E31, ideal)
      if(HLTBit=="HLT_Ele15_SW_L1R") chain2->SetBranchAddress("HLT_Ele15_SW_L1R", &HLT_Ele15_SW_L1R, &b_HLT_Ele15_SW_L1R);
+     if(HLTBit=="HLT_Photon10_L1R") chain2->SetBranchAddress("HLT_Photon10_L1R", &HLT_Photon10_L1R, &b_HLT_Photon10_L1R);
    }
    
    ///------------------------  MC Truth info  ------------------------------------
