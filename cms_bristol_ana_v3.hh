@@ -1605,6 +1605,7 @@ public:
   void SetIntLuminosity(double val)    { m_intlumi           = val; };
   void SetRunOnSD(bool val)            { m_runOnSD           = val; };
   void SetRunOnMyHLTskim(bool val)     { m_runOnMyHLTskim    = val; };
+  void SetRunOnMyE20skim(bool val)     { m_runOnMyE20skim    = val; };
   void SetRunOn35Xntuples(bool val)    { m_runOn35Xntuples   = val; };
   void NtupleHasD0PVBS(bool val)       { m_ntupleHasD0PVBS   = val; };
   void CleanEvents(bool val)           { m_cleanEvents       = val; };
@@ -1883,6 +1884,7 @@ private:
   bool   m_rejectEndcapEle;
   bool   m_runOnSD;
   bool   m_runOnMyHLTskim;
+  bool   m_runOnMyE20skim;
   bool   m_runOn35Xntuples;
   bool   m_ntupleHasD0PVBS;
   bool   m_cleanEvents;

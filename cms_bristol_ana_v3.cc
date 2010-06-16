@@ -7,6 +7,9 @@
 //#====================================================#
 //# Last update:
 //
+// 16 Jun 2010: add missing e20 skim statistics.
+// 15 Jun 2010: skip the rest of code in event loop when failing trigger.
+// 14 Jun 2010: adapt for e20 skim: electron ET>20.
 // 11 Jun 2010: add HLT_Photon10_L1R.
 //  9 Jun 2010: - fix bug, line 3300, isConversion should be set to false when not applycing conv veto.
 //  8 Jun 2010: - fix bug, line 4253 should be "!mige_isConversion", missing exclamatino mark.
@@ -826,7 +829,46 @@ void ana::SetEventWeightMap(){ //only if run on MC
      
      cout << endl;     
 
-  }//runOnHLTskim
+   }//runOnHLTskim
+
+   else if( m_runOnMyE20skim ) { //&& m_runOn35xntuples) { //Spring10
+
+     cout << "\n Run on Spring10 e20 skim" << endl;
+
+     skimEffMap["ttjet"]  =  649324 /  1483404. ; //NEW
+     skimEffMap["wjet"]   = 2153929 / 10068895. ; //NEW
+     skimEffMap["zjet"]   =  329061 /  1084921. ; //NEW
+     
+     skimEffMap["enri1"]  = 2012107 / 31999839. ; //OLD
+     skimEffMap["enri2"]  = 5564663 / 41887278. ; //NEW
+     skimEffMap["enri3"]  = 1482956 /  5546413. ; //NEW
+     
+     skimEffMap["bce1"]   =   91304 / 2751023. ; //NEW
+     skimEffMap["bce2"]   =  374541 / 2355597. ; //NEW
+     skimEffMap["bce3"]   =  578395 / 1208674. ; //NEW
+     
+     // multiply to weight so that Nexp = Npass * w;
+     weightMap["ttjet"] *=  GetSkimEff("ttjet");
+     weightMap["wjet"]  *=  GetSkimEff("wjet"); 
+     weightMap["zjet"]  *=  GetSkimEff("zjet"); 
+     weightMap["enri1"] *=  GetSkimEff("enri1");
+     weightMap["enri2"] *=  GetSkimEff("enri2");
+     weightMap["enri3"] *=  GetSkimEff("enri3");
+     weightMap["bce1"]  *=  GetSkimEff("bce1");
+     weightMap["bce2"]  *=  GetSkimEff("bce2");
+     weightMap["bce3"]  *=  GetSkimEff("bce3");
+     
+     cout << "  skim eff    ttjet      " << GetSkimEff("ttjet") << endl;
+     cout << "  skim eff    wjet       " << GetSkimEff("wjet")  << endl;
+     cout << "  skim eff    zjet       " << GetSkimEff("zjet")  << endl;
+     cout << "  skim eff    enri1      " << GetSkimEff("enri1") << endl;
+     cout << "  skim eff    enri2      " << GetSkimEff("enri2") << endl;
+     cout << "  skim eff    enri3      " << GetSkimEff("enri3") << endl;
+     cout << "  skim eff    bce1       " << GetSkimEff("bce1")  << endl;
+     cout << "  skim eff    bce2       " << GetSkimEff("bce2")  << endl;
+     cout << "  skim eff    bce3       " << GetSkimEff("bce3")  << endl;    
+     
+   }
 
 }//End SetEventWeightMap
 //---------------------------------------------------------------------------------------------
@@ -929,6 +971,7 @@ ana::ana(){
    m_rejectEndcapEle         = true;
    m_runOnSD                 = false;
    m_runOnMyHLTskim          = true;
+   m_runOnMyE20skim          = false;
    m_runOn35Xntuples         = false;
    m_ntupleHasD0PVBS         = false;
    m_cleanEvents             = false;
@@ -2518,6 +2561,8 @@ bool ana::EventLoop(){
      }//check trig
      
 
+
+
      //-------------------
      // Identify MC type 
      //-------------------
@@ -2691,6 +2736,10 @@ bool ana::EventLoop(){
        //}// Zjets MC
      }//if m_studyZveto
      
+
+
+     // 15 Jun 2010
+     if(fired_single_em==false) continue; //go to next event!
 
 
      //---------------------
