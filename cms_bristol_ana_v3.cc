@@ -7,6 +7,9 @@
 //#====================================================#
 //# Last update:
 //
+// 17 Jun 2010: add switch for scraping filter: RemoveScraping().
+//              - revert back, do not skip events when event fails HLT, because we want
+//                to count the initial event according to njet (after jet cleaning).
 // 16 Jun 2010: add missing e20 skim statistics.
 // 15 Jun 2010: skip the rest of code in event loop when failing trigger.
 // 14 Jun 2010: adapt for e20 skim: electron ET>20.
@@ -471,7 +474,9 @@ void ana::PrintCuts() const {
   if(checkTrig) cout << "  Trigger required :   " << HLTBit << endl;
   else          cout << "  Trigger not required" << endl;
   if( m_cleanEvents ){
-    cout << "\n  Cleaning events: one good PV, No Scraping" << endl;
+    cout << "\n  Cleaning events: one good PV, No Scraping ";
+    if(m_removeScrap) cout << "(on)" << endl;
+    else              cout << "(off)" << endl;
   }
   cout << "\n***********************************************" << endl;
   if(nCutSetInScript<4) {
@@ -974,7 +979,8 @@ ana::ana(){
    m_runOnMyE20skim          = false;
    m_runOn35Xntuples         = false;
    m_ntupleHasD0PVBS         = false;
-   m_cleanEvents             = false;
+   m_cleanEvents             = true;
+   m_removeScrap             = true;
    m_used0Significance       = false;
    m_d0RefPoint              = "BS";
    m_useMisslayers           = false;
@@ -1389,6 +1395,9 @@ bool ana::PrimaryVertexFilter() const {
 
 // In events with >10 tracks, require min 25% to be of high purity
 bool ana::NoScrapingFilter() const {
+
+  // if choose *not* to apply scraping filter, return true
+  if(m_removeScrap==false) return true;
 
   if(Ntracks>10) {
 
@@ -2738,8 +2747,11 @@ bool ana::EventLoop(){
      
 
 
-     // 15 Jun 2010
-     if(fired_single_em==false) continue; //go to next event!
+     // 16 Jun 2010
+     // stage 0: INITIAL: BEFORE ANY CUT
+     //FillEventCounter(0, ntj, mctype);
+     //if(fired_single_em==false) continue; //go to next event!
+     // NOTE: cannot put here, as ntj not yet defined!
 
 
      //---------------------

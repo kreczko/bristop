@@ -1609,6 +1609,7 @@ public:
   void SetRunOn35Xntuples(bool val)    { m_runOn35Xntuples   = val; };
   void NtupleHasD0PVBS(bool val)       { m_ntupleHasD0PVBS   = val; };
   void CleanEvents(bool val)           { m_cleanEvents       = val; };
+  void RemoveScraping(bool val)        { m_removeScrap       = val; };
   void UseD0Significance(bool val)     { m_used0Significance = val; };
   void D0ReferencePoint(string val)    { m_d0RefPoint        = val; };
   void PrintGenParticles(int nevent);
@@ -1888,6 +1889,7 @@ private:
   bool   m_runOn35Xntuples;
   bool   m_ntupleHasD0PVBS;
   bool   m_cleanEvents;
+  bool   m_removeScrap;
   bool   m_used0Significance;
   string m_d0RefPoint;
   bool   m_useMisslayers;
