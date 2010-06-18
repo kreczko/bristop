@@ -5,6 +5,10 @@
         TStopwatch watch;
 	watch.Start();
 
+
+	cout << "\n\nRun on MC e20 skim ntuples, including single top (tchan and tW e20)\n\n" << endl;
+
+
 	// include roofit
 	gSystem->AddIncludePath("-I/software/cms/slc4_ia32_gcc345/lcg/roofit/5.25.02-cms/include");
 
@@ -36,6 +40,7 @@
 	// 35X 
 	myana->SetRunOn35Xntuples(1);
 	myana->CleanEvents(1); //apply scraping filter and PV filter.
+	myana->RemoveScraping(false); //<-- take out scraping filter
 
 	//use d0/d0error - default behaviour is false. Note, can only be used on Spring10 ntuples (RunOn35X must be true)
 	myana->UseD0Significance( false );
@@ -94,6 +99,14 @@
 	myana->SetInputFile("/storage/top/mc/spring10_7TeV/pythia/e20skim_enri1/*.root");//old
 	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_enri2/*.root");
 	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_enri3/*.root");
+
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_tchan/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_tW/*.root");
+
+	//myana->SetInputFile("/storage/top/mc/link_spring10_tchan/*.root");
+	//myana->SetInputFile("/storage/top/mc/link_spring10_tW/*.root");
+
+	
 
 	myana->SetOutputFirstName("test");
 
