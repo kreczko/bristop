@@ -33,19 +33,15 @@
 //    ostream_type & os;
 //};
 
-class Logger {
-private:
-	std::stringstream outputStream;
-	LogLevel logLevel;
-	OutputDevice outputDevice;
-	std::string outputFilename;
+class Logger {//TODO: change it to be a struct since it can be stored with 'new' only
+
 public:
 	enum LogLevel {
-		DEBUG, NORMAL
+		LogLevel_DEBUG, LogLevel_NORMAL
 	};
 
 	enum OutputDevice {
-		SCREEN, FILE
+		OutputDevice_SCREEN, OutputDevice_FILE
 	};
 	Logger();
 	Logger(LogLevel level, OutputDevice device);
@@ -70,13 +66,24 @@ public:
 		return *this;
 	}
 
-	Logger &operator<<(manip_type pfn) {
-		if (pfn == static_cast<manip_type> (std::endl)) {
-
-		} else
-			this->outputStream << pfn;
+	Logger &operator=(Logger const &){
 		return *this;
 	}
+
+//	Logger &operator<<(manip_type pfn) {
+//		if (pfn == static_cast<manip_type> (std::endl)) {
+//
+//		} else
+//			this->outputStream << pfn;
+//		return *this;
+//	}
+
+
+private:
+	std::stringstream outputStream;
+	LogLevel logLevel;
+	OutputDevice outputDevice;
+	std::string outputFilename;
 
 };
 

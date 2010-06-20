@@ -10,7 +10,7 @@
 #include <fstream>
 
 Logger::Logger() {
-	Logger(Logger::NORMAL, Logger::SCREEN);
+	Logger(Logger::LogLevel_NORMAL, Logger::OutputDevice_SCREEN);
 }
 
 Logger::~Logger() {
@@ -40,16 +40,16 @@ void Logger::setOutPutFile(std::string outputFilename) {
 }
 
 void Logger::log(std::string message) {
-	if (this->outputDevice == SCREEN)
+	if (this->outputDevice == OutputDevice_SCREEN)
 		printOnScreen(message);
-	else if (this->outputDevice == FILE)
+	else if (this->outputDevice == OutputDevice_FILE)
 		writeIntoFile(message);
 }
 
 void Logger::logError(std::string errorMessage) {
-	if (this->outputDevice == SCREEN)
+	if (this->outputDevice == OutputDevice_SCREEN)
 		printErrorOnScreen(errorMessage);
-	else if (this->outputDevice == FILE)
+	else if (this->outputDevice == OutputDevice_FILE)
 		writeIntoFile(errorMessage);
 }
 void Logger::printOnScreen(std::string message) {
