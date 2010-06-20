@@ -9,60 +9,19 @@
 #define NTUPLEREADER_H_
 #include "TChain.h"
 #include "TBranch.h"
-
 #include <vector>
 #include <iostream>
 
-//#ifdef __MAKECINT__
-//#pragma link C++ class std::vector<float>+;
-//#endif
+#ifdef __MAKECINT__
+#pragma link C++ class std::vector<float>+;
+#endif
 
-using namespace std;
 /*
  * Class to read the Ntuples from the ROOT file.
  * Includes several flags to minimize the amount of data loaded
  */
 class NTupleReader {
 public:
-	NTupleReader();
-	~NTupleReader() {
-	}
-	;
-
-	/**
-	 * @return the debug flag
-	 */
-	bool GetDebug() const;
-
-	/**
-	 * Set the debug flag
-	 * @param val new value
-	 */
-	void SetDebug(bool);
-
-	/**
-	 * Get the trigger flag
-	 * @return the trigger flag
-	 */
-	bool GetTrigger() const;
-
-	/**
-	 * Set the trigger flag
-	 * @param val new value
-	 */
-	void SetTrigger(bool val);
-	void SetTrigger(bool, const string);
-
-	bool GetMissLayersFlag();
-	void SetMissLayersFlag(bool);
-
-	bool GetStudyPDFunc();
-	void SetStudyPDFunc(bool);
-
-	string GetHLTBit();
-	void SetHLTBit(string);
-
-protected:
 	// chain = list of root files containing the same tree
 	/**
 	 * Main TChain holding all variables
@@ -75,558 +34,558 @@ protected:
 
 	// Declaration of leaf types
 	UInt_t NPFJets;
-	vector<float> *PFJets_energy;
-	vector<float> *PFJets_et;
-	vector<float> *PFJets_eta;
-	vector<float> *PFJets_phi;
-	vector<float> *PFJets_pt;
-	vector<float> *PFJets_px;
-	vector<float> *PFJets_py;
-	vector<float> *PFJets_pz;
-	vector<float> *PFJets_status;
-	vector<float> *PFJets_theta;
-	vector<float> *PFJets_chgEmE;
-	vector<float> *PFJets_chgHadE;
-	vector<float> *PFJets_chgMuE;
-	vector<float> *PFJets_chg_Mult;
-	vector<float> *PFJets_neutralEmE;
-	vector<float> *PFJets_neutralHadE;
-	vector<float> *PFJets_neutral_Mult;
-	vector<float> *PFJets_mu_Mult;
-	vector<float> *PFJets_mass;
-	vector<float> *PFJets_btag_TC_highEff;
-	vector<float> *PFJets_btag_TC_highPur;
-	vector<float> *PFJets_btag_jetBProb;
-	vector<float> *PFJets_btag_jetProb;
-	vector<float> *PFJets_btag_softEle;
-	vector<float> *PFJets_btag_softMuon;
-	vector<float> *PFJets_btag_softMuonNoIP;
-	vector<float> *PFJets_btag_secVertex;
-	vector<float> *PFJets_parton_Id;
+	std::vector<float> *PFJets_energy;
+	std::vector<float> *PFJets_et;
+	std::vector<float> *PFJets_eta;
+	std::vector<float> *PFJets_phi;
+	std::vector<float> *PFJets_pt;
+	std::vector<float> *PFJets_px;
+	std::vector<float> *PFJets_py;
+	std::vector<float> *PFJets_pz;
+	std::vector<float> *PFJets_status;
+	std::vector<float> *PFJets_theta;
+	std::vector<float> *PFJets_chgEmE;
+	std::vector<float> *PFJets_chgHadE;
+	std::vector<float> *PFJets_chgMuE;
+	std::vector<float> *PFJets_chg_Mult;
+	std::vector<float> *PFJets_neutralEmE;
+	std::vector<float> *PFJets_neutralHadE;
+	std::vector<float> *PFJets_neutral_Mult;
+	std::vector<float> *PFJets_mu_Mult;
+	std::vector<float> *PFJets_mass;
+	std::vector<float> *PFJets_btag_TC_highEff;
+	std::vector<float> *PFJets_btag_TC_highPur;
+	std::vector<float> *PFJets_btag_jetBProb;
+	std::vector<float> *PFJets_btag_jetProb;
+//	std::vector<float> *PFJets_btag_softEle;
+//	std::vector<float> *PFJets_btag_softMuon;
+//	std::vector<float> *PFJets_btag_softMuonNoIP;
+	std::vector<float> *PFJets_btag_secVertex;
+	std::vector<float> *PFJets_parton_Id;
 	UInt_t NPFMets;
-	vector<float> *PFMets_et;
-	vector<float> *PFMets_phi;
-	vector<float> *PFMets_ex;
-	vector<float> *PFMets_ey;
-	vector<float> *PFMets_sumEt;
+	std::vector<float> *PFMets_et;
+	std::vector<float> *PFMets_phi;
+	std::vector<float> *PFMets_ex;
+	std::vector<float> *PFMets_ey;
+	std::vector<float> *PFMets_sumEt;
 	UInt_t NbeamSpot;
-	vector<float> *beamSpot_x;
-	vector<float> *beamSpot_y;
-	vector<float> *beamSpot_z;
-	vector<float> *beamSpot_x0Error;
-	vector<float> *beamSpot_y0Error;
-	vector<float> *beamSpot_z0Error;
-	vector<float> *beamSpot_sigmaZ;
-	vector<float> *beamSpot_sigmaZ0Error;
-	vector<float> *beamSpot_dxdz;
-	vector<float> *beamSpot_dxdzError;
-	vector<float> *beamSpot_dydz;
-	vector<float> *beamSpot_dydzError;
-	vector<float> *beamSpot_beamWidthX;
-	vector<float> *beamSpot_beamWidthY;
-	vector<float> *beamSpot_beamWidthXError;
-	vector<float> *beamSpot_beamWidthYError;
+	std::vector<float> *beamSpot_x;
+	std::vector<float> *beamSpot_y;
+	std::vector<float> *beamSpot_z;
+	std::vector<float> *beamSpot_x0Error;
+	std::vector<float> *beamSpot_y0Error;
+	std::vector<float> *beamSpot_z0Error;
+	std::vector<float> *beamSpot_sigmaZ;
+	std::vector<float> *beamSpot_sigmaZ0Error;
+	std::vector<float> *beamSpot_dxdz;
+	std::vector<float> *beamSpot_dxdzError;
+	std::vector<float> *beamSpot_dydz;
+	std::vector<float> *beamSpot_dydzError;
+	std::vector<float> *beamSpot_beamWidthX;
+	std::vector<float> *beamSpot_beamWidthY;
+	std::vector<float> *beamSpot_beamWidthXError;
+	std::vector<float> *beamSpot_beamWidthYError;
 	UInt_t Nels;
-	vector<float> *els_energy;
-	vector<float> *els_et;
-	vector<float> *els_eta;
-	vector<float> *els_phi;
-	vector<float> *els_pt;
-	vector<float> *els_px;
-	vector<float> *els_py;
-	vector<float> *els_pz;
-	vector<float> *els_status;
-	vector<float> *els_theta;
-	vector<float> *els_closestCtfTrackRef;
-	vector<float> *els_isEcalDriven;
-	vector<float> *els_isTrackerDriven;
-	vector<float> *els_dr03EcalRecHitSumEt;
-	vector<float> *els_dr04EcalRecHitSumEt;
-	vector<float> *els_dr03HcalTowerSumEt;
-	vector<float> *els_dr04HcalTowerSumEt;
-	vector<float> *els_gen_id;
-	vector<float> *els_gen_phi;
-	vector<float> *els_gen_pt;
-	vector<float> *els_gen_pz;
-	vector<float> *els_gen_px;
-	vector<float> *els_gen_py;
-	vector<float> *els_gen_eta;
-	vector<float> *els_gen_theta;
-	vector<float> *els_gen_et;
-	vector<float> *els_gen_mother_id;
-	vector<float> *els_gen_mother_phi;
-	vector<float> *els_gen_mother_pt;
-	vector<float> *els_gen_mother_pz;
-	vector<float> *els_gen_mother_px;
-	vector<float> *els_gen_mother_py;
-	vector<float> *els_gen_mother_eta;
-	vector<float> *els_gen_mother_theta;
-	vector<float> *els_gen_mother_et;
-	vector<float> *els_tightId;
-	vector<float> *els_looseId;
-	vector<float> *els_robustTightId;
-	vector<float> *els_robustLooseId;
-	vector<float> *els_robustHighEnergyId;
-	vector<float> *els_cIso;
-	vector<float> *els_tIso;
-	vector<float> *els_ecalIso;
-	vector<float> *els_hcalIso;
-	vector<float> *els_chi2;
-	vector<float> *els_charge;
-	vector<float> *els_caloEnergy;
-	vector<float> *els_hadOverEm;
-	vector<float> *els_eOverPIn;
-	vector<float> *els_eSeedOverPOut;
-	vector<float> *els_eSCraw;
-	vector<float> *els_eSeed;
-	vector<float> *els_sigmaEtaEta;
-	vector<float> *els_sigmaIEtaIEta;
-	vector<float> *els_scE1x5;
-	vector<float> *els_scE2x5Max;
-	vector<float> *els_scE5x5;
-	vector<float> *els_dEtaIn;
-	vector<float> *els_dPhiIn;
-	vector<float> *els_dEtaOut;
-	vector<float> *els_dPhiOut;
-	vector<float> *els_numvalhits;
-	vector<float> *els_numlosthits;
-	vector<float> *els_basicClustersSize;
-	vector<float> *els_tk_pt;
-	vector<float> *els_tk_phi;
-	vector<float> *els_tk_eta;
-	vector<float> *els_tk_theta;
-	vector<float> *els_tk_charge;
-	vector<float> *els_shFracInnerHits;
-	vector<float> *els_d0dum;
-	vector<float> *els_dz;
-	vector<float> *els_vx;
-	vector<float> *els_vy;
-	vector<float> *els_vz;
-	vector<float> *els_ndof;
-	vector<float> *els_ptError;
-	vector<float> *els_d0dumError;
-	vector<float> *els_dzError;
-	vector<float> *els_etaError;
-	vector<float> *els_phiError;
-	vector<float> *els_cpx;
-	vector<float> *els_cpy;
-	vector<float> *els_cpz;
-	vector<float> *els_vpx;
-	vector<float> *els_vpy;
-	vector<float> *els_vpz;
-	vector<float> *els_cx;
-	vector<float> *els_cy;
-	vector<float> *els_cz;
-	vector<float> *els_innerLayerMissingHits;
-	vector<float> *els_isEE;
-	vector<float> *els_isEEGap;
-	vector<float> *els_isEB;
-	vector<float> *els_isEBGap;
-	vector<float> *els_isConvertedPhoton;
+	std::vector<float> *els_energy;
+	std::vector<float> *els_et;
+	std::vector<float> *els_eta;
+	std::vector<float> *els_phi;
+	std::vector<float> *els_pt;
+	std::vector<float> *els_px;
+	std::vector<float> *els_py;
+	std::vector<float> *els_pz;
+	std::vector<float> *els_status;
+	std::vector<float> *els_theta;
+	std::vector<float> *els_closestCtfTrackRef;
+	std::vector<float> *els_isEcalDriven;
+	std::vector<float> *els_isTrackerDriven;
+	std::vector<float> *els_dr03EcalRecHitSumEt;
+	std::vector<float> *els_dr04EcalRecHitSumEt;
+	std::vector<float> *els_dr03HcalTowerSumEt;
+	std::vector<float> *els_dr04HcalTowerSumEt;
+	std::vector<float> *els_gen_id;
+	std::vector<float> *els_gen_phi;
+	std::vector<float> *els_gen_pt;
+	std::vector<float> *els_gen_pz;
+	std::vector<float> *els_gen_px;
+	std::vector<float> *els_gen_py;
+	std::vector<float> *els_gen_eta;
+	std::vector<float> *els_gen_theta;
+	std::vector<float> *els_gen_et;
+	std::vector<float> *els_gen_mother_id;
+	std::vector<float> *els_gen_mother_phi;
+	std::vector<float> *els_gen_mother_pt;
+	std::vector<float> *els_gen_mother_pz;
+	std::vector<float> *els_gen_mother_px;
+	std::vector<float> *els_gen_mother_py;
+	std::vector<float> *els_gen_mother_eta;
+	std::vector<float> *els_gen_mother_theta;
+	std::vector<float> *els_gen_mother_et;
+	std::vector<float> *els_tightId;
+	std::vector<float> *els_looseId;
+	std::vector<float> *els_robustTightId;
+	std::vector<float> *els_robustLooseId;
+	std::vector<float> *els_robustHighEnergyId;
+	std::vector<float> *els_cIso;
+	std::vector<float> *els_tIso;
+	std::vector<float> *els_ecalIso;
+	std::vector<float> *els_hcalIso;
+	std::vector<float> *els_chi2;
+	std::vector<float> *els_charge;
+	std::vector<float> *els_caloEnergy;
+	std::vector<float> *els_hadOverEm;
+	std::vector<float> *els_eOverPIn;
+	std::vector<float> *els_eSeedOverPOut;
+	std::vector<float> *els_eSCraw;
+	std::vector<float> *els_eSeed;
+	std::vector<float> *els_sigmaEtaEta;
+	std::vector<float> *els_sigmaIEtaIEta;
+	std::vector<float> *els_scE1x5;
+	std::vector<float> *els_scE2x5Max;
+	std::vector<float> *els_scE5x5;
+	std::vector<float> *els_dEtaIn;
+	std::vector<float> *els_dPhiIn;
+	std::vector<float> *els_dEtaOut;
+	std::vector<float> *els_dPhiOut;
+	std::vector<float> *els_numvalhits;
+	std::vector<float> *els_numlosthits;
+	std::vector<float> *els_basicClustersSize;
+	std::vector<float> *els_tk_pt;
+	std::vector<float> *els_tk_phi;
+	std::vector<float> *els_tk_eta;
+	std::vector<float> *els_tk_theta;
+	std::vector<float> *els_tk_charge;
+	std::vector<float> *els_shFracInnerHits;
+	std::vector<float> *els_d0dum;
+	std::vector<float> *els_dz;
+	std::vector<float> *els_vx;
+	std::vector<float> *els_vy;
+	std::vector<float> *els_vz;
+	std::vector<float> *els_ndof;
+	std::vector<float> *els_ptError;
+	std::vector<float> *els_d0dumError;
+	std::vector<float> *els_dzError;
+	std::vector<float> *els_etaError;
+	std::vector<float> *els_phiError;
+	std::vector<float> *els_cpx;
+	std::vector<float> *els_cpy;
+	std::vector<float> *els_cpz;
+	std::vector<float> *els_vpx;
+	std::vector<float> *els_vpy;
+	std::vector<float> *els_vpz;
+	std::vector<float> *els_cx;
+	std::vector<float> *els_cy;
+	std::vector<float> *els_cz;
+	std::vector<float> *els_innerLayerMissingHits;
+	std::vector<float> *els_isEE;
+	std::vector<float> *els_isEEGap;
+	std::vector<float> *els_isEB;
+	std::vector<float> *els_isEBGap;
+	std::vector<float> *els_isConvertedPhoton;
 	UInt_t Njets;
-	vector<float> *jets_energy;
-	vector<float> *jets_et;
-	vector<float> *jets_eta;
-	vector<float> *jets_phi;
-	vector<float> *jets_pt;
-	vector<float> *jets_px;
-	vector<float> *jets_py;
-	vector<float> *jets_pz;
-	vector<float> *jets_status;
-	vector<float> *jets_theta;
-	vector<float> *jets_parton_Id;
-	vector<float> *jets_parton_motherId;
-	vector<float> *jets_parton_pt;
-	vector<float> *jets_parton_phi;
-	vector<float> *jets_parton_eta;
-	vector<float> *jets_parton_Energy;
-	vector<float> *jets_parton_mass;
-	vector<float> *jets_parton_motherID;
-	vector<float> *jets_gen_et;
-	vector<float> *jets_gen_pt;
-	vector<float> *jets_gen_eta;
-	vector<float> *jets_gen_phi;
-	vector<float> *jets_gen_mass;
-	vector<float> *jets_gen_Energy;
-	vector<float> *jets_gen_Id;
-	vector<float> *jets_gen_motherID;
-	vector<float> *jets_gen_threeCharge;
-	vector<float> *jets_partonFlavour;
-	vector<float> *jets_btag_TC_highPur;
-	vector<float> *jets_btag_TC_highEff;
-	vector<float> *jets_btag_jetProb;
-	vector<float> *jets_btag_jetBProb;
-	vector<float> *jets_btag_softEle;
-	vector<float> *jets_btag_softMuon;
-	vector<float> *jets_btag_softMuonNoIP;
-	vector<float> *jets_btag_secVertex;
-	vector<float> *jets_chgEmE;
-	vector<float> *jets_chgHadE;
-	vector<float> *jets_chgMuE;
-	vector<float> *jets_chg_Mult;
-	vector<float> *jets_neutralEmE;
-	vector<float> *jets_neutralHadE;
-	vector<float> *jets_neutral_Mult;
-	vector<float> *jets_mu_Mult;
-	vector<float> *jets_emf;
-	vector<float> *jets_ehf;
-	vector<float> *jets_n60;
-	vector<float> *jets_n90;
-	vector<float> *jets_area;
-	vector<float> *jets_mass;
+	std::vector<float> *jets_energy;
+	std::vector<float> *jets_et;
+	std::vector<float> *jets_eta;
+	std::vector<float> *jets_phi;
+	std::vector<float> *jets_pt;
+	std::vector<float> *jets_px;
+	std::vector<float> *jets_py;
+	std::vector<float> *jets_pz;
+	std::vector<float> *jets_status;
+	std::vector<float> *jets_theta;
+	std::vector<float> *jets_parton_Id;
+	std::vector<float> *jets_parton_motherId;
+	std::vector<float> *jets_parton_pt;
+	std::vector<float> *jets_parton_phi;
+	std::vector<float> *jets_parton_eta;
+	std::vector<float> *jets_parton_Energy;
+	std::vector<float> *jets_parton_mass;
+	std::vector<float> *jets_parton_motherID;
+	std::vector<float> *jets_gen_et;
+	std::vector<float> *jets_gen_pt;
+	std::vector<float> *jets_gen_eta;
+	std::vector<float> *jets_gen_phi;
+	std::vector<float> *jets_gen_mass;
+	std::vector<float> *jets_gen_Energy;
+	std::vector<float> *jets_gen_Id;
+	std::vector<float> *jets_gen_motherID;
+	std::vector<float> *jets_gen_threeCharge;
+	std::vector<float> *jets_partonFlavour;
+	std::vector<float> *jets_btag_TC_highPur;
+	std::vector<float> *jets_btag_TC_highEff;
+	std::vector<float> *jets_btag_jetProb;
+	std::vector<float> *jets_btag_jetBProb;
+//	std::vector<float> *jets_btag_softEle;
+//	std::vector<float> *jets_btag_softMuon;
+//	std::vector<float> *jets_btag_softMuonNoIP;
+	std::vector<float> *jets_btag_secVertex;
+	std::vector<float> *jets_chgEmE;
+	std::vector<float> *jets_chgHadE;
+	std::vector<float> *jets_chgMuE;
+	std::vector<float> *jets_chg_Mult;
+	std::vector<float> *jets_neutralEmE;
+	std::vector<float> *jets_neutralHadE;
+	std::vector<float> *jets_neutral_Mult;
+	std::vector<float> *jets_mu_Mult;
+	std::vector<float> *jets_emf;
+	std::vector<float> *jets_ehf;
+	std::vector<float> *jets_n60;
+	std::vector<float> *jets_n90;
+	std::vector<float> *jets_area;
+	std::vector<float> *jets_mass;
 
 	UInt_t NjetsKT4;
-	vector<float> *jetsKT4_energy;
-	vector<float> *jetsKT4_et;
-	vector<float> *jetsKT4_eta;
-	vector<float> *jetsKT4_phi;
-	vector<float> *jetsKT4_pt;
-	vector<float> *jetsKT4_px;
-	vector<float> *jetsKT4_py;
-	vector<float> *jetsKT4_pz;
-	vector<float> *jetsKT4_status;
-	vector<float> *jetsKT4_theta;
-	vector<float> *jetsKT4_btag_TC_highPur;
-	vector<float> *jetsKT4_btag_TC_highEff;
-	vector<float> *jetsKT4_btag_jetProb;
-	vector<float> *jetsKT4_btag_jetBProb;
-	vector<float> *jetsKT4_btag_softEle;
-	vector<float> *jetsKT4_btag_softMuon;
-	vector<float> *jetsKT4_btag_softMuonNoIP;
-	vector<float> *jetsKT4_btag_secVertex;
-	vector<float> *jetsKT4_chgEmE;
-	vector<float> *jetsKT4_chgHadE;
-	vector<float> *jetsKT4_chgMuE;
-	vector<float> *jetsKT4_chg_Mult;
-	vector<float> *jetsKT4_neutralEmE;
-	vector<float> *jetsKT4_neutralHadE;
-	vector<float> *jetsKT4_neutral_Mult;
-	vector<float> *jetsKT4_mu_Mult;
-	vector<float> *jetsKT4_emf;
-	vector<float> *jetsKT4_ehf;
-	vector<float> *jetsKT4_n60;
-	vector<float> *jetsKT4_n90;
-	vector<float> *jetsKT4_area;
-	vector<float> *jetsKT4_mass;
+	std::vector<float> *jetsKT4_energy;
+	std::vector<float> *jetsKT4_et;
+	std::vector<float> *jetsKT4_eta;
+	std::vector<float> *jetsKT4_phi;
+	std::vector<float> *jetsKT4_pt;
+	std::vector<float> *jetsKT4_px;
+	std::vector<float> *jetsKT4_py;
+	std::vector<float> *jetsKT4_pz;
+	std::vector<float> *jetsKT4_status;
+	std::vector<float> *jetsKT4_theta;
+	std::vector<float> *jetsKT4_btag_TC_highPur;
+	std::vector<float> *jetsKT4_btag_TC_highEff;
+	std::vector<float> *jetsKT4_btag_jetProb;
+	std::vector<float> *jetsKT4_btag_jetBProb;
+//	std::vector<float> *jetsKT4_btag_softEle;
+//	std::vector<float> *jetsKT4_btag_softMuon;
+//	std::vector<float> *jetsKT4_btag_softMuonNoIP;
+	std::vector<float> *jetsKT4_btag_secVertex;
+	std::vector<float> *jetsKT4_chgEmE;
+	std::vector<float> *jetsKT4_chgHadE;
+	std::vector<float> *jetsKT4_chgMuE;
+	std::vector<float> *jetsKT4_chg_Mult;
+	std::vector<float> *jetsKT4_neutralEmE;
+	std::vector<float> *jetsKT4_neutralHadE;
+	std::vector<float> *jetsKT4_neutral_Mult;
+	std::vector<float> *jetsKT4_mu_Mult;
+	std::vector<float> *jetsKT4_emf;
+	std::vector<float> *jetsKT4_ehf;
+	std::vector<float> *jetsKT4_n60;
+	std::vector<float> *jetsKT4_n90;
+	std::vector<float> *jetsKT4_area;
+	std::vector<float> *jetsKT4_mass;
 
 	UInt_t NjetsSC5;
-	vector<float> *jetsSC5_energy;
-	vector<float> *jetsSC5_et;
-	vector<float> *jetsSC5_eta;
-	vector<float> *jetsSC5_phi;
-	vector<float> *jetsSC5_pt;
-	vector<float> *jetsSC5_px;
-	vector<float> *jetsSC5_py;
-	vector<float> *jetsSC5_pz;
-	vector<float> *jetsSC5_status;
-	vector<float> *jetsSC5_theta;
-	vector<float> *jetsSC5_btag_TC_highPur;
-	vector<float> *jetsSC5_btag_TC_highEff;
-	vector<float> *jetsSC5_btag_jetProb;
-	vector<float> *jetsSC5_btag_jetBProb;
-	vector<float> *jetsSC5_btag_softEle;
-	vector<float> *jetsSC5_btag_softMuon;
-	vector<float> *jetsSC5_btag_softMuonNoIP;
-	vector<float> *jetsSC5_btag_secVertex;
-	vector<float> *jetsSC5_chgEmE;
-	vector<float> *jetsSC5_chgHadE;
-	vector<float> *jetsSC5_chgMuE;
-	vector<float> *jetsSC5_chg_Mult;
-	vector<float> *jetsSC5_neutralEmE;
-	vector<float> *jetsSC5_neutralHadE;
-	vector<float> *jetsSC5_neutral_Mult;
-	vector<float> *jetsSC5_mu_Mult;
-	vector<float> *jetsSC5_emf;
-	vector<float> *jetsSC5_ehf;
-	vector<float> *jetsSC5_n60;
-	vector<float> *jetsSC5_n90;
-	vector<float> *jetsSC5_area;
-	vector<float> *jetsSC5_mass;
+	std::vector<float> *jetsSC5_energy;
+	std::vector<float> *jetsSC5_et;
+	std::vector<float> *jetsSC5_eta;
+	std::vector<float> *jetsSC5_phi;
+	std::vector<float> *jetsSC5_pt;
+	std::vector<float> *jetsSC5_px;
+	std::vector<float> *jetsSC5_py;
+	std::vector<float> *jetsSC5_pz;
+	std::vector<float> *jetsSC5_status;
+	std::vector<float> *jetsSC5_theta;
+	std::vector<float> *jetsSC5_btag_TC_highPur;
+	std::vector<float> *jetsSC5_btag_TC_highEff;
+	std::vector<float> *jetsSC5_btag_jetProb;
+	std::vector<float> *jetsSC5_btag_jetBProb;
+//	std::vector<float> *jetsSC5_btag_softEle;
+//	std::vector<float> *jetsSC5_btag_softMuon;
+//	std::vector<float> *jetsSC5_btag_softMuonNoIP;
+	std::vector<float> *jetsSC5_btag_secVertex;
+	std::vector<float> *jetsSC5_chgEmE;
+	std::vector<float> *jetsSC5_chgHadE;
+	std::vector<float> *jetsSC5_chgMuE;
+	std::vector<float> *jetsSC5_chg_Mult;
+	std::vector<float> *jetsSC5_neutralEmE;
+	std::vector<float> *jetsSC5_neutralHadE;
+	std::vector<float> *jetsSC5_neutral_Mult;
+	std::vector<float> *jetsSC5_mu_Mult;
+	std::vector<float> *jetsSC5_emf;
+	std::vector<float> *jetsSC5_ehf;
+	std::vector<float> *jetsSC5_n60;
+	std::vector<float> *jetsSC5_n90;
+	std::vector<float> *jetsSC5_area;
+	std::vector<float> *jetsSC5_mass;
 	UInt_t Nmc_doc;
-	vector<float> *mc_doc_id;
-	vector<float> *mc_doc_pt;
-	vector<float> *mc_doc_px;
-	vector<float> *mc_doc_py;
-	vector<float> *mc_doc_pz;
-	vector<float> *mc_doc_eta;
-	vector<float> *mc_doc_phi;
-	vector<float> *mc_doc_theta;
-	vector<float> *mc_doc_energy;
-	vector<float> *mc_doc_status;
-	vector<float> *mc_doc_charge;
-	vector<float> *mc_doc_mother_id;
-	vector<float> *mc_doc_grandmother_id;
-	vector<float> *mc_doc_ggrandmother_id;
-	vector<float> *mc_doc_mother_pt;
-	vector<float> *mc_doc_vertex_x;
-	vector<float> *mc_doc_vertex_y;
-	vector<float> *mc_doc_vertex_z;
-	vector<float> *mc_doc_mass;
-	vector<float> *mc_doc_numOfDaughters;
-	vector<float> *mc_doc_numOfMothers;
+	std::vector<float> *mc_doc_id;
+	std::vector<float> *mc_doc_pt;
+	std::vector<float> *mc_doc_px;
+	std::vector<float> *mc_doc_py;
+	std::vector<float> *mc_doc_pz;
+	std::vector<float> *mc_doc_eta;
+	std::vector<float> *mc_doc_phi;
+	std::vector<float> *mc_doc_theta;
+	std::vector<float> *mc_doc_energy;
+	std::vector<float> *mc_doc_status;
+	std::vector<float> *mc_doc_charge;
+	std::vector<float> *mc_doc_mother_id;
+	std::vector<float> *mc_doc_grandmother_id;
+	std::vector<float> *mc_doc_ggrandmother_id;
+	std::vector<float> *mc_doc_mother_pt;
+	std::vector<float> *mc_doc_vertex_x;
+	std::vector<float> *mc_doc_vertex_y;
+	std::vector<float> *mc_doc_vertex_z;
+	std::vector<float> *mc_doc_mass;
+	std::vector<float> *mc_doc_numOfDaughters;
+	std::vector<float> *mc_doc_numOfMothers;
 	UInt_t Nmets;
-	vector<float> *mets_et;
-	vector<float> *mets_phi;
-	vector<float> *mets_ex;
-	vector<float> *mets_ey;
-	vector<float> *mets_gen_et;
-	vector<float> *mets_gen_phi;
-	vector<float> *mets_sign;
-	vector<float> *mets_sumEt;
-	vector<float> *mets_unCPhi;
-	vector<float> *mets_unCPt;
-	vector<float> *mets_et_muonCor;
-	vector<float> *mets_phi_muonCor;
-	vector<float> *mets_et_JESCor;
-	vector<float> *mets_phi_JESCor;
+	std::vector<float> *mets_et;
+	std::vector<float> *mets_phi;
+	std::vector<float> *mets_ex;
+	std::vector<float> *mets_ey;
+	std::vector<float> *mets_gen_et;
+	std::vector<float> *mets_gen_phi;
+	std::vector<float> *mets_sign;
+	std::vector<float> *mets_sumEt;
+	std::vector<float> *mets_unCPhi;
+	std::vector<float> *mets_unCPt;
+	std::vector<float> *mets_et_muonCor;
+	std::vector<float> *mets_phi_muonCor;
+	std::vector<float> *mets_et_JESCor;
+	std::vector<float> *mets_phi_JESCor;
 	UInt_t NmetsKT4;
-	vector<float> *metsKT4_et;
-	vector<float> *metsKT4_phi;
-	vector<float> *metsKT4_ex;
-	vector<float> *metsKT4_ey;
-	vector<float> *metsKT4_sumEt;
-	vector<float> *metsKT4_et_JESCor;
-	vector<float> *metsKT4_phi_JESCor;
+	std::vector<float> *metsKT4_et;
+	std::vector<float> *metsKT4_phi;
+	std::vector<float> *metsKT4_ex;
+	std::vector<float> *metsKT4_ey;
+	std::vector<float> *metsKT4_sumEt;
+	std::vector<float> *metsKT4_et_JESCor;
+	std::vector<float> *metsKT4_phi_JESCor;
 	UInt_t NmetsSC5;
-	vector<float> *metsSC5_et;
-	vector<float> *metsSC5_phi;
-	vector<float> *metsSC5_ex;
-	vector<float> *metsSC5_ey;
-	vector<float> *metsSC5_sumEt;
-	vector<float> *metsSC5_et_JESCor;
-	vector<float> *metsSC5_phi_JESCor;
+	std::vector<float> *metsSC5_et;
+	std::vector<float> *metsSC5_phi;
+	std::vector<float> *metsSC5_ex;
+	std::vector<float> *metsSC5_ey;
+	std::vector<float> *metsSC5_sumEt;
+	std::vector<float> *metsSC5_et_JESCor;
+	std::vector<float> *metsSC5_phi_JESCor;
 	UInt_t Nmus;
-	vector<float> *mus_energy;
-	vector<float> *mus_et;
-	vector<float> *mus_eta;
-	vector<float> *mus_phi;
-	vector<float> *mus_pt;
-	vector<float> *mus_px;
-	vector<float> *mus_py;
-	vector<float> *mus_pz;
-	vector<float> *mus_status;
-	vector<float> *mus_theta;
-	vector<float> *mus_gen_id;
-	vector<float> *mus_gen_phi;
-	vector<float> *mus_gen_pt;
-	vector<float> *mus_gen_pz;
-	vector<float> *mus_gen_px;
-	vector<float> *mus_gen_py;
-	vector<float> *mus_gen_eta;
-	vector<float> *mus_gen_theta;
-	vector<float> *mus_gen_et;
-	vector<float> *mus_gen_mother_id;
-	vector<float> *mus_gen_mother_phi;
-	vector<float> *mus_gen_mother_pt;
-	vector<float> *mus_gen_mother_pz;
-	vector<float> *mus_gen_mother_px;
-	vector<float> *mus_gen_mother_py;
-	vector<float> *mus_gen_mother_eta;
-	vector<float> *mus_gen_mother_theta;
-	vector<float> *mus_gen_mother_et;
-	vector<float> *mus_tkHits;
-	vector<float> *mus_cIso;
-	vector<float> *mus_tIso;
-	vector<float> *mus_ecalIso;
-	vector<float> *mus_hcalIso;
-	vector<float> *mus_ecalvetoDep;
-	vector<float> *mus_hcalvetoDep;
-	vector<float> *mus_calEnergyEm;
-	vector<float> *mus_calEnergyHad;
-	vector<float> *mus_calEnergyHo;
-	vector<float> *mus_calEnergyEmS9;
-	vector<float> *mus_calEnergyHadS9;
-	vector<float> *mus_calEnergyHoS9;
-	vector<float> *mus_iso03_sumPt;
-	vector<float> *mus_iso03_emEt;
-	vector<float> *mus_iso03_hadEt;
-	vector<float> *mus_iso03_hoEt;
-	vector<float> *mus_iso03_nTracks;
-	vector<float> *mus_iso05_sumPt;
-	vector<float> *mus_iso05_emEt;
-	vector<float> *mus_iso05_hadEt;
-	vector<float> *mus_iso05_hoEt;
-	vector<float> *mus_iso05_nTracks;
-	vector<float> *mus_charge;
-	vector<float> *mus_cm_chi2;
-	vector<float> *mus_cm_ndof;
-	vector<float> *mus_cm_chg;
-	vector<float> *mus_cm_pt;
-	vector<float> *mus_cm_px;
-	vector<float> *mus_cm_py;
-	vector<float> *mus_cm_pz;
-	vector<float> *mus_cm_eta;
-	vector<float> *mus_cm_phi;
-	vector<float> *mus_cm_theta;
-	vector<float> *mus_cm_d0dum;
-	vector<float> *mus_cm_dz;
-	vector<float> *mus_cm_vx;
-	vector<float> *mus_cm_vy;
-	vector<float> *mus_cm_vz;
-	vector<float> *mus_cm_numvalhits;
-	vector<float> *mus_cm_numlosthits;
-	vector<float> *mus_cm_d0dumErr;
-	vector<float> *mus_cm_dzErr;
-	vector<float> *mus_cm_ptErr;
-	vector<float> *mus_cm_etaErr;
-	vector<float> *mus_cm_phiErr;
-	vector<float> *mus_tk_chi2;
-	vector<float> *mus_tk_ndof;
-	vector<float> *mus_tk_chg;
-	vector<float> *mus_tk_pt;
-	vector<float> *mus_tk_px;
-	vector<float> *mus_tk_py;
-	vector<float> *mus_tk_pz;
-	vector<float> *mus_tk_eta;
-	vector<float> *mus_tk_phi;
-	vector<float> *mus_tk_theta;
-	vector<float> *mus_tk_d0dum;
-	vector<float> *mus_tk_dz;
-	vector<float> *mus_tk_vx;
-	vector<float> *mus_tk_vy;
-	vector<float> *mus_tk_vz;
-	vector<float> *mus_tk_numvalhits;
-	vector<float> *mus_tk_numlosthits;
-	vector<float> *mus_tk_d0dumErr;
-	vector<float> *mus_tk_dzErr;
-	vector<float> *mus_tk_ptErr;
-	vector<float> *mus_tk_etaErr;
-	vector<float> *mus_tk_phiErr;
-	vector<float> *mus_stamu_chi2;
-	vector<float> *mus_stamu_ndof;
-	vector<float> *mus_stamu_chg;
-	vector<float> *mus_stamu_pt;
-	vector<float> *mus_stamu_px;
-	vector<float> *mus_stamu_py;
-	vector<float> *mus_stamu_pz;
-	vector<float> *mus_stamu_eta;
-	vector<float> *mus_stamu_phi;
-	vector<float> *mus_stamu_theta;
-	vector<float> *mus_stamu_d0dum;
-	vector<float> *mus_stamu_dz;
-	vector<float> *mus_stamu_vx;
-	vector<float> *mus_stamu_vy;
-	vector<float> *mus_stamu_vz;
-	vector<float> *mus_stamu_numvalhits;
-	vector<float> *mus_stamu_numlosthits;
-	vector<float> *mus_stamu_d0dumErr;
-	vector<float> *mus_stamu_dzErr;
-	vector<float> *mus_stamu_ptErr;
-	vector<float> *mus_stamu_etaErr;
-	vector<float> *mus_stamu_phiErr;
-	vector<float> *mus_num_matches;
-	vector<float> *mus_id_All;
-	vector<float> *mus_id_AllGlobalMuons;
-	vector<float> *mus_id_AllStandAloneMuons;
-	vector<float> *mus_id_AllTrackerMuons;
-	vector<float> *mus_id_TrackerMuonArbitrated;
-	vector<float> *mus_id_AllArbitrated;
-	vector<float> *mus_id_GlobalMuonPromptTight;
-	vector<float> *mus_id_TMLastStationLoose;
-	vector<float> *mus_id_TMLastStationTight;
-	vector<float> *mus_id_TM2DCompatibilityLoose;
-	vector<float> *mus_id_TM2DCompatibilityTight;
-	vector<float> *mus_id_TMOneStationLoose;
-	vector<float> *mus_id_TMOneStationTight;
-	vector<float> *mus_id_TMLastStationOptimizedLowPtLoose;
-	vector<float> *mus_id_TMLastStationOptimizedLowPtTight;
+	std::vector<float> *mus_energy;
+	std::vector<float> *mus_et;
+	std::vector<float> *mus_eta;
+	std::vector<float> *mus_phi;
+	std::vector<float> *mus_pt;
+	std::vector<float> *mus_px;
+	std::vector<float> *mus_py;
+	std::vector<float> *mus_pz;
+	std::vector<float> *mus_status;
+	std::vector<float> *mus_theta;
+	std::vector<float> *mus_gen_id;
+	std::vector<float> *mus_gen_phi;
+	std::vector<float> *mus_gen_pt;
+	std::vector<float> *mus_gen_pz;
+	std::vector<float> *mus_gen_px;
+	std::vector<float> *mus_gen_py;
+	std::vector<float> *mus_gen_eta;
+	std::vector<float> *mus_gen_theta;
+	std::vector<float> *mus_gen_et;
+	std::vector<float> *mus_gen_mother_id;
+	std::vector<float> *mus_gen_mother_phi;
+	std::vector<float> *mus_gen_mother_pt;
+	std::vector<float> *mus_gen_mother_pz;
+	std::vector<float> *mus_gen_mother_px;
+	std::vector<float> *mus_gen_mother_py;
+	std::vector<float> *mus_gen_mother_eta;
+	std::vector<float> *mus_gen_mother_theta;
+	std::vector<float> *mus_gen_mother_et;
+	std::vector<float> *mus_tkHits;
+	std::vector<float> *mus_cIso;
+	std::vector<float> *mus_tIso;
+	std::vector<float> *mus_ecalIso;
+	std::vector<float> *mus_hcalIso;
+	std::vector<float> *mus_ecalvetoDep;
+	std::vector<float> *mus_hcalvetoDep;
+	std::vector<float> *mus_calEnergyEm;
+	std::vector<float> *mus_calEnergyHad;
+	std::vector<float> *mus_calEnergyHo;
+	std::vector<float> *mus_calEnergyEmS9;
+	std::vector<float> *mus_calEnergyHadS9;
+	std::vector<float> *mus_calEnergyHoS9;
+	std::vector<float> *mus_iso03_sumPt;
+	std::vector<float> *mus_iso03_emEt;
+	std::vector<float> *mus_iso03_hadEt;
+	std::vector<float> *mus_iso03_hoEt;
+	std::vector<float> *mus_iso03_nTracks;
+	std::vector<float> *mus_iso05_sumPt;
+	std::vector<float> *mus_iso05_emEt;
+	std::vector<float> *mus_iso05_hadEt;
+	std::vector<float> *mus_iso05_hoEt;
+	std::vector<float> *mus_iso05_nTracks;
+	std::vector<float> *mus_charge;
+	std::vector<float> *mus_cm_chi2;
+	std::vector<float> *mus_cm_ndof;
+	std::vector<float> *mus_cm_chg;
+	std::vector<float> *mus_cm_pt;
+	std::vector<float> *mus_cm_px;
+	std::vector<float> *mus_cm_py;
+	std::vector<float> *mus_cm_pz;
+	std::vector<float> *mus_cm_eta;
+	std::vector<float> *mus_cm_phi;
+	std::vector<float> *mus_cm_theta;
+	std::vector<float> *mus_cm_d0dum;
+	std::vector<float> *mus_cm_dz;
+	std::vector<float> *mus_cm_vx;
+	std::vector<float> *mus_cm_vy;
+	std::vector<float> *mus_cm_vz;
+	std::vector<float> *mus_cm_numvalhits;
+	std::vector<float> *mus_cm_numlosthits;
+	std::vector<float> *mus_cm_d0dumErr;
+	std::vector<float> *mus_cm_dzErr;
+	std::vector<float> *mus_cm_ptErr;
+	std::vector<float> *mus_cm_etaErr;
+	std::vector<float> *mus_cm_phiErr;
+	std::vector<float> *mus_tk_chi2;
+	std::vector<float> *mus_tk_ndof;
+	std::vector<float> *mus_tk_chg;
+	std::vector<float> *mus_tk_pt;
+	std::vector<float> *mus_tk_px;
+	std::vector<float> *mus_tk_py;
+	std::vector<float> *mus_tk_pz;
+	std::vector<float> *mus_tk_eta;
+	std::vector<float> *mus_tk_phi;
+	std::vector<float> *mus_tk_theta;
+	std::vector<float> *mus_tk_d0dum;
+	std::vector<float> *mus_tk_dz;
+	std::vector<float> *mus_tk_vx;
+	std::vector<float> *mus_tk_vy;
+	std::vector<float> *mus_tk_vz;
+	std::vector<float> *mus_tk_numvalhits;
+	std::vector<float> *mus_tk_numlosthits;
+	std::vector<float> *mus_tk_d0dumErr;
+	std::vector<float> *mus_tk_dzErr;
+	std::vector<float> *mus_tk_ptErr;
+	std::vector<float> *mus_tk_etaErr;
+	std::vector<float> *mus_tk_phiErr;
+	std::vector<float> *mus_stamu_chi2;
+	std::vector<float> *mus_stamu_ndof;
+	std::vector<float> *mus_stamu_chg;
+	std::vector<float> *mus_stamu_pt;
+	std::vector<float> *mus_stamu_px;
+	std::vector<float> *mus_stamu_py;
+	std::vector<float> *mus_stamu_pz;
+	std::vector<float> *mus_stamu_eta;
+	std::vector<float> *mus_stamu_phi;
+	std::vector<float> *mus_stamu_theta;
+	std::vector<float> *mus_stamu_d0dum;
+	std::vector<float> *mus_stamu_dz;
+	std::vector<float> *mus_stamu_vx;
+	std::vector<float> *mus_stamu_vy;
+	std::vector<float> *mus_stamu_vz;
+	std::vector<float> *mus_stamu_numvalhits;
+	std::vector<float> *mus_stamu_numlosthits;
+	std::vector<float> *mus_stamu_d0dumErr;
+	std::vector<float> *mus_stamu_dzErr;
+	std::vector<float> *mus_stamu_ptErr;
+	std::vector<float> *mus_stamu_etaErr;
+	std::vector<float> *mus_stamu_phiErr;
+	std::vector<float> *mus_num_matches;
+	std::vector<float> *mus_id_All;
+	std::vector<float> *mus_id_AllGlobalMuons;
+	std::vector<float> *mus_id_AllStandAloneMuons;
+	std::vector<float> *mus_id_AllTrackerMuons;
+	std::vector<float> *mus_id_TrackerMuonArbitrated;
+	std::vector<float> *mus_id_AllArbitrated;
+	std::vector<float> *mus_id_GlobalMuonPromptTight;
+	std::vector<float> *mus_id_TMLastStationLoose;
+	std::vector<float> *mus_id_TMLastStationTight;
+	std::vector<float> *mus_id_TM2DCompatibilityLoose;
+	std::vector<float> *mus_id_TM2DCompatibilityTight;
+	std::vector<float> *mus_id_TMOneStationLoose;
+	std::vector<float> *mus_id_TMOneStationTight;
+	std::vector<float> *mus_id_TMLastStationOptimizedLowPtLoose;
+	std::vector<float> *mus_id_TMLastStationOptimizedLowPtTight;
 	UInt_t Nphotons;
-	vector<float> *photons_energy;
-	vector<float> *photons_et;
-	vector<float> *photons_eta;
-	vector<float> *photons_phi;
-	vector<float> *photons_pt;
-	vector<float> *photons_px;
-	vector<float> *photons_py;
-	vector<float> *photons_pz;
-	vector<float> *photons_status;
-	vector<float> *photons_theta;
-	vector<float> *photons_hadOverEM;
-	vector<float> *photons_scEnergy;
-	vector<float> *photons_scRawEnergy;
-	vector<float> *photons_scEta;
-	vector<float> *photons_scPhi;
-	vector<float> *photons_scEtaWidth;
-	vector<float> *photons_scPhiWidth;
-	vector<float> *photons_tIso;
-	vector<float> *photons_ecalIso;
-	vector<float> *photons_hcalIso;
-	vector<float> *photons_isoEcalRecHitDR04;
-	vector<float> *photons_isoHcalRecHitDR04;
-	vector<float> *photons_isoSolidTrkConeDR04;
-	vector<float> *photons_isoHollowTrkConeDR04;
-	vector<float> *photons_nTrkSolidConeDR04;
-	vector<float> *photons_nTrkHollowConeDR04;
-	vector<float> *photons_isoEcalRecHitDR03;
-	vector<float> *photons_isoHcalRecHitDR03;
-	vector<float> *photons_isoSolidTrkConeDR03;
-	vector<float> *photons_isoHollowTrkConeDR03;
-	vector<float> *photons_nTrkSolidConeDR03;
-	vector<float> *photons_nTrkHollowConeDR03;
-	vector<float> *photons_isAlsoElectron;
-	vector<float> *photons_hasPixelSeed;
-	vector<float> *photons_isConverted;
-	vector<float> *photons_isEBGap;
-	vector<float> *photons_isEEGap;
-	vector<float> *photons_isEBEEGap;
-	vector<float> *photons_isEBPho;
-	vector<float> *photons_isEEPho;
-	vector<float> *photons_isLoosePhoton;
-	vector<float> *photons_isTightPhoton;
-	vector<float> *photons_r9;
-	vector<float> *photons_gen_et;
-	vector<float> *photons_gen_eta;
-	vector<float> *photons_gen_phi;
-	vector<float> *photons_gen_id;
+	std::vector<float> *photons_energy;
+	std::vector<float> *photons_et;
+	std::vector<float> *photons_eta;
+	std::vector<float> *photons_phi;
+	std::vector<float> *photons_pt;
+	std::vector<float> *photons_px;
+	std::vector<float> *photons_py;
+	std::vector<float> *photons_pz;
+	std::vector<float> *photons_status;
+	std::vector<float> *photons_theta;
+	std::vector<float> *photons_hadOverEM;
+	std::vector<float> *photons_scEnergy;
+	std::vector<float> *photons_scRawEnergy;
+	std::vector<float> *photons_scEta;
+	std::vector<float> *photons_scPhi;
+	std::vector<float> *photons_scEtaWidth;
+	std::vector<float> *photons_scPhiWidth;
+	std::vector<float> *photons_tIso;
+	std::vector<float> *photons_ecalIso;
+	std::vector<float> *photons_hcalIso;
+	std::vector<float> *photons_isoEcalRecHitDR04;
+	std::vector<float> *photons_isoHcalRecHitDR04;
+	std::vector<float> *photons_isoSolidTrkConeDR04;
+	std::vector<float> *photons_isoHollowTrkConeDR04;
+	std::vector<float> *photons_nTrkSolidConeDR04;
+	std::vector<float> *photons_nTrkHollowConeDR04;
+	std::vector<float> *photons_isoEcalRecHitDR03;
+	std::vector<float> *photons_isoHcalRecHitDR03;
+	std::vector<float> *photons_isoSolidTrkConeDR03;
+	std::vector<float> *photons_isoHollowTrkConeDR03;
+	std::vector<float> *photons_nTrkSolidConeDR03;
+	std::vector<float> *photons_nTrkHollowConeDR03;
+	std::vector<float> *photons_isAlsoElectron;
+	std::vector<float> *photons_hasPixelSeed;
+	std::vector<float> *photons_isConverted;
+	std::vector<float> *photons_isEBGap;
+	std::vector<float> *photons_isEEGap;
+	std::vector<float> *photons_isEBEEGap;
+	std::vector<float> *photons_isEBPho;
+	std::vector<float> *photons_isEEPho;
+	std::vector<float> *photons_isLoosePhoton;
+	std::vector<float> *photons_isTightPhoton;
+	std::vector<float> *photons_r9;
+	std::vector<float> *photons_gen_et;
+	std::vector<float> *photons_gen_eta;
+	std::vector<float> *photons_gen_phi;
+	std::vector<float> *photons_gen_id;
 	UInt_t Npv;
-	vector<float> *pv_x;
-	vector<float> *pv_y;
-	vector<float> *pv_z;
-	vector<float> *pv_xErr;
-	vector<float> *pv_yErr;
-	vector<float> *pv_zErr;
+	std::vector<float> *pv_x;
+	std::vector<float> *pv_y;
+	std::vector<float> *pv_z;
+	std::vector<float> *pv_xErr;
+	std::vector<float> *pv_yErr;
+	std::vector<float> *pv_zErr;
 	UInt_t Ntcmets;
-	vector<float> *tcmets_et;
-	vector<float> *tcmets_phi;
-	vector<float> *tcmets_ex;
-	vector<float> *tcmets_ey;
-	vector<float> *tcmets_sumEt;
-	vector<float> *tcmets_et_muonCor;
-	vector<float> *tcmets_phi_muonCor;
+	std::vector<float> *tcmets_et;
+	std::vector<float> *tcmets_phi;
+	std::vector<float> *tcmets_ex;
+	std::vector<float> *tcmets_ey;
+	std::vector<float> *tcmets_sumEt;
+	std::vector<float> *tcmets_et_muonCor;
+	std::vector<float> *tcmets_phi_muonCor;
 	UInt_t Ntracks;
-	vector<float> *tracks_chi2;
-	vector<float> *tracks_ndof;
-	vector<float> *tracks_chg;
-	vector<float> *tracks_pt;
-	vector<float> *tracks_px;
-	vector<float> *tracks_py;
-	vector<float> *tracks_pz;
-	vector<float> *tracks_eta;
-	vector<float> *tracks_phi;
-	vector<float> *tracks_theta;
-	vector<float> *tracks_d0dum;
-	vector<float> *tracks_dz;
-	vector<float> *tracks_vx;
-	vector<float> *tracks_vy;
-	vector<float> *tracks_vz;
-	vector<float> *tracks_numvalhits;
-	vector<float> *tracks_numlosthits;
-	vector<float> *tracks_d0dumErr;
-	vector<float> *tracks_dzErr;
-	vector<float> *tracks_ptErr;
-	vector<float> *tracks_etaErr;
-	vector<float> *tracks_phiErr;
-	vector<float> *tracks_Nrechits;
-	vector<float> *tracks_innerHitX;
-	vector<float> *tracks_innerHitY;
-	vector<float> *tracks_innerHitZ;
-	vector<float> *tracks_outerHitX;
-	vector<float> *tracks_outerHitY;
-	vector<float> *tracks_outerHitZ;
-	vector<float> *tracks_highPurity;
-	vector<float> *tracks_innerLayerMissingHits;
-	UInt_t run;
-	UInt_t event;
+	std::vector<float> *tracks_chi2;
+	std::vector<float> *tracks_ndof;
+	std::vector<float> *tracks_chg;
+	std::vector<float> *tracks_pt;
+	std::vector<float> *tracks_px;
+	std::vector<float> *tracks_py;
+	std::vector<float> *tracks_pz;
+	std::vector<float> *tracks_eta;
+	std::vector<float> *tracks_phi;
+	std::vector<float> *tracks_theta;
+	std::vector<float> *tracks_d0dum;
+	std::vector<float> *tracks_dz;
+	std::vector<float> *tracks_vx;
+	std::vector<float> *tracks_vy;
+	std::vector<float> *tracks_vz;
+	std::vector<float> *tracks_numvalhits;
+	std::vector<float> *tracks_numlosthits;
+	std::vector<float> *tracks_d0dumErr;
+	std::vector<float> *tracks_dzErr;
+	std::vector<float> *tracks_ptErr;
+	std::vector<float> *tracks_etaErr;
+	std::vector<float> *tracks_phiErr;
+	std::vector<float> *tracks_Nrechits;
+	std::vector<float> *tracks_innerHitX;
+	std::vector<float> *tracks_innerHitY;
+	std::vector<float> *tracks_innerHitZ;
+	std::vector<float> *tracks_outerHitX;
+	std::vector<float> *tracks_outerHitY;
+	std::vector<float> *tracks_outerHitZ;
+	std::vector<float> *tracks_highPurity;
+	std::vector<float> *tracks_innerLayerMissingHits;
+	UInt_t run_number;
+	UInt_t event_number;
 	UInt_t lumiBlock;
 
 	// List of branches
@@ -657,9 +616,9 @@ protected:
 	TBranch *b_PFJets_btag_TC_highPur;//!
 	TBranch *b_PFJets_btag_jetBProb;//!
 	TBranch *b_PFJets_btag_jetProb;//!
-	TBranch *b_PFJets_btag_softEle;//!
-	TBranch *b_PFJets_btag_softMuon;//!
-	TBranch *b_PFJets_btag_softMuonNoIP;//!
+//	TBranch *b_PFJets_btag_softEle;//!
+//	TBranch *b_PFJets_btag_softMuon;//!
+//	TBranch *b_PFJets_btag_softMuonNoIP;//!
 	TBranch *b_PFJets_btag_secVertex;//!
 	TBranch *b_PFJets_parton_Id;//!
 	TBranch *b_NPFMets; //!
@@ -815,9 +774,9 @@ protected:
 	TBranch *b_jets_btag_TC_highEff; //!
 	TBranch *b_jets_btag_jetProb; //!
 	TBranch *b_jets_btag_jetBProb; //!
-	TBranch *b_jets_btag_softEle; //!
-	TBranch *b_jets_btag_softMuon; //!
-	TBranch *b_jets_btag_softMuonNoIP; //!
+//	TBranch *b_jets_btag_softEle; //!
+//	TBranch *b_jets_btag_softMuon; //!
+//	TBranch *b_jets_btag_softMuonNoIP; //!
 	TBranch *b_jets_btag_secVertex; //!
 	TBranch *b_jets_chgEmE; //!
 	TBranch *b_jets_chgHadE; //!
@@ -849,9 +808,9 @@ protected:
 	TBranch *b_jetsKT4_btag_TC_highEff; //!
 	TBranch *b_jetsKT4_btag_jetProb; //!
 	TBranch *b_jetsKT4_btag_jetBProb; //!
-	TBranch *b_jetsKT4_btag_softEle; //!
-	TBranch *b_jetsKT4_btag_softMuon; //!
-	TBranch *b_jetsKT4_btag_softMuonNoIP; //!
+//	TBranch *b_jetsKT4_btag_softEle; //!
+//	TBranch *b_jetsKT4_btag_softMuon; //!
+//	TBranch *b_jetsKT4_btag_softMuonNoIP; //!
 	TBranch *b_jetsKT4_btag_secVertex; //!
 	TBranch *b_jetsKT4_chgEmE; //!
 	TBranch *b_jetsKT4_chgHadE; //!
@@ -884,9 +843,9 @@ protected:
 	TBranch *b_jetsSC5_btag_TC_highEff; //!
 	TBranch *b_jetsSC5_btag_jetProb; //!
 	TBranch *b_jetsSC5_btag_jetBProb; //!
-	TBranch *b_jetsSC5_btag_softEle; //!
-	TBranch *b_jetsSC5_btag_softMuon; //!
-	TBranch *b_jetsSC5_btag_softMuonNoIP; //!
+//	TBranch *b_jetsSC5_btag_softEle; //!
+//	TBranch *b_jetsSC5_btag_softMuon; //!
+//	TBranch *b_jetsSC5_btag_softMuonNoIP; //!
 	TBranch *b_jetsSC5_btag_secVertex; //!
 	TBranch *b_jetsSC5_chgEmE; //!
 	TBranch *b_jetsSC5_chgHadE; //!
@@ -1310,13 +1269,45 @@ protected:
 	TBranch *b_PDFWcteq66_42; //!
 	TBranch *b_PDFWcteq66_43; //!
 	TBranch *b_PDFWcteq66_44; //!
-
+private:
 	bool datafile, m_useMisslayers, checkTrig, m_studyPDFunc, debug_flag;
-	string m_jetAlgo, m_metAlgo, HLTBit;
+	std::string m_jetAlgo, m_metAlgo, HLTBit;
+
+public:
+	NTupleReader();
+	~NTupleReader() {
+	}
+	;
+
+	bool GetDebug() const;
+	std::string GetHLTBit() const;
+	std::string GetJetAlgorithm() const;
+	std::string GetMETAlgorithm() const;
+	bool GetMissLayersFlag() const;
+	bool GetStudyPDFunc() const;
+	bool GetTrigger() const;
+
+	bool IsData() const;
+
+	void SetData(bool f);
+	void SetDebug(bool);
+	void SetHLTBit(std::string);
+	void SetJetAlgo(std::string);
+	void SetMETAlgo(std::string);
+	void SetStudyPDFunc(bool);
+	void SetTrigger(bool val);
+	void SetTrigger(bool, const std::string);
+
+	void UseMissLayers(bool val);
 
 	void Init(); //initialize tree branches
-	void ReadSelectedBranches() const;
-	bool IsData() const;
+	void SelectBranches();
+
+private:
+	void EnablePFJets();
+	void LoadPFJets();
+
+
 };
 #endif /* NTUPLEREADER_H_ */
 
