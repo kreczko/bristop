@@ -12,14 +12,11 @@
 using namespace ROOT;
 
 int main(int argc, char **argv) {
-	gROOT->ProcessLine("gErrorIgnoreLevel = 2001;");
+	gROOT->ProcessLine("#include <vector>");
+	//	gROOT->ProcessLine("gErrorIgnoreLevel = 2001;");
 	TStopwatch watch;
 	watch.Start();
 
-	//gSystem->SetIncludePath(" -I/software/cms/slc4_ia32_gcc345/lcg/roofit/5.25.02-cms/include");
-	//	gROOT->ProcessLine(".exception");
-	//FIXME: this needs to be in. Works without but produces error messages.
-	//	gSystem->CompileMacro("./cms_bristol_ana_v3.cc", "g");
 	ana *myana = new ana();
 
 	//Switches
@@ -29,8 +26,6 @@ int main(int argc, char **argv) {
 
 	// HLT
 	myana->CheckTrigger(1); //0 for no trigger check, 1 for single electron trigger
-	//myana->CheckTrigger(1,"HLT_Ele15_SW_L1R"); //<-- uncomment this if want a diff trigger
-
 
 	myana->Validation(0);
 	myana->PlotRelisoNES(1);
@@ -75,41 +70,51 @@ int main(int argc, char **argv) {
 	bool test_run = true;
 
 	if (test_run) {
-				myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/HLTskim_ttjet_7TeV_v5/*.root");
-		//		myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/HLTskim_wjets_7TeV_v3/*.root");
-		//		myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/HLTskim_zjets_7TeV_v4/*.root");
-		//		myana->SetInputFile(
-		//				"/storage/top/mc/Zprime_M1250GeV_W12500MeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile(
-		//				"/storage/top/mc/Zprime_M1500GeV_W150GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile(
-		//				"/storage/top/mc/Zprime_M1500GeV_W15GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile("/storage/top/mc/Zprime_M1TeV_W100GeV-madgraph_Summer09-MC_31X_V3_7TeV-v2_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile("/storage/top/mc/Zprime_M1TeV_W10GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile("/storage/top/mc/Zprime_M2TeV_W200GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile("/storage/top/mc/Zprime_M2TeV_W20GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile("/storage/top/mc/Zprime_M3TeV_W300GeV-madgraph_Summer09-MC_31X_V3_7TeV-v2_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile("/storage/top/mc/Zprime_M3TeV_W30GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile("/storage/top/mc/Zprime_M4TeV_W400GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile("/storage/top/mc/Zprime_M4TeV_W40GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile(
-		//				"/storage/top/mc/Zprime_M500GeV_W50GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile("/storage/top/mc/Zprime_M500GeV_W5GeV-madgraph_Summer09-MC_31X_V3_7TeV-v3_GEN-SIM-RECO_nTuple/*.root");
-		//		myana->SetInputFile(
-		//				"/storage/top/mc/Zprime_M750GeV_W7500MeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
-		//
-		//		myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/sTop_tchan/*.root");
-		//		myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/sTop_schan/*.root");
-		//		myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/sTop_tWchan/*.root");
-		//
-		//		// Pythia SD
-		//		myana->SetInputFile("/storage/top/mc/OctEx09/SD_7TeV_JEC/enri1_7/*.root");
-		//		myana->SetInputFile("/storage/top/mc/OctEx09/SD_7TeV_JEC/enri2_7/*.root");
-		//		myana->SetInputFile("/storage/top/mc/OctEx09/SD_7TeV_JEC/enri3_7/*.root");
-		////
-		//		myana->SetInputFile("/storage/top/mc/OctEx09/SD_7TeV_JEC/bce1_7/*.root");
-		//		myana->SetInputFile("/storage/top/mc/OctEx09/SD_7TeV_JEC/bce2_7/*.root");
-		//		myana->SetInputFile("/storage/top/mc/OctEx09/SD_7TeV_JEC/bce3_7/*.root");
+//		myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/HLTskim_ttjet_7TeV_v5/*_1.root");
+		myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/HLTskim_vqq/*_1*.root");
+//		myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/HLTskim_wjets_7TeV_v3/*_1.root");
+//		myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/HLTskim_zjets_7TeV_v4/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M1250GeV_W12500MeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M1500GeV_W150GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M1500GeV_W15GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M1TeV_W100GeV-madgraph_Summer09-MC_31X_V3_7TeV-v2_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M1TeV_W10GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M2TeV_W200GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M2TeV_W20GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M3TeV_W300GeV-madgraph_Summer09-MC_31X_V3_7TeV-v2_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M3TeV_W30GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M4TeV_W400GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M4TeV_W40GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M500GeV_W50GeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M500GeV_W5GeV-madgraph_Summer09-MC_31X_V3_7TeV-v3_GEN-SIM-RECO_nTuple/*_1.root");
+//		myana->SetInputFile(
+//				"/storage/top/mc/Zprime_M750GeV_W7500MeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*_1.root");
+//
+//		myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/sTop_tchan/*_1.root");
+//		myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/sTop_schan/*_1.root");
+//		myana->SetInputFile("/storage/top/mc/summer09_7TeV/MG/sTop_tWchan/*_1.root");
+//
+//		// Pythia SD
+//		myana->SetInputFile("/storage/top/mc/OctEx09/SD_7TeV_JEC/enri1_7/*_1.root");
+//		myana->SetInputFile("/storage/top/mc/OctEx09/SD_7TeV_JEC/enri2_7/*_1.root");
+//		myana->SetInputFile("/storage/top/mc/OctEx09/SD_7TeV_JEC/enri3_7/*_1.root");
+//
+//		myana->SetInputFile("/storage/top/mc/OctEx09/SD_7TeV_JEC/bce1_7/*_1.root");
+//		myana->SetInputFile("/storage/top/mc/OctEx09/SD_7TeV_JEC/bce2_7/*_1.root");
+//		myana->SetInputFile("/storage/top/mc/OctEx09/SD_7TeV_JEC/bce3_7/*_1.root");
 	} else {
 
 		// madgraph: ttj, wj, zj
@@ -156,13 +161,13 @@ int main(int argc, char **argv) {
 		//				"/storage/top/mc/Zprime_M750GeV_W7500MeV-madgraph_Summer09-MC_31X_V3_7TeV-v1_GEN-SIM-RECO_nTuple/*.root");
 	}
 
-	myana->SetOutputFirstName("JustTesting");
+	myana->SetOutputFirstName("JustTestingWjets");
 
-		myana->SetLimit(-1);
-		myana->EventLoop();
+	myana->SetLimit(-1);
+	myana->EventLoop();
 
 	//	if (!test_run) {
-//	myana->EstimateQCD("FullRun_btag_new_mc_mixture.root");
+	//	myana->EstimateQCD("FullRun_btag_new_mc_mixture.root");
 	//		myana->EstimateWjets();
 	//	}
 	watch.Stop();
