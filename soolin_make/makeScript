@@ -1,0 +1,48 @@
+echo
+
+echo "Building file: ../NTupleReader.cc"
+echo "Invoking: GCC C++ Compiler"
+g++ -I"/software/cms/slc5_ia32_gcc434/lcg/root/5.22.00d-cms16/include" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"NTupleReader.d" -MT"NTupleReader.d" -o"NTupleReader.o" "../NTupleReader.cc"
+echo "Finished building: ../NTupleReader.cc"
+
+echo
+
+echo "Building file: ../Run.cc"
+echo "Invoking: GCC C++ Compiler"
+g++ -I"/software/cms/slc5_ia32_gcc434/lcg/root/5.22.00d-cms16/include" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"Run.d" -MT"Run.d" -o"Run.o" "../Run.cc"
+echo "Finished building: ../Run.cc"
+
+echo
+
+echo "Building file: ../cms_bristol_ana_v3.cc"
+echo "Invoking: GCC C++ Compiler"
+g++ -I"/software/cms/slc5_ia32_gcc434/lcg/root/5.22.00d-cms16/include" -I"/software/cms/slc4_ia32_gcc345/lcg/roofit/5.25.02-cms/include" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"cms_bristol_ana_v3.d" -MT"cms_bristol_ana_v3.d" -o"cms_bristol_ana_v3.o" "../cms_bristol_ana_v3.cc"
+echo "Finished building: ../cms_bristol_ana_v3.cc"
+ 
+echo
+
+echo "Building file: ../Tools/Event.cc"
+echo "Invoking: GCC C++ Compiler"
+g++ -I"/software/cms/slc5_ia32_gcc434/lcg/root/5.22.00d-cms16/include" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"Tools/Event.d" -MT"Tools/Event.d" -o"Tools/Event.o" "../Tools/Event.cc"
+echo "Finished building: ../Tools/Event.cc"
+ 
+echo
+
+echo "Building file: ../Tools/EventFilter.cc"
+echo "Invoking: GCC C++ Compiler"
+g++ -I"/software/cms/slc5_ia32_gcc434/lcg/root/5.22.00d-cms16/include" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"Tools/EventFilter.d" -MT"Tools/EventFilter.d" -o"Tools/EventFilter.o" "../Tools/EventFilter.cc"
+echo "Finished building: ../Tools/EventFilter.cc"
+ 
+echo
+
+echo "Building file: ../Tools/Logger.cc"
+echo "Invoking: GCC C++ Compiler"
+g++ -I"/software/cms/slc5_ia32_gcc434/lcg/root/5.22.00d-cms16/include" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"Tools/Logger.d" -MT"Tools/Logger.d" -o"Tools/Logger.o" "../Tools/Logger.cc"
+echo "Finished building: ../Tools/Logger.cc"
+ 
+echo
+
+echo "Building target: BSMTopPairs"
+echo "Invoking: GCC C++ Linker"
+g++ -L"/software/cms/slc5_ia32_gcc434/lcg/root/5.22.00d-cms16/lib" -Xlinker -L"/usr/lib" -L"/software/cms/slc5_ia32_gcc434/external/zlib/1.2.3/lib/" -L"/software/cms/slc4_ia32_gcc345/lcg/roofit/5.25.02-cms/lib" `/software/cms/slc5_ia32_gcc434/lcg/root/5.22.00d-cms16/bin/root-config --libs --glibs --cflags --ldflags --auxlibs --auxcflags` -pthread -lm -ldl -o"BSMTopPairs"  ./NTupleReader.o ./Run.o ./cms_bristol_ana_v3.o  ./Tools/Event.o ./Tools/EventFilter.o ./Tools/Logger.o   -lRooFit -lReflex -lCore -lCintex -lMinuit -lFoam -lRooFitCore
+echo "Finished building target: BSMTopPairs"
