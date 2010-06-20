@@ -5,623 +5,514 @@
  *      Author: lkreczko
  */
 
-#include "NTupleReader.h"
+#include "NTupleReader.hh"
 
-NTupleReader::NTupleReader() {
+NTupleReader::NTupleReader() :
+	chain(0), chain2(0),
 
-}
+	NPFJets(0), PFJets_energy(0), PFJets_et(0), PFJets_eta(0), PFJets_phi(0), PFJets_pt(0), PFJets_px(0), PFJets_py(0),
+			PFJets_pz(0), PFJets_status(0), PFJets_theta(0), PFJets_chgEmE(0), PFJets_chgHadE(0), PFJets_chgMuE(0),
+			PFJets_chg_Mult(0), PFJets_neutralEmE(0), PFJets_neutralHadE(0), PFJets_neutral_Mult(0), PFJets_mu_Mult(0),
+			PFJets_mass(0), PFJets_btag_TC_highEff(0), PFJets_btag_TC_highPur(0), PFJets_btag_jetBProb(0),
+			PFJets_btag_jetProb(0), /*PFJets_btag_softEle(0), PFJets_btag_softMuon(0), PFJets_btag_softMuonNoIP(0),*/
+			PFJets_btag_secVertex(0), PFJets_parton_Id(0),
 
-bool NTupleReader::GetDebug() const {
-	return this->debug_flag;
-}
+			NPFMets(0), PFMets_et(0), PFMets_phi(0), PFMets_ex(0), PFMets_ey(0), PFMets_sumEt(0),
 
-void NTupleReader::SetDebug(bool val) {
-	this->debug_flag = val;
+			NbeamSpot(0), beamSpot_x(0), beamSpot_y(0), beamSpot_z(0), beamSpot_x0Error(0), beamSpot_y0Error(0),
+			beamSpot_z0Error(0), beamSpot_sigmaZ(0), beamSpot_sigmaZ0Error(0), beamSpot_dxdz(0), beamSpot_dxdzError(0),
+			beamSpot_dydz(0), beamSpot_dydzError(0), beamSpot_beamWidthX(0), beamSpot_beamWidthY(0),
+			beamSpot_beamWidthXError(0), beamSpot_beamWidthYError(0),
+
+			Nels(0), els_energy(0), els_et(0), els_eta(0), els_phi(0), els_pt(0), els_px(0), els_py(0), els_pz(0),
+			els_status(0), els_theta(0), els_closestCtfTrackRef(0), els_isEcalDriven(0), els_isTrackerDriven(0),
+			els_dr03EcalRecHitSumEt(0), els_dr04EcalRecHitSumEt(0), els_dr03HcalTowerSumEt(0),
+			els_dr04HcalTowerSumEt(0), els_gen_id(0), els_gen_phi(0), els_gen_pt(0), els_gen_pz(0), els_gen_px(0),
+			els_gen_py(0), els_gen_eta(0), els_gen_theta(0), els_gen_et(0), els_gen_mother_id(0),
+			els_gen_mother_phi(0), els_gen_mother_pt(0), els_gen_mother_pz(0), els_gen_mother_px(0), els_gen_mother_py(
+					0), els_gen_mother_eta(0), els_gen_mother_theta(0), els_gen_mother_et(0), els_tightId(0),
+			els_looseId(0), els_robustTightId(0), els_robustLooseId(0), els_robustHighEnergyId(0), els_cIso(0),
+			els_tIso(0), els_ecalIso(0), els_hcalIso(0), els_chi2(0), els_charge(0), els_caloEnergy(0),
+			els_hadOverEm(0), els_eOverPIn(0), els_eSeedOverPOut(0), els_eSCraw(0), els_eSeed(0), els_sigmaEtaEta(0),
+			els_sigmaIEtaIEta(0), els_scE1x5(0), els_scE2x5Max(0), els_scE5x5(0), els_dEtaIn(0), els_dPhiIn(0),
+			els_dEtaOut(0), els_dPhiOut(0), els_numvalhits(0), els_numlosthits(0), els_basicClustersSize(0), els_tk_pt(
+					0), els_tk_phi(0), els_tk_eta(0), els_tk_theta(0), els_tk_charge(0), els_shFracInnerHits(0),
+			els_d0dum(0), els_dz(0), els_vx(0), els_vy(0), els_vz(0), els_ndof(0), els_ptError(0), els_d0dumError(0),
+			els_dzError(0), els_etaError(0), els_phiError(0), els_cpx(0), els_cpy(0), els_cpz(0), els_vpx(0),
+			els_vpy(0), els_vpz(0), els_cx(0), els_cy(0), els_cz(0), els_innerLayerMissingHits(0), els_isEE(0),
+			els_isEEGap(0), els_isEB(0), els_isEBGap(0), els_isConvertedPhoton(0),
+
+			Njets(0), jets_energy(0), jets_et(0), jets_eta(0), jets_phi(0), jets_pt(0), jets_px(0), jets_py(0),
+			jets_pz(0), jets_status(0), jets_theta(0), jets_parton_Id(0), jets_parton_motherId(0), jets_parton_pt(0),
+			jets_parton_phi(0), jets_parton_eta(0), jets_parton_Energy(0), jets_parton_mass(0),
+			jets_parton_motherID(0), jets_gen_et(0), jets_gen_pt(0), jets_gen_eta(0), jets_gen_phi(0),
+			jets_gen_mass(0), jets_gen_Energy(0), jets_gen_Id(0), jets_gen_motherID(0), jets_gen_threeCharge(0),
+			jets_partonFlavour(0), jets_btag_TC_highPur(0), jets_btag_TC_highEff(0), jets_btag_jetProb(0),
+			/*jets_btag_jetBProb(0), jets_btag_softEle(0), jets_btag_softMuon(0), jets_btag_softMuonNoIP(0),*/
+			jets_btag_secVertex(0), jets_chgEmE(0), jets_chgHadE(0), jets_chgMuE(0), jets_chg_Mult(0), jets_neutralEmE(
+					0), jets_neutralHadE(0), jets_neutral_Mult(0), jets_mu_Mult(0), jets_emf(0), jets_ehf(0), jets_n60(
+					0), jets_n90(0), jets_area(0), jets_mass(0),
+
+			NjetsKT4(0), jetsKT4_energy(0), jetsKT4_et(0), jetsKT4_eta(0), jetsKT4_phi(0), jetsKT4_pt(0),
+			jetsKT4_px(0), jetsKT4_py(0), jetsKT4_pz(0), jetsKT4_status(0), jetsKT4_theta(0),
+			jetsKT4_btag_TC_highPur(0), jetsKT4_btag_TC_highEff(0), jetsKT4_btag_jetProb(0), jetsKT4_btag_jetBProb(0),
+			/*jetsKT4_btag_softEle(0), jetsKT4_btag_softMuon(0), jetsKT4_btag_softMuonNoIP(0),*/ jetsKT4_btag_secVertex(0),
+			jetsKT4_chgEmE(0), jetsKT4_chgHadE(0), jetsKT4_chgMuE(0), jetsKT4_chg_Mult(0), jetsKT4_neutralEmE(0),
+			jetsKT4_neutralHadE(0), jetsKT4_neutral_Mult(0), jetsKT4_mu_Mult(0), jetsKT4_emf(0), jetsKT4_ehf(0),
+			jetsKT4_n60(0), jetsKT4_n90(0), jetsKT4_area(0), jetsKT4_mass(0),
+
+			NjetsSC5(0), jetsSC5_energy(0), jetsSC5_et(0), jetsSC5_eta(0), jetsSC5_phi(0), jetsSC5_pt(0),
+			jetsSC5_px(0), jetsSC5_py(0), jetsSC5_pz(0), jetsSC5_status(0), jetsSC5_theta(0),
+			jetsSC5_btag_TC_highPur(0), jetsSC5_btag_TC_highEff(0), jetsSC5_btag_jetProb(0), jetsSC5_btag_jetBProb(0),
+			/*jetsSC5_btag_softEle(0), jetsSC5_btag_softMuon(0), jetsSC5_btag_softMuonNoIP(0),*/ jetsSC5_btag_secVertex(0),
+			jetsSC5_chgEmE(0), jetsSC5_chgHadE(0), jetsSC5_chgMuE(0), jetsSC5_chg_Mult(0), jetsSC5_neutralEmE(0),
+			jetsSC5_neutralHadE(0), jetsSC5_neutral_Mult(0), jetsSC5_mu_Mult(0), jetsSC5_emf(0), jetsSC5_ehf(0),
+			jetsSC5_n60(0), jetsSC5_n90(0), jetsSC5_area(0), jetsSC5_mass(0),
+
+			Nmc_doc(0), mc_doc_id(0), mc_doc_pt(0), mc_doc_px(0), mc_doc_py(0), mc_doc_pz(0), mc_doc_eta(0),
+			mc_doc_phi(0), mc_doc_theta(0), mc_doc_energy(0), mc_doc_status(0), mc_doc_charge(0), mc_doc_mother_id(0),
+			mc_doc_grandmother_id(0), mc_doc_ggrandmother_id(0), mc_doc_mother_pt(0), mc_doc_vertex_x(0),
+			mc_doc_vertex_y(0), mc_doc_vertex_z(0), mc_doc_mass(0), mc_doc_numOfDaughters(0), mc_doc_numOfMothers(0),
+
+			Nmets(0), mets_et(0), mets_phi(0), mets_ex(0), mets_ey(0), mets_gen_et(0), mets_gen_phi(0), mets_sign(0),
+			mets_sumEt(0), mets_unCPhi(0), mets_unCPt(0), mets_et_muonCor(0), mets_phi_muonCor(0), mets_et_JESCor(0),
+			mets_phi_JESCor(0),
+
+			NmetsKT4(0), metsKT4_et(0), metsKT4_phi(0), metsKT4_ex(0), metsKT4_ey(0), metsKT4_sumEt(0),
+			metsKT4_et_JESCor(0), metsKT4_phi_JESCor(0),
+
+			NmetsSC5(0), metsSC5_et(0), metsSC5_phi(0), metsSC5_ex(0), metsSC5_ey(0), metsSC5_sumEt(0),
+			metsSC5_et_JESCor(0), metsSC5_phi_JESCor(0),
+
+			Nmus(0), mus_energy(0), mus_et(0), mus_eta(0), mus_phi(0), mus_pt(0), mus_px(0), mus_py(0), mus_pz(0),
+			mus_status(0), mus_theta(0), mus_gen_id(0), mus_gen_phi(0), mus_gen_pt(0), mus_gen_pz(0), mus_gen_px(0),
+			mus_gen_py(0), mus_gen_eta(0), mus_gen_theta(0), mus_gen_et(0), mus_gen_mother_id(0),
+			mus_gen_mother_phi(0), mus_gen_mother_pt(0), mus_gen_mother_pz(0), mus_gen_mother_px(0), mus_gen_mother_py(
+					0), mus_gen_mother_eta(0), mus_gen_mother_theta(0), mus_gen_mother_et(0), mus_tkHits(0),
+			mus_cIso(0), mus_tIso(0), mus_ecalIso(0), mus_hcalIso(0), mus_ecalvetoDep(0), mus_hcalvetoDep(0),
+			mus_calEnergyEm(0), mus_calEnergyHad(0), mus_calEnergyHo(0), mus_calEnergyEmS9(0), mus_calEnergyHadS9(0),
+			mus_calEnergyHoS9(0), mus_iso03_sumPt(0), mus_iso03_emEt(0), mus_iso03_hadEt(0), mus_iso03_hoEt(0),
+			mus_iso03_nTracks(0), mus_iso05_sumPt(0), mus_iso05_emEt(0), mus_iso05_hadEt(0), mus_iso05_hoEt(0),
+			mus_iso05_nTracks(0), mus_charge(0), mus_cm_chi2(0), mus_cm_ndof(0), mus_cm_chg(0), mus_cm_pt(0),
+			mus_cm_px(0), mus_cm_py(0), mus_cm_pz(0), mus_cm_eta(0), mus_cm_phi(0), mus_cm_theta(0), mus_cm_d0dum(0),
+			mus_cm_dz(0), mus_cm_vx(0), mus_cm_vy(0), mus_cm_vz(0), mus_cm_numvalhits(0), mus_cm_numlosthits(0),
+			mus_cm_d0dumErr(0), mus_cm_dzErr(0), mus_cm_ptErr(0), mus_cm_etaErr(0), mus_cm_phiErr(0), mus_tk_chi2(0),
+			mus_tk_ndof(0), mus_tk_chg(0), mus_tk_pt(0), mus_tk_px(0), mus_tk_py(0), mus_tk_pz(0), mus_tk_eta(0),
+			mus_tk_phi(0), mus_tk_theta(0), mus_tk_d0dum(0), mus_tk_dz(0), mus_tk_vx(0), mus_tk_vy(0), mus_tk_vz(0),
+			mus_tk_numvalhits(0), mus_tk_numlosthits(0), mus_tk_d0dumErr(0), mus_tk_dzErr(0), mus_tk_ptErr(0),
+			mus_tk_etaErr(0), mus_tk_phiErr(0), mus_stamu_chi2(0), mus_stamu_ndof(0), mus_stamu_chg(0),
+			mus_stamu_pt(0), mus_stamu_px(0), mus_stamu_py(0), mus_stamu_pz(0), mus_stamu_eta(0), mus_stamu_phi(0),
+			mus_stamu_theta(0), mus_stamu_d0dum(0), mus_stamu_dz(0), mus_stamu_vx(0), mus_stamu_vy(0), mus_stamu_vz(0),
+			mus_stamu_numvalhits(0), mus_stamu_numlosthits(0), mus_stamu_d0dumErr(0), mus_stamu_dzErr(0),
+			mus_stamu_ptErr(0), mus_stamu_etaErr(0), mus_stamu_phiErr(0), mus_num_matches(0), mus_id_All(0),
+			mus_id_AllGlobalMuons(0), mus_id_AllStandAloneMuons(0), mus_id_AllTrackerMuons(0),
+			mus_id_TrackerMuonArbitrated(0), mus_id_AllArbitrated(0), mus_id_GlobalMuonPromptTight(0),
+			mus_id_TMLastStationLoose(0), mus_id_TMLastStationTight(0), mus_id_TM2DCompatibilityLoose(0),
+			mus_id_TM2DCompatibilityTight(0), mus_id_TMOneStationLoose(0), mus_id_TMOneStationTight(0),
+			mus_id_TMLastStationOptimizedLowPtLoose(0), mus_id_TMLastStationOptimizedLowPtTight(0),
+
+			Nphotons(0), photons_energy(0), photons_et(0), photons_eta(0), photons_phi(0), photons_pt(0),
+			photons_px(0), photons_py(0), photons_pz(0), photons_status(0), photons_theta(0), photons_hadOverEM(0),
+			photons_scEnergy(0), photons_scRawEnergy(0), photons_scEta(0), photons_scPhi(0), photons_scEtaWidth(0),
+			photons_scPhiWidth(0), photons_tIso(0), photons_ecalIso(0), photons_hcalIso(0),
+			photons_isoEcalRecHitDR04(0), photons_isoHcalRecHitDR04(0), photons_isoSolidTrkConeDR04(0),
+			photons_isoHollowTrkConeDR04(0), photons_nTrkSolidConeDR04(0), photons_nTrkHollowConeDR04(0),
+			photons_isoEcalRecHitDR03(0), photons_isoHcalRecHitDR03(0), photons_isoSolidTrkConeDR03(0),
+			photons_isoHollowTrkConeDR03(0), photons_nTrkSolidConeDR03(0), photons_nTrkHollowConeDR03(0),
+			photons_isAlsoElectron(0), photons_hasPixelSeed(0), photons_isConverted(0), photons_isEBGap(0),
+			photons_isEEGap(0), photons_isEBEEGap(0), photons_isEBPho(0), photons_isEEPho(0), photons_isLoosePhoton(0),
+			photons_isTightPhoton(0), photons_r9(0), photons_gen_et(0), photons_gen_eta(0), photons_gen_phi(0),
+			photons_gen_id(0),
+
+			Npv(0), pv_x(0), pv_y(0), pv_z(0), pv_xErr(0), pv_yErr(0), pv_zErr(0),
+
+			Ntcmets(0), tcmets_et(0), tcmets_phi(0), tcmets_ex(0), tcmets_ey(0), tcmets_sumEt(0), tcmets_et_muonCor(0),
+			tcmets_phi_muonCor(0),
+
+			Ntracks(0), tracks_chi2(0), tracks_ndof(0), tracks_chg(0), tracks_pt(0), tracks_px(0), tracks_py(0),
+			tracks_pz(0), tracks_eta(0), tracks_phi(0), tracks_theta(0), tracks_d0dum(0), tracks_dz(0), tracks_vx(0),
+			tracks_vy(0), tracks_vz(0), tracks_numvalhits(0), tracks_numlosthits(0), tracks_d0dumErr(0),
+			tracks_dzErr(0), tracks_ptErr(0), tracks_etaErr(0), tracks_phiErr(0), tracks_Nrechits(0), tracks_innerHitX(
+					0), tracks_innerHitY(0), tracks_innerHitZ(0), tracks_outerHitX(0), tracks_outerHitY(0),
+			tracks_outerHitZ(0), tracks_highPurity(0), tracks_innerLayerMissingHits(0),
+
+			run_number(0), event_number(0), lumiBlock(0),
+
+			b_NPFJets(0), b_PFJets_energy(0), b_PFJets_et(0), b_PFJets_eta(0), b_PFJets_phi(0), b_PFJets_pt(0),
+			b_PFJets_px(0), b_PFJets_py(0), b_PFJets_pz(0), b_PFJets_status(0), b_PFJets_theta(0), b_PFJets_chgEmE(0),
+			b_PFJets_chgHadE(0), b_PFJets_chgMuE(0), b_PFJets_chg_Mult(0), b_PFJets_neutralEmE(0),
+			b_PFJets_neutralHadE(0), b_PFJets_neutral_Mult(0), b_PFJets_mu_Mult(0), b_PFJets_mass(0),
+			b_PFJets_btag_TC_highEff(0), b_PFJets_btag_TC_highPur(0), b_PFJets_btag_jetBProb(0), b_PFJets_btag_jetProb(
+					0),/* b_PFJets_btag_softEle(0), b_PFJets_btag_softMuon(0), b_PFJets_btag_softMuonNoIP(0),*/
+			b_PFJets_btag_secVertex(0), b_PFJets_parton_Id(0),
+
+			b_NPFMets(0), b_PFMets_et(0), b_PFMets_phi(0), b_PFMets_ex(0), b_PFMets_ey(0), b_PFMets_sumEt(0),
+
+			b_NbeamSpot(0), b_beamSpot_x(0), b_beamSpot_y(0), b_beamSpot_z(0), b_beamSpot_x0Error(0),
+			b_beamSpot_y0Error(0), b_beamSpot_z0Error(0), b_beamSpot_sigmaZ(0), b_beamSpot_sigmaZ0Error(0),
+			b_beamSpot_dxdz(0), b_beamSpot_dxdzError(0), b_beamSpot_dydz(0), b_beamSpot_dydzError(0),
+			b_beamSpot_beamWidthX(0), b_beamSpot_beamWidthY(0), b_beamSpot_beamWidthXError(0),
+			b_beamSpot_beamWidthYError(0),
+
+			b_Nels(0), b_els_energy(0), b_els_et(0), b_els_eta(0), b_els_phi(0), b_els_pt(0), b_els_px(0), b_els_py(0),
+			b_els_pz(0), b_els_status(0), b_els_theta(0), b_els_closestCtfTrackRef(0), b_els_isEcalDriven(0),
+			b_els_isTrackerDriven(0), b_els_dr03EcalRecHitSumEt(0), b_els_dr04EcalRecHitSumEt(0),
+			b_els_dr03HcalTowerSumEt(0), b_els_dr04HcalTowerSumEt(0), b_els_gen_id(0), b_els_gen_phi(0),
+			b_els_gen_pt(0), b_els_gen_pz(0), b_els_gen_px(0), b_els_gen_py(0), b_els_gen_eta(0), b_els_gen_theta(0),
+			b_els_gen_et(0), b_els_gen_mother_id(0), b_els_gen_mother_phi(0), b_els_gen_mother_pt(0),
+			b_els_gen_mother_pz(0), b_els_gen_mother_px(0), b_els_gen_mother_py(0), b_els_gen_mother_eta(0),
+			b_els_gen_mother_theta(0), b_els_gen_mother_et(0), b_els_tightId(0), b_els_looseId(0), b_els_robustTightId(
+					0), b_els_robustLooseId(0), b_els_robustHighEnergyId(0), b_els_cIso(0), b_els_tIso(0),
+			b_els_ecalIso(0), b_els_hcalIso(0), b_els_chi2(0), b_els_charge(0), b_els_caloEnergy(0),
+			b_els_hadOverEm(0), b_els_eOverPIn(0), b_els_eSeedOverPOut(0), b_els_eSCraw(0), b_els_eSeed(0),
+			b_els_sigmaEtaEta(0), b_els_sigmaIEtaIEta(0), b_els_scE1x5(0), b_els_scE2x5Max(0), b_els_scE5x5(0),
+			b_els_dEtaIn(0), b_els_dPhiIn(0), b_els_dEtaOut(0), b_els_dPhiOut(0), b_els_numvalhits(0),
+			b_els_numlosthits(0), b_els_basicClustersSize(0), b_els_tk_pt(0), b_els_tk_phi(0), b_els_tk_eta(0),
+			b_els_tk_charge(0), b_els_tk_theta(0), b_els_shFracInnerHits(0),
+			b_els_d0dum(0),
+			b_els_dz(0),
+			b_els_vx(0),
+			b_els_vy(0),
+			b_els_vz(0),
+			b_els_ndof(0),
+			b_els_ptError(0),
+			b_els_d0dumError(0),
+			b_els_dzError(0),
+			b_els_etaError(0),
+			b_els_phiError(0),
+			b_els_cpx(0),
+			b_els_cpy(0),
+			b_els_cpz(0),
+			b_els_vpx(0),
+			b_els_vpy(0),
+			b_els_vpz(0),
+			b_els_cx(0),
+			b_els_cy(0),
+			b_els_cz(0),
+			b_els_innerLayerMissingHits(0),
+			b_els_isEE(0),
+			b_els_isEEGap(0),
+			b_els_isEB(0),
+			b_els_isEBGap(0),
+			b_els_isConvertedPhoton(0),
+
+			b_Njets(0),
+			b_jets_energy(0),
+			b_jets_et(0),
+			b_jets_eta(0),
+			b_jets_phi(0),
+			b_jets_pt(0),
+			b_jets_px(0),
+			b_jets_py(0),
+			b_jets_pz(0),
+			b_jets_status(0),
+			b_jets_theta(0),
+			b_jets_parton_Id(0),
+			b_jets_parton_motherId(0),
+			b_jets_parton_pt(0),
+			b_jets_parton_phi(0),
+			b_jets_parton_eta(0),
+			b_jets_parton_Energy(0),
+			b_jets_parton_mass(0),
+			b_jets_parton_motherID(0),
+			b_jets_gen_et(0),
+			b_jets_gen_pt(0),
+			b_jets_gen_eta(0),
+			b_jets_gen_phi(0),
+			b_jets_gen_mass(0),
+			b_jets_gen_Energy(0),
+			b_jets_gen_Id(0),
+			b_jets_gen_motherID(0),
+			b_jets_gen_threeCharge(0),
+			b_jets_partonFlavour(0),
+			b_jets_btag_TC_highPur(0),
+			b_jets_btag_TC_highEff(0),
+			b_jets_btag_jetProb(0),
+			b_jets_btag_jetBProb(0),
+//			b_jets_btag_softEle(0),
+//			b_jets_btag_softMuon(0),
+//			b_jets_btag_softMuonNoIP(0),
+			b_jets_btag_secVertex(0),
+			b_jets_chgEmE(0),
+			b_jets_chgHadE(0),
+			b_jets_chgMuE(0),
+			b_jets_chg_Mult(0),
+			b_jets_neutralEmE(0),
+			b_jets_neutralHadE(0),
+			b_jets_neutral_Mult(0),
+			b_jets_mu_Mult(0),
+			b_jets_emf(0),
+			b_jets_ehf(0),
+			b_jets_n60(0),
+			b_jets_n90(0),
+			b_jets_area(0),
+			b_jets_mass(0),
+
+			b_NjetsKT4(0),
+			b_jetsKT4_energy(0),
+			b_jetsKT4_et(0),
+			b_jetsKT4_eta(0),
+			b_jetsKT4_phi(0),
+			b_jetsKT4_pt(0),
+			b_jetsKT4_px(0),
+			b_jetsKT4_py(0),
+			b_jetsKT4_pz(0),
+			b_jetsKT4_status(0),
+			b_jetsKT4_theta(0),
+			b_jetsKT4_btag_TC_highPur(0),
+			b_jetsKT4_btag_TC_highEff(0),
+			b_jetsKT4_btag_jetProb(0),
+			b_jetsKT4_btag_jetBProb(0),
+//			b_jetsKT4_btag_softEle(0),
+//			b_jetsKT4_btag_softMuon(0),
+//			b_jetsKT4_btag_softMuonNoIP(0),
+			b_jetsKT4_btag_secVertex(0),
+			b_jetsKT4_chgEmE(0),
+			b_jetsKT4_chgHadE(0),
+			b_jetsKT4_chgMuE(0),
+			b_jetsKT4_chg_Mult(0),
+			b_jetsKT4_neutralEmE(0),
+			b_jetsKT4_neutralHadE(0),
+			b_jetsKT4_neutral_Mult(0),
+			b_jetsKT4_mu_Mult(0),
+			b_jetsKT4_emf(0),
+			b_jetsKT4_ehf(0),
+			b_jetsKT4_n60(0),
+			b_jetsKT4_n90(0),
+			b_jetsKT4_area(0),
+			b_jetsKT4_mass(0),
+
+			///3099
+			b_NjetsSC5(0),
+			b_jetsSC5_energy(0),
+			b_jetsSC5_et(0),
+			b_jetsSC5_eta(0),
+			b_jetsSC5_phi(0),
+			b_jetsSC5_pt(0),
+			b_jetsSC5_px(0),
+			b_jetsSC5_py(0),
+			b_jetsSC5_pz(0),
+			b_jetsSC5_status(0),
+			b_jetsSC5_theta(0),
+			b_jetsSC5_btag_TC_highPur(0),
+			b_jetsSC5_btag_TC_highEff(0),
+			b_jetsSC5_btag_jetProb(0),
+			b_jetsSC5_btag_jetBProb(0),
+//			b_jetsSC5_btag_softEle(0),
+//			b_jetsSC5_btag_softMuon(0),
+//			b_jetsSC5_btag_softMuonNoIP(0),
+			b_jetsSC5_btag_secVertex(0),
+			b_jetsSC5_chgEmE(0),
+			b_jetsSC5_chgHadE(0),
+			b_jetsSC5_chgMuE(0),
+			b_jetsSC5_chg_Mult(0),
+			b_jetsSC5_neutralEmE(0),
+			b_jetsSC5_neutralHadE(0),
+			b_jetsSC5_neutral_Mult(0),
+			b_jetsSC5_mu_Mult(0),
+			b_jetsSC5_emf(0),
+			b_jetsSC5_ehf(0),
+			b_jetsSC5_n60(0),
+			b_jetsSC5_n90(0),
+			b_jetsSC5_area(0),
+			b_jetsSC5_mass(0),
+
+			b_Nmc_doc(0),
+			b_mc_doc_id(0),
+			b_mc_doc_pt(0),
+			b_mc_doc_px(0),
+			b_mc_doc_py(0),
+			b_mc_doc_pz(0),
+			b_mc_doc_eta(0),
+			b_mc_doc_phi(0),
+			b_mc_doc_theta(0),
+			b_mc_doc_energy(0),
+			b_mc_doc_status(0),
+			b_mc_doc_charge(0),
+			b_mc_doc_mother_id(0),
+			b_mc_doc_grandmother_id(0),
+			b_mc_doc_ggrandmother_id(0),
+			b_mc_doc_mother_pt(0),
+			b_mc_doc_vertex_x(0),
+			b_mc_doc_vertex_y(0),
+			b_mc_doc_vertex_z(0),
+			b_mc_doc_mass(0),
+			b_mc_doc_numOfDaughters(0),
+			b_mc_doc_numOfMothers(0),
+			b_Nmets(0),
+			b_mets_et(0),
+			b_mets_phi(0),
+			b_mets_ex(0),
+			b_mets_ey(0),
+			b_mets_gen_et(0),
+			b_mets_gen_phi(0),
+			b_mets_sign(0),
+			b_mets_sumEt(0),
+			b_mets_unCPhi(0),
+			b_mets_unCPt(0),
+			b_mets_et_muonCor(0),
+			b_mets_phi_muonCor(0),
+			b_mets_et_JESCor(0),
+			b_mets_phi_JESCor(0),
+
+			//3099
+			b_NmetsKT4(0), b_metsKT4_et(0), b_metsKT4_phi(0), b_metsKT4_ex(0), b_metsKT4_ey(0), b_metsKT4_sumEt(0),
+			b_metsKT4_et_JESCor(0), b_metsKT4_phi_JESCor(0), b_NmetsSC5(0), b_metsSC5_et(0), b_metsSC5_phi(0),
+			b_metsSC5_ex(0), b_metsSC5_ey(0), b_metsSC5_sign(0), b_metsSC5_sumEt(0), b_metsSC5_et_JESCor(0),
+			b_metsSC5_phi_JESCor(0),
+
+			b_Nmus(0), b_mus_energy(0), b_mus_et(0), b_mus_eta(0), b_mus_phi(0), b_mus_pt(0), b_mus_px(0), b_mus_py(0),
+			b_mus_pz(0), b_mus_status(0), b_mus_theta(0), b_mus_gen_id(0), b_mus_gen_phi(0), b_mus_gen_pt(0),
+			b_mus_gen_pz(0), b_mus_gen_px(0), b_mus_gen_py(0), b_mus_gen_eta(0), b_mus_gen_theta(0), b_mus_gen_et(0),
+			b_mus_gen_mother_id(0), b_mus_gen_mother_phi(0), b_mus_gen_mother_pt(0), b_mus_gen_mother_pz(0),
+			b_mus_gen_mother_px(0), b_mus_gen_mother_py(0), b_mus_gen_mother_eta(0), b_mus_gen_mother_theta(0),
+			b_mus_gen_mother_et(0), b_mus_tkHits(0), b_mus_cIso(0), b_mus_tIso(0), b_mus_ecalIso(0), b_mus_hcalIso(0),
+			b_mus_ecalvetoDep(0), b_mus_hcalvetoDep(0), b_mus_calEnergyEm(0), b_mus_calEnergyHad(0), b_mus_calEnergyHo(
+					0), b_mus_calEnergyEmS9(0), b_mus_calEnergyHadS9(0), b_mus_calEnergyHoS9(0), b_mus_iso03_sumPt(0),
+			b_mus_iso03_emEt(0), b_mus_iso03_hadEt(0), b_mus_iso03_hoEt(0), b_mus_iso03_nTracks(0),
+			b_mus_iso05_sumPt(0), b_mus_iso05_emEt(0), b_mus_iso05_hadEt(0), b_mus_iso05_hoEt(0),
+			b_mus_iso05_nTracks(0), b_mus_charge(0), b_mus_cm_chi2(0), b_mus_cm_ndof(0), b_mus_cm_chg(0),
+			b_mus_cm_pt(0), b_mus_cm_px(0), b_mus_cm_py(0), b_mus_cm_pz(0), b_mus_cm_eta(0), b_mus_cm_phi(0),
+			b_mus_cm_theta(0), b_mus_cm_d0dum(0), b_mus_cm_dz(0), b_mus_cm_vx(0), b_mus_cm_vy(0), b_mus_cm_vz(0),
+			b_mus_cm_numvalhits(0), b_mus_cm_numlosthits(0), b_mus_cm_d0dumErr(0), b_mus_cm_dzErr(0),
+			b_mus_cm_ptErr(0), b_mus_cm_etaErr(0), b_mus_cm_phiErr(0), b_mus_tk_chi2(0), b_mus_tk_ndof(0),
+			b_mus_tk_chg(0), b_mus_tk_pt(0), b_mus_tk_px(0), b_mus_tk_py(0), b_mus_tk_pz(0), b_mus_tk_eta(0),
+			b_mus_tk_phi(0), b_mus_tk_theta(0), b_mus_tk_d0dum(0), b_mus_tk_dz(0), b_mus_tk_vx(0), b_mus_tk_vy(0),
+			b_mus_tk_vz(0), b_mus_tk_numvalhits(0), b_mus_tk_numlosthits(0), b_mus_tk_d0dumErr(0), b_mus_tk_dzErr(0),
+			b_mus_tk_ptErr(0), b_mus_tk_etaErr(0), b_mus_tk_phiErr(0), b_mus_stamu_chi2(0), b_mus_stamu_ndof(0),
+			b_mus_stamu_chg(0), b_mus_stamu_pt(0), b_mus_stamu_px(0), b_mus_stamu_py(0), b_mus_stamu_pz(0),
+			b_mus_stamu_eta(0), b_mus_stamu_phi(0), b_mus_stamu_theta(0), b_mus_stamu_d0dum(0), b_mus_stamu_dz(0),
+			b_mus_stamu_vx(0), b_mus_stamu_vy(0), b_mus_stamu_vz(0), b_mus_stamu_numvalhits(0),
+			b_mus_stamu_numlosthits(0), b_mus_stamu_d0dumErr(0), b_mus_stamu_dzErr(0), b_mus_stamu_ptErr(0),
+			b_mus_stamu_etaErr(0), b_mus_stamu_phiErr(0), b_mus_num_matches(0), b_mus_id_All(0),
+			b_mus_id_AllGlobalMuons(0), b_mus_id_AllStandAloneMuons(0), b_mus_id_AllTrackerMuons(0),
+			b_mus_id_TrackerMuonArbitrated(0), b_mus_id_AllArbitrated(0), b_mus_id_GlobalMuonPromptTight(0),
+			b_mus_id_TMLastStationLoose(0), b_mus_id_TMLastStationTight(0), b_mus_id_TM2DCompatibilityLoose(0),
+			b_mus_id_TM2DCompatibilityTight(0), b_mus_id_TMOneStationLoose(0), b_mus_id_TMOneStationTight(0),
+			b_mus_id_TMLastStationOptimizedLowPtLoose(0), b_mus_id_TMLastStationOptimizedLowPtTight(0), b_Nphotons(0),
+			b_photons_energy(0), b_photons_et(0), b_photons_eta(0), b_photons_phi(0), b_photons_pt(0), b_photons_px(0),
+			b_photons_py(0), b_photons_pz(0), b_photons_status(0), b_photons_theta(0), b_photons_hadOverEM(0),
+			b_photons_scEnergy(0), b_photons_scRawEnergy(0), b_photons_scEta(0), b_photons_scPhi(0),
+			b_photons_scEtaWidth(0), b_photons_scPhiWidth(0), b_photons_tIso(0), b_photons_ecalIso(0),
+			b_photons_hcalIso(0), b_photons_isoEcalRecHitDR04(0), b_photons_isoHcalRecHitDR04(0),
+			b_photons_isoSolidTrkConeDR04(0), b_photons_isoHollowTrkConeDR04(0), b_photons_nTrkSolidConeDR04(0),
+			b_photons_nTrkHollowConeDR04(0), b_photons_isoEcalRecHitDR03(0), b_photons_isoHcalRecHitDR03(0),
+			b_photons_isoSolidTrkConeDR03(0), b_photons_isoHollowTrkConeDR03(0), b_photons_nTrkSolidConeDR03(0),
+			b_photons_nTrkHollowConeDR03(0), b_photons_isAlsoElectron(0), b_photons_hasPixelSeed(0),
+			b_photons_isConverted(0), b_photons_isEBGap(0), b_photons_isEEGap(0), b_photons_isEBEEGap(0),
+			b_photons_isEBPho(0), b_photons_isEEPho(0), b_photons_isLoosePhoton(0), b_photons_isTightPhoton(0),
+			b_photons_r9(0), b_photons_gen_et(0), b_photons_gen_eta(0), b_photons_gen_phi(0), b_photons_gen_id(0),
+			b_Npv(0), b_pv_x(0), b_pv_y(0), b_pv_z(0), b_pv_xErr(0), b_pv_yErr(0), b_pv_zErr(0), b_Ntcmets(0),
+			b_tcmets_et(0), b_tcmets_phi(0), b_tcmets_ex(0), b_tcmets_ey(0), b_tcmets_sumEt(0), b_tcmets_et_muonCor(0),
+			b_tcmets_phi_muonCor(0), b_Ntracks(0), b_tracks_chi2(0), b_tracks_ndof(0), b_tracks_chg(0), b_tracks_pt(0),
+			b_tracks_px(0), b_tracks_py(0), b_tracks_pz(0), b_tracks_eta(0), b_tracks_phi(0), b_tracks_theta(0),
+			b_tracks_d0dum(0), b_tracks_dz(0), b_tracks_vx(0), b_tracks_vy(0), b_tracks_vz(0), b_tracks_numvalhits(0),
+			b_tracks_numlosthits(0), b_tracks_d0dumErr(0), b_tracks_dzErr(0), b_tracks_ptErr(0), b_tracks_etaErr(0),
+			b_tracks_phiErr(0), b_tracks_Nrechits(0), b_tracks_innerHitX(0), b_tracks_innerHitY(0), b_tracks_innerHitZ(
+					0), b_tracks_outerHitX(0), b_tracks_outerHitY(0), b_tracks_outerHitZ(0), b_tracks_highPurity(0),
+			b_tracks_innerLayerMissingHits(0), b_run(0), b_event(0), b_lumiBlock(0),
+
+			HLT_Ele10_LW_EleId_L1R(0), HLT_Ele10_SW_L1R(0), HLT_Ele15_LW_L1R(0), HLT_Ele15_SC10_LW_L1R(0),
+			HLT_Ele15_SW_L1R(0), HLT_Ele15_SiStrip_L1R(0), HLT_Ele20_LW_L1R(0),
+
+			b_HLT_Ele10_LW_EleId_L1R(0), b_HLT_Ele10_SW_L1R(0), b_HLT_Ele15_LW_L1R(0), b_HLT_Ele15_SC10_LW_L1R(0),
+			b_HLT_Ele15_SW_L1R(0), b_HLT_Ele15_SiStrip_L1R(0), b_HLT_Ele20_LW_L1R(0),
+
+			PDFWcteq66_0(0), PDFWcteq66_1(0), PDFWcteq66_2(0), PDFWcteq66_3(0), PDFWcteq66_4(0), PDFWcteq66_5(0),
+			PDFWcteq66_6(0), PDFWcteq66_7(0), PDFWcteq66_8(0), PDFWcteq66_9(0), PDFWcteq66_10(0), PDFWcteq66_11(0),
+			PDFWcteq66_12(0), PDFWcteq66_13(0), PDFWcteq66_14(0), PDFWcteq66_15(0), PDFWcteq66_16(0), PDFWcteq66_17(0),
+			PDFWcteq66_18(0), PDFWcteq66_19(0), PDFWcteq66_20(0), PDFWcteq66_21(0), PDFWcteq66_22(0), PDFWcteq66_23(0),
+			PDFWcteq66_24(0), PDFWcteq66_25(0), PDFWcteq66_26(0), PDFWcteq66_27(0), PDFWcteq66_28(0), PDFWcteq66_29(0),
+			PDFWcteq66_30(0), PDFWcteq66_31(0), PDFWcteq66_32(0), PDFWcteq66_33(0), PDFWcteq66_34(0), PDFWcteq66_35(0),
+			PDFWcteq66_36(0), PDFWcteq66_37(0), PDFWcteq66_38(0), PDFWcteq66_39(0), PDFWcteq66_40(0), PDFWcteq66_41(0),
+			PDFWcteq66_42(0), PDFWcteq66_43(0), PDFWcteq66_44(0),
+
+			b_PDFWcteq66_0(0), b_PDFWcteq66_1(0), b_PDFWcteq66_2(0), b_PDFWcteq66_3(0), b_PDFWcteq66_4(0),
+			b_PDFWcteq66_5(0), b_PDFWcteq66_6(0), b_PDFWcteq66_7(0), b_PDFWcteq66_8(0), b_PDFWcteq66_9(0),
+			b_PDFWcteq66_10(0), b_PDFWcteq66_11(0), b_PDFWcteq66_12(0), b_PDFWcteq66_13(0), b_PDFWcteq66_14(0),
+			b_PDFWcteq66_15(0), b_PDFWcteq66_16(0), b_PDFWcteq66_17(0), b_PDFWcteq66_18(0), b_PDFWcteq66_19(0),
+			b_PDFWcteq66_20(0), b_PDFWcteq66_21(0), b_PDFWcteq66_22(0), b_PDFWcteq66_23(0), b_PDFWcteq66_24(0),
+			b_PDFWcteq66_25(0), b_PDFWcteq66_26(0), b_PDFWcteq66_27(0), b_PDFWcteq66_28(0), b_PDFWcteq66_29(0),
+			b_PDFWcteq66_30(0), b_PDFWcteq66_31(0), b_PDFWcteq66_32(0), b_PDFWcteq66_33(0), b_PDFWcteq66_34(0),
+			b_PDFWcteq66_35(0), b_PDFWcteq66_36(0), b_PDFWcteq66_37(0), b_PDFWcteq66_38(0), b_PDFWcteq66_39(0),
+			b_PDFWcteq66_40(0), b_PDFWcteq66_41(0), b_PDFWcteq66_42(0), b_PDFWcteq66_43(0), b_PDFWcteq66_44(0),
+
+			datafile(true), m_useMisslayers(false), checkTrig(true), m_studyPDFunc(false), debug_flag(false),
+			m_jetAlgo("Default") {
 }
 
 bool NTupleReader::IsData() const {
 	return datafile;
 }
 
+bool NTupleReader::GetDebug() const {
+	return this->debug_flag;
+}
+
+std::string NTupleReader::GetHLTBit() const {
+	return HLTBit;
+}
+
+std::string NTupleReader::GetJetAlgorithm() const {
+	return this->m_jetAlgo;
+}
+
+std::string NTupleReader::GetMETAlgorithm() const {
+	return this->m_metAlgo;
+}
+
+bool NTupleReader::GetMissLayersFlag() const {
+	return m_useMisslayers;
+}
+
+bool NTupleReader::GetStudyPDFunc() const {
+	return m_studyPDFunc;
+}
 bool NTupleReader::GetTrigger() const {
 	return checkTrig;
+}
+
+void NTupleReader::SetData(bool f) {
+	this->datafile = f;
+}
+void NTupleReader::SetDebug(bool val) {
+	this->debug_flag = val;
+}
+
+void NTupleReader::SetHLTBit(std::string bit) {
+	HLTBit = bit;
+}
+
+void NTupleReader::SetJetAlgo(std::string val) {
+	m_jetAlgo = val;
+}
+void NTupleReader::SetMETAlgo(std::string val) {
+	m_metAlgo = val;
+}
+void NTupleReader::SetStudyPDFunc(bool f) {
+	m_studyPDFunc = f;
 }
 
 void NTupleReader::SetTrigger(bool val) {
 	checkTrig = val;
 }
 
-void NTupleReader::SetTrigger(bool val, const string hlt) {
+void NTupleReader::SetTrigger(bool val, const std::string hlt) {
 	checkTrig = val;
 	HLTBit = hlt;
 }
 
-bool NTupleReader::GetMissLayersFlag() {
-	return m_useMisslayers;
-}
-
-void NTupleReader::SetMissLayersFlag(bool val) {
+//switch to preclue missing layers as these are not in 314 data samples
+void NTupleReader::UseMissLayers(bool val) {
 	m_useMisslayers = val;
 }
-
-bool NTupleReader::GetStudyPDFunc() {
-	return m_studyPDFunc;
-}
-void NTupleReader::SetStudyPDFunc(bool f) {
-	m_studyPDFunc = f;
-}
-
-string NTupleReader::GetHLTBit() {
-	return HLTBit;
-}
-
-void NTupleReader::SetHLTBit(string bit) {
-	HLTBit = bit;
-}
-
 void NTupleReader::Init() {
 
-	cout << "\n Initializing tree branches\n" << endl;
-
-	// Set object pointer (v3)
-	PFJets_energy = 0;
-	PFJets_et = 0;
-	PFJets_eta = 0;
-	PFJets_phi = 0;
-	PFJets_pt = 0;
-	PFJets_px = 0;
-	PFJets_py = 0;
-	PFJets_pz = 0;
-	PFJets_status = 0;
-	PFJets_theta = 0;
-	PFJets_chgEmE = 0;
-	PFJets_chgHadE = 0;
-	PFJets_chgMuE = 0;
-	PFJets_chg_Mult = 0;
-	PFJets_neutralEmE = 0;
-	PFJets_neutralHadE = 0;
-	PFJets_neutral_Mult = 0;
-	PFJets_mu_Mult = 0;
-	PFJets_mass = 0;
-	PFMets_et = 0;
-	PFMets_phi = 0;
-	PFMets_ex = 0;
-	PFMets_ey = 0;
-	PFMets_sumEt = 0;
-	beamSpot_x = 0;
-	beamSpot_y = 0;
-	beamSpot_z = 0;
-	beamSpot_x0Error = 0;
-	beamSpot_y0Error = 0;
-	beamSpot_z0Error = 0;
-	beamSpot_sigmaZ = 0;
-	beamSpot_sigmaZ0Error = 0;
-	beamSpot_dxdz = 0;
-	beamSpot_dxdzError = 0;
-	beamSpot_dydz = 0;
-	beamSpot_dydzError = 0;
-	beamSpot_beamWidthX = 0;
-	beamSpot_beamWidthY = 0;
-	beamSpot_beamWidthXError = 0;
-	beamSpot_beamWidthYError = 0;
-	els_energy = 0;
-	els_et = 0;
-	els_eta = 0;
-	els_phi = 0;
-	els_pt = 0;
-	els_px = 0;
-	els_py = 0;
-	els_pz = 0;
-	els_status = 0;
-	els_theta = 0;
-	els_closestCtfTrackRef = 0;
-	els_isEcalDriven = 0;
-	els_isTrackerDriven = 0;
-	els_dr03EcalRecHitSumEt = 0;
-	els_dr04EcalRecHitSumEt = 0;
-	els_dr03HcalTowerSumEt = 0;
-	els_dr04HcalTowerSumEt = 0;
-	els_gen_id = 0;
-	els_gen_phi = 0;
-	els_gen_pt = 0;
-	els_gen_pz = 0;
-	els_gen_px = 0;
-	els_gen_py = 0;
-	els_gen_eta = 0;
-	els_gen_theta = 0;
-	els_gen_et = 0;
-	els_gen_mother_id = 0;
-	els_gen_mother_phi = 0;
-	els_gen_mother_pt = 0;
-	els_gen_mother_pz = 0;
-	els_gen_mother_px = 0;
-	els_gen_mother_py = 0;
-	els_gen_mother_eta = 0;
-	els_gen_mother_theta = 0;
-	els_gen_mother_et = 0;
-	els_tightId = 0;
-	els_looseId = 0;
-	els_robustTightId = 0;
-	els_robustLooseId = 0;
-	els_robustHighEnergyId = 0;
-	els_cIso = 0;
-	els_tIso = 0;
-	els_ecalIso = 0;
-	els_hcalIso = 0;
-	els_chi2 = 0;
-	els_charge = 0;
-	els_caloEnergy = 0;
-	els_hadOverEm = 0;
-	els_eOverPIn = 0;
-	els_eSeedOverPOut = 0;
-	els_eSCraw = 0;
-	els_eSeed = 0;
-	els_sigmaEtaEta = 0;
-	els_sigmaIEtaIEta = 0;
-	els_scE1x5 = 0;
-	els_scE2x5Max = 0;
-	els_scE5x5 = 0;
-	els_dEtaIn = 0;
-	els_dPhiIn = 0;
-	els_dEtaOut = 0;
-	els_dPhiOut = 0;
-	els_numvalhits = 0;
-	els_numlosthits = 0;
-	els_basicClustersSize = 0;
-	els_tk_pt = 0;
-	els_tk_phi = 0;
-	els_tk_eta = 0;
-	els_tk_charge = 0;
-	els_tk_theta = 0;
-	els_shFracInnerHits = 0;
-	els_d0dum = 0;
-	els_dz = 0;
-	els_vx = 0;
-	els_vy = 0;
-	els_vz = 0;
-	els_ndof = 0;
-	els_ptError = 0;
-	els_d0dumError = 0;
-	els_dzError = 0;
-	els_etaError = 0;
-	els_phiError = 0;
-	els_cpx = 0;
-	els_cpy = 0;
-	els_cpz = 0;
-	els_vpx = 0;
-	els_vpy = 0;
-	els_vpz = 0;
-	els_cx = 0;
-	els_cy = 0;
-	els_cz = 0;
-	els_isEE = 0;
-	els_isEEGap = 0;
-	els_isEB = 0;
-	els_isEBGap = 0;
-	els_isConvertedPhoton = 0;
-	els_innerLayerMissingHits = 0;
-	jets_energy = 0;
-	jets_et = 0;
-	jets_eta = 0;
-	jets_phi = 0;
-	jets_pt = 0;
-	jets_px = 0;
-	jets_py = 0;
-	jets_pz = 0;
-	jets_status = 0;
-	jets_theta = 0;
-	jets_parton_Id = 0;
-	jets_parton_motherId = 0;
-	jets_parton_pt = 0;
-	jets_parton_phi = 0;
-	jets_parton_eta = 0;
-	jets_parton_Energy = 0;
-	jets_parton_mass = 0;
-	jets_parton_motherID = 0;
-	jets_gen_et = 0;
-	jets_gen_pt = 0;
-	jets_gen_eta = 0;
-	jets_gen_phi = 0;
-	jets_gen_mass = 0;
-	jets_gen_Energy = 0;
-	jets_gen_Id = 0;
-	jets_gen_motherID = 0;
-	jets_gen_threeCharge = 0;
-	jets_partonFlavour = 0;
-	jets_btag_TC_highPur = 0;
-	jets_btag_TC_highEff = 0;
-	jets_btag_jetProb = 0;
-	jets_btag_jetBProb = 0;
-	jets_btag_softEle = 0;
-	jets_btag_softMuon = 0;
-	jets_btag_softMuonNoIP = 0;
-	jets_btag_secVertex = 0;
-	jets_chgEmE = 0;
-	jets_chgHadE = 0;
-	jets_chgMuE = 0;
-	jets_chg_Mult = 0;
-	jets_neutralEmE = 0;
-	jets_neutralHadE = 0;
-	jets_neutral_Mult = 0;
-	jets_mu_Mult = 0;
-	jets_emf = 0;
-	jets_ehf = 0;
-	jets_n60 = 0;
-	jets_n90 = 0;
-	jets_area = 0;
-	jets_mass = 0;
-
-	jetsKT4_energy = 0;
-	jetsKT4_et = 0;
-	jetsKT4_eta = 0;
-	jetsKT4_phi = 0;
-	jetsKT4_pt = 0;
-	jetsKT4_px = 0;
-	jetsKT4_py = 0;
-	jetsKT4_pz = 0;
-	jetsKT4_status = 0;
-	jetsKT4_theta = 0;
-	jetsKT4_btag_TC_highPur = 0;
-	jetsKT4_btag_TC_highEff = 0;
-	jetsKT4_btag_jetProb = 0;
-	jetsKT4_btag_jetBProb = 0;
-	jetsKT4_btag_softEle = 0;
-	jetsKT4_btag_softMuon = 0;
-	jetsKT4_btag_softMuonNoIP = 0;
-	jetsKT4_btag_secVertex = 0;
-	jetsKT4_chgEmE = 0;
-	jetsKT4_chgHadE = 0;
-	jetsKT4_chgMuE = 0;
-	jetsKT4_chg_Mult = 0;
-	jetsKT4_neutralEmE = 0;
-	jetsKT4_neutralHadE = 0;
-	jetsKT4_neutral_Mult = 0;
-	jetsKT4_mu_Mult = 0;
-	jetsKT4_emf = 0;
-	jetsKT4_ehf = 0;
-	jetsKT4_n60 = 0;
-	jetsKT4_n90 = 0;
-	jetsKT4_area = 0;
-	jetsKT4_mass = 0;
-
-	jetsSC5_energy = 0;
-	jetsSC5_et = 0;
-	jetsSC5_eta = 0;
-	jetsSC5_phi = 0;
-	jetsSC5_pt = 0;
-	jetsSC5_px = 0;
-	jetsSC5_py = 0;
-	jetsSC5_pz = 0;
-	jetsSC5_status = 0;
-	jetsSC5_theta = 0;
-	jetsSC5_btag_TC_highPur = 0;
-	jetsSC5_btag_TC_highEff = 0;
-	jetsSC5_btag_jetProb = 0;
-	jetsSC5_btag_jetBProb = 0;
-	jetsSC5_btag_softEle = 0;
-	jetsSC5_btag_softMuon = 0;
-	jetsSC5_btag_softMuonNoIP = 0;
-	jetsSC5_btag_secVertex = 0;
-	jetsSC5_chgEmE = 0;
-	jetsSC5_chgHadE = 0;
-	jetsSC5_chgMuE = 0;
-	jetsSC5_chg_Mult = 0;
-	jetsSC5_neutralEmE = 0;
-	jetsSC5_neutralHadE = 0;
-	jetsSC5_neutral_Mult = 0;
-	jetsSC5_mu_Mult = 0;
-	jetsSC5_emf = 0;
-	jetsSC5_ehf = 0;
-	jetsSC5_n60 = 0;
-	jetsSC5_n90 = 0;
-	jetsSC5_area = 0;
-	jetsSC5_mass = 0;
-	mc_doc_id = 0;
-	mc_doc_pt = 0;
-	mc_doc_px = 0;
-	mc_doc_py = 0;
-	mc_doc_pz = 0;
-	mc_doc_eta = 0;
-	mc_doc_phi = 0;
-	mc_doc_theta = 0;
-	mc_doc_energy = 0;
-	mc_doc_status = 0;
-	mc_doc_charge = 0;
-	mc_doc_mother_id = 0;
-	mc_doc_grandmother_id = 0;
-	mc_doc_ggrandmother_id = 0;
-	mc_doc_mother_pt = 0;
-	mc_doc_vertex_x = 0;
-	mc_doc_vertex_y = 0;
-	mc_doc_vertex_z = 0;
-	mc_doc_mass = 0;
-	mc_doc_numOfDaughters = 0;
-	mc_doc_numOfMothers = 0;
-	mets_et = 0;
-	mets_phi = 0;
-	mets_ex = 0;
-	mets_ey = 0;
-	mets_gen_et = 0;
-	mets_gen_phi = 0;
-	mets_sign = 0;
-	mets_sumEt = 0;
-	mets_unCPhi = 0;
-	mets_unCPt = 0;
-	mets_et_muonCor = 0;
-	mets_phi_muonCor = 0;
-	mets_et_JESCor = 0;
-	mets_phi_JESCor = 0;
-	metsKT4_et = 0;
-	metsKT4_phi = 0;
-	metsKT4_ex = 0;
-	metsKT4_ey = 0;
-	metsKT4_sumEt = 0;
-	metsKT4_et_JESCor = 0;
-	metsKT4_phi_JESCor = 0;
-	metsSC5_et = 0;
-	metsSC5_phi = 0;
-	metsSC5_ex = 0;
-	metsSC5_ey = 0;
-	metsSC5_sumEt = 0;
-	metsSC5_et_JESCor = 0;
-	metsSC5_phi_JESCor = 0;
-	mus_energy = 0;
-	mus_et = 0;
-	mus_eta = 0;
-	mus_phi = 0;
-	mus_pt = 0;
-	mus_px = 0;
-	mus_py = 0;
-	mus_pz = 0;
-	mus_status = 0;
-	mus_theta = 0;
-	mus_gen_id = 0;
-	mus_gen_phi = 0;
-	mus_gen_pt = 0;
-	mus_gen_pz = 0;
-	mus_gen_px = 0;
-	mus_gen_py = 0;
-	mus_gen_eta = 0;
-	mus_gen_theta = 0;
-	mus_gen_et = 0;
-	mus_gen_mother_id = 0;
-	mus_gen_mother_phi = 0;
-	mus_gen_mother_pt = 0;
-	mus_gen_mother_pz = 0;
-	mus_gen_mother_px = 0;
-	mus_gen_mother_py = 0;
-	mus_gen_mother_eta = 0;
-	mus_gen_mother_theta = 0;
-	mus_gen_mother_et = 0;
-	mus_tkHits = 0;
-	mus_cIso = 0;
-	mus_tIso = 0;
-	mus_ecalIso = 0;
-	mus_hcalIso = 0;
-	mus_ecalvetoDep = 0;
-	mus_hcalvetoDep = 0;
-	mus_calEnergyEm = 0;
-	mus_calEnergyHad = 0;
-	mus_calEnergyHo = 0;
-	mus_calEnergyEmS9 = 0;
-	mus_calEnergyHadS9 = 0;
-	mus_calEnergyHoS9 = 0;
-	mus_iso03_sumPt = 0;
-	mus_iso03_emEt = 0;
-	mus_iso03_hadEt = 0;
-	mus_iso03_hoEt = 0;
-	mus_iso03_nTracks = 0;
-	mus_iso05_sumPt = 0;
-	mus_iso05_emEt = 0;
-	mus_iso05_hadEt = 0;
-	mus_iso05_hoEt = 0;
-	mus_iso05_nTracks = 0;
-	mus_charge = 0;
-	mus_cm_chi2 = 0;
-	mus_cm_ndof = 0;
-	mus_cm_chg = 0;
-	mus_cm_pt = 0;
-	mus_cm_px = 0;
-	mus_cm_py = 0;
-	mus_cm_pz = 0;
-	mus_cm_eta = 0;
-	mus_cm_phi = 0;
-	mus_cm_theta = 0;
-	mus_cm_d0dum = 0;
-	mus_cm_dz = 0;
-	mus_cm_vx = 0;
-	mus_cm_vy = 0;
-	mus_cm_vz = 0;
-	mus_cm_numvalhits = 0;
-	mus_cm_numlosthits = 0;
-	mus_cm_d0dumErr = 0;
-	mus_cm_dzErr = 0;
-	mus_cm_ptErr = 0;
-	mus_cm_etaErr = 0;
-	mus_cm_phiErr = 0;
-	mus_tk_chi2 = 0;
-	mus_tk_ndof = 0;
-	mus_tk_chg = 0;
-	mus_tk_pt = 0;
-	mus_tk_px = 0;
-	mus_tk_py = 0;
-	mus_tk_pz = 0;
-	mus_tk_eta = 0;
-	mus_tk_phi = 0;
-	mus_tk_theta = 0;
-	mus_tk_d0dum = 0;
-	mus_tk_dz = 0;
-	mus_tk_vx = 0;
-	mus_tk_vy = 0;
-	mus_tk_vz = 0;
-	mus_tk_numvalhits = 0;
-	mus_tk_numlosthits = 0;
-	mus_tk_d0dumErr = 0;
-	mus_tk_dzErr = 0;
-	mus_tk_ptErr = 0;
-	mus_tk_etaErr = 0;
-	mus_tk_phiErr = 0;
-	mus_stamu_chi2 = 0;
-	mus_stamu_ndof = 0;
-	mus_stamu_chg = 0;
-	mus_stamu_pt = 0;
-	mus_stamu_px = 0;
-	mus_stamu_py = 0;
-	mus_stamu_pz = 0;
-	mus_stamu_eta = 0;
-	mus_stamu_phi = 0;
-	mus_stamu_theta = 0;
-	mus_stamu_d0dum = 0;
-	mus_stamu_dz = 0;
-	mus_stamu_vx = 0;
-	mus_stamu_vy = 0;
-	mus_stamu_vz = 0;
-	mus_stamu_numvalhits = 0;
-	mus_stamu_numlosthits = 0;
-	mus_stamu_d0dumErr = 0;
-	mus_stamu_dzErr = 0;
-	mus_stamu_ptErr = 0;
-	mus_stamu_etaErr = 0;
-	mus_stamu_phiErr = 0;
-	mus_num_matches = 0;
-	mus_id_All = 0;
-	mus_id_AllGlobalMuons = 0;
-	mus_id_AllStandAloneMuons = 0;
-	mus_id_AllTrackerMuons = 0;
-	mus_id_TrackerMuonArbitrated = 0;
-	mus_id_AllArbitrated = 0;
-	mus_id_GlobalMuonPromptTight = 0;
-	mus_id_TMLastStationLoose = 0;
-	mus_id_TMLastStationTight = 0;
-	mus_id_TM2DCompatibilityLoose = 0;
-	mus_id_TM2DCompatibilityTight = 0;
-	mus_id_TMOneStationLoose = 0;
-	mus_id_TMOneStationTight = 0;
-	mus_id_TMLastStationOptimizedLowPtLoose = 0;
-	mus_id_TMLastStationOptimizedLowPtTight = 0;
-	photons_energy = 0;
-	photons_et = 0;
-	photons_eta = 0;
-	photons_phi = 0;
-	photons_pt = 0;
-	photons_px = 0;
-	photons_py = 0;
-	photons_pz = 0;
-	photons_status = 0;
-	photons_theta = 0;
-	photons_hadOverEM = 0;
-	photons_scEnergy = 0;
-	photons_scRawEnergy = 0;
-	photons_scEta = 0;
-	photons_scPhi = 0;
-	photons_scEtaWidth = 0;
-	photons_scPhiWidth = 0;
-	photons_tIso = 0;
-	photons_ecalIso = 0;
-	photons_hcalIso = 0;
-	photons_isoEcalRecHitDR04 = 0;
-	photons_isoHcalRecHitDR04 = 0;
-	photons_isoSolidTrkConeDR04 = 0;
-	photons_isoHollowTrkConeDR04 = 0;
-	photons_nTrkSolidConeDR04 = 0;
-	photons_nTrkHollowConeDR04 = 0;
-	photons_isoEcalRecHitDR03 = 0;
-	photons_isoHcalRecHitDR03 = 0;
-	photons_isoSolidTrkConeDR03 = 0;
-	photons_isoHollowTrkConeDR03 = 0;
-	photons_nTrkSolidConeDR03 = 0;
-	photons_nTrkHollowConeDR03 = 0;
-	photons_isAlsoElectron = 0;
-	photons_hasPixelSeed = 0;
-	photons_isConverted = 0;
-	photons_isEBGap = 0;
-	photons_isEEGap = 0;
-	photons_isEBEEGap = 0;
-	photons_isEBPho = 0;
-	photons_isEEPho = 0;
-	photons_isLoosePhoton = 0;
-	photons_isTightPhoton = 0;
-	photons_r9 = 0;
-	photons_gen_et = 0;
-	photons_gen_eta = 0;
-	photons_gen_phi = 0;
-	photons_gen_id = 0;
-	pv_x = 0;
-	pv_y = 0;
-	pv_z = 0;
-	pv_xErr = 0;
-	pv_yErr = 0;
-	pv_zErr = 0;
-	tcmets_et = 0;
-	tcmets_phi = 0;
-	tcmets_ex = 0;
-	tcmets_ey = 0;
-	tcmets_sumEt = 0;
-	tcmets_et_muonCor = 0;
-	tcmets_phi_muonCor = 0;
-	tracks_chi2 = 0;
-	tracks_ndof = 0;
-	tracks_chg = 0;
-	tracks_pt = 0;
-	tracks_px = 0;
-	tracks_py = 0;
-	tracks_pz = 0;
-	tracks_eta = 0;
-	tracks_phi = 0;
-	tracks_theta = 0;
-	tracks_d0dum = 0;
-	tracks_dz = 0;
-	tracks_vx = 0;
-	tracks_vy = 0;
-	tracks_vz = 0;
-	tracks_numvalhits = 0;
-	tracks_numlosthits = 0;
-	tracks_d0dumErr = 0;
-	tracks_dzErr = 0;
-	tracks_ptErr = 0;
-	tracks_etaErr = 0;
-	tracks_phiErr = 0;
-	tracks_Nrechits = 0;
-	tracks_innerHitX = 0;
-	tracks_innerHitY = 0;
-	tracks_innerHitZ = 0;
-	tracks_outerHitX = 0;
-	tracks_outerHitY = 0;
-	tracks_outerHitZ = 0;
-	tracks_highPurity = 0;
-	tracks_innerLayerMissingHits = 0;
+	std::cout << "\n Initializing tree branches\n" << std::endl;
 
 	// Set branch addresses and branch pointers
 	if (m_jetAlgo == "pfjet") {
-		chain->SetBranchAddress("NPFJets", &NPFJets, &b_NPFJets);
-		chain->SetBranchAddress("PFJets_energy", &PFJets_energy, &b_PFJets_energy);
-		chain->SetBranchAddress("PFJets_et", &PFJets_et, &b_PFJets_et);
-		chain->SetBranchAddress("PFJets_eta", &PFJets_eta, &b_PFJets_eta);
-		chain->SetBranchAddress("PFJets_phi", &PFJets_phi, &b_PFJets_phi);
-		chain->SetBranchAddress("PFJets_pt", &PFJets_pt, &b_PFJets_pt);
-		chain->SetBranchAddress("PFJets_px", &PFJets_px, &b_PFJets_px);
-		chain->SetBranchAddress("PFJets_py", &PFJets_py, &b_PFJets_py);
-		chain->SetBranchAddress("PFJets_pz", &PFJets_pz, &b_PFJets_pz);
-		chain->SetBranchAddress("PFJets_status", &PFJets_status, &b_PFJets_status);
-		chain->SetBranchAddress("PFJets_theta", &PFJets_theta, &b_PFJets_theta);
-		chain->SetBranchAddress("PFJets_chgEmE", &PFJets_chgEmE, &b_PFJets_chgEmE);
-		chain->SetBranchAddress("PFJets_chgHadE", &PFJets_chgHadE, &b_PFJets_chgHadE);
-		chain->SetBranchAddress("PFJets_chgMuE", &PFJets_chgMuE, &b_PFJets_chgMuE);
-		chain->SetBranchAddress("PFJets_chg_Mult", &PFJets_chg_Mult, &b_PFJets_chg_Mult);
-		chain->SetBranchAddress("PFJets_neutralEmE", &PFJets_neutralEmE, &b_PFJets_neutralEmE);
-		chain->SetBranchAddress("PFJets_neutralHadE", &PFJets_neutralHadE, &b_PFJets_neutralHadE);
-		chain->SetBranchAddress("PFJets_neutral_Mult", &PFJets_neutral_Mult, &b_PFJets_neutral_Mult);
-		chain->SetBranchAddress("PFJets_mu_Mult", &PFJets_mu_Mult, &b_PFJets_mu_Mult);
-		chain->SetBranchAddress("PFJets_mass", &PFJets_mass, &b_PFJets_mass);
-		chain->SetBranchAddress("PFJets_parton_Id", &PFJets_parton_Id, &b_PFJets_parton_Id);
-		chain->SetBranchAddress("PFJets_btag_TC_highPur", &PFJets_btag_TC_highPur, &b_PFJets_btag_TC_highPur);
-		chain->SetBranchAddress("PFJets_btag_TC_highEff", &PFJets_btag_TC_highEff, &b_PFJets_btag_TC_highEff);
-		chain->SetBranchAddress("PFJets_btag_jetProb", &PFJets_btag_jetProb, &b_PFJets_btag_jetProb);
-		chain->SetBranchAddress("PFJets_btag_jetBProb", &PFJets_btag_jetBProb, &b_PFJets_btag_jetBProb);
-		chain->SetBranchAddress("PFJets_btag_softEle", &PFJets_btag_softEle, &b_PFJets_btag_softEle);
-		chain->SetBranchAddress("PFJets_btag_softMuon", &PFJets_btag_softMuon, &b_PFJets_btag_softMuon);
-		chain->SetBranchAddress("PFJets_btag_softMuonNoIP", &PFJets_btag_softMuonNoIP, &b_PFJets_btag_softMuonNoIP);
-		chain->SetBranchAddress("PFJets_btag_secVertex", &PFJets_btag_secVertex, &b_PFJets_btag_secVertex);
+		LoadPFJets();
 	}
 	if (m_metAlgo == "pfmet") {
 		chain->SetBranchAddress("NPFMets", &NPFMets, &b_NPFMets);
@@ -780,9 +671,9 @@ void NTupleReader::Init() {
 	chain->SetBranchAddress("jets_btag_TC_highEff", &jets_btag_TC_highEff, &b_jets_btag_TC_highEff);
 	chain->SetBranchAddress("jets_btag_jetProb", &jets_btag_jetProb, &b_jets_btag_jetProb);
 	chain->SetBranchAddress("jets_btag_jetBProb", &jets_btag_jetBProb, &b_jets_btag_jetBProb);
-	chain->SetBranchAddress("jets_btag_softEle", &jets_btag_softEle, &b_jets_btag_softEle);
-	chain->SetBranchAddress("jets_btag_softMuon", &jets_btag_softMuon, &b_jets_btag_softMuon);
-	chain->SetBranchAddress("jets_btag_softMuonNoIP", &jets_btag_softMuonNoIP, &b_jets_btag_softMuonNoIP);
+//	chain->SetBranchAddress("jets_btag_softEle", &jets_btag_softEle, &b_jets_btag_softEle);
+//	chain->SetBranchAddress("jets_btag_softMuon", &jets_btag_softMuon, &b_jets_btag_softMuon);
+//	chain->SetBranchAddress("jets_btag_softMuonNoIP", &jets_btag_softMuonNoIP, &b_jets_btag_softMuonNoIP);
 	chain->SetBranchAddress("jets_btag_secVertex", &jets_btag_secVertex, &b_jets_btag_secVertex);
 	chain->SetBranchAddress("jets_chgEmE", &jets_chgEmE, &b_jets_chgEmE);
 	chain->SetBranchAddress("jets_chgHadE", &jets_chgHadE, &b_jets_chgHadE);
@@ -814,9 +705,9 @@ void NTupleReader::Init() {
 		chain->SetBranchAddress("jetsKT4_btag_TC_highEff", &jetsKT4_btag_TC_highEff, &b_jetsKT4_btag_TC_highEff);
 		chain->SetBranchAddress("jetsKT4_btag_jetProb", &jetsKT4_btag_jetProb, &b_jetsKT4_btag_jetProb);
 		chain->SetBranchAddress("jetsKT4_btag_jetBProb", &jetsKT4_btag_jetBProb, &b_jetsKT4_btag_jetBProb);
-		chain->SetBranchAddress("jetsKT4_btag_softEle", &jetsKT4_btag_softEle, &b_jetsKT4_btag_softEle);
-		chain->SetBranchAddress("jetsKT4_btag_softMuon", &jetsKT4_btag_softMuon, &b_jetsKT4_btag_softMuon);
-		chain->SetBranchAddress("jetsKT4_btag_softMuonNoIP", &jetsKT4_btag_softMuonNoIP, &b_jetsKT4_btag_softMuonNoIP);
+//		chain->SetBranchAddress("jetsKT4_btag_softEle", &jetsKT4_btag_softEle, &b_jetsKT4_btag_softEle);
+//		chain->SetBranchAddress("jetsKT4_btag_softMuon", &jetsKT4_btag_softMuon, &b_jetsKT4_btag_softMuon);
+//		chain->SetBranchAddress("jetsKT4_btag_softMuonNoIP", &jetsKT4_btag_softMuonNoIP, &b_jetsKT4_btag_softMuonNoIP);
 		chain->SetBranchAddress("jetsKT4_btag_secVertex", &jetsKT4_btag_secVertex, &b_jetsKT4_btag_secVertex);
 		chain->SetBranchAddress("jetsKT4_chgEmE", &jetsKT4_chgEmE, &b_jetsKT4_chgEmE);
 		chain->SetBranchAddress("jetsKT4_chgHadE", &jetsKT4_chgHadE, &b_jetsKT4_chgHadE);
@@ -850,9 +741,9 @@ void NTupleReader::Init() {
 		chain->SetBranchAddress("jetsSC5_btag_TC_highEff", &jetsSC5_btag_TC_highEff, &b_jetsSC5_btag_TC_highEff);
 		chain->SetBranchAddress("jetsSC5_btag_jetProb", &jetsSC5_btag_jetProb, &b_jetsSC5_btag_jetProb);
 		chain->SetBranchAddress("jetsSC5_btag_jetBProb", &jetsSC5_btag_jetBProb, &b_jetsSC5_btag_jetBProb);
-		chain->SetBranchAddress("jetsSC5_btag_softEle", &jetsSC5_btag_softEle, &b_jetsSC5_btag_softEle);
-		chain->SetBranchAddress("jetsSC5_btag_softMuon", &jetsSC5_btag_softMuon, &b_jetsSC5_btag_softMuon);
-		chain->SetBranchAddress("jetsSC5_btag_softMuonNoIP", &jetsSC5_btag_softMuonNoIP, &b_jetsSC5_btag_softMuonNoIP);
+//		chain->SetBranchAddress("jetsSC5_btag_softEle", &jetsSC5_btag_softEle, &b_jetsSC5_btag_softEle);
+//		chain->SetBranchAddress("jetsSC5_btag_softMuon", &jetsSC5_btag_softMuon, &b_jetsSC5_btag_softMuon);
+//		chain->SetBranchAddress("jetsSC5_btag_softMuonNoIP", &jetsSC5_btag_softMuonNoIP, &b_jetsSC5_btag_softMuonNoIP);
 		chain->SetBranchAddress("jetsSC5_btag_secVertex", &jetsSC5_btag_secVertex, &b_jetsSC5_btag_secVertex);
 		chain->SetBranchAddress("jetsSC5_chgEmE", &jetsSC5_chgEmE, &b_jetsSC5_chgEmE);
 		chain->SetBranchAddress("jetsSC5_chgHadE", &jetsSC5_chgHadE, &b_jetsSC5_chgHadE);
@@ -1040,13 +931,17 @@ void NTupleReader::Init() {
 	chain->SetBranchAddress("mus_id_AllGlobalMuons", &mus_id_AllGlobalMuons, &b_mus_id_AllGlobalMuons);
 	chain->SetBranchAddress("mus_id_AllStandAloneMuons", &mus_id_AllStandAloneMuons, &b_mus_id_AllStandAloneMuons);
 	chain->SetBranchAddress("mus_id_AllTrackerMuons", &mus_id_AllTrackerMuons, &b_mus_id_AllTrackerMuons);
-	chain->SetBranchAddress("mus_id_TrackerMuonArbitrated", &mus_id_TrackerMuonArbitrated, &b_mus_id_TrackerMuonArbitrated);
+	chain->SetBranchAddress("mus_id_TrackerMuonArbitrated", &mus_id_TrackerMuonArbitrated,
+			&b_mus_id_TrackerMuonArbitrated);
 	chain->SetBranchAddress("mus_id_AllArbitrated", &mus_id_AllArbitrated, &b_mus_id_AllArbitrated);
-	chain->SetBranchAddress("mus_id_GlobalMuonPromptTight", &mus_id_GlobalMuonPromptTight, &b_mus_id_GlobalMuonPromptTight);
+	chain->SetBranchAddress("mus_id_GlobalMuonPromptTight", &mus_id_GlobalMuonPromptTight,
+			&b_mus_id_GlobalMuonPromptTight);
 	chain->SetBranchAddress("mus_id_TMLastStationLoose", &mus_id_TMLastStationLoose, &b_mus_id_TMLastStationLoose);
 	chain->SetBranchAddress("mus_id_TMLastStationTight", &mus_id_TMLastStationTight, &b_mus_id_TMLastStationTight);
-	chain->SetBranchAddress("mus_id_TM2DCompatibilityLoose", &mus_id_TM2DCompatibilityLoose, &b_mus_id_TM2DCompatibilityLoose);
-	chain->SetBranchAddress("mus_id_TM2DCompatibilityTight", &mus_id_TM2DCompatibilityTight, &b_mus_id_TM2DCompatibilityTight);
+	chain->SetBranchAddress("mus_id_TM2DCompatibilityLoose", &mus_id_TM2DCompatibilityLoose,
+			&b_mus_id_TM2DCompatibilityLoose);
+	chain->SetBranchAddress("mus_id_TM2DCompatibilityTight", &mus_id_TM2DCompatibilityTight,
+			&b_mus_id_TM2DCompatibilityTight);
 	chain->SetBranchAddress("mus_id_TMOneStationLoose", &mus_id_TMOneStationLoose, &b_mus_id_TMOneStationLoose);
 	chain->SetBranchAddress("mus_id_TMOneStationTight", &mus_id_TMOneStationTight, &b_mus_id_TMOneStationTight);
 	chain->SetBranchAddress("mus_id_TMLastStationOptimizedLowPtLoose", &mus_id_TMLastStationOptimizedLowPtLoose,
@@ -1077,13 +972,15 @@ void NTupleReader::Init() {
 	chain->SetBranchAddress("photons_isoEcalRecHitDR04", &photons_isoEcalRecHitDR04, &b_photons_isoEcalRecHitDR04);
 	chain->SetBranchAddress("photons_isoHcalRecHitDR04", &photons_isoHcalRecHitDR04, &b_photons_isoHcalRecHitDR04);
 	chain->SetBranchAddress("photons_isoSolidTrkConeDR04", &photons_isoSolidTrkConeDR04, &b_photons_isoSolidTrkConeDR04);
-	chain->SetBranchAddress("photons_isoHollowTrkConeDR04", &photons_isoHollowTrkConeDR04, &b_photons_isoHollowTrkConeDR04);
+	chain->SetBranchAddress("photons_isoHollowTrkConeDR04", &photons_isoHollowTrkConeDR04,
+			&b_photons_isoHollowTrkConeDR04);
 	chain->SetBranchAddress("photons_nTrkSolidConeDR04", &photons_nTrkSolidConeDR04, &b_photons_nTrkSolidConeDR04);
 	chain->SetBranchAddress("photons_nTrkHollowConeDR04", &photons_nTrkHollowConeDR04, &b_photons_nTrkHollowConeDR04);
 	chain->SetBranchAddress("photons_isoEcalRecHitDR03", &photons_isoEcalRecHitDR03, &b_photons_isoEcalRecHitDR03);
 	chain->SetBranchAddress("photons_isoHcalRecHitDR03", &photons_isoHcalRecHitDR03, &b_photons_isoHcalRecHitDR03);
 	chain->SetBranchAddress("photons_isoSolidTrkConeDR03", &photons_isoSolidTrkConeDR03, &b_photons_isoSolidTrkConeDR03);
-	chain->SetBranchAddress("photons_isoHollowTrkConeDR03", &photons_isoHollowTrkConeDR03, &b_photons_isoHollowTrkConeDR03);
+	chain->SetBranchAddress("photons_isoHollowTrkConeDR03", &photons_isoHollowTrkConeDR03,
+			&b_photons_isoHollowTrkConeDR03);
 	chain->SetBranchAddress("photons_nTrkSolidConeDR03", &photons_nTrkSolidConeDR03, &b_photons_nTrkSolidConeDR03);
 	chain->SetBranchAddress("photons_nTrkHollowConeDR03", &photons_nTrkHollowConeDR03, &b_photons_nTrkHollowConeDR03);
 	chain->SetBranchAddress("photons_isAlsoElectron", &photons_isAlsoElectron, &b_photons_isAlsoElectron);
@@ -1140,10 +1037,11 @@ void NTupleReader::Init() {
 	chain->SetBranchAddress("tracks_outerHitZ", &tracks_outerHitZ, &b_tracks_outerHitZ);
 	chain->SetBranchAddress("tracks_highPurity", &tracks_highPurity, &b_tracks_highPurity);
 	if (m_useMisslayers)
-		chain->SetBranchAddress("tracks_innerLayerMissingHits", &tracks_innerLayerMissingHits, &b_tracks_innerLayerMissingHits);
-	chain->SetBranchAddress("run", &run, &b_run);
-	chain->SetBranchAddress("event", &event, &b_event);
-	chain->SetBranchAddress("lumiBlock", &lumiBlock, &b_lumiBlock);
+		chain->SetBranchAddress("tracks_innerLayerMissingHits", &tracks_innerLayerMissingHits,
+				&b_tracks_innerLayerMissingHits);
+	chain->SetBranchAddress("run", &run_number, &b_run);
+	chain->SetBranchAddress("event", &event_number, &b_event);
+	chain->SetBranchAddress("lumiblock", &lumiBlock, &b_lumiBlock);
 
 	// HLT tree (nonIso ele trigger)
 	//chain2->SetBranchAddress("HLT_Ele10_SW_L1R", &HLT_Ele10_SW_L1R, &b_HLT_Ele10_SW_L1R); //(8E29, startup)
@@ -1156,7 +1054,7 @@ void NTupleReader::Init() {
 	}
 	///------------------------  MC Truth info  ------------------------------------
 	if (!IsData()) {
-		cout << " Set MC branch address" << endl;
+		std::cout << " Set MC branch address" << std::endl;
 		chain->SetBranchAddress("Nmc_doc", &Nmc_doc, &b_Nmc_doc);
 		chain->SetBranchAddress("mc_doc_id", &mc_doc_id, &b_mc_doc_id);
 		chain->SetBranchAddress("mc_doc_pt", &mc_doc_pt, &b_mc_doc_pt);
@@ -1181,7 +1079,7 @@ void NTupleReader::Init() {
 		chain->SetBranchAddress("mc_doc_numOfMothers", &mc_doc_numOfMothers, &b_mc_doc_numOfMothers);
 
 		if (m_studyPDFunc) {
-			cout << "Set PDF branch address" << endl;
+			std::cout << "Set PDF branch address" << std::endl;
 			chain2->SetBranchAddress("PDFWcteq66_0", &PDFWcteq66_0, &b_PDFWcteq66_0);
 			chain2->SetBranchAddress("PDFWcteq66_1", &PDFWcteq66_1, &b_PDFWcteq66_1);
 			chain2->SetBranchAddress("PDFWcteq66_10", &PDFWcteq66_10, &b_PDFWcteq66_10);
@@ -1233,12 +1131,12 @@ void NTupleReader::Init() {
 
 }//End Init()
 
-void NTupleReader::ReadSelectedBranches() const {
+void NTupleReader::SelectBranches() {
 
 	chain->SetBranchStatus("*", 0); //disable all branches
 	chain->SetBranchStatus("run", 1);
 	chain->SetBranchStatus("event", 1);
-	chain->SetBranchStatus("lumiBlock", 1);
+	chain->SetBranchStatus("lumiblock", 1);
 	chain->SetBranchStatus("beamSpot_x", 1); //beam spot
 	chain->SetBranchStatus("beamSpot_y", 1);
 	chain->SetBranchStatus("Nels", 1); //electrons
@@ -1312,31 +1210,14 @@ void NTupleReader::ReadSelectedBranches() const {
 		chain->SetBranchStatus("jets_btag_TC_highPur", 1);
 		chain->SetBranchStatus("jets_btag_jetBProb", 1);
 		chain->SetBranchStatus("jets_btag_jetProb", 1);
-		chain->SetBranchStatus("jets_btag_softEle", 1);
-		chain->SetBranchStatus("jets_btag_softMuon", 1);
-		chain->SetBranchStatus("jets_btag_softMuonNoIP", 1);
+//		chain->SetBranchStatus("jets_btag_softEle", 1);
+//		chain->SetBranchStatus("jets_btag_softMuon", 1);
+//		chain->SetBranchStatus("jets_btag_softMuonNoIP", 1);
 		chain->SetBranchStatus("jets_btag_secVertex", 1);
 		chain->SetBranchStatus("jets_parton_Id", 1);
 
 	} else if (m_jetAlgo == "pfjet") { //PFJet
-		chain->SetBranchStatus(Form("NPFJets"), 1); //jets
-		chain->SetBranchStatus("PFJets_px", 1);
-		chain->SetBranchStatus("PFJets_py", 1);
-		chain->SetBranchStatus("PFJets_pz", 1);
-		chain->SetBranchStatus("PFJets_energy", 1);
-		chain->SetBranchStatus("PFJets_eta", 1);
-		chain->SetBranchStatus("PFJets_pt", 1);
-		//btagging
-		chain->SetBranchStatus("PFJets_btag_TC_highEff", 1);
-		chain->SetBranchStatus("PFJets_btag_TC_highPur", 1);
-		chain->SetBranchStatus("PFJets_btag_jetBProb", 1);
-		chain->SetBranchStatus("PFJets_btag_jetProb", 1);
-		chain->SetBranchStatus("PFJets_btag_softEle", 1);
-		chain->SetBranchStatus("PFJets_btag_softMuon", 1);
-		chain->SetBranchStatus("PFJets_btag_softMuonNoIP", 1);
-		chain->SetBranchStatus("PFJets_btag_secVertex", 1);
-		chain->SetBranchStatus("PFJets_parton_Id", 1);
-
+		EnablePFJets();
 	} else { //if not using default jets
 		chain->SetBranchStatus(Form("Njets%s", m_jetAlgo.c_str()), 1); //jets
 		chain->SetBranchStatus(Form("jets%s_px", m_jetAlgo.c_str()), 1);
@@ -1351,9 +1232,9 @@ void NTupleReader::ReadSelectedBranches() const {
 		chain->SetBranchStatus(Form("jets%s_btag_TC_highPur", m_jetAlgo.c_str()), 1);
 		chain->SetBranchStatus(Form("jets%s_btag_jetBProb", m_jetAlgo.c_str()), 1);
 		chain->SetBranchStatus(Form("jets%s_btag_jetProb", m_jetAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("jets%s_btag_softEle", m_jetAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("jets%s_btag_softMuon", m_jetAlgo.c_str()), 1);
-		chain->SetBranchStatus(Form("jets%s_btag_softMuonNoIP", m_jetAlgo.c_str()), 1);
+//		chain->SetBranchStatus(Form("jets%s_btag_softEle", m_jetAlgo.c_str()), 1);
+//		chain->SetBranchStatus(Form("jets%s_btag_softMuon", m_jetAlgo.c_str()), 1);
+//		chain->SetBranchStatus(Form("jets%s_btag_softMuonNoIP", m_jetAlgo.c_str()), 1);
 		chain->SetBranchStatus(Form("jets%s_btag_secVertex", m_jetAlgo.c_str()), 1);
 	}
 
@@ -1427,9 +1308,9 @@ void NTupleReader::ReadSelectedBranches() const {
 
 		if (m_studyPDFunc) {
 			for (short i = 0; i <= 44; i++) {
-				string pdf = Form("PDFWcteq66_%u", i);//unsigned %u
-				if (this->debug_flag)
-					cout << " pdf  " << pdf << endl;
+				std::string pdf = Form("PDFWcteq66_%u", i);//unsigned %u
+				if (debug_flag)
+					std::cout << " pdf  " << pdf << std::endl;
 				chain->SetBranchStatus(pdf.c_str(), 1);
 			}
 		}
@@ -1442,4 +1323,55 @@ void NTupleReader::ReadSelectedBranches() const {
 		chain->SetBranchStatus(HLTBit.c_str(), 1);
 	}
 }//end ReadSelectedBranches
-//	------------------------------------------------------------------------------------
+
+void NTupleReader::EnablePFJets() {
+	chain->SetBranchStatus(Form("NPFJets"), 1); //jets
+	chain->SetBranchStatus("PFJets_px", 1);
+	chain->SetBranchStatus("PFJets_py", 1);
+	chain->SetBranchStatus("PFJets_pz", 1);
+	chain->SetBranchStatus("PFJets_energy", 1);
+	chain->SetBranchStatus("PFJets_eta", 1);
+	chain->SetBranchStatus("PFJets_pt", 1);
+	//btagging
+	chain->SetBranchStatus("PFJets_btag_TC_highEff", 1);
+	chain->SetBranchStatus("PFJets_btag_TC_highPur", 1);
+	chain->SetBranchStatus("PFJets_btag_jetBProb", 1);
+	chain->SetBranchStatus("PFJets_btag_jetProb", 1);
+	chain->SetBranchStatus("PFJets_btag_softEle", 1);
+	chain->SetBranchStatus("PFJets_btag_softMuon", 1);
+	chain->SetBranchStatus("PFJets_btag_softMuonNoIP", 1);
+	chain->SetBranchStatus("PFJets_btag_secVertex", 1);
+	chain->SetBranchStatus("PFJets_parton_Id", 1);
+}
+
+void NTupleReader::LoadPFJets() {
+	chain->SetBranchAddress("NPFJets", &NPFJets, &b_NPFJets);
+	chain->SetBranchAddress("PFJets_energy", &PFJets_energy, &b_PFJets_energy);
+	chain->SetBranchAddress("PFJets_et", &PFJets_et, &b_PFJets_et);
+	chain->SetBranchAddress("PFJets_eta", &PFJets_eta, &b_PFJets_eta);
+	chain->SetBranchAddress("PFJets_phi", &PFJets_phi, &b_PFJets_phi);
+	chain->SetBranchAddress("PFJets_pt", &PFJets_pt, &b_PFJets_pt);
+	chain->SetBranchAddress("PFJets_px", &PFJets_px, &b_PFJets_px);
+	chain->SetBranchAddress("PFJets_py", &PFJets_py, &b_PFJets_py);
+	chain->SetBranchAddress("PFJets_pz", &PFJets_pz, &b_PFJets_pz);
+	chain->SetBranchAddress("PFJets_status", &PFJets_status, &b_PFJets_status);
+	chain->SetBranchAddress("PFJets_theta", &PFJets_theta, &b_PFJets_theta);
+	chain->SetBranchAddress("PFJets_chgEmE", &PFJets_chgEmE, &b_PFJets_chgEmE);
+	chain->SetBranchAddress("PFJets_chgHadE", &PFJets_chgHadE, &b_PFJets_chgHadE);
+	chain->SetBranchAddress("PFJets_chgMuE", &PFJets_chgMuE, &b_PFJets_chgMuE);
+	chain->SetBranchAddress("PFJets_chg_Mult", &PFJets_chg_Mult, &b_PFJets_chg_Mult);
+	chain->SetBranchAddress("PFJets_neutralEmE", &PFJets_neutralEmE, &b_PFJets_neutralEmE);
+	chain->SetBranchAddress("PFJets_neutralHadE", &PFJets_neutralHadE, &b_PFJets_neutralHadE);
+	chain->SetBranchAddress("PFJets_neutral_Mult", &PFJets_neutral_Mult, &b_PFJets_neutral_Mult);
+	chain->SetBranchAddress("PFJets_mu_Mult", &PFJets_mu_Mult, &b_PFJets_mu_Mult);
+	chain->SetBranchAddress("PFJets_mass", &PFJets_mass, &b_PFJets_mass);
+	chain->SetBranchAddress("PFJets_parton_Id", &PFJets_parton_Id, &b_PFJets_parton_Id);
+	chain->SetBranchAddress("PFJets_btag_TC_highPur", &PFJets_btag_TC_highPur, &b_PFJets_btag_TC_highPur);
+	chain->SetBranchAddress("PFJets_btag_TC_highEff", &PFJets_btag_TC_highEff, &b_PFJets_btag_TC_highEff);
+	chain->SetBranchAddress("PFJets_btag_jetProb", &PFJets_btag_jetProb, &b_PFJets_btag_jetProb);
+	chain->SetBranchAddress("PFJets_btag_jetBProb", &PFJets_btag_jetBProb, &b_PFJets_btag_jetBProb);
+//	chain->SetBranchAddress("PFJets_btag_softEle", &PFJets_btag_softEle, &b_PFJets_btag_softEle);
+//	chain->SetBranchAddress("PFJets_btag_softMuon", &PFJets_btag_softMuon, &b_PFJets_btag_softMuon);
+//	chain->SetBranchAddress("PFJets_btag_softMuonNoIP", &PFJets_btag_softMuonNoIP, &b_PFJets_btag_softMuonNoIP);
+	chain->SetBranchAddress("PFJets_btag_secVertex", &PFJets_btag_secVertex, &b_PFJets_btag_secVertex);
+}
