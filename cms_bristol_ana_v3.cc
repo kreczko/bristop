@@ -50,9 +50,9 @@ void ana::SetInputFile(const char* fname) {
 	if (first_time)
 		PrintCuts();
 
-	nfile += chain->Add(fname);
+	nfile += ntupleChain->Add(fname);
 	if (GetTrigger())
-		chain2->Add(fname);
+		hltChain->Add(fname);
 	first_time = false;
 }
 
@@ -64,7 +64,7 @@ void ana::SetInputFile(const char* fname) {
  */
 void ana::SetOutputFirstName(const string name) {
 
-	cout << "Total number in chain: " << chain->GetEntries() << " events\n\n";
+	cout << "Total number in chain: " << ntupleChain->GetEntries() << " events\n\n";
 	//	this->logger->log( "Total number in chain: " + chain->GetEntries() + " events\n\n");
 
 	string secondname = "noname";
@@ -117,7 +117,7 @@ void ana::SetOutputFirstName(const string name) {
 		cout << "List of input files:" << endl;
 
 		// loop over all files in chain
-		TObjArray *fileElements = chain->GetListOfFiles();
+		TObjArray *fileElements = ntupleChain->GetListOfFiles();
 		TIter next(fileElements);
 		TChainElement *chEl = 0;
 
@@ -600,8 +600,8 @@ ana::ana() {
 	cout << "\n***********************************************************************";
 	cout << endl << endl;
 
-	chain = new TChain("configurableAnalysis/eventB");
-	chain2 = new TChain("configurableAnalysis/eventV");
+	ntupleChain = new TChain("configurableAnalysis/eventB");
+	hltChain = new TChain("configurableAnalysis/eventV");
 
 	// Initialize private variables
 	keepgood = true;
@@ -679,7 +679,7 @@ void ana::CheckAvailableJetMET() {
 	vector<string> availableMET;
 
 	// check if various jet/met is in the ntuple
-	TObjArray *list = chain->GetListOfBranches();
+	TObjArray *list = ntupleChain->GetListOfBranches();
 
 	// -- Loop over all, and draw their variables into TCanvas c1
 	for (int i = 0; i < list->GetEntries(); ++i) {
@@ -740,7 +740,7 @@ bool ana::EventLoop() {
 	Init(); //initialize branch
 
 	// Get the number of events/entries in the file chain
-	Long64_t nEvents = chain->GetEntries();
+	Long64_t nEvents = ntupleChain->GetEntries();
 	Long64_t nEventsAvail = nEvents;
 	if (nEvents == 0) {
 		cout << "No input event found, stop." << endl;
@@ -748,7 +748,7 @@ bool ana::EventLoop() {
 	}
 
 	if (GetTrigger()) {
-		chain->AddFriend(chain2);
+		ntupleChain->AddFriend(hltChain);
 	}
 
 	// Read only selected branches to reduce cpu time
@@ -998,13 +998,13 @@ bool ana::EventLoop() {
 
 		// NB: LoadTree will complain (harmlessly) about unknown branch if SetBranchAddress
 		//     was called for a branch not present in the ntuple
-		Long64_t lflag = chain->LoadTree(ev);
+		Long64_t lflag = ntupleChain->LoadTree(ev);
 		if (lflag < 0)
 			break;
 
 		++counter;
 
-		int nbytes = chain->GetEntry(ev);
+		int nbytes = ntupleChain->GetEntry(ev);
 		this->event = new Event(this, this->eventfilter);
 		// 1- Check for good run (only applicable to data)
 		bool goodrun = true;
@@ -1017,8 +1017,8 @@ bool ana::EventLoop() {
 			cout << ". GoodRun=" << goodrun;
 			cout << "  << Run " << run_number << ", Event " << event_number << ", LumiSection " << lumiBlock << " >>  ";
 			cout << printTimeNow() << endl;
-			cout << " entry " << lflag << ", tree # " << chain->GetTreeNumber() << ", file "
-					<< chain->GetCurrentFile()->GetName() << ", EvtSize " << nbytes << endl;
+			cout << " entry " << lflag << ", tree # " << ntupleChain->GetTreeNumber() << ", file "
+					<< ntupleChain->GetCurrentFile()->GetName() << ", EvtSize " << nbytes << endl;
 		}
 
 		// 2- Check Trigger
@@ -1060,7 +1060,7 @@ bool ana::EventLoop() {
 					if (GetDebug())
 						cout << " [MC] Checking MC type from input filename" << endl;
 
-					const string fname(chain->GetCurrentFile()->GetName());
+					const string fname(ntupleChain->GetCurrentFile()->GetName());
 
 					// figure out what type of MC from the file name
 
@@ -1100,8 +1100,8 @@ bool ana::EventLoop() {
 
 				if (GetDebug()) {
 					cout << "+++> Now starts running on  " << mc_names[fastmctype_] << "  events" << endl;
-					cout << " current entry: num " << lflag << ", tree # " << chain->GetTreeNumber() << "\n filename: "
-							<< chain->GetCurrentFile()->GetName() << endl << endl;
+					cout << " current entry: num " << lflag << ", tree # " << ntupleChain->GetTreeNumber() << "\n filename: "
+							<< ntupleChain->GetCurrentFile()->GetName() << endl << endl;
 				}
 
 			}//end if check MC
@@ -2312,9 +2312,9 @@ bool ana::EventLoop() {
 
 			//Print out for each selected event
 			fprintf(outfile, "%7d %6d %10d %10d %8d %8lld %5dj %11.2f %8.2f %8.2f %8s   %s\n", counter_pass,
-					run_number, event_number, lumiBlock, chain->GetTreeNumber(), lflag, nGoodJet, goodJets.at(0).Pt(),
-					this_met, ht, mclabel[fastmctype_].c_str(), chain->GetCurrentFile()->GetName());
-			interestingFiles.insert(chain->GetCurrentFile()->GetName());
+					run_number, event_number, lumiBlock, ntupleChain->GetTreeNumber(), lflag, nGoodJet, goodJets.at(0).Pt(),
+					this_met, ht, mclabel[fastmctype_].c_str(), ntupleChain->GetCurrentFile()->GetName());
+			interestingFiles.insert(ntupleChain->GetCurrentFile()->GetName());
 		}
 
 		// (21 Feb 09) make some kinematics plots for events passing N-1 cuts (HT,MET)
