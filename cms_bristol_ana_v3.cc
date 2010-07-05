@@ -10,8 +10,8 @@
 //
 //  1 Jul 2010: Adapt code to be able to use the emulated Photon15' (=Photon10+pt(HLT object)>15 GeV)
 //              to mimic HLT_Photon15 starting run 137029.
-//               - data: run < 137029: use HLT_Photon15_L1R (normal HLT bit)
-//                       run >= 137029: use eventA.pass_photon15 (emulated)
+//               - data: run >= 137029: use HLT_Photon15_L1R (normal HLT bit)
+//                       run <  137029: use eventA.pass_photon15 (emulated)
 //               - MC: use eventA.pass_photon15 (emulated)
 //               Note: need v4 ntuple. 
 //               
