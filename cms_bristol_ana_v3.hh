@@ -5,6 +5,7 @@ public:
   // chain = list of root files containing the same tree
   TChain* chain;
   TChain* chain2;
+  TChain* chain3; //ad hoc ntupler
     
   // The output file with histograms
   TFile* histf;
@@ -58,6 +59,7 @@ public:
    vector<float>   *beamSpot_beamWidthYError;
    UInt_t          Nels;
    UInt_t          Nels2;//new
+   UInt_t          Nels3;//new
    vector<float>   *els_energy;
    vector<float>   *els_et;
    vector<float>   *els_eta;
@@ -160,6 +162,7 @@ public:
    vector<float>   *els_edB;
    vector<float>   *els2_d0_pvbs; // new
    vector<float>   *els2_ed0_pvbs; //new
+   vector<float>   *els3_d0_bs; //new
    vector<float>   *els_scEta;
    UInt_t          Njets;
    vector<float>   *jets_energy;
@@ -603,6 +606,7 @@ public:
    vector<float>   *mus_id_TMLastStationOptimizedLowPtTight;
    vector<float>   *mus_dB;
    vector<float>   *mus_edB;
+   vector<float>   *mus3_d0_bs;
    UInt_t          Nphotons;
    vector<float>   *photons_energy;
    vector<float>   *photons_et;
@@ -863,8 +867,10 @@ public:
    TBranch        *b_els_dB;   //!
    TBranch        *b_els_edB;   //!
    TBranch        *b_Nels2;   //!  rename?
+   TBranch        *b_Nels3;   //!
    TBranch        *b_els2_d0_pvbs;   //!  rename?
    TBranch        *b_els2_ed0_pvbs;   //!
+   TBranch        *b_els3_d0_bs;   //!
    TBranch        *b_els_scEta;   //!
    TBranch        *b_Njets;   //!
    TBranch        *b_jets_energy;   //!
@@ -1313,6 +1319,7 @@ public:
    TBranch        *b_mus_id_TMLastStationOptimizedLowPtTight;   //!
    TBranch        *b_mus_dB;   //!
    TBranch        *b_mus_edB;   //!
+   TBranch        *b_mus3_d0_bs;   //!
    TBranch        *b_Nphotons;   //!
    TBranch        *b_photons_energy;   //!
    TBranch        *b_photons_et;   //!
@@ -1441,6 +1448,7 @@ public:
   Double_t        HLT_Ele15_SiStrip_L1R;
   Double_t        HLT_Ele20_LW_L1R;
   Double_t        HLT_Photon10_L1R; //NEW
+  Double_t        HLT_Photon15_L1R; //NEW
 
   TBranch        *b_HLT_Ele10_LW_EleId_L1R;   //!
   TBranch        *b_HLT_Ele10_SW_L1R;   //!
@@ -1450,6 +1458,7 @@ public:
   TBranch        *b_HLT_Ele15_SiStrip_L1R;   //!
   TBranch        *b_HLT_Ele20_LW_L1R;   //!
   TBranch        *b_HLT_Photon10_L1R;   //NEW
+  TBranch        *b_HLT_Photon15_L1R;   //NEW
 
   // PDF Weights
   //------------
@@ -1545,6 +1554,14 @@ public:
   TBranch        *b_PDFWcteq66_43;   //!
   TBranch        *b_PDFWcteq66_44;   //!
 
+  // AD HOC NTUPLER TREE
+  vector<double> *e_swissCross;
+  TBranch        *b_e_swissCross;
+
+  Bool_t         pass_photon15;
+  TBranch        *b_pass_photon15;
+
+
 
   ana();
   ~ana(){};
@@ -1607,9 +1624,12 @@ public:
   void SetRunOnMyHLTskim(bool val)     { m_runOnMyHLTskim    = val; };
   void SetRunOnMyE20skim(bool val)     { m_runOnMyE20skim    = val; };
   void SetRunOn35Xntuples(bool val)    { m_runOn35Xntuples   = val; };
+  void SetRunOnV4ntuples(bool val)     { m_runOnV4ntuples    = val; };
   void NtupleHasD0PVBS(bool val)       { m_ntupleHasD0PVBS   = val; };
+  void NtupleHasSwissCross(bool val)   { m_ntupleHasSwissCross = val; };
   void CleanEvents(bool val)           { m_cleanEvents       = val; };
   void RemoveScraping(bool val)        { m_removeScrap       = val; };
+  void CutOnSwissCross(bool val)       { m_cutOnSwissCross   = val; };
   void UseD0Significance(bool val)     { m_used0Significance = val; };
   void D0ReferencePoint(string val)    { m_d0RefPoint        = val; };
   void PrintGenParticles(int nevent);
@@ -1661,6 +1681,7 @@ private:
   void BookHistograms_valid();
   void BookHistograms_basicKin();
   void BookHistograms_electron();
+  void BookHistograms_electron_swissCross();
   void BookHistograms_muon();
   void BookHistograms_explore();
   void BookHistograms_nEle();
@@ -1801,6 +1822,7 @@ private:
   void DrawQCDTable(       const string& title ) const;
   void DrawSingleTopTable( const string& title ) const;
   void DrawTTnjetTable(    const string& title ) const;
+  void DrawPhotonJetsTable( const string& title ) const;
   void DrawSignalAcceptanceTable( vector<string> ve) const;
   void printCutStage(const int&,const string&) const;
   void printCutStage(ofstream& os,const int&,const string&) const;
@@ -1832,6 +1854,7 @@ private:
   void PrintErrorTable_MC() ;
   void PrintErrorTable_QCD() ;//, double [][5], double [][5] ) const;
   void PrintErrorTable_SingleTop() ;//, double [][5] ) const; //use unc_pos only
+  void PrintErrorTable_PhotonJets() ;//, double [][5] ) const; //use unc_pos only
 
 
 
@@ -1887,9 +1910,12 @@ private:
   bool   m_runOnMyHLTskim;
   bool   m_runOnMyE20skim;
   bool   m_runOn35Xntuples;
+  bool   m_runOnV4ntuples;
   bool   m_ntupleHasD0PVBS;
+  bool   m_ntupleHasSwissCross;
   bool   m_cleanEvents;
   bool   m_removeScrap;
+  bool   m_cutOnSwissCross;
   bool   m_used0Significance;
   string m_d0RefPoint;
   bool   m_useMisslayers;
@@ -1991,6 +2017,12 @@ private:
   //v2D_double TTnj_Sum_Effic_unc_pos;  //[nstage][ntjet]
   //v2D_double TTnj_Sum_Effic_unc_neg;  //[nstage][ntjet]
 
+  //  Photon+jets sum
+  v2D_double Pjet_Sum_pass_weighted2; //[nstage][ntjet]
+  v2D_double Pjet_Sum_Effic_unc_pos;  //[nstage][ntjet]
+  v2D_double Pjet_Sum_Effic_unc_neg;  //[nstage][ntjet]
+
+
   vector<double> Allevents;         //[ncut]  total number of events, N=S+B
   vector<double> AlleventsUncPos;   //[ncut]  +ve unc on N
   vector<double> AlleventsUncNeg;   //[ncut]  -ve unc on N
@@ -2031,6 +2063,10 @@ private:
   bool mc_sample_has_tW;
   bool mc_sample_has_tchan;
   bool mc_sample_has_schan;
+  bool mc_sample_has_photonjet;
+  bool mc_sample_has_pj1;
+  bool mc_sample_has_pj2;
+  bool mc_sample_has_pj3;
 
   // Per-event flag: MC type of this event
   bool isTTbar;
@@ -2048,6 +2084,10 @@ private:
   bool isTW; 
   bool isTchan;
   bool isSchan;
+  bool isPhotonJet;
+  bool isPJ1;
+  bool isPJ2;
+  bool isPJ3;
 
   bool signal_is_Alpgen;
   int  signal_Alpgen_matching_threshold;
@@ -2145,6 +2185,13 @@ private:
   vector<TH1*>  h_ele_hIso_dr03_endcap;
   vector<TH1*>  h_ele_hIso_dr04_barrel;
   vector<TH1*>  h_ele_hIso_dr04_endcap;
+
+  //swiss cross
+  vector<TH1*>  h_e_swissX;
+  vector<TH1*>  h_e_swissX_et30;
+  vector<TH1*>  h_e_swissX_ecalDriven;
+  vector<TH1*>  h_e_swissX_ecalDrivenNotTkDriven;
+
 
   // muon variables
   vector<TH1*>  h_muon_normchi2;
@@ -2370,6 +2417,7 @@ private:
   TH2D *Zjets_njetsVcuts;
   TH2D *VQQ_njetsVcuts; 
   TH2D *SingleTop_njetsVcuts;
+  TH2D *PhotonJet_njetsVcuts;
   TH2D *Data_njetsVcuts;
 
   // btag
@@ -2531,6 +2579,7 @@ void ana::Init(){
    els_edB = 0;
    els2_d0_pvbs = 0;//rename?
    els2_ed0_pvbs = 0;
+   els3_d0_bs = 0;
    els_scEta = 0;
    jets_energy = 0;
    jets_et = 0;
@@ -2961,6 +3010,7 @@ void ana::Init(){
    mus_id_TMLastStationOptimizedLowPtTight = 0;
    mus_dB = 0;
    mus_edB = 0;
+   mus3_d0_bs = 0;
    photons_energy = 0;
    photons_et = 0;
    photons_eta = 0;
@@ -3069,6 +3119,8 @@ void ana::Init(){
    tracks_highPurity = 0;
    tracks_innerLayerMissingHits = 0;
  
+   e_swissCross = 0;
+   //pass_photon15 = 0;
 
    // Set branch addresses and branch pointers
    if( m_jetAlgo=="pfjet" ){
@@ -3656,6 +3708,7 @@ void ana::Init(){
      chain->SetBranchAddress("mus_edB", &mus_edB, &b_mus_edB);
      //chain->SetBranchAddress("mus2_d0_pvbs", &mus_d0_pvbs, &b_mus_d0_pvbs); //to be added
      //chain->SetBranchAddress("mus2_ed0_pvbs", &mus_ed0_pvbs, &b_mus_ed0_pvbs);
+     //chain->SetBranchAddress("mus3_d0_bs", &mus3_d0_bs, &b_mus3_d0_bs);
    }
    chain->SetBranchAddress("Nphotons", &Nphotons, &b_Nphotons);
    chain->SetBranchAddress("photons_energy", &photons_energy, &b_photons_energy);
@@ -3729,6 +3782,8 @@ void ana::Init(){
        chain->SetBranchAddress("Nels2", &Nels2, &b_Nels2);//new
        chain->SetBranchAddress("els2_d0_pvbs", &els2_d0_pvbs, &b_els2_d0_pvbs);//to be added
        chain->SetBranchAddress("els2_ed0_pvbs", &els2_ed0_pvbs, &b_els2_ed0_pvbs);//to be added     
+       chain->SetBranchAddress("Nels3", &Nels3, &b_Nels3);//new
+       chain->SetBranchAddress("els3_d0_bs", &els3_d0_bs, &b_els3_d0_bs);//to be added     
      }
      chain->SetBranchAddress("els_scEta", &els_scEta, &b_els_scEta);
      chain->SetBranchAddress("jets_id_hitsInN90", &jets_id_hitsInN90, &b_jets_id_hitsInN90);
@@ -3756,6 +3811,12 @@ void ana::Init(){
        chain->SetBranchAddress("jetsJPTAK5_id_hitsInN90", &jetsJPTAK5_id_hitsInN90, &b_jetsJPTAK5_id_hitsInN90);
        chain->SetBranchAddress("jetsJPTAK5_id_fHPD", &jetsJPTAK5_id_fHPD, &b_jetsJPTAK5_id_fHPD);
      }
+   }
+   if(m_ntupleHasSwissCross){
+     chain3->SetBranchAddress("e_swissCross", &e_swissCross, &b_e_swissCross);
+   }
+   if(m_runOnV4ntuples){
+     chain3->SetBranchAddress("pass_photon15", &pass_photon15, &b_pass_photon15);
    }
    chain->SetBranchAddress("Ntracks", &Ntracks, &b_Ntracks);
    chain->SetBranchAddress("tracks_chi2", &tracks_chi2, &b_tracks_chi2);
@@ -3801,6 +3862,7 @@ void ana::Init(){
      if(HLTBit=="HLT_Ele15_LW_L1R") chain2->SetBranchAddress("HLT_Ele15_LW_L1R", &HLT_Ele15_LW_L1R, &b_HLT_Ele15_LW_L1R); //v2 (1E31, ideal)
      if(HLTBit=="HLT_Ele15_SW_L1R") chain2->SetBranchAddress("HLT_Ele15_SW_L1R", &HLT_Ele15_SW_L1R, &b_HLT_Ele15_SW_L1R);
      if(HLTBit=="HLT_Photon10_L1R") chain2->SetBranchAddress("HLT_Photon10_L1R", &HLT_Photon10_L1R, &b_HLT_Photon10_L1R);
+     if(HLTBit=="HLT_Photon15_L1R") chain2->SetBranchAddress("HLT_Photon15_L1R", &HLT_Photon15_L1R, &b_HLT_Photon15_L1R);
    }
    
    ///------------------------  MC Truth info  ------------------------------------

@@ -3,10 +3,26 @@
 //        2) add WW,ZZ,WZ.
 //        3) adapt cut to conform to Reference Selection of Top Lepton+Jets
 //        4) exploit "goodrun" (stage 1) for event cleaning: NoScraping, goodPV
-//        5) switch to els3_dB for abs d0(BS) in get_d0_BS(). Need v2 ntuple.
+//        5) switch to els3_d0_bs for abs d0(BS) in get_d0_BS(). Need v2 ntuple.
+//        6) may need to add HBHENoiseFilter for MC.
 //#====================================================#
 //# Last update:
 //
+//  1 Jul 2010: Adapt code to be able to use the emulated Photon15' (=Photon10+pt(HLT object)>15 GeV)
+//              to mimic HLT_Photon15 starting run 137029.
+//               - data: run < 137029: use HLT_Photon15_L1R (normal HLT bit)
+//                       run >= 137029: use eventA.pass_photon15 (emulated)
+//               - MC: use eventA.pass_photon15 (emulated)
+//               Note: need v4 ntuple. 
+//               
+// 23 Jun 2010: Apply swissX cut for barrel, ecal-driven electron only; Add swiss cross plots.
+// 21 Jun 2010: Add cut on swissCross when running on latest data ntuple (May27th).
+//              Add photon+jet e20 skim stats.
+// 21 Jun 2010: Fix, nmctype should be set to 31, not 32.
+// 19,20 Jun 2010: add photon jet.
+// 18 Jun 2010: added single top e20 stat. Correct bce2 e20 number. Update tchan e20 stat.
+// 17 Jun 2010: - take out sigmaIEtaIEta < 0.002 cleaning cut as it is not part of Ref Sel.
+//              
 // 17 Jun 2010: add switch for scraping filter: RemoveScraping().
 //              - revert back, do not skip events when event fails HLT, because we want
 //                to count the initial event according to njet (after jet cleaning).
@@ -214,21 +230,25 @@ typedef unsigned int uint;
 const int nstage(14);
 const int ntjet(5);
 //const int nmctype(23); //extend to include wj, zj, QCD, VQQ, single top
-const int nmctype(23+5); //extend to include tt0j-tt4j
+//const int nmctype(23+5+4); //extend to include tt0j-tt4j; +4 for photon+jets (all, 1,2,3)
+const int nmctype(31); //extend to include tt0j-tt4j; +3 for photon+jets (pj1,pj2,pj3)
+// mymcname[] is used eg in PrintEventCounter()
 const string mymcname[nmctype] = {"data",
 				  "tt(ev)","tt(mv)","tt(tv)",
 				  "tt(ee)","tt(mm)","tt(tt)",
 				  "tt(em)","tt(et)","tt(mt)","tt(qq)",
 				  "wj",   //11
 				  "zj",   //12
-				  "enri1","enri2","enri3",
-				  "bce1", "bce2", "bce3",
-				  "vqq",
-				  "stop(tW)","stop(tchan)","stop(schan)",
-				  "tt0j","tt1j","tt2j","tt3j","tt4j"
+				  "enri1","enri2","enri3",//13,14,15
+				  "bce1", "bce2", "bce3",//16,17,18
+				  "vqq", //19
+				  "stop(tW)","stop(tchan)","stop(schan)",//20,21,22
+				  "tt0j","tt1j","tt2j","tt3j","tt4j", //23,24,25,26
+				  "pj1","pj2","pj3" //27,28,29 (photon+jets)
 };
 
-const int nclass(16); //data+mc (incl vqq)
+//note nclass should match number of elements in mcname[] array
+const int nclass(20); //data+mc (incl vqq), add 4 for photon+jets
 int ntype(1);//renamed from nhisto //FIXME
 
 const int myprec(1); //no of decimal point for weighted nEvent
@@ -239,10 +259,12 @@ const bool m3_use_1000_bins = false;
 const string jetname[7]  = {"0j","1j","2j","3j","4j", "4mj", "allj"};
 const string jetlabel[7] = {"0j","1j","2j","3j","4j", ">=4j","allj"};
 
-const string mcname[16]  = { "data", "ttbar", "QCD", "enri1", "enri2" ,"enri3", "bce1","bce2","bce3",
-			     "wj", "zj","vqq", "singleTop","tW","tchan","schan" };
-const string mclabel[16] = { "data", "signal","QCD","enri1","enri2","enri3","bce1","bce2","bce3",
-			     "W+jets","Z+jets","VQQ", "singleTop","tW","t-chan","s-chan" };
+const string mcname[20]  = { "data", "ttbar", "QCD", "enri1", "enri2" ,"enri3", "bce1","bce2","bce3",
+			     "wj", "zj","vqq", "singleTop","tW","tchan","schan",
+			     "pjet","pj1", "pj2","pj3"};
+const string mclabel[20] = { "data", "signal","QCD","enri1","enri2","enri3","bce1","bce2","bce3",
+			     "W+jets","Z+jets","VQQ", "singleTop","tW","t-chan","s-chan",
+			     "pjet","pj1","pj2","pj3"};
 const string Fourjets = "$\\ge$4JETS"; //used in table
 
 
@@ -259,6 +281,7 @@ void ana::SetInputFile(const char* fname) {
 
   nfile += chain->Add(fname);
   if( GetTrigger() )  chain2->Add(fname);
+  if( m_cutOnSwissCross || m_runOnV4ntuples ) chain3->Add(fname);
   //cout << "end of SetInputFile" << endl;
   first_time = false;
 }
@@ -307,6 +330,9 @@ void ana::SetOutputFirstName(const string name) {
     mc_names.push_back("tW");
     mc_names.push_back("tchan");
     mc_names.push_back("schan");
+    mc_names.push_back("pj1"); //photon+jets
+    mc_names.push_back("pj2");
+    mc_names.push_back("pj3");
 
 
     vector<int> nfiles(mc_names.size());
@@ -382,6 +408,7 @@ void ana::SetOutputFirstName(const string name) {
       }
       
       // print out cross-sections
+      cout << setprecision(6);
       cout << setw(14) << GetCrossSection(mc_names.at(i)) << " pb";
       cout << setw(14) << GetCrossSection(mc_names.at(i))*m_intlumi << endl;      
       cout << setprecision(6);
@@ -473,10 +500,15 @@ void ana::PrintCuts() const {
   cout << "***********************************************\n" << endl;
   if(checkTrig) cout << "  Trigger required :   " << HLTBit << endl;
   else          cout << "  Trigger not required" << endl;
+  cout << "Note:"<< endl;
+  cout << "   For Data in Runs < 137029, use emulated Photon15 (pass_photon15 in eventA)."<< endl;
+  cout << "   For Data in Runs >= 137029, use HLT_Photon15_L1R."<< endl;
+  cout << "   For all MC, use emulated Photon15."<< endl;  
   if( m_cleanEvents ){
     cout << "\n  Cleaning events: one good PV, No Scraping ";
     if(m_removeScrap) cout << "(on)" << endl;
     else              cout << "(off)" << endl;
+    if(m_cutOnSwissCross) cout << "  clean spike by requiring by swiss cross < 0.95"<< endl;
   }
   cout << "\n***********************************************" << endl;
   if(nCutSetInScript<4) {
@@ -551,9 +583,14 @@ void ana::SetGlobalMCFlag(){
   if(GetNinit("bce3")>0)   mc_sample_has_bce3  = true;
   if(GetNinit("vqq")>0)    mc_sample_has_VQQ   = true;
   if( (GetNinit("tW") + GetNinit("tchan") + GetNinit("schan")) > 0 )  mc_sample_has_singleTop = true;
-  if(GetNinit("tW")>0)     mc_sample_has_tW    = true;
+  if(GetNinit("tW")   >0)     mc_sample_has_tW    = true;
   if(GetNinit("tchan")>0)  mc_sample_has_tchan = true;
   if(GetNinit("schan")>0)  mc_sample_has_schan = true;
+  if(GetNinit("pj1")+GetNinit("pj2")+GetNinit("pj3")>0)  mc_sample_has_photonjet = true;
+  if(GetNinit("pj1")>0)  mc_sample_has_pj1 = true;
+  if(GetNinit("pj2")>0)  mc_sample_has_pj2 = true;
+  if(GetNinit("pj3")>0)  mc_sample_has_pj3 = true;
+
 }
 //-------------------------------------------------------------------------------------------
 
@@ -612,6 +649,11 @@ void ana::DefineCrossSection(){
     cross_section["tW"]    =  10.6  ;         //xs  11 pb (NLO MCFM) inclusive t,W decay
     cross_section["tchan"] =   63. * 0.324;   //xs  63 pb (NLO MCFM) * 0.324 (Br(t->blnu)) = 20.412
     cross_section["schan"] =   4.6 * 0.324 ;  //4.6 pb x 0.324 (4.6pb is NNNLO) = 1.4904
+
+    // photon+jets MadGraph
+    cross_section["pj1"] =   23620. ; //pb
+    cross_section["pj2"] =    3476. ; //pb
+    cross_section["pj3"] =     485. ; //pb
 
     DefineCrossSectionAlpgen7TeV();
 
@@ -792,7 +834,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
 
        skimEffMap["bce1"]   =   646434 /  2476463. ; //updated 2Jun
        skimEffMap["bce2"]   =   874890 /  2355597. ; //updated 2Jun
-       skimEffMap["bce3"]   =   882021  / 1208674. ; //NEW
+       skimEffMap["bce3"]   =   882021 /  1208674. ; //NEW
 
        // multiply to weight so that Nexp = Npass * w;
        weightMap["ttjet"] *=  GetSkimEff("ttjet");
@@ -805,6 +847,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
        weightMap["bce2"]  *=  GetSkimEff("bce2");
        weightMap["bce3"]  *=  GetSkimEff("bce3");
 
+
        cout << "  skim eff    ttjet      " << GetSkimEff("ttjet") << endl;
        cout << "  skim eff    wjet       " << GetSkimEff("wjet")  << endl;
        cout << "  skim eff    zjet       " << GetSkimEff("zjet")  << endl;
@@ -814,6 +857,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
        cout << "  skim eff    bce1       " << GetSkimEff("bce1")  << endl;
        cout << "  skim eff    bce2       " << GetSkimEff("bce2")  << endl;
        cout << "  skim eff    bce3       " << GetSkimEff("bce3")  << endl;
+
        
      }else{
        // Running on summer09 skims (31X)
@@ -844,14 +888,21 @@ void ana::SetEventWeightMap(){ //only if run on MC
      skimEffMap["wjet"]   = 2153929 / 10068895. ; //NEW
      skimEffMap["zjet"]   =  329061 /  1084921. ; //NEW
      
-     skimEffMap["enri1"]  = 2012107 / 31999839. ; //OLD
-     skimEffMap["enri2"]  = 5564663 / 41887278. ; //NEW
+     skimEffMap["enri1"]  = 2012107 / 31999839. ; //OLD (not 100%)
+     skimEffMap["enri2"]  = 5564663 / 41887278. ; //NEW (not 100%)
      skimEffMap["enri3"]  = 1482956 /  5546413. ; //NEW
      
      skimEffMap["bce1"]   =   91304 / 2751023. ; //NEW
-     skimEffMap["bce2"]   =  374541 / 2355597. ; //NEW
+     skimEffMap["bce2"]   =  374541 / 2095597. ; //NEW (not 100%)
      skimEffMap["bce3"]   =  578395 / 1208674. ; //NEW
      
+     skimEffMap["tchan"]  =  192728. / 528593. ; //NEW 18Jun
+     skimEffMap["tW"]     =  179749. / 466437. ; //NEW 18Jun
+
+     skimEffMap["pj1"]    =  308818. / 2235228. ; //NEW 21Jun
+     skimEffMap["pj2"]    =  180563. /  801393. ; //NEW 21Jun
+     skimEffMap["pj3"]    =  350641. /  995198. ; //NEW 21Jun
+
      // multiply to weight so that Nexp = Npass * w;
      weightMap["ttjet"] *=  GetSkimEff("ttjet");
      weightMap["wjet"]  *=  GetSkimEff("wjet"); 
@@ -862,7 +913,12 @@ void ana::SetEventWeightMap(){ //only if run on MC
      weightMap["bce1"]  *=  GetSkimEff("bce1");
      weightMap["bce2"]  *=  GetSkimEff("bce2");
      weightMap["bce3"]  *=  GetSkimEff("bce3");
-     
+     weightMap["tchan"] *=  GetSkimEff("tchan");
+     weightMap["tW"]    *=  GetSkimEff("tW");
+     weightMap["pj1"]   *=  GetSkimEff("pj1");
+     weightMap["pj2"]   *=  GetSkimEff("pj2");
+     weightMap["pj3"]   *=  GetSkimEff("pj3");
+
      cout << "  skim eff    ttjet      " << GetSkimEff("ttjet") << endl;
      cout << "  skim eff    wjet       " << GetSkimEff("wjet")  << endl;
      cout << "  skim eff    zjet       " << GetSkimEff("zjet")  << endl;
@@ -872,7 +928,11 @@ void ana::SetEventWeightMap(){ //only if run on MC
      cout << "  skim eff    bce1       " << GetSkimEff("bce1")  << endl;
      cout << "  skim eff    bce2       " << GetSkimEff("bce2")  << endl;
      cout << "  skim eff    bce3       " << GetSkimEff("bce3")  << endl;    
-     
+     cout << "  skim eff    tchan      " << GetSkimEff("tchan") << endl;
+     cout << "  skim eff    tW         " << GetSkimEff("tW")    << endl;
+     cout << "  skim eff    pj1        " << GetSkimEff("pj1")    << endl;
+     cout << "  skim eff    pj2        " << GetSkimEff("pj2")    << endl;
+     cout << "  skim eff    pj3        " << GetSkimEff("pj3")    << endl;
    }
 
 }//End SetEventWeightMap
@@ -953,6 +1013,7 @@ ana::ana(){
   
    chain  = new TChain("configurableAnalysis/eventB");
    chain2 = new TChain("configurableAnalysis/eventV");
+   chain3 = new TChain("configurableAnalysis/eventA");
 
 
    // Initialize private variables
@@ -972,19 +1033,21 @@ ana::ana(){
    m_ConversionStudies       = false;
    m_jetAlgo                 = "Default";
    m_metAlgo                 = "calojet_mujes";
-   m_applyMETcut             = true;
-   m_rejectEndcapEle         = true;
+   m_applyMETcut             = false;
+   m_rejectEndcapEle         = false;
    m_runOnSD                 = false;
    m_runOnMyHLTskim          = true;
    m_runOnMyE20skim          = false;
-   m_runOn35Xntuples         = false;
+   m_runOn35Xntuples         = true;
+   m_runOnV4ntuples          = false;
    m_ntupleHasD0PVBS         = false;
    m_cleanEvents             = true;
-   m_removeScrap             = true;
+   m_removeScrap             = false;
+   m_cutOnSwissCross         = false;
    m_used0Significance       = false;
    m_d0RefPoint              = "BS";
-   m_useMisslayers           = false;
-   m_applyConVeto            = true;
+   m_useMisslayers           = true;
+   m_applyConVeto            = false;
    m_muonCutNum              = 0;
    m_ntoy                    = 2;
    m_intlumiForM3            = 10.0; //pb-1
@@ -1027,6 +1090,10 @@ ana::ana(){
    mc_sample_has_tW        = false;
    mc_sample_has_tchan     = false;
    mc_sample_has_schan     = false;
+   mc_sample_has_photonjet = false;
+   mc_sample_has_pj1       = false;
+   mc_sample_has_pj2       = false;
+   mc_sample_has_pj3       = false;
 
    signal_is_Alpgen        = false;
    signal_Alpgen_matching_threshold = 40;
@@ -1065,6 +1132,10 @@ void ana::ResetLocalMCFlags(){
    isTW        = false;
    isTchan     = false;
    isSchan     = false;
+   isPhotonJet = false;
+   isPJ1 = false;
+   isPJ2 = false;
+   isPJ3 = false;
 }
 //---------------------------------------------------------------------------------------------
 
@@ -1119,6 +1190,8 @@ void ana::ReadSelectedBranches() const {
    chain->SetBranchStatus("els_tk_charge",1);
    chain->SetBranchStatus("els_tk_theta",1);
    chain->SetBranchStatus("els_shFracInnerHits",1);
+   chain->SetBranchStatus("els_isEcalDriven",1);
+   chain->SetBranchStatus("els_isTrackerDriven",1);
    if(m_useMisslayers) chain->SetBranchStatus("els_innerLayerMissingHits",1);
    chain->SetBranchStatus("Nmus",1); //muons
    chain->SetBranchStatus("mus_cm_px",1); //global muon
@@ -1278,6 +1351,12 @@ void ana::ReadSelectedBranches() const {
      //chain->SetBranchStatus("HLT_Ele15_LW_L1R",1); //trigger (8e29)
      //chain->SetBranchStatus("HLT_Ele10_SW_L1R",1); //trigger (1e30)
      chain->SetBranchStatus(HLTBit.c_str(),1);
+     //cout << "amtb 1: b4 m_runOnV4ntuples" << endl;
+     if(m_runOnV4ntuples) {
+       //cout << "amtb 1b: b4 set branch add pass photon15" << endl;
+       chain->SetBranchStatus("pass_photon15",1);     
+     }
+     //cout << "amtb 2: after" << endl;
    }
 
    if(m_runOn35Xntuples){
@@ -1303,7 +1382,13 @@ void ana::ReadSelectedBranches() const {
        chain->SetBranchStatus("pvB_y",1);
        chain->SetBranchStatus("els2_d0_pvbs",1); //to be added
        chain->SetBranchStatus("els2_ed0_pvbs",1);     
+       //chain->SetBranchStatus("els3_d0_bs",1);
+       //chain->SetBranchStatus("mus3_d0_bs",1);
      }
+   }//run on 35x ntuple
+
+   if( m_ntupleHasSwissCross && m_cutOnSwissCross ){
+     chain->SetBranchStatus("e_swissCross",1);
    }
 
 }//end ReadSelectedBranches
@@ -1422,11 +1507,12 @@ bool ana::NoScrapingFilter() const {
 // 13 Mar 2010
 void ana::BookHistograms(){
   if(m_debug) cout << "Starting BookHistograms()"<< endl;
-  if(!IsData()) ntype = 16; //MC
+  if(!IsData()) ntype = nclass; //MC
 
   if(m_doValidation)   BookHistograms_valid();
   BookHistograms_basicKin();
   BookHistograms_electron();
+  BookHistograms_electron_swissCross();
   BookHistograms_muon();
   BookHistograms_explore();
   BookHistograms_nEle();
@@ -1625,8 +1711,28 @@ void ana::BookHistograms_electron(){
   addHistoDataAndMC( h_ele_hIso_dr04_barrel, "ele_hIso_dr04_barrel", "Hcal Iso dR04 Barrel",   52, -0.8, 20 );
   addHistoDataAndMC( h_ele_hIso_dr04_endcap, "ele_hIso_dr04_endcap", "Hcal Iso dR04 Endcap",   52, -0.8, 20 );
 
-}//end BookHistograms_ele_var()
+}//end BookHistograms_electron()
 //---------------------------------------------------------------------------------------------
+
+void ana::BookHistograms_electron_swissCross(){
+  //========================
+  //
+  //   Electron swiss cross 
+  //
+  //========================
+  if(m_debug) cout << "Starting BookHistograms_electron_swissCross()"<< endl;
+
+  TDirectory *dir_e_swissX = histf->mkdir("e_swissX","Electron swiss cross (w/ good PV, noScrap)");
+  dir_e_swissX->cd();
+  addHistoDataAndMC( h_e_swissX, "e_swissX", "e swiss cross barrel", 50, -1.0, 1.0 );
+  addHistoDataAndMC( h_e_swissX_et30, "e_swissX_et30", "e swiss cross barrel (ET>30)", 50, -1.0, 1.0 );
+  addHistoDataAndMC( h_e_swissX_ecalDriven, "e_swissX_ecalDriven", "e swiss cross barrel (ecalDriven)", 50, -1.0, 1.0 );
+  addHistoDataAndMC( h_e_swissX_ecalDrivenNotTkDriven, "e_swissX_ecalDrivenNotTkDriven", 
+		     "e swiss cross barrel (ecalDriven, notTkDriven)", 50, -1.0, 1.0 );
+
+}//end BookHistograms_electron()
+//---------------------------------------------------------------------------------------------
+
 
 
 void ana::BookHistograms_muon(){
@@ -2190,7 +2296,9 @@ void ana::BookHistograms_event_table(){
    Zjets_njetsVcuts     = new TH2D("Zjets_njetsVcuts",     "Events V Cuts (Z+jets)",    6, 0, 6, nstage, 0, nstage);
    VQQ_njetsVcuts       = new TH2D("VQQ_njetsVcuts",       "Events V Cuts (VQQ)",       6, 0, 6, nstage, 0, nstage);
    SingleTop_njetsVcuts = new TH2D("SingleTop_njetsVcuts", "Events V Cuts (Single top)",6, 0, 6, nstage, 0, nstage);
+   PhotonJet_njetsVcuts = new TH2D("PhotonJet_njetsVcuts", "Events V Cuts (Photon+jets)",6, 0, 6, nstage, 0, nstage);
    Data_njetsVcuts      = new TH2D("Data_njetsVcuts",      "Events V Cuts (Data)",      6, 0, 6, nstage, 0, nstage);
+
 }
 //---------------------------------------------------------------------------------------------
 
@@ -2259,6 +2367,8 @@ bool ana::Begin(){
    if(nEventsAvail==0) { cout << "No input event found, stop." << endl; return false; }
 
    if(GetTrigger()) { chain->AddFriend(chain2); }
+   if(m_cutOnSwissCross||m_runOnV4ntuples) { chain->AddFriend(chain3); }
+   //   if(m_runOnV4ntuples) { chain->AddFriend(chain3); }
 
    // Read only selected branches to reduce cpu time
    ReadSelectedBranches();
@@ -2481,6 +2591,8 @@ bool ana::EventLoop(){
      //if(counter<900) continue;
 
 
+
+
      if(m_debug) cout << "[DEBUG] chain->GetEntry()" << endl;
 
      int nbytes = chain->GetEntry(ev);
@@ -2556,6 +2668,8 @@ bool ana::EventLoop(){
      //-------------------
      if(m_debug) cout << "Checking Trigger"<< endl;
 
+     //     cout << "pass_photon15" << pass_photon15 << endl;
+
 
      if( GetTrigger() ){
 
@@ -2600,6 +2714,7 @@ bool ana::EventLoop(){
 	 cout << "+++> Now starts running on  " << this_mc << "  events" << endl;
 	 cout << " current entry: num " << lflag << ", tree # " << chain->GetTreeNumber()
 	      << "\n filename: " <<  chain->GetCurrentFile()->GetName() << endl << endl;
+	 cout << "this_mc = " << this_mc << ", mctype=" << mctype << endl;
        }
      }//MC
 
@@ -2765,6 +2880,27 @@ bool ana::EventLoop(){
      
 
 
+     // swiss cross EB spike cleaning, reject ele with sX > 0.95
+     // plot e_swissCross for barrel electrons ins data, that pass HLT, good PV and noScrap.     
+     if(IsData() && fired_single_em && goodrun &&   //good PV + noScrap
+	m_ntupleHasSwissCross && m_cutOnSwissCross ) {
+       
+       for(unsigned int i=0; i<Nels; ++i){ //loop over ele
+	 if( eleInBarrel(i) ) { //require barrel ele
+	   fillHistoDataAndMC( h_e_swissX, e_swissCross->at(i) );
+	   if( els_et->at(i) > 30.0 ) 
+	     fillHistoDataAndMC( h_e_swissX_et30, e_swissCross->at(i) );       
+	   if( els_isEcalDriven->at(i)>0 )  {//only ecal-driven
+	     fillHistoDataAndMC( h_e_swissX_ecalDriven, e_swissCross->at(i) );
+	     if( els_isTrackerDriven->at(i)==0 )  {//only ecal-driven
+	       fillHistoDataAndMC( h_e_swissX_ecalDrivenNotTkDriven, e_swissCross->at(i) );
+	     }
+	   }
+	 }
+       }
+     }
+
+
      // 3- Find number of of electrons, muons, jets - after energy correctionss
 
      // 3A - Find number of electrons
@@ -2796,13 +2932,45 @@ bool ana::EventLoop(){
 
      int nIsoE = 0;
 
+
+     /*
+     // for all but enri1, use els3_d0_bs.
+     cout << "test: b_els3_d0_bs->GetEntry(ev)" << endl;
+     if(this_mc!="enri1"){
+       cout << "amtb 1" <<endl;
+       chain->SetBranchStatus("els3_d0_bs",1);
+       cout << "amtb 2" <<endl;
+       b_els3_d0_bs->GetEntry(ev);
+     }
+     cout << "after" << endl;
+     */
+
      // basic
      fillHistoDataAndMC( h_nele, Nels );
 
+     if(m_debug) cout << "entering ele loop" << endl;
+
+     /*
+     if(Nels>0){
+       cout << "amtb 1" << endl;
+       cout << "e_swissCross: "<< e_swissCross << endl;
+       cout << "e_swissCross 0 : "<< e_swissCross->at(0) << endl;
+       cout << "amtb 2" << endl;
+     }
+     */
 
      for (unsigned int i=0; i<Nels; ++i) {
 
-       if(els_sigmaIEtaIEta->at(i) < 0.002) continue;
+       
+       //cout << "els3_d0_bs: " << els3_d0_bs->at(i) << endl;
+       //if(els_sigmaIEtaIEta->at(i) < 0.002) continue; //<---- comment out on 17 Jun, because not in RefSel
+
+       // swiss cross EB spike cleaning, reject ele with sX > 0.95
+       if(IsData()  &&  m_ntupleHasSwissCross  &&  m_cutOnSwissCross 
+	  &&  eleInBarrel(i)  &&  els_isEcalDriven->at(i)>0 ) {
+	 if( e_swissCross->at(i) > 0.95 ) continue;
+       }
+
        //cout << "\n--> electron no." << i+1 << endl;
        //cout << "  this electron ET/eta = " << els_et->at(i) << " / " << els_eta->at(i) << endl;
 
@@ -4936,6 +5104,11 @@ bool ana::EventLoop(){
        DrawSingleTopTable( "Single Top Table (weighted)  " );
      }
 
+     // Break down table for photon+jets
+     if( mc_sample_has_photonjet ) {
+       DrawPhotonJetsTable( "Photon+jets Table (unweighted)" );
+       DrawPhotonJetsTable( "Photon+jets Table (weighted)  " );
+     }
 
      // Acceptance note printout (ttbar)
      // >= 3 tight jets, >= 4 tight jets
@@ -5220,7 +5393,10 @@ void ana::SetLocalMCFlagAndType(){
   else if (this_mc=="tW")    {  isSingleTop = true; isTW    = true; mctype = 20;  }
   else if (this_mc=="tchan") {  isSingleTop = true; isTchan = true; mctype = 21;  }
   else if (this_mc=="schan") {  isSingleTop = true; isSchan = true; mctype = 22;  }
-    
+  else if (this_mc=="pj1") {  isPhotonJet = true;  isPJ1=true; mctype = 28;  }
+  else if (this_mc=="pj2") {  isPhotonJet = true;  isPJ2=true; mctype = 29;  }
+  else if (this_mc=="pj3") {  isPhotonJet = true;  isPJ3=true; mctype = 30;  }
+
 }//end SetLocalMCFlagAndType
 //---------------------------------------------------------------------------------------------
 
@@ -6202,6 +6378,9 @@ pair<double,double> ana::estimateQCD_assign_pos_neg_estimate( const double est, 
 void ana::addHistoDataAndMC( vector<TH1*>& h, 
 			     const string& name, const string& title,
 			     const int& nbin, const float& xlow, const float& xup ) {
+  if(m_debug) cout << "\nStarting << fillHistoDataAndMC 1D >>: " << name << endl;
+
+  //cout << "ntype=" << ntype << endl;
   h.reserve(ntype);
 
   for (int i=0; i<ntype; ++i) {
@@ -6214,12 +6393,16 @@ void ana::addHistoDataAndMC( vector<TH1*>& h,
     h[i] = new TH1D(hname, htitle, nbin, xlow, xup);
     h[i]->Sumw2();
   }
+  if(m_debug) cout << " endl"<< endl;
 }
 //----- method to add a set of TH2 histograms (for each type of MC when running on MC) --------
 void ana::addHistoDataAndMC( vector<TH2*>& h,
 			     const string& name, const string& title,
 			     const int& nbin, const float& xlow, const float& xup,
 			     const int& nbiny, const float& ylow, const float& yup ) {
+
+  if(m_debug) cout << "\nStarting << fillHistoDataAndMC 2D >>: " << name << endl;
+
   h.reserve(ntype);
 
   for (int i=0; i<ntype; ++i) {
@@ -6232,6 +6415,7 @@ void ana::addHistoDataAndMC( vector<TH2*>& h,
     h[i] = new TH2D(hname, htitle, nbin, xlow, xup, nbiny, ylow, yup);
     h[i]->Sumw2();
   }
+  if(m_debug) cout << " endl"<< endl;
 }
 
 
@@ -6240,7 +6424,9 @@ void ana::addHistoDataAndMC( vector<TH2*>& h,
 void ana::fillHistoDataAndMC(const vector<TH1*>& h, const float& value ) const {
 
   if(m_debug) cout << "\nStarting << fillHistoDataAndMC >>: " << h[0]->GetName() << endl;
+
   h[0]->Fill(value, this_weight); //all events (data)
+
   if(!IsData()) { //run on MC
     if      (isTTbar)       h[1]->Fill( value, this_weight);
     else if (isQCD) {       h[2]->Fill( value, this_weight); //all QCD
@@ -6258,7 +6444,13 @@ void ana::fillHistoDataAndMC(const vector<TH1*>& h, const float& value ) const {
       else if (isTchan)     h[14]->Fill(value, this_weight);
       else if (isSchan)     h[15]->Fill(value, this_weight);
     }
-  }
+    else if(isPhotonJet){ 
+      h[16]->Fill(value, this_weight); //all photon+jets
+      if     (isPJ1)      h[17]->Fill(value, this_weight);
+      else if(isPJ2)      h[18]->Fill(value, this_weight);
+      else if(isPJ3)      h[19]->Fill(value, this_weight);
+    }
+  }//MC
   if(m_debug) cout << "  End" << endl;
 }
 //-------- my method to fill << TH2 >> histograms (acc to MC type when running on MC) ---------
@@ -6282,6 +6474,11 @@ void ana::fillHistoDataAndMC(const vector<TH2*>& h, const float& v1, const float
       if      (isTW)        h[13]->Fill(v1,v2,w);
       else if (isTchan)     h[14]->Fill(v1,v2,w);
       else if (isSchan)     h[15]->Fill(v1,v2,w);
+    }
+    else if(isPhotonJet){ h[16]->Fill(v1,v2,w); //all photon+jets
+      if     (isPJ1)      h[17]->Fill(v1,v2,w);
+      else if(isPJ2)      h[18]->Fill(v1,v2,w);
+      else if(isPJ3)      h[19]->Fill(v1,v2,w);
     }
   }
   if(m_debug) cout << "  End" << endl;
@@ -6338,6 +6535,11 @@ void ana::fillHisto_Njet_DataAndMC( v2D_TH1& h, const float& value, const double
       if     (isTW)       fillHistoNjet2D( h, 13, value, w );
       else if(isTchan)	  fillHistoNjet2D( h, 14, value, w );
       else if(isSchan)	  fillHistoNjet2D( h, 15, value, w );
+    }
+    else if(isPhotonJet){ fillHistoNjet2D( h, 16, value, w );//all photon+jets
+      if     (isPJ1)      fillHistoNjet2D( h, 17, value, w );
+      else if(isPJ2)      fillHistoNjet2D( h, 18, value, w );
+      else if(isPJ3)      fillHistoNjet2D( h, 19, value, w );  
     }
   }
   if(m_debug) cout << "  End" << endl;
@@ -6603,6 +6805,13 @@ void ana::fillHisto_event_tables() {
 	     SingleTop_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][k]);//sum for all jets
 	   }
 	 }
+	 if ( mc_sample_has_photonjet ) {//MC contains photon+jets (mctypes are 28-30)
+	   for(int k=28; k<31; ++k){
+	     PhotonJet_njetsVcuts->Fill(j,nstage-i-1, e_plus_jet_weighted[i][j][k]);
+	     PhotonJet_njetsVcuts->Fill(5,nstage-i-1, e_plus_jet_weighted[i][j][k]);//sum for all j
+	   }
+	 }
+
        }//end MC
      }
    }
@@ -6614,6 +6823,7 @@ void ana::fillHisto_event_tables() {
    SetHistoLabelCutNjet( Zjets_njetsVcuts,      ve );
    SetHistoLabelCutNjet( VQQ_njetsVcuts,        ve );
    SetHistoLabelCutNjet( SingleTop_njetsVcuts,  ve );
+   SetHistoLabelCutNjet( PhotonJet_njetsVcuts,  ve );
    SetHistoLabelCutNjet( Data_njetsVcuts,       ve );
 
 }//end fillHisto_event_tables
@@ -8583,16 +8793,38 @@ void ana::PrintNumIsolated() const{
     }
      
     printf("\n bce1 ");
-    if(mc_sample_has_bce1){ //mcname(bce1)=5
+    if(mc_sample_has_bce1){ //mcname(bce1)=6
       GetNumIso(6);
     }
     printf("\n bce2 ");
-    if(mc_sample_has_bce2){ //mcname(bce2)=5
+    if(mc_sample_has_bce2){ //mcname(bce2)=7
       GetNumIso(7);
     }
     printf("\n bce3 ");
     if(mc_sample_has_bce3){ //mcname(bce3)=8
       GetNumIso(8);
+    }
+
+    printf("\n tchan ");
+    if(mc_sample_has_tchan){ //mcname(tchan)=13
+      GetNumIso(13);
+    }
+    printf("\n tW    ");
+    if(mc_sample_has_tW){ //mcname(tW)=14
+      GetNumIso(14);
+    }
+
+    printf("\n pj1   ");
+    if(mc_sample_has_pj1){
+      GetNumIso(16);//mcname
+    }
+    printf("\n pj2   ");
+    if(mc_sample_has_pj2){
+      GetNumIso(17);//mcname
+    }
+    printf("\n pj3   ");
+    if(mc_sample_has_pj3){ 
+      GetNumIso(18);//mcname
     }
 
   }//end MC
@@ -8787,6 +9019,7 @@ void ana::DrawMCTypeTable( const string& title ) const {
        << " &" << setw(13) << "QCD "
     // << " &" << setw(13) << "VQQ "
        << " &" << setw(13) << "Single Top "
+       << " &" << setw(13) << "Photon+jets "
        << " &" << setw(25) << "Total \\\\\n\\hline" << endl;
 
   int njbegin = 0;
@@ -8804,6 +9037,7 @@ void ana::DrawMCTypeTable( const string& title ) const {
     double nqcd  = 0;
     //double nvqq  = 0;
     double nstop = 0;
+    double npj   = 0;
 
     for(int j=njbegin; j<ntjet; ++j) {   //sum up jet bins
       for(int k=1;  k<nmctype; ++k) {    //nmc
@@ -8818,9 +9052,10 @@ void ana::DrawMCTypeTable( const string& title ) const {
 	else if(k<=18)        nqcd += nevent; //13-18
 	//else if(k==19)     nvqq  += nevent; //19
 	else if(k<=22)       nstop += nevent; //20-22
+	else if(k<=30)         npj += nevent; //28-30
       }
     }
-    double total_obs = ntt + nwj + nzj + nqcd + nstop; //vqq
+    double total_obs = ntt + nwj + nzj + nqcd + nstop + npj; //vqq
 
     cout << " & " << setw(12) << fixed << ntt;
     cout << " & " << setw(12) << fixed << nwj;
@@ -8828,6 +9063,7 @@ void ana::DrawMCTypeTable( const string& title ) const {
     cout << " & " << setw(12) << fixed << nqcd;
     // cout << " & " << setw(12) << fixed << nvqq;
     cout << " & " << setw(12) << fixed << nstop;
+    cout << " & " << setw(12) << fixed << npj;
     
     //print total column for this cut
     cout << " & " << setw(13) << fixed << total_obs << " \\\\" <<endl;
@@ -8874,6 +9110,10 @@ void ana::DrawSignalBGTable() const {
 	total_sig += e_plus_jet_weighted[i][j][k];
       }
       for(int k=11; k<23; ++k){ //loop over all bg mc types (code 11 to 22)
+	total_bkg += e_plus_jet_weighted[i][j][k];
+      }
+      // include photon_jets as background: mctype=28,29,30
+      for(int k=28; k<31; ++k){ //loop over all bg mc types (code 11 to 22)
 	total_bkg += e_plus_jet_weighted[i][j][k];
       }
     }
@@ -9035,9 +9275,10 @@ void ana::DrawSingleTopTable( const string& title ) const {
 }//end DrawSingleTopTable
 //---------------------------------------------------------------------------------------------
 
+
 //---------------------------------------------------------------------------------------------
 // Draw event count table for break down of TT + n jet
-//
+//--------------------------------------------------------
 void ana::DrawTTnjetTable( const string& title ) const {
   
   static bool first_time(true);
@@ -9079,18 +9320,6 @@ void ana::DrawTTnjetTable( const string& title ) const {
     // get the sum of TTnj at this cut (mctype for tt+j: 23-27)
     if(first_time) sumTTnj = (double)getTotalEvents( e_plus_jet,  i, 23, 27, njbegin );
     else           sumTTnj = getTotalEvents( e_plus_jet_weighted, i, 23, 27, njbegin );
-    /*
-    for(int k=23; k<=27; k++) { //mctype (tt+j): 23-27
-
-      double totalT = 0;
-      for(int j=njbegin; j<ntjet; ++j) { //njet
-	if(first_time) totalT += (double)e_plus_jet[i][j][k];
-	else           totalT += e_plus_jet_weighted[i][j][k];
-      }
-      sum += totalT;
-      cout << " & " << setw(12) << totalT;
-    }
-    */
     cout << " & " << setw(13) << sumTTnj << " \\\\"<< endl;   
   }
   cout << "\\hline" << endl;
@@ -9099,6 +9328,62 @@ void ana::DrawTTnjetTable( const string& title ) const {
 
 }//end DrawTTnjetTable
 //---------------------------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------------------------
+// Draw event count table for break down of Photon+Jets
+//--------------------------------------------------------
+void ana::DrawPhotonJetsTable( const string& title ) const {
+    
+  static bool first_time(true);
+  if(first_time) cout.precision(0);      //unweighted table
+  else           cout.precision(myprec); //weighted table
+ 
+  if(first_time) cout << "\\newpage\n" << endl;
+  cout << "%------------------------------------------------------------------------" << endl;
+  cout << "%                      " << title << endl;
+  cout << "%------------------------------------------------------------------------" << endl;
+
+  if(first_time){
+    cout << "\\begin{tabular}{|l|rrr|r|}" << endl;
+    cout << "\\hline" << endl;
+  }
+  cout << "\\multicolumn{5}{|l|}";
+  if(first_time) cout << "{Break down of actual number of photon+jets top events passing selection}";
+  else           cout << "{Break down of expected photon+jets events for " << m_intlumi << "/pb}";
+  cout << "\\\\\n\\hline" << endl;
+
+  cout << "          Cut        ";
+  cout << " &" << setw(13) << "HT 40-100";
+  cout << " &" << setw(13) << "HT 100-200";
+  cout << " &" << setw(13) << "HT 200-inf";
+  cout << " &" << setw(23) << "AllPhotonJets \\\\\\hline" << endl;
+
+  int njbegin = 0;
+  int p=0;
+
+  for(int i=0; i<ncutshown; ++i){ //cut stage
+
+    double sumPhotonJet = 0;
+ 
+    printCutStage(p, ve2.at(p));
+    if(ve2.at(p)==Fourjets)  { njbegin = 4; i--; }
+    p++;
+
+    // get the sum of Single Top at this cut: k=28-30
+    if(first_time) sumPhotonJet = (double)getTotalEvents( e_plus_jet,  i, 28, 30, njbegin );
+    else           sumPhotonJet = getTotalEvents( e_plus_jet_weighted, i, 28, 30, njbegin );
+    cout << " & " << setw(13) << sumPhotonJet << " \\\\"<< endl;
+    
+  }
+  cout << "\\hline" << endl;
+  if(!first_time) cout << "\\end{tabular}\\\\[5mm]" << endl;
+  first_time = false;
+
+}//end DrawPhotonJetsTable
+//---------------------------------------------------------------------------------------------
+
+
 
 
 // NOTE: print unweighted event numbers
@@ -9246,7 +9531,7 @@ void ana::CalculateErrors() {
   string kIndexmcNames[nmctype] = {
     "data",ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,ttsample,
     wjetSample,"zjet","enri1","enri2","enri3","bce1","bce2","bce3","vqq","tW","tchan","schan",
-    "tt0j","tt1j","tt2j","tt3j","tt4j"
+    "tt0j","tt1j","tt2j","tt3j","tt4j","pj1","pj2","pj3"
   };
 
 
@@ -9268,6 +9553,10 @@ void ana::CalculateErrors() {
   QCD_Sum_pass_weighted2.resize( nstage, v1D_nj );
   QCD_Sum_Effic_unc_pos.resize(  nstage, v1D_nj );
   QCD_Sum_Effic_unc_neg.resize(  nstage, v1D_nj );
+
+  Pjet_Sum_pass_weighted2.resize( nstage, v1D_nj );
+  Pjet_Sum_Effic_unc_pos.resize(  nstage, v1D_nj );
+  Pjet_Sum_Effic_unc_neg.resize(  nstage, v1D_nj );
 
   v1D_nj.clear();
 
@@ -9448,6 +9737,16 @@ void ana::CalculateErrors() {
       TTnj_Sum_Effic_unc_neg[i][j] = sqrt(TTnj_Sum_Effic_unc_neg[i][j]);
       */
 
+      // Photon+jets (28-30)
+      for(int k=28; k<30; ++k){
+        Pjet_Sum_pass_weighted2[i][j] += e_plus_jet_weighted[i][j][k];
+        double cer = epj_errors[i][j][k];
+        Pjet_Sum_Effic_unc_pos[i][j] += (cer*cer);
+        if(epj_effic[i][j][k] !=0){Pjet_Sum_Effic_unc_neg[i][j] += (cer*cer);}
+      }
+      Pjet_Sum_Effic_unc_pos[i][j] = sqrt(Pjet_Sum_Effic_unc_pos[i][j]);
+      Pjet_Sum_Effic_unc_neg[i][j] = sqrt(Pjet_Sum_Effic_unc_neg[i][j]);
+
     }//nj
 
   }//stage
@@ -9512,12 +9811,17 @@ void ana::PrintErrorTables() {
     // Breakdown of QCD (with erros)
     //-------------------------------
     //    PrintErrorTable_QCD(myfile);
-    PrintErrorTable_QCD( );
+    PrintErrorTable_QCD();
     
     // Breakdown of Single Top (with errors)
     //----------------------------------------
     //    PrintErrorTable_SingleTop( myfile );//, Stop_Sum_Effic_unc_pos ); //NB: use unc_pos only
     PrintErrorTable_SingleTop();
+
+    // Breakdown of Photon+jets (with errors)
+    //----------------------------------------
+    PrintErrorTable_PhotonJets();
+
   }
 
   //if(m_debug) cout << "Closing myfile" << endl;
@@ -9620,8 +9924,10 @@ void ana::PrintErrorTable_NjetVcut() {
       double myPosErr = 0;
       double myNegError = 0;
 
-      for(int k=1; k<23; ++k){
+      for(int k=1; k<31; ++k){ //was k<23, after adding photon+jet (k=28,29,30) becomes k<27
 	if(k==19) continue;//skip vqq
+	if(k>22 && k<28) continue; // skip alpgen ttbar: k=23-27 (tt0j-tt4j)
+
 	myTotal  += e_plus_jet_weighted[i][j][k];
 	myPosErr += TMath::Power( epj_errors[i][j][k], 2 );
 	if(e_plus_jet_weighted[i][j][k] != 0){ myNegError += TMath::Power( epj_errors[i][j][k], 2 ); }
@@ -9967,6 +10273,17 @@ void ana::PrintErrorTable_MC(){
 
     // CHECK WITH FRANKIE ........ Is the above 4 lines (XXX) mistake? (Right now, change to square)
 
+    // Add photon+jets, 20 Jun
+    // Photon+jets (sum) = pj1+pj2+pj3
+    printLine(myfile, Pjet_Sum_pass_weighted2[i][4], Pjet_Sum_Effic_unc_pos[i][4]);
+    TotalErrorPos     += TMath::Power( Pjet_Sum_Effic_unc_pos[i][4], 2 );
+    TotalErrorNeg     += TMath::Power( Pjet_Sum_Effic_unc_pos[i][4], 2 );
+    TotalEvents       +=              Pjet_Sum_pass_weighted2[i][4];
+    JustBG[i+1]       +=              Pjet_Sum_pass_weighted2[i][4];
+    JustBGUncPos[i+1] += TMath::Power( Pjet_Sum_Effic_unc_pos[i][4], 2 );
+    JustBGUncNeg[i+1] += TMath::Power( Pjet_Sum_Effic_unc_neg[i][4], 2 );
+
+
 
 
     // All
@@ -10175,6 +10492,69 @@ void ana::PrintErrorTable_SingleTop()  {
 
 //---------------------------------------------------------------------------------------------
 
+void ana::PrintErrorTable_PhotonJets()  {
+
+  if(m_debug) cout << "Starting << PrintErrorTable_PhotonJets >>" << endl;
+
+  myfile << "%------------------------------------------------------------------------" << endl;
+  myfile << "%       Breakdown of Photon+Jets" << endl;
+  myfile << "%------------------------------------------------------------------------" << endl;
+
+  myfile << "\\begin{tabular}{|l|rrr|r|}" << endl;
+  myfile << "\\hline" << endl;
+  myfile << "\\multicolumn{5}{|l|}";
+  myfile << "{Break down of expected photon+jets events for " << (int)m_intlumi << "/pb}";
+  myfile << "\\\\\n\\hline" << endl;
+
+  myfile << "            Cut      ";
+  myfile << " &" << setw(21) << "HT 40-100  ";
+  myfile << " &" << setw(21) << "HT 100-200 ";
+  myfile << " &" << setw(21) << "HT 200-inf ";
+  myfile << " &" << setw(29) << "AllPhotonJets \\\\\\hline" << endl;
+
+
+  int njbegin = 0;
+  int p=0;
+
+  for(int i=0; i<ncutshown; ++i){ //cut stage
+
+    double all = 0;
+    double allEr = 0;
+
+    printCutStage(myfile, p, ve2.at(p));
+    if(ve2.at(p)==Fourjets){ njbegin = 4; i--; }
+    p++;
+
+    for(int k=28; k<31; ++k) { //mctype (photon+jets): 28-30
+      double totalT = 0;
+      double totalEr = 0;
+      for(int j=njbegin; j<ntjet; ++j) { //njet
+        totalT  += e_plus_jet_weighted[i][j][k];
+	totalEr += TMath::Power(epj_errors[i][j][k],2);
+      }
+      totalEr = sqrt(totalEr);
+      all += totalT;
+      printLine(myfile, totalT, totalEr);
+    }
+    for(int j=njbegin; j<ntjet; ++j) {allEr += TMath::Power(Pjet_Sum_Effic_unc_pos[i][j],2);}
+    allEr = sqrt(allEr);
+
+    myfile << " & " << setw(10) << ScrNum(all) << "$\\pm$" << setw(4) << left << ScrNum(allEr) 
+	   << right << " \\\\"<< endl;
+
+  }//loop of cut
+
+  myfile << "\\hline" << endl;
+  myfile << "\\end{tabular}\\\\[5mm]" << endl;
+  myfile << endl << endl;
+
+  if(m_debug) cout << " End"<< endl;
+}//end PrintErrorTable_PhotonJets
+
+//---------------------------------------------------------------------------------------------
+
+
+
 
 
 //=============================================================================================
@@ -10247,6 +10627,10 @@ bool ana::is_mc_present( const int& code ) const {
   case 13 : return mc_sample_has_tW;    break;
   case 14 : return mc_sample_has_tchan; break;
   case 15 : return mc_sample_has_schan; break;
+  case 16 : return mc_sample_has_photonjet;  break;
+  case 17 : return mc_sample_has_pj1;  break;
+  case 18 : return mc_sample_has_pj2;  break;
+  case 19 : return mc_sample_has_pj3;  break;
   default : return false; break;
   }
 }//end is_mc_present
@@ -10379,9 +10763,19 @@ float ana::compute_d0err_BS(const string &lepton, const int& i) const {
 //---------------------------------------------------------------------------------------------
 
 // Get d0 w.r.t. Beam spot
+// Note: the precomputed variable from PAT is only available in "v2" ntuple (spring10_7TeV_new).
+//       We use that except for enri1 where we have to compute it ourself.
 float ana::get_d0_BS( const string& lepton, const int& i ) const {
   return compute_d0(lepton,i,"BS");
-  //return els3_dB->at();
+  /*
+  if(this_mc=="enri1"){
+    return compute_d0(lepton,i,"BS");
+  }else{
+    if(lepton=="electron") return els3_d0_bs->at(i);
+    else if(lepton=="muon") return mus3_d0_bs->at(i);
+    else return compute_d0(lepton,i,"BS");
+  }
+  */
 }
 //---------------------------------------------------------------------------------------------
 
@@ -10628,9 +11022,25 @@ bool ana::passEleID_VBTF_W70(const uint& i) const{
 //---------------------------------------------------------------------------------------------
 
 bool ana::passHLT() const {
-  if ( HLTBit=="HLT_Ele15_LW_L1R" ) return (bool)HLT_Ele15_LW_L1R;
-  if ( HLTBit=="HLT_Ele15_SW_L1R" ) return (bool)HLT_Ele15_SW_L1R;
-  if ( HLTBit=="HLT_Photon10_L1R" ) return (bool)HLT_Photon10_L1R;
+  if ( m_runOnV4ntuples ){
+
+    if ( (IsData() && run < 137029) || IsData()==false ){//use emulated photon15 for MC and older data
+      return pass_photon15;
+    }    
+    else if ( IsData() && run >= 137029 ){ //use HLT_Photon15 for newer data
+      return (bool)HLT_Photon15_L1R;
+      //if ( HLTBit=="HLT_Ele15_LW_L1R" ) return (bool)HLT_Ele15_LW_L1R;
+      //if ( HLTBit=="HLT_Ele15_SW_L1R" ) return (bool)HLT_Ele15_SW_L1R;
+      //if ( HLTBit=="HLT_Photon10_L1R" ) return (bool)HLT_Photon10_L1R;
+      //if ( HLTBit=="HLT_Photon15_L1R" ) return (bool)HLT_Photon15_L1R;
+    }
+    
+  }else{// OLD
+    if ( HLTBit=="HLT_Ele15_LW_L1R" ) return (bool)HLT_Ele15_LW_L1R;
+    if ( HLTBit=="HLT_Ele15_SW_L1R" ) return (bool)HLT_Ele15_SW_L1R;
+    if ( HLTBit=="HLT_Photon10_L1R" ) return (bool)HLT_Photon10_L1R;
+    if ( HLTBit=="HLT_Photon15_L1R" ) return (bool)HLT_Photon15_L1R;
+  }
   return false;
 }
 //---------------------------------------------------------------------------------------------
