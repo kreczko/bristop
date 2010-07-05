@@ -1879,6 +1879,22 @@ private:
   TH1D *Conv_CheckDelR_GSFTk_ctfTk;
   int mycounter;
   TH1F *Converted_ML[3];
+  vector<TH1*> AN_et;
+  vector<TH1*> AN_eta;
+  vector<TH1*> AN_d0;
+  vector<TH1*> AN_iso;
+  vector<TH1*> AN_trkiso;
+  vector<TH1*> AN_ecaliso;
+  vector<TH1*> AN_hcaliso;
+  vector<TH1*> AN_mh;
+  vector<TH1*> AN_jet1_pt;
+  vector<TH1*> AN_jet2_pt;
+  vector<TH1*> AN_jet3_pt;
+  vector<TH1*> AN_jet4_pt;
+  vector<TH1*> AN_jet1_eta;
+  vector<TH1*> AN_jet2_eta;
+  vector<TH1*> AN_jet3_eta;
+  vector<TH1*> AN_jet4_eta;
 
 
 

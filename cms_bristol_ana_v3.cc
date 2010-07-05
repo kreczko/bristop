@@ -8,10 +8,11 @@
 //#====================================================#
 //# Last update:
 //
+//  5 Jul 2010: Plots added by Frankie.
 //  1 Jul 2010: Adapt code to be able to use the emulated Photon15' (=Photon10+pt(HLT object)>15 GeV)
 //              to mimic HLT_Photon15 starting run 137029.
 //               - data: run >= 137029: use HLT_Photon15_L1R (normal HLT bit)
-//                       run <  137029: use eventA.pass_photon15 (emulated)
+//                       run < 137029: use eventA.pass_photon15 (emulated)
 //               - MC: use eventA.pass_photon15 (emulated)
 //               Note: need v4 ntuple. 
 //               
@@ -22,7 +23,7 @@
 // 19,20 Jun 2010: add photon jet.
 // 18 Jun 2010: added single top e20 stat. Correct bce2 e20 number. Update tchan e20 stat.
 // 17 Jun 2010: - take out sigmaIEtaIEta < 0.002 cleaning cut as it is not part of Ref Sel.
-//              
+//
 // 17 Jun 2010: add switch for scraping filter: RemoveScraping().
 //              - revert back, do not skip events when event fails HLT, because we want
 //                to count the initial event according to njet (after jet cleaning).
@@ -2108,6 +2109,25 @@ void ana::BookHistograms_conv(){
    Converted_ML[0] = new TH1F("Converted_ML_preAlgo","Converted_ML_preAlgo",10,-0.5,9.5);
    Converted_ML[1] = new TH1F("Converted_ML_Flagged","Converted_ML_Flagged",10,-0.5,9.5);
    Converted_ML[2] = new TH1F("Converted_ML_nonFlagged","Converted_ML_nonFlagged",10,-0.5,9.5);
+
+   addHistoDataAndMC( AN_et,       "AN_et",     "AN_et",      200,0,200);
+   addHistoDataAndMC( AN_eta,       "AN_eta",     "AN_eta",      100,-2.5,2.5);
+   addHistoDataAndMC( AN_d0,       "AN_d0",     "AN_d0",      1000,0,1);
+   addHistoDataAndMC( AN_mh,       "AN_mh",     "AN_mh",      10,-0.5,9.5);
+   addHistoDataAndMC( AN_iso,       "AN_iso",     "AN_iso",      100,0,10);
+   addHistoDataAndMC( AN_trkiso,       "AN_trkiso",     "AN_trkiso",      100,0,10);
+   addHistoDataAndMC( AN_ecaliso,       "AN_ecaliso",     "AN_ecaliso",      100,0,10);
+   addHistoDataAndMC( AN_hcaliso,       "AN_hcaliso",     "AN_hcaliso",      100,0,10);
+
+   addHistoDataAndMC( AN_jet1_pt,       "AN_jet1_pt",     "AN_jet1_pt",      500,0,500);
+   addHistoDataAndMC( AN_jet2_pt,       "AN_jet2_pt",     "AN_jet2_pt",      500,0,500);
+   addHistoDataAndMC( AN_jet3_pt,       "AN_jet3_pt",     "AN_jet3_pt",      500,0,500);
+   addHistoDataAndMC( AN_jet4_pt,       "AN_jet4_pt",     "AN_jet4_pt",      500,0,500);
+   addHistoDataAndMC( AN_jet1_eta,       "AN_jet1_eta",     "AN_jet1_eta",      100,-2.5,2.5);
+   addHistoDataAndMC( AN_jet2_eta,       "AN_jet2_eta",     "AN_jet2_eta",      100,-2.5,2.5);
+   addHistoDataAndMC( AN_jet3_eta,       "AN_jet3_eta",     "AN_jet3_eta",      100,-2.5,2.5);
+   addHistoDataAndMC( AN_jet4_eta,       "AN_jet4_eta",     "AN_jet4_eta",      100,-2.5,2.5);
+
 }
 //---------------------------------------------------------------------------------------------
 
@@ -4225,6 +4245,92 @@ bool ana::EventLoop(){
      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      
      if(m_debug) cout << " Starting << ANALYSIS >>" << endl;
+
+
+     if(!isMuon && !isZ && fired_single_em && goodrun && Nels>0){
+
+       bool bp_et;
+       bool bp_eta;
+       bool bp_iso;
+       bool bp_d0;
+       bool bp_mh;
+       float bf_et = 0;
+       float bf_eta = 10;
+       float bf_iso = 100;
+       float bf_d0 = 10;
+       float bf_mh = 10;
+       float bf_trkiso = 0;
+       float bf_ecalIso = 0;
+       float bf_hcalIso = 0;
+       for(int i=0;i<Nels;i++){//et, eta, iso, d0, MH 
+
+	 bp_et = 0;
+         bp_eta = 0;
+         bp_iso = 0;
+         bp_d0 = 0;
+         bp_mh = 0;
+         if( !passEleID(i) ) continue;
+
+         if(els_et->at(i) > 30){bp_et = 1;}
+         if(fabs(els_eta->at(i))<2.5 ){bp_eta = 1;}
+         if( fabs(get_d0("electron",i)) < 0.02){bp_d0 = 1;}
+         if( getRelIso(i)<0.1 ){bp_iso = 1;}
+         if( els_innerLayerMissingHits->at(i) <1 ){bp_mh = 1;}
+
+         if( bp_eta && bp_iso && bp_d0 && bp_mh) {if(els_et->at(i) > bf_et){bf_et = els_et->at(i);}}
+         if( bp_et && bp_iso && bp_d0 && bp_mh){ if(fabs(els_eta->at(i)) < fabs(bf_eta) ){bf_eta = els_eta->at(i) ;} }
+         if( bp_et && bp_eta && bp_d0 && bp_mh){ if(getRelIso(i) < bf_iso){
+             bf_iso = getRelIso(i);
+             bf_trkiso = els_dr03TkSumPt->at(i);bf_ecalIso = els_dr03EcalRecHitSumEt->at(i);bf_hcalIso = els_dr03HcalTowerSumEt->at(i);
+           }}
+	 if( bp_et && bp_eta && bp_iso && bp_mh){ if( fabs(get_d0("electron",i))<fabs(bf_d0) ){bf_d0 = get_d0("electron",i);} }
+         if( bp_et && bp_eta && bp_iso && bp_d0 ){ if(els_innerLayerMissingHits->at(i) < bf_mh){bf_mh = els_innerLayerMissingHits->at(i);} }
+       }
+
+       if(bf_et > 0) {  fillHistoDataAndMC(  AN_et , bf_et ); }
+       if( bf_eta < 10) { fillHistoDataAndMC( AN_eta , bf_eta );}
+       if(bf_iso < 100 ){ fillHistoDataAndMC( AN_iso , bf_iso );
+         fillHistoDataAndMC( AN_trkiso , bf_trkiso );
+         fillHistoDataAndMC( AN_ecaliso , bf_ecalIso );
+         fillHistoDataAndMC( AN_hcaliso,  bf_hcalIso );
+       }
+       if(bf_d0 <10 ){ fillHistoDataAndMC( AN_d0 , fabs(bf_d0) );}
+       if( bf_mh < 10 ) { fillHistoDataAndMC( AN_mh , bf_mh );}
+       
+       /*
+       if(bf_et > 0) { AN_et->Fill( bf_et, this_weight ); }
+       if( bf_eta < 10) {AN_eta->Fill( bf_eta, this_weight );}
+       if(bf_iso < 100 ){AN_iso->Fill( bf_iso, this_weight );
+         AN_trkiso->Fill( bf_trkiso, this_weight );
+         AN_ecaliso->Fill( bf_ecalIso, this_weight );
+         AN_hcaliso->Fill( bf_hcalIso, this_weight );
+       }
+       if(bf_d0 <10 ){AN_d0->Fill( fabs(bf_d0), this_weight );}
+       if( bf_mh < 10 ) {AN_mh->Fill( bf_mh, this_weight );}
+       
+	 */
+        
+
+       if(nGoodIsoEle == 1 && pass_missHits){
+	 
+	 if(ntj>0){fillHistoDataAndMC (AN_jet1_pt , jets.at(0).Pt() );fillHistoDataAndMC(AN_jet1_eta ,jets.at(0).PseudoRapidity()); }
+	 if(ntj>1){fillHistoDataAndMC (AN_jet2_pt , jets.at(1).Pt() );fillHistoDataAndMC(AN_jet2_eta ,jets.at(1).PseudoRapidity()); }
+	 if(ntj>2){fillHistoDataAndMC (AN_jet3_pt , jets.at(2).Pt() );fillHistoDataAndMC(AN_jet3_eta ,jets.at(2).PseudoRapidity()); }
+	 if(ntj>3){fillHistoDataAndMC (AN_jet4_pt , jets.at(3).Pt() );fillHistoDataAndMC(AN_jet4_eta ,jets.at(3).PseudoRapidity()); }
+
+       }
+     }
+
+
+
+
+
+
+
+
+
+
+
 
 
      if(e_plus_jet_pass && pass_4jets) nDebugIsoTable++;
