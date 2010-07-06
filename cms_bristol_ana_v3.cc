@@ -8,6 +8,10 @@
 //#====================================================#
 //# Last update:
 //
+//  6 Jul 2010: Update cross section values to the CMS standard.
+//               W+jets: 28000 -> 28049 pb
+//               Z+jets: 2800 -> 969*3=2907 pb
+//               tchan: 63 -> 63.2 pb
 //  5 Jul 2010: Plots added by Frankie.
 //  1 Jul 2010: Adapt code to be able to use the emulated Photon15' (=Photon10+pt(HLT object)>15 GeV)
 //              to mimic HLT_Photon15 starting run 137029.
@@ -629,8 +633,8 @@ void ana::DefineCrossSection(){
     cross_section["ttbar"] =          165. ;  //was 187 pb
     cross_section["ttjet"] =          165. ;
 
-    cross_section["wjet"]  =  28000.; //was 24e3 * 1.14
-    cross_section["zjet"]  =   2800.; //was 2.3e3 * 1.14
+    cross_section["wjet"]  =  28049; //28000.; //was 24e3 * 1.14
+    cross_section["zjet"]  =  2907;  // 2800.; //was 2.3e3 * 1.14
     
     cross_section["wenu"]  =  7899 * 0.779 * 1.14 ; //xs 7899 pb (pythia LO) (eff=0.779) (K-fac=1.14)
     cross_section["zee"]   =  1300 * 1.14 ;        //xs 1300 pb (pythia LO) (K-fac=1.14)
@@ -648,7 +652,7 @@ void ana::DefineCrossSection(){
     //cross_section["schan"] =   0.99 ;   //0.99 pb is Madgraph value incl. BR(B->e,mu,tau), take from 'ProductionSummer2009at7TeV' Twiki
 
     cross_section["tW"]    =  10.6  ;         //xs  11 pb (NLO MCFM) inclusive t,W decay
-    cross_section["tchan"] =   63. * 0.324;   //xs  63 pb (NLO MCFM) * 0.324 (Br(t->blnu)) = 20.412
+    cross_section["tchan"] =   63.2 * 0.324;   //xs  63 pb (NLO MCFM) * 0.324 (Br(t->blnu)) = 20.412
     cross_section["schan"] =   4.6 * 0.324 ;  //4.6 pb x 0.324 (4.6pb is NNNLO) = 1.4904
 
     // photon+jets MadGraph
@@ -1023,7 +1027,7 @@ ana::ana(){
    m_intlumi                 = 10.0; // integrated luminosity pb-1
    usegoodrun                = true;
    checkTrig                 = true; 
-   HLTBit                    = "HLT_Ele15_LW_L1R";
+   HLTBit                    = "HLT_Photon15_L1R"; // "HLT_Ele15_LW_L1R";
    numlimit                  = -1;
    nfile                     = 0;
    m_QCDest_reliso_bin_width = 0.01;
@@ -1352,6 +1356,7 @@ void ana::ReadSelectedBranches() const {
      //chain->SetBranchStatus("HLT_Ele15_LW_L1R",1); //trigger (8e29)
      //chain->SetBranchStatus("HLT_Ele10_SW_L1R",1); //trigger (1e30)
      chain->SetBranchStatus(HLTBit.c_str(),1);
+     chain->SetBranchStatus("HLT_Photon15_L1R",1);
      //cout << "amtb 1: b4 m_runOnV4ntuples" << endl;
      if(m_runOnV4ntuples) {
        //cout << "amtb 1b: b4 set branch add pass photon15" << endl;
@@ -4262,7 +4267,7 @@ bool ana::EventLoop(){
        float bf_trkiso = 0;
        float bf_ecalIso = 0;
        float bf_hcalIso = 0;
-       for(int i=0;i<Nels;i++){//et, eta, iso, d0, MH 
+       for(unsigned int i=0;i<Nels;i++){//et, eta, iso, d0, MH 
 
 	 bp_et = 0;
          bp_eta = 0;
