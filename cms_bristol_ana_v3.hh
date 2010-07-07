@@ -318,6 +318,7 @@ public:
 		h_hadTop_maxPT_mass_nonIso_4j_1000,
 		h_m3_1000,
 		h_m3_control_1000,
+		h_wjet_mass_matched,
 		NUMBER_OF_1D_HISTOGRAMS
 	};
 
@@ -404,7 +405,12 @@ public:
 	};
 
 	enum Ebtag1DHists {
-		h_mttbar, h_mWhad, h_mtlep, h_mthad, NUMBER_OF_BTAG_1D_HISTOGRAMS
+		h_mttbar,
+		h_mWhad,
+		h_mtlep,
+		h_mthad,
+		h_wjet_mass,
+		NUMBER_OF_BTAG_1D_HISTOGRAMS
 	};
 	/**
 	 * Enum for 2-D histograms
@@ -581,7 +587,6 @@ public:
 		m_runOnMyHLTskim = val;
 	}
 
-
 private:
 
 	//-----------------
@@ -691,8 +696,7 @@ private:
 	void reco_hadronicTop_highestTopPT(const std::vector<TLorentzVector>&, const int nGoodIsoEle);
 	pair<double, double> compute_M3(const std::vector<TLorentzVector>&) const;
 	void
-			reco_Mttbar(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron,
-					const TLorentzVector& met);
+	reco_Mttbar(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met);
 	void reco_Mttbar(const vector<TLorentzVector>& jets, const TLorentzVector& electron, const TLorentzVector& met,
 			ushort btag);
 	void reco_Mttbar_matched(const std::vector<TLorentzVector>& jets, const TLorentzVector& electron,
@@ -775,7 +779,7 @@ private:
 	TH2D *Conv_OptiL[2];
 	TH2D *Conv_Opti_extragran[2];
 	TH1D *Conv_CheckDelR_GSFTk_ctfTk;
-	int mycounter;
+	//	int mycounter;
 
 	// new (to run on mixed MC) (not currently needed)
 	string CheckEventTypeFromMcTruth() const;

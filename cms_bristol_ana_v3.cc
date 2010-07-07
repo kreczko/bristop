@@ -51,7 +51,7 @@ void ana::SetInputFile(const char* fname) {
 		PrintCuts();
 
 	nfile += ntupleChain->Add(fname);
-	if (GetTrigger())
+	if (UseTrigger())
 		hltChain->Add(fname);
 	first_time = false;
 }
@@ -151,7 +151,7 @@ void ana::SetOutputFirstName(const string name) {
 			nInitialEventMC_[i] = nevents.at(i);
 		}
 
-//		cout << "HEREEEE " << nInitialEventMC_[kWjets] << endl;
+		//		cout << "HEREEEE " << nInitialEventMC_[kWjets] << endl;
 		cout << hasSampleMC(kWjets) << endl;
 		// Set event weight map, and MC flag
 		DefineCrossSection();
@@ -271,7 +271,7 @@ void ana::PrintCuts() const {
 	cout << "***********************************************\n\n";
 	cout << "  LHC c.o.m Energy :  " << m_LHCEnergyInTeV << " TeV\n" << endl;
 	cout << "***********************************************\n" << endl;
-	if (GetTrigger())
+	if (UseTrigger())
 		cout << "  Trigger required :   " << GetHLTBit() << endl;
 	else
 		cout << "  Trigger not required" << endl;
@@ -656,7 +656,7 @@ ana::ana() {
 	}
 	// end 856
 
-	mycounter = 0;
+	//	mycounter = 0;
 	SetNumberOfJetsUsedInReco(8);
 	UseIsoElectronForReco(false);
 	btag_information.resize(NUMBER_OF_BTAGS);
@@ -747,7 +747,7 @@ bool ana::EventLoop() {
 		return false;
 	}
 
-	if (GetTrigger()) {
+	if (UseTrigger()) {
 		ntupleChain->AddFriend(hltChain);
 	}
 
@@ -1027,7 +1027,7 @@ bool ana::EventLoop() {
 
 		bool fired_single_em = true;
 
-		if (GetTrigger()) {
+		if (UseTrigger()) {
 
 			fired_single_em = false; //reset default value to "fail" if checking trigger
 
@@ -1100,8 +1100,8 @@ bool ana::EventLoop() {
 
 				if (GetDebug()) {
 					cout << "+++> Now starts running on  " << mc_names[fastmctype_] << "  events" << endl;
-					cout << " current entry: num " << lflag << ", tree # " << ntupleChain->GetTreeNumber() << "\n filename: "
-							<< ntupleChain->GetCurrentFile()->GetName() << endl << endl;
+					cout << " current entry: num " << lflag << ", tree # " << ntupleChain->GetTreeNumber()
+							<< "\n filename: " << ntupleChain->GetCurrentFile()->GetName() << endl << endl;
 				}
 
 			}//end if check MC
@@ -1820,9 +1820,9 @@ bool ana::EventLoop() {
 					btag_information[btag_type_TrackCount_highPur].push_back(jets_btag_TC_highPur->at(i));
 					btag_information[btag_type_JetBProb].push_back(jets_btag_jetBProb->at(i));
 					btag_information[btag_type_JetProb].push_back(jets_btag_jetProb->at(i));
-//					btag_information[btag_softEle].push_back(jets_btag_softEle->at(i));
-//					btag_information[btag_type_softMuon].push_back(jets_btag_softMuon->at(i));
-//					btag_information[btag_type_softMuonNoIP].push_back(jets_btag_softMuonNoIP->at(i));
+					//					btag_information[btag_softEle].push_back(jets_btag_softEle->at(i));
+					//					btag_information[btag_type_softMuon].push_back(jets_btag_softMuon->at(i));
+					//					btag_information[btag_type_softMuonNoIP].push_back(jets_btag_softMuonNoIP->at(i));
 					btag_information[btag_type_secondaryVertex].push_back(jets_btag_secVertex->at(i));
 					btag_information[btag_type_fake].push_back(jets_parton_Id->at(i));
 				}
@@ -1837,9 +1837,9 @@ bool ana::EventLoop() {
 					btag_information[btag_type_TrackCount_highPur].push_back(jetsSC5_btag_TC_highPur->at(i));
 					btag_information[btag_type_JetBProb].push_back(jetsSC5_btag_jetBProb->at(i));
 					btag_information[btag_type_JetProb].push_back(jetsSC5_btag_jetProb->at(i));
-//					btag_information[btag_softEle].push_back(jetsSC5_btag_softEle->at(i));
-//					btag_information[btag_type_softMuon].push_back(jetsSC5_btag_softMuon->at(i));
-//					btag_information[btag_type_softMuonNoIP].push_back(jetsSC5_btag_softMuonNoIP->at(i));
+					//					btag_information[btag_softEle].push_back(jetsSC5_btag_softEle->at(i));
+					//					btag_information[btag_type_softMuon].push_back(jetsSC5_btag_softMuon->at(i));
+					//					btag_information[btag_type_softMuonNoIP].push_back(jetsSC5_btag_softMuonNoIP->at(i));
 					btag_information[btag_type_secondaryVertex].push_back(jetsSC5_btag_secVertex->at(i));
 				}
 			}
@@ -1853,9 +1853,9 @@ bool ana::EventLoop() {
 					btag_information[btag_type_TrackCount_highPur].push_back(jetsKT4_btag_TC_highPur->at(i));
 					btag_information[btag_type_JetBProb].push_back(jetsKT4_btag_jetBProb->at(i));
 					btag_information[btag_type_JetProb].push_back(jetsKT4_btag_jetProb->at(i));
-//					btag_information[btag_softEle].push_back(jetsKT4_btag_softEle->at(i));
-//					btag_information[btag_type_softMuon].push_back(jetsKT4_btag_softMuon->at(i));
-//					btag_information[btag_type_softMuonNoIP].push_back(jetsKT4_btag_softMuonNoIP->at(i));
+					//					btag_information[btag_softEle].push_back(jetsKT4_btag_softEle->at(i));
+					//					btag_information[btag_type_softMuon].push_back(jetsKT4_btag_softMuon->at(i));
+					//					btag_information[btag_type_softMuonNoIP].push_back(jetsKT4_btag_softMuonNoIP->at(i));
 					btag_information[btag_type_secondaryVertex].push_back(jetsKT4_btag_secVertex->at(i));
 				}
 			}
@@ -1869,9 +1869,9 @@ bool ana::EventLoop() {
 					btag_information[btag_type_TrackCount_highPur].push_back(PFJets_btag_TC_highPur->at(i));
 					btag_information[btag_type_JetBProb].push_back(PFJets_btag_jetBProb->at(i));
 					btag_information[btag_type_JetProb].push_back(PFJets_btag_jetProb->at(i));
-//					btag_information[btag_softEle].push_back(PFJets_btag_softEle->at(i));
-//					btag_information[btag_type_softMuon].push_back(PFJets_btag_softMuon->at(i));
-//					btag_information[btag_type_softMuonNoIP].push_back(PFJets_btag_softMuonNoIP->at(i));
+					//					btag_information[btag_softEle].push_back(PFJets_btag_softEle->at(i));
+					//					btag_information[btag_type_softMuon].push_back(PFJets_btag_softMuon->at(i));
+					//					btag_information[btag_type_softMuonNoIP].push_back(PFJets_btag_softMuonNoIP->at(i));
 					btag_information[btag_type_secondaryVertex].push_back(PFJets_btag_secVertex->at(i));
 					btag_information[btag_type_fake].push_back(PFJets_parton_Id->at(i));
 				}
@@ -2260,12 +2260,12 @@ bool ana::EventLoop() {
 															e_plus_jet_weighted[13][ntj][mctype] += this->weight;
 
 															if (this->N_positive_btags >= 2) { // at least two +tags
-															//																cout << "if btags " << this->N_positive_btags << endl;
+																//																cout << "if btags " << this->N_positive_btags << endl;
 																e_plus_jet[14][ntj][mctype]++;
 																e_plus_jet_weighted[14][ntj][mctype] += this->weight;
 																if (goodJets.size() >= 4)
-																	reco_Mttbar(goodJets, iso_electrons_barrel[0], met[0],
-																			btag_type_secondaryVertex);
+																	reco_Mttbar(goodJets, iso_electrons_barrel[0],
+																			met[0], btag_type_secondaryVertex);
 															}
 														}
 														if (N_negative_btags >= 1) { //at least one -tag
@@ -2312,8 +2312,9 @@ bool ana::EventLoop() {
 
 			//Print out for each selected event
 			fprintf(outfile, "%7d %6d %10d %10d %8d %8lld %5dj %11.2f %8.2f %8.2f %8s   %s\n", counter_pass,
-					run_number, event_number, lumiBlock, ntupleChain->GetTreeNumber(), lflag, nGoodJet, goodJets.at(0).Pt(),
-					this_met, ht, mclabel[fastmctype_].c_str(), ntupleChain->GetCurrentFile()->GetName());
+					run_number, event_number, lumiBlock, ntupleChain->GetTreeNumber(), lflag, nGoodJet,
+					goodJets.at(0).Pt(), this_met, ht, mclabel[fastmctype_].c_str(),
+					ntupleChain->GetCurrentFile()->GetName());
 			interestingFiles.insert(ntupleChain->GetCurrentFile()->GetName());
 		}
 
@@ -3402,7 +3403,7 @@ bool ana::EventLoop() {
 	cout << "\n%------------------------------------------------------------------------------------\n";
 
 	cout << "Integrated luminosity assumed = " << intlumi << "/pb" << endl;
-	if (GetTrigger())
+	if (UseTrigger())
 		cout << "Applied HLT trigger: " << GetHLTBit() << endl;
 	cout << " Electron ET cut =  " << ELE_ETCUT << "  GeV" << endl;
 	cout << "     Muon PT cut =  " << MU_PTCUT << "  GeV" << endl;
@@ -7963,7 +7964,6 @@ void ana::bookExoticTopHistograms(ushort type) {
 	addHistoDataAndMC(type, h_mWhad_vs_mthad, "mWhad_vs_mthad", "M(W_{had}) vs M(t_{had})", 1000, 0, 1000, 500, 0, 500);
 	addHistoDataAndMC(type, k2D_mWlep_vs_mtlep, "mWlep_vs_mtlep", "M(W_{lep}) vs M(t_{lep})", 1000, 0, 1000, 500, 0,
 			500);
-
 }
 
 /**
@@ -7995,6 +7995,7 @@ void ana::bookExoticTopMatchedHistograms(ushort type) {
 	addHistoDataAndMC(type, h_Chi2Hadronic_matched, "Chi2Hadronic_matched", "#Chi^{2}_{had} (matched)", 1000, 0, 100);
 	addHistoDataAndMC(type, h_Chi2Global_matched, "Chi2Global_matched", "#Chi^{2}_{global} (matched)", 1000, 0, 100);
 	addHistoDataAndMC(type, h_Chi2Total_matched, "Chi2Total_matched", "#Chi^{2}_{total} (matched)", 3000, 0, 300);
+	addHistoDataAndMC(type, h_wjet_mass_matched, "wjet_mass_matched", "W jet mass (matched)", 500, 0, 500);
 }
 
 void ana::bookExoticTopBtaggedHistograms(ushort type) {
@@ -8004,10 +8005,13 @@ void ana::bookExoticTopBtaggedHistograms(ushort type) {
 	//	addHisto_btag_DataAndMC(type, h_mWlep, "mWlep", "reconstructed leptonic W mass", 500, 0, 500);
 	addHisto_btag_DataAndMC(type, h_mtlep, "mtlep", "reconstructed leptonic top mas", 1000, 0, 1000);
 	addHisto_btag_DataAndMC(type, h_mthad, "mthad", "reconstructed hadronic top mass", 1000, 0, 1000);
+
 	addHistoDataAndMC(type, k2D_mWlep_vs_mtlep_btag_fake, "mWlep_vs_mtlep_btag_fake",
 			"M(W_{lep}) vs M(t_{lep}) (fake btag)", 1000, 0, 1000, 500, 0, 500);
 	addHistoDataAndMC(type, h_mWhad_vs_mthad_btag_fake, "mWhad_vs_mthad_btag_fake",
 			"M(W_{had}) vs M(t_{had}) (fake btag)", 1000, 0, 1000, 500, 0, 500);
+
+	addHisto_btag_DataAndMC(type, h_wjet_mass, "wjet_mass", "W jet mass", 500, 0, 500);
 }
 
 void ana::bookExoticTopMCHistograms(ushort type) {
@@ -8377,6 +8381,8 @@ void ana::reco_Mttbar(const vector<TLorentzVector>& jets, const TLorentzVector& 
 				/ jets[chosen_leptonic_bjet_id].P();
 		double sintheta = TMath::Sqrt(1 - costheta * costheta);
 		double ptrel = sintheta * electron.P();
+		fillHisto_btag_DataAndMC(btag, h_wjet_mass, jets[chosen_lightquark_1].M(), this->weight);
+		fillHisto_btag_DataAndMC(btag, h_wjet_mass, jets[chosen_lightquark_2].M(), this->weight);
 		fillHisto_btag_DataAndMC(btag, h_mthad, hadronic_top.M(), this->weight);
 		fillHisto_btag_DataAndMC(btag, h_mtlep, leptonic_top.M(), this->weight);
 		fillHisto_btag_DataAndMC(btag, h_mWhad, hadronic_W.M(), this->weight);
@@ -8648,6 +8654,8 @@ void ana::reco_Mttbar_matched(const vector<TLorentzVector>& jets, const TLorentz
 		double chi2Tot = chi2lep + chi2had + chi2global;
 		TLorentzVector resonance = TLorentzVector(thad + tlep);
 
+		fillHistoDataAndMC(h_wjet_mass_matched, q1jet.M(), this->weight);
+		fillHistoDataAndMC(h_wjet_mass_matched, q2jet.M(), this->weight);
 		fillHistoDataAndMC(h_thad_pt_matched, thad.Pt(), this->weight);
 		fillHistoDataAndMC(h_mthad_matched, thad.M(), this->weight);
 		fillHistoDataAndMC(h_tlep_pt_matched, tlep.Pt(), this->weight);

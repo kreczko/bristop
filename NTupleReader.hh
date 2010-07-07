@@ -673,7 +673,7 @@ public:
 	std::string GetMETAlgorithm() const;
 	bool GetMissLayersFlag() const;
 	bool GetStudyPDFunc() const;
-	bool GetTrigger() const;
+	bool UseTrigger() const;
 
 	bool IsData() const;
 
@@ -694,6 +694,12 @@ public:
 private:
 	void EnablePFJets();
 	void LoadPFJets();
+	void EnableMCInformation();
+	void LoadMCInformation();
+	void EnablePhotons();
+	void LoadPhotons();
+	void EnableTracks()
+	void LoadTracks();
 
 
 };

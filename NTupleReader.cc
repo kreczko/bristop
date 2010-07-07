@@ -56,18 +56,18 @@ NTupleReader::NTupleReader() :
 			NjetsKT4(0), jetsKT4_energy(0), jetsKT4_et(0), jetsKT4_eta(0), jetsKT4_phi(0), jetsKT4_pt(0),
 			jetsKT4_px(0), jetsKT4_py(0), jetsKT4_pz(0), jetsKT4_status(0), jetsKT4_theta(0),
 			jetsKT4_btag_TC_highPur(0), jetsKT4_btag_TC_highEff(0), jetsKT4_btag_jetProb(0), jetsKT4_btag_jetBProb(0),
-			/*jetsKT4_btag_softEle(0), jetsKT4_btag_softMuon(0), jetsKT4_btag_softMuonNoIP(0),*/ jetsKT4_btag_secVertex(0),
-			jetsKT4_chgEmE(0), jetsKT4_chgHadE(0), jetsKT4_chgMuE(0), jetsKT4_chg_Mult(0), jetsKT4_neutralEmE(0),
-			jetsKT4_neutralHadE(0), jetsKT4_neutral_Mult(0), jetsKT4_mu_Mult(0), jetsKT4_emf(0), jetsKT4_ehf(0),
-			jetsKT4_n60(0), jetsKT4_n90(0), jetsKT4_area(0), jetsKT4_mass(0),
+			/*jetsKT4_btag_softEle(0), jetsKT4_btag_softMuon(0), jetsKT4_btag_softMuonNoIP(0),*/jetsKT4_btag_secVertex(
+					0), jetsKT4_chgEmE(0), jetsKT4_chgHadE(0), jetsKT4_chgMuE(0), jetsKT4_chg_Mult(0),
+			jetsKT4_neutralEmE(0), jetsKT4_neutralHadE(0), jetsKT4_neutral_Mult(0), jetsKT4_mu_Mult(0), jetsKT4_emf(0),
+			jetsKT4_ehf(0), jetsKT4_n60(0), jetsKT4_n90(0), jetsKT4_area(0), jetsKT4_mass(0),
 
 			NjetsSC5(0), jetsSC5_energy(0), jetsSC5_et(0), jetsSC5_eta(0), jetsSC5_phi(0), jetsSC5_pt(0),
 			jetsSC5_px(0), jetsSC5_py(0), jetsSC5_pz(0), jetsSC5_status(0), jetsSC5_theta(0),
 			jetsSC5_btag_TC_highPur(0), jetsSC5_btag_TC_highEff(0), jetsSC5_btag_jetProb(0), jetsSC5_btag_jetBProb(0),
-			/*jetsSC5_btag_softEle(0), jetsSC5_btag_softMuon(0), jetsSC5_btag_softMuonNoIP(0),*/ jetsSC5_btag_secVertex(0),
-			jetsSC5_chgEmE(0), jetsSC5_chgHadE(0), jetsSC5_chgMuE(0), jetsSC5_chg_Mult(0), jetsSC5_neutralEmE(0),
-			jetsSC5_neutralHadE(0), jetsSC5_neutral_Mult(0), jetsSC5_mu_Mult(0), jetsSC5_emf(0), jetsSC5_ehf(0),
-			jetsSC5_n60(0), jetsSC5_n90(0), jetsSC5_area(0), jetsSC5_mass(0),
+			/*jetsSC5_btag_softEle(0), jetsSC5_btag_softMuon(0), jetsSC5_btag_softMuonNoIP(0),*/jetsSC5_btag_secVertex(
+					0), jetsSC5_chgEmE(0), jetsSC5_chgHadE(0), jetsSC5_chgMuE(0), jetsSC5_chg_Mult(0),
+			jetsSC5_neutralEmE(0), jetsSC5_neutralHadE(0), jetsSC5_neutral_Mult(0), jetsSC5_mu_Mult(0), jetsSC5_emf(0),
+			jetsSC5_ehf(0), jetsSC5_n60(0), jetsSC5_n90(0), jetsSC5_area(0), jetsSC5_mass(0),
 
 			Nmc_doc(0), mc_doc_id(0), mc_doc_pt(0), mc_doc_px(0), mc_doc_py(0), mc_doc_pz(0), mc_doc_eta(0),
 			mc_doc_phi(0), mc_doc_theta(0), mc_doc_energy(0), mc_doc_status(0), mc_doc_charge(0), mc_doc_mother_id(0),
@@ -184,7 +184,7 @@ bool NTupleReader::GetMissLayersFlag() const {
 bool NTupleReader::GetStudyPDFunc() const {
 	return m_studyPDFunc;
 }
-bool NTupleReader::GetTrigger() const {
+bool NTupleReader::UseTrigger() const {
 	return checkTrig;
 }
 
@@ -387,9 +387,9 @@ void NTupleReader::Init() {
 	ntupleChain->SetBranchAddress("jets_btag_TC_highEff", &jets_btag_TC_highEff);
 	ntupleChain->SetBranchAddress("jets_btag_jetProb", &jets_btag_jetProb);
 	ntupleChain->SetBranchAddress("jets_btag_jetBProb", &jets_btag_jetBProb);
-//	chain->SetBranchAddress("jets_btag_softEle", &jets_btag_softEle);
-//	chain->SetBranchAddress("jets_btag_softMuon", &jets_btag_softMuon);
-//	chain->SetBranchAddress("jets_btag_softMuonNoIP", &jets_btag_softMuonNoIP);
+	//	chain->SetBranchAddress("jets_btag_softEle", &jets_btag_softEle);
+	//	chain->SetBranchAddress("jets_btag_softMuon", &jets_btag_softMuon);
+	//	chain->SetBranchAddress("jets_btag_softMuonNoIP", &jets_btag_softMuonNoIP);
 	ntupleChain->SetBranchAddress("jets_btag_secVertex", &jets_btag_secVertex);
 	ntupleChain->SetBranchAddress("jets_chgEmE", &jets_chgEmE);
 	ntupleChain->SetBranchAddress("jets_chgHadE", &jets_chgHadE);
@@ -421,9 +421,9 @@ void NTupleReader::Init() {
 		ntupleChain->SetBranchAddress("jetsKT4_btag_TC_highEff", &jetsKT4_btag_TC_highEff);
 		ntupleChain->SetBranchAddress("jetsKT4_btag_jetProb", &jetsKT4_btag_jetProb);
 		ntupleChain->SetBranchAddress("jetsKT4_btag_jetBProb", &jetsKT4_btag_jetBProb);
-//		chain->SetBranchAddress("jetsKT4_btag_softEle", &jetsKT4_btag_softEle);
-//		chain->SetBranchAddress("jetsKT4_btag_softMuon", &jetsKT4_btag_softMuon);
-//		chain->SetBranchAddress("jetsKT4_btag_softMuonNoIP", &jetsKT4_btag_softMuonNoIP);
+		//		chain->SetBranchAddress("jetsKT4_btag_softEle", &jetsKT4_btag_softEle);
+		//		chain->SetBranchAddress("jetsKT4_btag_softMuon", &jetsKT4_btag_softMuon);
+		//		chain->SetBranchAddress("jetsKT4_btag_softMuonNoIP", &jetsKT4_btag_softMuonNoIP);
 		ntupleChain->SetBranchAddress("jetsKT4_btag_secVertex", &jetsKT4_btag_secVertex);
 		ntupleChain->SetBranchAddress("jetsKT4_chgEmE", &jetsKT4_chgEmE);
 		ntupleChain->SetBranchAddress("jetsKT4_chgHadE", &jetsKT4_chgHadE);
@@ -457,9 +457,9 @@ void NTupleReader::Init() {
 		ntupleChain->SetBranchAddress("jetsSC5_btag_TC_highEff", &jetsSC5_btag_TC_highEff);
 		ntupleChain->SetBranchAddress("jetsSC5_btag_jetProb", &jetsSC5_btag_jetProb);
 		ntupleChain->SetBranchAddress("jetsSC5_btag_jetBProb", &jetsSC5_btag_jetBProb);
-//		chain->SetBranchAddress("jetsSC5_btag_softEle", &jetsSC5_btag_softEle);
-//		chain->SetBranchAddress("jetsSC5_btag_softMuon", &jetsSC5_btag_softMuon);
-//		chain->SetBranchAddress("jetsSC5_btag_softMuonNoIP", &jetsSC5_btag_softMuonNoIP);
+		//		chain->SetBranchAddress("jetsSC5_btag_softEle", &jetsSC5_btag_softEle);
+		//		chain->SetBranchAddress("jetsSC5_btag_softMuon", &jetsSC5_btag_softMuon);
+		//		chain->SetBranchAddress("jetsSC5_btag_softMuonNoIP", &jetsSC5_btag_softMuonNoIP);
 		ntupleChain->SetBranchAddress("jetsSC5_btag_secVertex", &jetsSC5_btag_secVertex);
 		ntupleChain->SetBranchAddress("jetsSC5_chgEmE", &jetsSC5_chgEmE);
 		ntupleChain->SetBranchAddress("jetsSC5_chgHadE", &jetsSC5_chgHadE);
@@ -658,54 +658,6 @@ void NTupleReader::Init() {
 	ntupleChain->SetBranchAddress("mus_id_TMOneStationTight", &mus_id_TMOneStationTight);
 	ntupleChain->SetBranchAddress("mus_id_TMLastStationOptimizedLowPtLoose", &mus_id_TMLastStationOptimizedLowPtLoose);
 	ntupleChain->SetBranchAddress("mus_id_TMLastStationOptimizedLowPtTight", &mus_id_TMLastStationOptimizedLowPtTight);
-	ntupleChain->SetBranchAddress("Nphotons", &Nphotons);
-	ntupleChain->SetBranchAddress("photons_energy", &photons_energy);
-	ntupleChain->SetBranchAddress("photons_et", &photons_et);
-	ntupleChain->SetBranchAddress("photons_eta", &photons_eta);
-	ntupleChain->SetBranchAddress("photons_phi", &photons_phi);
-	ntupleChain->SetBranchAddress("photons_pt", &photons_pt);
-	ntupleChain->SetBranchAddress("photons_px", &photons_px);
-	ntupleChain->SetBranchAddress("photons_py", &photons_py);
-	ntupleChain->SetBranchAddress("photons_pz", &photons_pz);
-	ntupleChain->SetBranchAddress("photons_status", &photons_status);
-	ntupleChain->SetBranchAddress("photons_theta", &photons_theta);
-	ntupleChain->SetBranchAddress("photons_hadOverEM", &photons_hadOverEM);
-	ntupleChain->SetBranchAddress("photons_scEnergy", &photons_scEnergy);
-	ntupleChain->SetBranchAddress("photons_scRawEnergy", &photons_scRawEnergy);
-	ntupleChain->SetBranchAddress("photons_scEta", &photons_scEta);
-	ntupleChain->SetBranchAddress("photons_scPhi", &photons_scPhi);
-	ntupleChain->SetBranchAddress("photons_scEtaWidth", &photons_scEtaWidth);
-	ntupleChain->SetBranchAddress("photons_scPhiWidth", &photons_scPhiWidth);
-	ntupleChain->SetBranchAddress("photons_tIso", &photons_tIso);
-	ntupleChain->SetBranchAddress("photons_ecalIso", &photons_ecalIso);
-	ntupleChain->SetBranchAddress("photons_hcalIso", &photons_hcalIso);
-	ntupleChain->SetBranchAddress("photons_isoEcalRecHitDR04", &photons_isoEcalRecHitDR04);
-	ntupleChain->SetBranchAddress("photons_isoHcalRecHitDR04", &photons_isoHcalRecHitDR04);
-	ntupleChain->SetBranchAddress("photons_isoSolidTrkConeDR04", &photons_isoSolidTrkConeDR04);
-	ntupleChain->SetBranchAddress("photons_isoHollowTrkConeDR04", &photons_isoHollowTrkConeDR04);
-	ntupleChain->SetBranchAddress("photons_nTrkSolidConeDR04", &photons_nTrkSolidConeDR04);
-	ntupleChain->SetBranchAddress("photons_nTrkHollowConeDR04", &photons_nTrkHollowConeDR04);
-	ntupleChain->SetBranchAddress("photons_isoEcalRecHitDR03", &photons_isoEcalRecHitDR03);
-	ntupleChain->SetBranchAddress("photons_isoHcalRecHitDR03", &photons_isoHcalRecHitDR03);
-	ntupleChain->SetBranchAddress("photons_isoSolidTrkConeDR03", &photons_isoSolidTrkConeDR03);
-	ntupleChain->SetBranchAddress("photons_isoHollowTrkConeDR03", &photons_isoHollowTrkConeDR03);
-	ntupleChain->SetBranchAddress("photons_nTrkSolidConeDR03", &photons_nTrkSolidConeDR03);
-	ntupleChain->SetBranchAddress("photons_nTrkHollowConeDR03", &photons_nTrkHollowConeDR03);
-	ntupleChain->SetBranchAddress("photons_isAlsoElectron", &photons_isAlsoElectron);
-	ntupleChain->SetBranchAddress("photons_hasPixelSeed", &photons_hasPixelSeed);
-	ntupleChain->SetBranchAddress("photons_isConverted", &photons_isConverted);
-	ntupleChain->SetBranchAddress("photons_isEBGap", &photons_isEBGap);
-	ntupleChain->SetBranchAddress("photons_isEEGap", &photons_isEEGap);
-	ntupleChain->SetBranchAddress("photons_isEBEEGap", &photons_isEBEEGap);
-	ntupleChain->SetBranchAddress("photons_isEBPho", &photons_isEBPho);
-	ntupleChain->SetBranchAddress("photons_isEEPho", &photons_isEEPho);
-	ntupleChain->SetBranchAddress("photons_isLoosePhoton", &photons_isLoosePhoton);
-	ntupleChain->SetBranchAddress("photons_isTightPhoton", &photons_isTightPhoton);
-	ntupleChain->SetBranchAddress("photons_r9", &photons_r9);
-	ntupleChain->SetBranchAddress("photons_gen_et", &photons_gen_et);
-	ntupleChain->SetBranchAddress("photons_gen_eta", &photons_gen_eta);
-	ntupleChain->SetBranchAddress("photons_gen_phi", &photons_gen_phi);
-	ntupleChain->SetBranchAddress("photons_gen_id", &photons_gen_id);
 	ntupleChain->SetBranchAddress("Npv", &Npv);
 	ntupleChain->SetBranchAddress("pv_x", &pv_x);
 	ntupleChain->SetBranchAddress("pv_y", &pv_y);
@@ -713,39 +665,6 @@ void NTupleReader::Init() {
 	ntupleChain->SetBranchAddress("pv_xErr", &pv_xErr);
 	ntupleChain->SetBranchAddress("pv_yErr", &pv_yErr);
 	ntupleChain->SetBranchAddress("pv_zErr", &pv_zErr);
-	ntupleChain->SetBranchAddress("Ntracks", &Ntracks);
-	ntupleChain->SetBranchAddress("tracks_chi2", &tracks_chi2);
-	ntupleChain->SetBranchAddress("tracks_ndof", &tracks_ndof);
-	ntupleChain->SetBranchAddress("tracks_chg", &tracks_chg);
-	ntupleChain->SetBranchAddress("tracks_pt", &tracks_pt);
-	ntupleChain->SetBranchAddress("tracks_px", &tracks_px);
-	ntupleChain->SetBranchAddress("tracks_py", &tracks_py);
-	ntupleChain->SetBranchAddress("tracks_pz", &tracks_pz);
-	ntupleChain->SetBranchAddress("tracks_eta", &tracks_eta);
-	ntupleChain->SetBranchAddress("tracks_phi", &tracks_phi);
-	ntupleChain->SetBranchAddress("tracks_theta", &tracks_theta);
-	ntupleChain->SetBranchAddress("tracks_d0dum", &tracks_d0dum);
-	ntupleChain->SetBranchAddress("tracks_dz", &tracks_dz);
-	ntupleChain->SetBranchAddress("tracks_vx", &tracks_vx);
-	ntupleChain->SetBranchAddress("tracks_vy", &tracks_vy);
-	ntupleChain->SetBranchAddress("tracks_vz", &tracks_vz);
-	ntupleChain->SetBranchAddress("tracks_numvalhits", &tracks_numvalhits);
-	ntupleChain->SetBranchAddress("tracks_numlosthits", &tracks_numlosthits);
-	ntupleChain->SetBranchAddress("tracks_d0dumErr", &tracks_d0dumErr);
-	ntupleChain->SetBranchAddress("tracks_dzErr", &tracks_dzErr);
-	ntupleChain->SetBranchAddress("tracks_ptErr", &tracks_ptErr);
-	ntupleChain->SetBranchAddress("tracks_etaErr", &tracks_etaErr);
-	ntupleChain->SetBranchAddress("tracks_phiErr", &tracks_phiErr);
-	ntupleChain->SetBranchAddress("tracks_Nrechits", &tracks_Nrechits);
-	ntupleChain->SetBranchAddress("tracks_innerHitX", &tracks_innerHitX);
-	ntupleChain->SetBranchAddress("tracks_innerHitY", &tracks_innerHitY);
-	ntupleChain->SetBranchAddress("tracks_innerHitZ", &tracks_innerHitZ);
-	ntupleChain->SetBranchAddress("tracks_outerHitX", &tracks_outerHitX);
-	ntupleChain->SetBranchAddress("tracks_outerHitY", &tracks_outerHitY);
-	ntupleChain->SetBranchAddress("tracks_outerHitZ", &tracks_outerHitZ);
-	ntupleChain->SetBranchAddress("tracks_highPurity", &tracks_highPurity);
-	if (m_useMisslayers)
-		ntupleChain->SetBranchAddress("tracks_innerLayerMissingHits", &tracks_innerLayerMissingHits);
 	ntupleChain->SetBranchAddress("run", &run_number);
 	ntupleChain->SetBranchAddress("event", &event_number);
 	ntupleChain->SetBranchAddress("lumiblock", &lumiBlock);
@@ -753,7 +672,7 @@ void NTupleReader::Init() {
 	// HLT tree (nonIso ele trigger)
 	//chain2->SetBranchAddress("HLT_Ele10_SW_L1R", &HLT_Ele10_SW_L1R);
 	//cout << "GetTrigger()" << GetTrigger()<< endl;
-	if (GetTrigger()) {
+	if (UseTrigger()) {
 		if (HLTBit == "HLT_Ele15_LW_L1R")
 			hltChain->SetBranchAddress("HLT_Ele15_LW_L1R", &HLT_Ele15_LW_L1R);
 		if (HLTBit == "HLT_Ele15_SW_L1R")
@@ -761,78 +680,7 @@ void NTupleReader::Init() {
 	}
 	///------------------------  MC Truth info  ------------------------------------
 	if (!IsData()) {
-		std::cout << " Set MC branch address" << std::endl;
-		ntupleChain->SetBranchAddress("Nmc_doc", &Nmc_doc);
-		ntupleChain->SetBranchAddress("mc_doc_id", &mc_doc_id);
-		ntupleChain->SetBranchAddress("mc_doc_pt", &mc_doc_pt);
-		ntupleChain->SetBranchAddress("mc_doc_px", &mc_doc_px);
-		ntupleChain->SetBranchAddress("mc_doc_py", &mc_doc_py);
-		ntupleChain->SetBranchAddress("mc_doc_pz", &mc_doc_pz);
-		ntupleChain->SetBranchAddress("mc_doc_eta", &mc_doc_eta);
-		ntupleChain->SetBranchAddress("mc_doc_phi", &mc_doc_phi);
-		ntupleChain->SetBranchAddress("mc_doc_theta", &mc_doc_theta);
-		ntupleChain->SetBranchAddress("mc_doc_energy", &mc_doc_energy);
-		ntupleChain->SetBranchAddress("mc_doc_status", &mc_doc_status);
-		ntupleChain->SetBranchAddress("mc_doc_charge", &mc_doc_charge);
-		ntupleChain->SetBranchAddress("mc_doc_mother_id", &mc_doc_mother_id);
-		ntupleChain->SetBranchAddress("mc_doc_grandmother_id", &mc_doc_grandmother_id);
-		ntupleChain->SetBranchAddress("mc_doc_ggrandmother_id", &mc_doc_ggrandmother_id);
-		ntupleChain->SetBranchAddress("mc_doc_mother_pt", &mc_doc_mother_pt);
-		ntupleChain->SetBranchAddress("mc_doc_vertex_x", &mc_doc_vertex_x);
-		ntupleChain->SetBranchAddress("mc_doc_vertex_y", &mc_doc_vertex_y);
-		ntupleChain->SetBranchAddress("mc_doc_vertex_z", &mc_doc_vertex_z);
-		ntupleChain->SetBranchAddress("mc_doc_mass", &mc_doc_mass);
-		ntupleChain->SetBranchAddress("mc_doc_numOfDaughters", &mc_doc_numOfDaughters);
-		ntupleChain->SetBranchAddress("mc_doc_numOfMothers", &mc_doc_numOfMothers);
-
-		if (m_studyPDFunc) {
-			std::cout << "Set PDF branch address" << std::endl;
-			hltChain->SetBranchAddress("PDFWcteq66_0", &PDFWcteq66_0);
-			hltChain->SetBranchAddress("PDFWcteq66_1", &PDFWcteq66_1);
-			hltChain->SetBranchAddress("PDFWcteq66_10", &PDFWcteq66_10);
-			hltChain->SetBranchAddress("PDFWcteq66_11", &PDFWcteq66_11);
-			hltChain->SetBranchAddress("PDFWcteq66_12", &PDFWcteq66_12);
-			hltChain->SetBranchAddress("PDFWcteq66_13", &PDFWcteq66_13);
-			hltChain->SetBranchAddress("PDFWcteq66_14", &PDFWcteq66_14);
-			hltChain->SetBranchAddress("PDFWcteq66_15", &PDFWcteq66_15);
-			hltChain->SetBranchAddress("PDFWcteq66_16", &PDFWcteq66_16);
-			hltChain->SetBranchAddress("PDFWcteq66_17", &PDFWcteq66_17);
-			hltChain->SetBranchAddress("PDFWcteq66_18", &PDFWcteq66_18);
-			hltChain->SetBranchAddress("PDFWcteq66_19", &PDFWcteq66_19);
-			hltChain->SetBranchAddress("PDFWcteq66_2", &PDFWcteq66_2);
-			hltChain->SetBranchAddress("PDFWcteq66_20", &PDFWcteq66_20);
-			hltChain->SetBranchAddress("PDFWcteq66_21", &PDFWcteq66_21);
-			hltChain->SetBranchAddress("PDFWcteq66_22", &PDFWcteq66_22);
-			hltChain->SetBranchAddress("PDFWcteq66_23", &PDFWcteq66_23);
-			hltChain->SetBranchAddress("PDFWcteq66_24", &PDFWcteq66_24);
-			hltChain->SetBranchAddress("PDFWcteq66_25", &PDFWcteq66_25);
-			hltChain->SetBranchAddress("PDFWcteq66_26", &PDFWcteq66_26);
-			hltChain->SetBranchAddress("PDFWcteq66_27", &PDFWcteq66_27);
-			hltChain->SetBranchAddress("PDFWcteq66_28", &PDFWcteq66_28);
-			hltChain->SetBranchAddress("PDFWcteq66_29", &PDFWcteq66_29);
-			hltChain->SetBranchAddress("PDFWcteq66_3", &PDFWcteq66_3);
-			hltChain->SetBranchAddress("PDFWcteq66_30", &PDFWcteq66_30);
-			hltChain->SetBranchAddress("PDFWcteq66_31", &PDFWcteq66_31);
-			hltChain->SetBranchAddress("PDFWcteq66_32", &PDFWcteq66_32);
-			hltChain->SetBranchAddress("PDFWcteq66_33", &PDFWcteq66_33);
-			hltChain->SetBranchAddress("PDFWcteq66_34", &PDFWcteq66_34);
-			hltChain->SetBranchAddress("PDFWcteq66_35", &PDFWcteq66_35);
-			hltChain->SetBranchAddress("PDFWcteq66_36", &PDFWcteq66_36);
-			hltChain->SetBranchAddress("PDFWcteq66_37", &PDFWcteq66_37);
-			hltChain->SetBranchAddress("PDFWcteq66_38", &PDFWcteq66_38);
-			hltChain->SetBranchAddress("PDFWcteq66_39", &PDFWcteq66_39);
-			hltChain->SetBranchAddress("PDFWcteq66_4", &PDFWcteq66_4);
-			hltChain->SetBranchAddress("PDFWcteq66_40", &PDFWcteq66_40);
-			hltChain->SetBranchAddress("PDFWcteq66_41", &PDFWcteq66_41);
-			hltChain->SetBranchAddress("PDFWcteq66_42", &PDFWcteq66_42);
-			hltChain->SetBranchAddress("PDFWcteq66_43", &PDFWcteq66_43);
-			hltChain->SetBranchAddress("PDFWcteq66_44", &PDFWcteq66_44);
-			hltChain->SetBranchAddress("PDFWcteq66_5", &PDFWcteq66_5);
-			hltChain->SetBranchAddress("PDFWcteq66_6", &PDFWcteq66_6);
-			hltChain->SetBranchAddress("PDFWcteq66_7", &PDFWcteq66_7);
-			hltChain->SetBranchAddress("PDFWcteq66_8", &PDFWcteq66_8);
-			hltChain->SetBranchAddress("PDFWcteq66_9", &PDFWcteq66_9);
-		}
+		LoadMCInformation();
 	}
 	///------------------------  MC Truth info (END) ------------------------------------
 
@@ -879,8 +727,7 @@ void NTupleReader::SelectBranches() {
 	ntupleChain->SetBranchStatus("els_tk_charge", 1);
 	ntupleChain->SetBranchStatus("els_tk_theta", 1);
 	ntupleChain->SetBranchStatus("els_shFracInnerHits", 1);
-	if (m_useMisslayers)
-		ntupleChain->SetBranchStatus("els_innerLayerMissingHits", 1);
+	ntupleChain->SetBranchStatus("els_innerLayerMissingHits", 1);
 	ntupleChain->SetBranchStatus("Nmus", 1); //muons
 	ntupleChain->SetBranchStatus("mus_cm_px", 1); //global muon
 	ntupleChain->SetBranchStatus("mus_cm_py", 1);
@@ -917,9 +764,9 @@ void NTupleReader::SelectBranches() {
 		ntupleChain->SetBranchStatus("jets_btag_TC_highPur", 1);
 		ntupleChain->SetBranchStatus("jets_btag_jetBProb", 1);
 		ntupleChain->SetBranchStatus("jets_btag_jetProb", 1);
-//		chain->SetBranchStatus("jets_btag_softEle", 1);
-//		chain->SetBranchStatus("jets_btag_softMuon", 1);
-//		chain->SetBranchStatus("jets_btag_softMuonNoIP", 1);
+		//		chain->SetBranchStatus("jets_btag_softEle", 1);
+		//		chain->SetBranchStatus("jets_btag_softMuon", 1);
+		//		chain->SetBranchStatus("jets_btag_softMuonNoIP", 1);
 		ntupleChain->SetBranchStatus("jets_btag_secVertex", 1);
 		ntupleChain->SetBranchStatus("jets_parton_Id", 1);
 
@@ -939,9 +786,9 @@ void NTupleReader::SelectBranches() {
 		ntupleChain->SetBranchStatus(Form("jets%s_btag_TC_highPur", m_jetAlgo.c_str()), 1);
 		ntupleChain->SetBranchStatus(Form("jets%s_btag_jetBProb", m_jetAlgo.c_str()), 1);
 		ntupleChain->SetBranchStatus(Form("jets%s_btag_jetProb", m_jetAlgo.c_str()), 1);
-//		chain->SetBranchStatus(Form("jets%s_btag_softEle", m_jetAlgo.c_str()), 1);
-//		chain->SetBranchStatus(Form("jets%s_btag_softMuon", m_jetAlgo.c_str()), 1);
-//		chain->SetBranchStatus(Form("jets%s_btag_softMuonNoIP", m_jetAlgo.c_str()), 1);
+		//		chain->SetBranchStatus(Form("jets%s_btag_softEle", m_jetAlgo.c_str()), 1);
+		//		chain->SetBranchStatus(Form("jets%s_btag_softMuon", m_jetAlgo.c_str()), 1);
+		//		chain->SetBranchStatus(Form("jets%s_btag_softMuonNoIP", m_jetAlgo.c_str()), 1);
 		ntupleChain->SetBranchStatus(Form("jets%s_btag_secVertex", m_jetAlgo.c_str()), 1);
 	}
 
@@ -975,56 +822,13 @@ void NTupleReader::SelectBranches() {
 		ntupleChain->SetBranchStatus(Form("mets%s_ey", m_metAlgo.c_str()), 1);
 	}
 
-	ntupleChain->SetBranchStatus("Ntracks", 1); //tracks
-	ntupleChain->SetBranchStatus("tracks_pt", 1);
-	ntupleChain->SetBranchStatus("tracks_phi", 1);
-	ntupleChain->SetBranchStatus("tracks_eta", 1);
-	ntupleChain->SetBranchStatus("tracks_chg", 1);
-	ntupleChain->SetBranchStatus("tracks_theta", 1);
-	ntupleChain->SetBranchStatus("tracks_vx", 1);
-	ntupleChain->SetBranchStatus("tracks_vy", 1);
-	ntupleChain->SetBranchStatus("tracks_px", 1);
-	ntupleChain->SetBranchStatus("tracks_py", 1);
-	if (m_useMisslayers)
-		ntupleChain->SetBranchStatus("tracks_innerLayerMissingHits", 1);
-
-	ntupleChain->SetBranchStatus("Nphotons", 1); //z study
-	ntupleChain->SetBranchStatus("photons_eta", 1); //z study
-	ntupleChain->SetBranchStatus("photons_et", 1); //z study
-	ntupleChain->SetBranchStatus("photons_phi", 1); //z study
-	ntupleChain->SetBranchStatus("photons_px", 1); //z study
-	ntupleChain->SetBranchStatus("photons_py", 1); //z study
-	ntupleChain->SetBranchStatus("photons_pz", 1); //z study
-	ntupleChain->SetBranchStatus("photons_energy", 1); //z study
 	///-------------------------- MC Truth info ------------------------------
 	if (!IsData()) {
-		ntupleChain->SetBranchStatus("Nmc_doc", 1); // generator particles
-		ntupleChain->SetBranchStatus("mc_doc_id", 1);
-		ntupleChain->SetBranchStatus("mc_doc_status", 1);
-		ntupleChain->SetBranchStatus("mc_doc_mother_id", 1);
-		ntupleChain->SetBranchStatus("mc_doc_grandmother_id", 1);
-		//		chain->SetBranchStatus("mc_doc_mother_id", 1);
-		ntupleChain->SetBranchStatus("mc_doc_mass", 1);
-		ntupleChain->SetBranchStatus("mc_doc_px", 1);
-		ntupleChain->SetBranchStatus("mc_doc_py", 1);
-		ntupleChain->SetBranchStatus("mc_doc_pz", 1);
-		ntupleChain->SetBranchStatus("mc_doc_pt", 1);
-		ntupleChain->SetBranchStatus("mc_doc_eta", 1);
-		ntupleChain->SetBranchStatus("mc_doc_phi", 1); //z study
-		ntupleChain->SetBranchStatus("mc_doc_energy", 1); //z study
-
-		if (m_studyPDFunc) {
-			for (short i = 0; i <= 44; i++) {
-				std::string pdf = Form("PDFWcteq66_%u", i);//unsigned %u
-				if (debug_flag)
-					std::cout << " pdf  " << pdf << std::endl;
-				ntupleChain->SetBranchStatus(pdf.c_str(), 1);
-			}
-		}
+		EnableMCInformation();
 	}
 	///------------------------  MC Truth info (END)  ---------------------------
 
-	if (GetTrigger()) {
+	if (UseTrigger()) {
 		//chain->SetBranchStatus("HLT_Ele15_LW_L1R",1); //trigger (8e29)
 		//chain->SetBranchStatus("HLT_Ele10_SW_L1R",1); //trigger (1e30)
 		ntupleChain->SetBranchStatus(HLTBit.c_str(), 1);
@@ -1077,8 +881,220 @@ void NTupleReader::LoadPFJets() {
 	ntupleChain->SetBranchAddress("PFJets_btag_TC_highEff", &PFJets_btag_TC_highEff);
 	ntupleChain->SetBranchAddress("PFJets_btag_jetProb", &PFJets_btag_jetProb);
 	ntupleChain->SetBranchAddress("PFJets_btag_jetBProb", &PFJets_btag_jetBProb);
-//	chain->SetBranchAddress("PFJets_btag_softEle", &PFJets_btag_softEle);
-//	chain->SetBranchAddress("PFJets_btag_softMuon", &PFJets_btag_softMuon);
-//	chain->SetBranchAddress("PFJets_btag_softMuonNoIP", &PFJets_btag_softMuonNoIP);
+	//	chain->SetBranchAddress("PFJets_btag_softEle", &PFJets_btag_softEle);
+	//	chain->SetBranchAddress("PFJets_btag_softMuon", &PFJets_btag_softMuon);
+	//	chain->SetBranchAddress("PFJets_btag_softMuonNoIP", &PFJets_btag_softMuonNoIP);
 	ntupleChain->SetBranchAddress("PFJets_btag_secVertex", &PFJets_btag_secVertex);
+}
+
+void NTupleReader::EnableMCInformation() {
+	ntupleChain->SetBranchStatus("Nmc_doc", 1); // generator particles
+	ntupleChain->SetBranchStatus("mc_doc_id", 1);
+	ntupleChain->SetBranchStatus("mc_doc_status", 1);
+	ntupleChain->SetBranchStatus("mc_doc_mother_id", 1);
+	ntupleChain->SetBranchStatus("mc_doc_grandmother_id", 1);
+	//		chain->SetBranchStatus("mc_doc_mother_id", 1);
+	ntupleChain->SetBranchStatus("mc_doc_mass", 1);
+	ntupleChain->SetBranchStatus("mc_doc_px", 1);
+	ntupleChain->SetBranchStatus("mc_doc_py", 1);
+	ntupleChain->SetBranchStatus("mc_doc_pz", 1);
+	ntupleChain->SetBranchStatus("mc_doc_pt", 1);
+	ntupleChain->SetBranchStatus("mc_doc_eta", 1);
+	ntupleChain->SetBranchStatus("mc_doc_phi", 1); //z study
+	ntupleChain->SetBranchStatus("mc_doc_energy", 1); //z study
+
+	if (m_studyPDFunc) {
+		for (short i = 0; i <= 44; i++) {
+			std::string pdf = Form("PDFWcteq66_%u", i);//unsigned %u
+			if (debug_flag)
+				std::cout << " pdf  " << pdf << std::endl;
+			ntupleChain->SetBranchStatus(pdf.c_str(), 1);
+		}
+	}
+}
+
+void NTupleReader::LoadMCInformation() {
+	std::cout << " Set MC branch address" << std::endl;
+	ntupleChain->SetBranchAddress("Nmc_doc", &Nmc_doc);
+	ntupleChain->SetBranchAddress("mc_doc_id", &mc_doc_id);
+	ntupleChain->SetBranchAddress("mc_doc_pt", &mc_doc_pt);
+	ntupleChain->SetBranchAddress("mc_doc_px", &mc_doc_px);
+	ntupleChain->SetBranchAddress("mc_doc_py", &mc_doc_py);
+	ntupleChain->SetBranchAddress("mc_doc_pz", &mc_doc_pz);
+	ntupleChain->SetBranchAddress("mc_doc_eta", &mc_doc_eta);
+	ntupleChain->SetBranchAddress("mc_doc_phi", &mc_doc_phi);
+	ntupleChain->SetBranchAddress("mc_doc_theta", &mc_doc_theta);
+	ntupleChain->SetBranchAddress("mc_doc_energy", &mc_doc_energy);
+	ntupleChain->SetBranchAddress("mc_doc_status", &mc_doc_status);
+	ntupleChain->SetBranchAddress("mc_doc_charge", &mc_doc_charge);
+	ntupleChain->SetBranchAddress("mc_doc_mother_id", &mc_doc_mother_id);
+	ntupleChain->SetBranchAddress("mc_doc_grandmother_id", &mc_doc_grandmother_id);
+	ntupleChain->SetBranchAddress("mc_doc_ggrandmother_id", &mc_doc_ggrandmother_id);
+	ntupleChain->SetBranchAddress("mc_doc_mother_pt", &mc_doc_mother_pt);
+	ntupleChain->SetBranchAddress("mc_doc_vertex_x", &mc_doc_vertex_x);
+	ntupleChain->SetBranchAddress("mc_doc_vertex_y", &mc_doc_vertex_y);
+	ntupleChain->SetBranchAddress("mc_doc_vertex_z", &mc_doc_vertex_z);
+	ntupleChain->SetBranchAddress("mc_doc_mass", &mc_doc_mass);
+	ntupleChain->SetBranchAddress("mc_doc_numOfDaughters", &mc_doc_numOfDaughters);
+	ntupleChain->SetBranchAddress("mc_doc_numOfMothers", &mc_doc_numOfMothers);
+
+	if (m_studyPDFunc) {
+		std::cout << "Set PDF branch address" << std::endl;
+		hltChain->SetBranchAddress("PDFWcteq66_0", &PDFWcteq66_0);
+		hltChain->SetBranchAddress("PDFWcteq66_1", &PDFWcteq66_1);
+		hltChain->SetBranchAddress("PDFWcteq66_10", &PDFWcteq66_10);
+		hltChain->SetBranchAddress("PDFWcteq66_11", &PDFWcteq66_11);
+		hltChain->SetBranchAddress("PDFWcteq66_12", &PDFWcteq66_12);
+		hltChain->SetBranchAddress("PDFWcteq66_13", &PDFWcteq66_13);
+		hltChain->SetBranchAddress("PDFWcteq66_14", &PDFWcteq66_14);
+		hltChain->SetBranchAddress("PDFWcteq66_15", &PDFWcteq66_15);
+		hltChain->SetBranchAddress("PDFWcteq66_16", &PDFWcteq66_16);
+		hltChain->SetBranchAddress("PDFWcteq66_17", &PDFWcteq66_17);
+		hltChain->SetBranchAddress("PDFWcteq66_18", &PDFWcteq66_18);
+		hltChain->SetBranchAddress("PDFWcteq66_19", &PDFWcteq66_19);
+		hltChain->SetBranchAddress("PDFWcteq66_2", &PDFWcteq66_2);
+		hltChain->SetBranchAddress("PDFWcteq66_20", &PDFWcteq66_20);
+		hltChain->SetBranchAddress("PDFWcteq66_21", &PDFWcteq66_21);
+		hltChain->SetBranchAddress("PDFWcteq66_22", &PDFWcteq66_22);
+		hltChain->SetBranchAddress("PDFWcteq66_23", &PDFWcteq66_23);
+		hltChain->SetBranchAddress("PDFWcteq66_24", &PDFWcteq66_24);
+		hltChain->SetBranchAddress("PDFWcteq66_25", &PDFWcteq66_25);
+		hltChain->SetBranchAddress("PDFWcteq66_26", &PDFWcteq66_26);
+		hltChain->SetBranchAddress("PDFWcteq66_27", &PDFWcteq66_27);
+		hltChain->SetBranchAddress("PDFWcteq66_28", &PDFWcteq66_28);
+		hltChain->SetBranchAddress("PDFWcteq66_29", &PDFWcteq66_29);
+		hltChain->SetBranchAddress("PDFWcteq66_3", &PDFWcteq66_3);
+		hltChain->SetBranchAddress("PDFWcteq66_30", &PDFWcteq66_30);
+		hltChain->SetBranchAddress("PDFWcteq66_31", &PDFWcteq66_31);
+		hltChain->SetBranchAddress("PDFWcteq66_32", &PDFWcteq66_32);
+		hltChain->SetBranchAddress("PDFWcteq66_33", &PDFWcteq66_33);
+		hltChain->SetBranchAddress("PDFWcteq66_34", &PDFWcteq66_34);
+		hltChain->SetBranchAddress("PDFWcteq66_35", &PDFWcteq66_35);
+		hltChain->SetBranchAddress("PDFWcteq66_36", &PDFWcteq66_36);
+		hltChain->SetBranchAddress("PDFWcteq66_37", &PDFWcteq66_37);
+		hltChain->SetBranchAddress("PDFWcteq66_38", &PDFWcteq66_38);
+		hltChain->SetBranchAddress("PDFWcteq66_39", &PDFWcteq66_39);
+		hltChain->SetBranchAddress("PDFWcteq66_4", &PDFWcteq66_4);
+		hltChain->SetBranchAddress("PDFWcteq66_40", &PDFWcteq66_40);
+		hltChain->SetBranchAddress("PDFWcteq66_41", &PDFWcteq66_41);
+		hltChain->SetBranchAddress("PDFWcteq66_42", &PDFWcteq66_42);
+		hltChain->SetBranchAddress("PDFWcteq66_43", &PDFWcteq66_43);
+		hltChain->SetBranchAddress("PDFWcteq66_44", &PDFWcteq66_44);
+		hltChain->SetBranchAddress("PDFWcteq66_5", &PDFWcteq66_5);
+		hltChain->SetBranchAddress("PDFWcteq66_6", &PDFWcteq66_6);
+		hltChain->SetBranchAddress("PDFWcteq66_7", &PDFWcteq66_7);
+		hltChain->SetBranchAddress("PDFWcteq66_8", &PDFWcteq66_8);
+		hltChain->SetBranchAddress("PDFWcteq66_9", &PDFWcteq66_9);
+	}
+}
+
+void NTupleReader::EnablePhotons() {
+	ntupleChain->SetBranchStatus("Nphotons", 1); //z study
+	ntupleChain->SetBranchStatus("photons_eta", 1); //z study
+	ntupleChain->SetBranchStatus("photons_et", 1); //z study
+	ntupleChain->SetBranchStatus("photons_phi", 1); //z study
+	ntupleChain->SetBranchStatus("photons_px", 1); //z study
+	ntupleChain->SetBranchStatus("photons_py", 1); //z study
+	ntupleChain->SetBranchStatus("photons_pz", 1); //z study
+	ntupleChain->SetBranchStatus("photons_energy", 1); //z study
+}
+
+void NTupleReader::LoadPhotons() {
+	ntupleChain->SetBranchAddress("Nphotons", &Nphotons);
+	ntupleChain->SetBranchAddress("photons_energy", &photons_energy);
+	ntupleChain->SetBranchAddress("photons_et", &photons_et);
+	ntupleChain->SetBranchAddress("photons_eta", &photons_eta);
+	ntupleChain->SetBranchAddress("photons_phi", &photons_phi);
+	ntupleChain->SetBranchAddress("photons_pt", &photons_pt);
+	ntupleChain->SetBranchAddress("photons_px", &photons_px);
+	ntupleChain->SetBranchAddress("photons_py", &photons_py);
+	ntupleChain->SetBranchAddress("photons_pz", &photons_pz);
+	ntupleChain->SetBranchAddress("photons_status", &photons_status);
+	ntupleChain->SetBranchAddress("photons_theta", &photons_theta);
+	ntupleChain->SetBranchAddress("photons_hadOverEM", &photons_hadOverEM);
+	ntupleChain->SetBranchAddress("photons_scEnergy", &photons_scEnergy);
+	ntupleChain->SetBranchAddress("photons_scRawEnergy", &photons_scRawEnergy);
+	ntupleChain->SetBranchAddress("photons_scEta", &photons_scEta);
+	ntupleChain->SetBranchAddress("photons_scPhi", &photons_scPhi);
+	ntupleChain->SetBranchAddress("photons_scEtaWidth", &photons_scEtaWidth);
+	ntupleChain->SetBranchAddress("photons_scPhiWidth", &photons_scPhiWidth);
+	ntupleChain->SetBranchAddress("photons_tIso", &photons_tIso);
+	ntupleChain->SetBranchAddress("photons_ecalIso", &photons_ecalIso);
+	ntupleChain->SetBranchAddress("photons_hcalIso", &photons_hcalIso);
+	ntupleChain->SetBranchAddress("photons_isoEcalRecHitDR04", &photons_isoEcalRecHitDR04);
+	ntupleChain->SetBranchAddress("photons_isoHcalRecHitDR04", &photons_isoHcalRecHitDR04);
+	ntupleChain->SetBranchAddress("photons_isoSolidTrkConeDR04", &photons_isoSolidTrkConeDR04);
+	ntupleChain->SetBranchAddress("photons_isoHollowTrkConeDR04", &photons_isoHollowTrkConeDR04);
+	ntupleChain->SetBranchAddress("photons_nTrkSolidConeDR04", &photons_nTrkSolidConeDR04);
+	ntupleChain->SetBranchAddress("photons_nTrkHollowConeDR04", &photons_nTrkHollowConeDR04);
+	ntupleChain->SetBranchAddress("photons_isoEcalRecHitDR03", &photons_isoEcalRecHitDR03);
+	ntupleChain->SetBranchAddress("photons_isoHcalRecHitDR03", &photons_isoHcalRecHitDR03);
+	ntupleChain->SetBranchAddress("photons_isoSolidTrkConeDR03", &photons_isoSolidTrkConeDR03);
+	ntupleChain->SetBranchAddress("photons_isoHollowTrkConeDR03", &photons_isoHollowTrkConeDR03);
+	ntupleChain->SetBranchAddress("photons_nTrkSolidConeDR03", &photons_nTrkSolidConeDR03);
+	ntupleChain->SetBranchAddress("photons_nTrkHollowConeDR03", &photons_nTrkHollowConeDR03);
+	ntupleChain->SetBranchAddress("photons_isAlsoElectron", &photons_isAlsoElectron);
+	ntupleChain->SetBranchAddress("photons_hasPixelSeed", &photons_hasPixelSeed);
+	ntupleChain->SetBranchAddress("photons_isConverted", &photons_isConverted);
+	ntupleChain->SetBranchAddress("photons_isEBGap", &photons_isEBGap);
+	ntupleChain->SetBranchAddress("photons_isEEGap", &photons_isEEGap);
+	ntupleChain->SetBranchAddress("photons_isEBEEGap", &photons_isEBEEGap);
+	ntupleChain->SetBranchAddress("photons_isEBPho", &photons_isEBPho);
+	ntupleChain->SetBranchAddress("photons_isEEPho", &photons_isEEPho);
+	ntupleChain->SetBranchAddress("photons_isLoosePhoton", &photons_isLoosePhoton);
+	ntupleChain->SetBranchAddress("photons_isTightPhoton", &photons_isTightPhoton);
+	ntupleChain->SetBranchAddress("photons_r9", &photons_r9);
+	ntupleChain->SetBranchAddress("photons_gen_et", &photons_gen_et);
+	ntupleChain->SetBranchAddress("photons_gen_eta", &photons_gen_eta);
+	ntupleChain->SetBranchAddress("photons_gen_phi", &photons_gen_phi);
+	ntupleChain->SetBranchAddress("photons_gen_id", &photons_gen_id);
+}
+
+void NTupleReader::EnableTracks() {
+	ntupleChain->SetBranchStatus("Ntracks", 1); //tracks
+	ntupleChain->SetBranchStatus("tracks_pt", 1);
+	ntupleChain->SetBranchStatus("tracks_phi", 1);
+	ntupleChain->SetBranchStatus("tracks_eta", 1);
+	ntupleChain->SetBranchStatus("tracks_chg", 1);
+	ntupleChain->SetBranchStatus("tracks_theta", 1);
+	ntupleChain->SetBranchStatus("tracks_vx", 1);
+	ntupleChain->SetBranchStatus("tracks_vy", 1);
+	ntupleChain->SetBranchStatus("tracks_px", 1);
+	ntupleChain->SetBranchStatus("tracks_py", 1);
+	ntupleChain->SetBranchStatus("tracks_innerLayerMissingHits", 1);
+}
+
+void NTupleReader::LoadTracks() {
+	ntupleChain->SetBranchAddress("Ntracks", &Ntracks);
+	ntupleChain->SetBranchAddress("tracks_chi2", &tracks_chi2);
+	ntupleChain->SetBranchAddress("tracks_ndof", &tracks_ndof);
+	ntupleChain->SetBranchAddress("tracks_chg", &tracks_chg);
+	ntupleChain->SetBranchAddress("tracks_pt", &tracks_pt);
+	ntupleChain->SetBranchAddress("tracks_px", &tracks_px);
+	ntupleChain->SetBranchAddress("tracks_py", &tracks_py);
+	ntupleChain->SetBranchAddress("tracks_pz", &tracks_pz);
+	ntupleChain->SetBranchAddress("tracks_eta", &tracks_eta);
+	ntupleChain->SetBranchAddress("tracks_phi", &tracks_phi);
+	ntupleChain->SetBranchAddress("tracks_theta", &tracks_theta);
+	ntupleChain->SetBranchAddress("tracks_d0dum", &tracks_d0dum);
+	ntupleChain->SetBranchAddress("tracks_dz", &tracks_dz);
+	ntupleChain->SetBranchAddress("tracks_vx", &tracks_vx);
+	ntupleChain->SetBranchAddress("tracks_vy", &tracks_vy);
+	ntupleChain->SetBranchAddress("tracks_vz", &tracks_vz);
+	ntupleChain->SetBranchAddress("tracks_numvalhits", &tracks_numvalhits);
+	ntupleChain->SetBranchAddress("tracks_numlosthits", &tracks_numlosthits);
+	ntupleChain->SetBranchAddress("tracks_d0dumErr", &tracks_d0dumErr);
+	ntupleChain->SetBranchAddress("tracks_dzErr", &tracks_dzErr);
+	ntupleChain->SetBranchAddress("tracks_ptErr", &tracks_ptErr);
+	ntupleChain->SetBranchAddress("tracks_etaErr", &tracks_etaErr);
+	ntupleChain->SetBranchAddress("tracks_phiErr", &tracks_phiErr);
+	ntupleChain->SetBranchAddress("tracks_Nrechits", &tracks_Nrechits);
+	ntupleChain->SetBranchAddress("tracks_innerHitX", &tracks_innerHitX);
+	ntupleChain->SetBranchAddress("tracks_innerHitY", &tracks_innerHitY);
+	ntupleChain->SetBranchAddress("tracks_innerHitZ", &tracks_innerHitZ);
+	ntupleChain->SetBranchAddress("tracks_outerHitX", &tracks_outerHitX);
+	ntupleChain->SetBranchAddress("tracks_outerHitY", &tracks_outerHitY);
+	ntupleChain->SetBranchAddress("tracks_outerHitZ", &tracks_outerHitZ);
+	ntupleChain->SetBranchAddress("tracks_highPurity", &tracks_highPurity);
+	ntupleChain->SetBranchAddress("tracks_innerLayerMissingHits", &tracks_innerLayerMissingHits);
 }
