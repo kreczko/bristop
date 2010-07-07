@@ -88,20 +88,20 @@
 
 
 	//Input files	
-	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_ttjet/*.root");
-	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_wjet/*.root");
-	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_zjet/*.root");
+//	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_ttjet/*.root");
+//	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_wjet/*.root");
+//	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_zjet/*.root");
 
-	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_bce1/*.root");
-	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_bce2/*.root");
+//	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_bce1/*.root");
+//	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_bce2/*.root");
 	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_bce3/*.root");
 
-	myana->SetInputFile("/storage/top/mc/spring10_7TeV/pythia/e20skim_enri1/*.root");//old
-	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_enri2/*.root");
-	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_enri3/*.root");
+//	myana->SetInputFile("/storage/top/mc/spring10_7TeV/pythia/e20skim_enri1/*.root");//old
+//	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_enri2/*.root");
+//	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_enri3/*.root");
 
-	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_tchan/*.root");
-	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_tW/*.root");
+//	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_tchan/*.root");
+//	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_tW/*.root");
 
 	//myana->SetInputFile("/storage/top/mc/link_spring10_tchan/*.root");
 	//myana->SetInputFile("/storage/top/mc/link_spring10_tW/*.root");
@@ -110,7 +110,7 @@
 
 	myana->SetOutputFirstName("test");
 
-	myana->SetLimit( -100 );
+	myana->SetLimit( -1 );
 	
 	myana->Begin();
 	myana->EventLoop();
