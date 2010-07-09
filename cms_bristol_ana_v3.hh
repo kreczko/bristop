@@ -1836,6 +1836,7 @@ private:
   //  void PrintErrorTables( vector<string> ve ) const;
   ofstream myfile;
   ofstream myfile2;
+  ofstream myfile3;
   void CalculateErrors() ;
   void TESTPrintErrorTables() ;//TEST debug
   void PrintErrorTables() ;
@@ -1856,6 +1857,7 @@ private:
   void PrintErrorTable_SingleTop() ;//, double [][5] ) const; //use unc_pos only
   void PrintErrorTable_PhotonJets() ;//, double [][5] ) const; //use unc_pos only
 
+  void printRelIsoList();
 
 
 

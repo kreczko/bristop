@@ -8,6 +8,10 @@
 //#====================================================#
 //# Last update:
 //
+//  9 July 2010: add e20 stat for v4 nutples.
+//  9 July 2010: adapt to run on QCDpt15.
+//  6 Jul 2010: add print out file (reliso_list.txt) to print event info for events in RelIso plot
+//              (pass all cuts except njet).
 //  6 Jul 2010: Update cross section values to the CMS standard.
 //               W+jets: 28000 -> 28049 pb
 //               Z+jets: 2800 -> 969*3=2907 pb
@@ -338,6 +342,7 @@ void ana::SetOutputFirstName(const string name) {
     mc_names.push_back("pj1"); //photon+jets
     mc_names.push_back("pj2");
     mc_names.push_back("pj3");
+    mc_names.push_back("qcd15");// general QCD pthat>15
 
 
     vector<int> nfiles(mc_names.size());
@@ -580,6 +585,8 @@ void ana::SetGlobalMCFlag(){
   if( (GetNinit("zjet") + GetNinit("zee"))  > 0 )  mc_sample_has_Zjet  = true;
   if((GetNinit("bce1")+ GetNinit("bce2")+ GetNinit("bce3")+
       GetNinit("enri1")+GetNinit("enri2")+GetNinit("enri3"))>0) mc_sample_has_QCD = true;
+  if( GetNinit("qcd15")>0) mc_sample_has_QCD = true;
+
   if(GetNinit("enri1")>0)  mc_sample_has_enri1 = true;
   if(GetNinit("enri2")>0)  mc_sample_has_enri2 = true;
   if(GetNinit("enri3")>0)  mc_sample_has_enri3 = true;
@@ -660,6 +667,9 @@ void ana::DefineCrossSection(){
     cross_section["pj2"] =    3476. ; //pb
     cross_section["pj3"] =     485. ; //pb
 
+    // unskim QCD d-jet pt15
+    cross_section["qcd15"] =  8.762e8 ; //pb
+
     DefineCrossSectionAlpgen7TeV();
 
   } else {
@@ -737,7 +747,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
    for(size_t i=0 ; i<mc_names.size(); ++i){
      long n = GetNinit( mc_names.at(i) ) ;
      if( n>0 )
-       weightMap[ mc_names.at(i) ] = GetCrossSection( mc_names.at(i) ) * m_intlumi / n;
+	 weightMap[ mc_names.at(i) ] = GetCrossSection( mc_names.at(i) ) * m_intlumi / n;
      else
        weightMap[ mc_names.at(i) ] = 0;
    }
@@ -888,25 +898,27 @@ void ana::SetEventWeightMap(){ //only if run on MC
    else if( m_runOnMyE20skim ) { //&& m_runOn35xntuples) { //Spring10
 
      cout << "\n Run on Spring10 e20 skim" << endl;
+     
+     // All 100% except enri1/enri2
+     skimEffMap["ttjet"]  =  649324 /  1483404. ; //v4
+     skimEffMap["wjet"]   = 2153929 / 10068895. ; //v4
+     skimEffMap["zjet"]   =  329061 /  1084921. ; //v4
+     
+     skimEffMap["enri1"]  = 2012107 / 31999839. ; //v4 (not 100%)
+     skimEffMap["enri2"]  = 3998136 / 30097278. ; //v4 (not 100%)
+     skimEffMap["enri3"]  = 1482956 /  5546413. ; //v4
+     
+     skimEffMap["bce1"]   =   91603 / 2761023. ; //v4
+     skimEffMap["bce2"]   =  442459 / 2475597. ; //v4
+     skimEffMap["bce3"]   =  578395 / 1208674. ; //v4
+     
+     skimEffMap["tchan"]  =  192728. / 528593. ; //v4
+     skimEffMap["tW"]     =  179749. / 466437. ; //v4
 
-     skimEffMap["ttjet"]  =  649324 /  1483404. ; //NEW
-     skimEffMap["wjet"]   = 2153929 / 10068895. ; //NEW
-     skimEffMap["zjet"]   =  329061 /  1084921. ; //NEW
-     
-     skimEffMap["enri1"]  = 2012107 / 31999839. ; //OLD (not 100%)
-     skimEffMap["enri2"]  = 5564663 / 41887278. ; //NEW (not 100%)
-     skimEffMap["enri3"]  = 1482956 /  5546413. ; //NEW
-     
-     skimEffMap["bce1"]   =   91304 / 2751023. ; //NEW
-     skimEffMap["bce2"]   =  374541 / 2095597. ; //NEW (not 100%)
-     skimEffMap["bce3"]   =  578395 / 1208674. ; //NEW
-     
-     skimEffMap["tchan"]  =  192728. / 528593. ; //NEW 18Jun
-     skimEffMap["tW"]     =  179749. / 466437. ; //NEW 18Jun
+     skimEffMap["pj1"]    =  311575. / 2255228. ; //v4
+     skimEffMap["pj2"]    =  242679. / 1076393. ; //v4
+     skimEffMap["pj3"]    =  361343. / 1025198. ; //v4
 
-     skimEffMap["pj1"]    =  308818. / 2235228. ; //NEW 21Jun
-     skimEffMap["pj2"]    =  180563. /  801393. ; //NEW 21Jun
-     skimEffMap["pj3"]    =  350641. /  995198. ; //NEW 21Jun
 
      // multiply to weight so that Nexp = Npass * w;
      weightMap["ttjet"] *=  GetSkimEff("ttjet");
@@ -2444,7 +2456,10 @@ bool ana::EventLoop(){
 //////// Plots above to be reviewed
 
 
-   myfile2.open("interesting_events.txt",ios::trunc); //over-write
+   if(IsData()) {
+     myfile2.open("interesting_events.txt",ios::trunc); //over-write
+     myfile3.open("reliso_list.txt",ios::trunc); //over-write
+   }
 
 
    //-----------
@@ -3162,7 +3177,7 @@ bool ana::EventLoop(){
 
 	     printEventDetails = true;
 
-	     nIsoE++;
+	     nIsoE++;	     
 	     myfile2 << "\n\n************************************"<< endl;
 	     if(isIsolated){
 	       myfile2 << " Found a Good Isolated Electron candidate (" << nIsoE << ")" << endl;
@@ -4620,6 +4635,8 @@ bool ana::EventLoop(){
 	 }
 	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso,      CombRelIso,    this_weight );
 	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIsoUW,    CombRelIso,    1.0         );
+	 
+	 if(IsData()) printRelIsoList();
 
 	 if( pass_4jets && CombRelIso < 0.1 ) nDebugIso++;
        }
@@ -5295,8 +5312,10 @@ bool ana::EventLoop(){
 
    if(m_debug) cout << "[EvLoop] Closing myfile"<< endl;
    myfile.close();
-   myfile2.close();
-
+   if(IsData()){
+     myfile2.close();
+     myfile3.close();
+   }
 
    
 
@@ -5507,6 +5526,8 @@ void ana::SetLocalMCFlagAndType(){
   else if (this_mc=="pj1") {  isPhotonJet = true;  isPJ1=true; mctype = 28;  }
   else if (this_mc=="pj2") {  isPhotonJet = true;  isPJ2=true; mctype = 29;  }
   else if (this_mc=="pj3") {  isPhotonJet = true;  isPJ3=true; mctype = 30;  }
+  else if (this_mc=="qcd15") {  isQCD = true;  }
+  
 
 }//end SetLocalMCFlagAndType
 //---------------------------------------------------------------------------------------------
@@ -11279,5 +11300,16 @@ bool ana::jetNotNearElectron(const TLorentzVector& j, const vector<TLorentzVecto
     if( j.DeltaR(e[i]) < 0.3 ) return false; //disregard this jet
   }
   return true;
+}
+
+void ana::printRelIsoList(){
+  myfile3 << setw(10) << run 
+	  << setw(10) << lumiBlock
+	  << setw(14) << event 
+	  << setw(7)  << nGoodJet << "j"
+	  << setw(15) << CombRelIso;
+  if(CombRelIso<0.1) myfile3 << "  Iso";
+  else myfile3 << "  non-iso";
+  myfile3  << endl;
 }
 //-- eof --------------------------------------------------------------------------------------
