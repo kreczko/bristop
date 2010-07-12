@@ -7,8 +7,11 @@
 //        6) may need to add HBHENoiseFilter for MC.
 //#====================================================#
 //# Last update:
-//
+//  
 // 12 July 2010: update enri2 e20 stat.
+//               Changed ">" to "=>" in NoScraping requirement, so it's at least 25% good tracks. 
+//               Changed Noscraping cleaning step to be part of trigger rather than PV
+//               Changed robustLoose ID in Zveto to conform with the bit pattern format in the data nTuples
 // 10 July 2010: add enri1 e20 stat.
 //  9 July 2010: add e20 stat for v4 nutples.
 //  9 July 2010: adapt to run on QCDpt15.
@@ -1510,7 +1513,7 @@ bool ana::NoScrapingFilter() const {
     for(unsigned int i=0; i<Ntracks; ++i){
       if( tracks_highPurity->at(i) > 0 ) ntkHP++;
     }
-    if( (ntkHP/(float)Ntracks) > 0.25 ) return true;
+    if( (ntkHP/(float)Ntracks) >= 0.25 ) return true;
     else return false;
   }else{
     return true;
@@ -2686,7 +2689,8 @@ bool ana::EventLoop(){
      //Apply PV filter and No scraping event requirement. 
      // Clean up events
      if( m_runOn35Xntuples && m_cleanEvents ){
-       if( !PrimaryVertexFilter() || !NoScrapingFilter() ) goodrun = false;
+       //if( !PrimaryVertexFilter() || !NoScrapingFilter() ) goodrun = false;
+       if( !PrimaryVertexFilter()  ) goodrun = false;//changed 120710 to just PV requirement. Scraping added to trigger
      }
 
 
@@ -2725,7 +2729,8 @@ bool ana::EventLoop(){
        }
      }//check trig
      
-
+     //if passes trigger but not scraping, fail trigger step - 120710
+     if( fired_single_em && !NoScrapingFilter() ) fired_single_em = false;
 
 
      //-------------------
@@ -3936,7 +3941,8 @@ bool ana::EventLoop(){
          // find loose ele
          if( els_et->at(j) < 20.0 ) continue;
          if( fabs( els_eta->at(j) ) > 2.5 ) continue;
-         if( els_robustLooseId->at(j) < 1 ) continue;
+	 //changed 120710, to allow for bit pattern in data. 1 passes ID, 3 passes ID+Iso. 3 not subset of 1
+         if( els_robustLooseId->at(j) !=1 &&els_robustLooseId->at(j) != 3 ) continue;
          if( getRelIso(j) > 1.0 ) continue;
          
          TLorentzVector loose(els_px->at(j),els_py->at(j),els_pz->at(j),els_energy->at(j));
