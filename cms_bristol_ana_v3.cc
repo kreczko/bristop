@@ -8,6 +8,8 @@
 //#====================================================#
 //# Last update:
 //  
+// 12 July 2010: Fix bug that cause code to crash in the end when running on only one single top.
+//               - revert back to ">" for NoScraping.
 // 12 July 2010: update enri2 e20 stat.
 //               Changed ">" to "=>" in NoScraping requirement, so it's at least 25% good tracks. 
 //               Changed Noscraping cleaning step to be part of trigger rather than PV
@@ -1513,7 +1515,7 @@ bool ana::NoScrapingFilter() const {
     for(unsigned int i=0; i<Ntracks; ++i){
       if( tracks_highPurity->at(i) > 0 ) ntkHP++;
     }
-    if( (ntkHP/(float)Ntracks) >= 0.25 ) return true;
+    if( (ntkHP/(float)Ntracks) > 0.25 ) return true;
     else return false;
   }else{
     return true;
@@ -8944,13 +8946,12 @@ void ana::PrintNumIsolated() const{
     if(mc_sample_has_bce3){ //mcname(bce3)=8
       GetNumIso(8);
     }
-
-    printf("\n tchan ");
-    if(mc_sample_has_tchan){ //mcname(tchan)=13
+    printf("\n tW    ");
+    if(mc_sample_has_tW){ //mcname(tW)=13
       GetNumIso(13);
     }
-    printf("\n tW    ");
-    if(mc_sample_has_tW){ //mcname(tW)=14
+    printf("\n tchan ");
+    if(mc_sample_has_tchan){ //mcname(tchan)=14
       GetNumIso(14);
     }
 
