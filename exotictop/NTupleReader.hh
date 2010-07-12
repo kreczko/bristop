@@ -11,9 +11,9 @@
 #include <vector>
 #include <iostream>
 
-#ifdef __MAKECINT__
-#pragma link C++ class std::vector<float>+;
-#endif
+//#ifdef __MAKECINT__
+//#pragma link C++ class std::vector<float>+;
+//#endif
 
 /*
  * Class to read the Ntuples from the ROOT file.

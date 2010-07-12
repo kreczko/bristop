@@ -44,7 +44,7 @@ using namespace RooFit;
 // defines ana class, including branches and leaves for tree
 #include "cms_bristol_ana_v3.hh"
 
-void ana::SetInputFile(const char* fname) {
+void ana::AddInputFile(const char* fname) {
 	// check the cut values before reading input
 	static bool first_time = true;
 	if (first_time)

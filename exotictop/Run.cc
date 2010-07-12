@@ -67,13 +67,13 @@ int main(int argc, char **argv) {
 
 
 	//Input files
-		myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_ttjet/*.root");
-		myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_vqq/*.root");
+		myana->AddInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_ttjet/*.root");
+		myana->AddInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_vqq/*.root");
 	//	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/MG/e20skim_zjet/*.root");
 
-		myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_bce1/*.root");
-		myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_bce2/*.root");
-		myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_bce3/*.root");
+		myana->AddInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_bce1/*.root");
+		myana->AddInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_bce2/*.root");
+		myana->AddInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_bce3/*.root");
 
 	//	myana->SetInputFile("/storage/top/mc/spring10_7TeV/pythia/e20skim_enri1/*.root");//old
 	//	myana->SetInputFile("/storage/top/mc/spring10_7TeV_new/pythia/e20skim_enri2/*.root");

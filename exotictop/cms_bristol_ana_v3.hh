@@ -72,7 +72,7 @@ public:
 	bool EventLoop();// the main analysis
 
 	//Methods to call from anascript.C
-	void SetInputFile(const char* fname);
+	void AddInputFile(const char* fname);
 	void SetOutputFirstName(const string name);
 	void SetOutputHistFile(const string name, const string mode = "RECREATE");
 	void SetOutputTextFile(const string name, const string mode = "w");
