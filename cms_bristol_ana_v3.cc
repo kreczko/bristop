@@ -8,6 +8,8 @@
 //#====================================================#
 //# Last update:
 //
+// 12 July 2010: update enri2 e20 stat.
+// 10 July 2010: add enri1 e20 stat.
 //  9 July 2010: add e20 stat for v4 nutples.
 //  9 July 2010: adapt to run on QCDpt15.
 //  6 Jul 2010: add print out file (reliso_list.txt) to print event info for events in RelIso plot
@@ -904,8 +906,8 @@ void ana::SetEventWeightMap(){ //only if run on MC
      skimEffMap["wjet"]   = 2153929 / 10068895. ; //v4
      skimEffMap["zjet"]   =  329061 /  1084921. ; //v4
      
-     skimEffMap["enri1"]  = 2012107 / 31999839. ; //v4 (not 100%)
-     skimEffMap["enri2"]  = 3998136 / 30097278. ; //v4 (not 100%)
+     skimEffMap["enri1"]  = 2138593 / 34001839. ; //v4 (~100%)
+     skimEffMap["enri2"]  = 5478687 / 41241278. ; //v4 (~97%)
      skimEffMap["enri3"]  = 1482956 /  5546413. ; //v4
      
      skimEffMap["bce1"]   =   91603 / 2761023. ; //v4
