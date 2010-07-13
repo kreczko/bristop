@@ -8,6 +8,7 @@
 //#====================================================#
 //# Last update:
 //  
+// 13 July 2010: Change PrimaryVertex to consider the leading PV only.
 // 12 July 2010: Fix bug that cause code to crash in the end when running on only one single top.
 //               - revert back to ">" for NoScraping.
 // 12 July 2010: update enri2 e20 stat.
@@ -1492,6 +1493,7 @@ bool ana::PrimaryVertexFilter() const {
   
   bool goodpv = false;
   for(unsigned int i=0; i<Npv; ++i){
+    //for(unsigned int i=0; i<Npv; ++i){
     if(    pv_isFake->at(i)==0 &&
 	   pv_ndof->at(i) > 4  &&
 	   fabs(pv_z->at(i)) <= 15 
