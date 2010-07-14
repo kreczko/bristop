@@ -3783,6 +3783,10 @@ void ana::Init(){
    chain->SetBranchAddress("pv_xErr", &pv_xErr, &b_pv_xErr);
    chain->SetBranchAddress("pv_yErr", &pv_yErr, &b_pv_yErr);
    chain->SetBranchAddress("pv_zErr", &pv_zErr, &b_pv_zErr);
+   if(m_runOnV4ntuples){
+     chain->SetBranchAddress("els3_d0_bs", &els3_d0_bs, &b_els3_d0_bs);//to be added     
+     chain->SetBranchAddress("mus3_d0_bs", &mus3_d0_bs, &b_mus3_d0_bs);//to be Added
+   }
    if(m_runOn35Xntuples){
      chain->SetBranchAddress("pv_chi2", &pv_chi2, &b_pv_chi2);
      chain->SetBranchAddress("pv_ndof", &pv_ndof, &b_pv_ndof);
@@ -3800,8 +3804,7 @@ void ana::Init(){
        chain->SetBranchAddress("Nels2", &Nels2, &b_Nels2);//new
        chain->SetBranchAddress("els2_d0_pvbs", &els2_d0_pvbs, &b_els2_d0_pvbs);//to be added
        chain->SetBranchAddress("els2_ed0_pvbs", &els2_ed0_pvbs, &b_els2_ed0_pvbs);//to be added     
-       chain->SetBranchAddress("Nels3", &Nels3, &b_Nels3);//new
-       chain->SetBranchAddress("els3_d0_bs", &els3_d0_bs, &b_els3_d0_bs);//to be added     
+       //       chain->SetBranchAddress("Nels3", &Nels3, &b_Nels3);//new
      }
      chain->SetBranchAddress("els_scEta", &els_scEta, &b_els_scEta);
      chain->SetBranchAddress("jets_id_hitsInN90", &jets_id_hitsInN90, &b_jets_id_hitsInN90);
