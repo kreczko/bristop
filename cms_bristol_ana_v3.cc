@@ -8,6 +8,7 @@
 //#====================================================#
 //# Last update:
 //  
+// 13 July 2010: Switch to els3_d0_bs/mus_d0_bs in get_d0_BS().
 // 13 July 2010: Change PrimaryVertex to consider the leading PV only.
 // 12 July 2010: Fix bug that cause code to crash in the end when running on only one single top.
 //               - revert back to ">" for NoScraping.
@@ -1384,6 +1385,10 @@ void ana::ReadSelectedBranches() const {
      }
      //cout << "amtb 2: after" << endl;
    }
+   if(m_runOnV4ntuples) {
+     chain->SetBranchStatus("els3_d0_bs",1);
+     chain->SetBranchStatus("mus3_d0_bs",1);
+   }
 
    if(m_runOn35Xntuples){
      if( m_cleanEvents ){//6MAY10
@@ -1408,8 +1413,7 @@ void ana::ReadSelectedBranches() const {
        chain->SetBranchStatus("pvB_y",1);
        chain->SetBranchStatus("els2_d0_pvbs",1); //to be added
        chain->SetBranchStatus("els2_ed0_pvbs",1);     
-       //chain->SetBranchStatus("els3_d0_bs",1);
-       //chain->SetBranchStatus("mus3_d0_bs",1);
+
      }
    }//run on 35x ntuple
 
@@ -1488,17 +1492,18 @@ void ana::WriteHeaderInfo(){
   delete info;
 }
 //---------------------------------------------------------------------------------------------
-
+// look only at leading PV
 bool ana::PrimaryVertexFilter() const {
   
   bool goodpv = false;
-  for(unsigned int i=0; i<Npv; ++i){
+  for(unsigned int i=0; i<1; ++i){
     //for(unsigned int i=0; i<Npv; ++i){
     if(    pv_isFake->at(i)==0 &&
 	   pv_ndof->at(i) > 4  &&
-	   fabs(pv_z->at(i)) <= 15 
-	   &&      fabs(pv_rho->at(i)) < 2 
-	   ) { goodpv = true;
+	   fabs(pv_z->at(i)) <= 15 &&
+	   fabs(pv_rho->at(i)) < 2 
+	   ) { 
+      goodpv = true;
     }
   }
   return goodpv;
@@ -10909,16 +10914,16 @@ float ana::compute_d0err_BS(const string &lepton, const int& i) const {
 // Note: the precomputed variable from PAT is only available in "v2" ntuple (spring10_7TeV_new).
 //       We use that except for enri1 where we have to compute it ourself.
 float ana::get_d0_BS( const string& lepton, const int& i ) const {
-  return compute_d0(lepton,i,"BS");
-  /*
-  if(this_mc=="enri1"){
-    return compute_d0(lepton,i,"BS");
-  }else{
+  //  return compute_d0(lepton,i,"BS");
+
+  if(m_runOnV4ntuples){
     if(lepton=="electron") return els3_d0_bs->at(i);
     else if(lepton=="muon") return mus3_d0_bs->at(i);
     else return compute_d0(lepton,i,"BS");
+  }else{
+    return compute_d0(lepton,i,"BS");
   }
-  */
+  
 }
 //---------------------------------------------------------------------------------------------
 
