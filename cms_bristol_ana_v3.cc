@@ -8,6 +8,7 @@
 //#====================================================#
 //# Last update:
 //  
+// 14 July 2010: Update enri2 e20 stat.
 // 13 July 2010: Switch to els3_d0_bs/mus_d0_bs in get_d0_BS().
 // 13 July 2010: Change PrimaryVertex to consider the leading PV only.
 // 12 July 2010: Fix bug that cause code to crash in the end when running on only one single top.
@@ -914,7 +915,7 @@ void ana::SetEventWeightMap(){ //only if run on MC
      skimEffMap["zjet"]   =  329061 /  1084921. ; //v4
      
      skimEffMap["enri1"]  = 2138593 / 34001839. ; //v4 (~100%)
-     skimEffMap["enri2"]  = 5478687 / 41241278. ; //v4 (~97%)
+     skimEffMap["enri2"]  = 5623262 / 42329278. ; //v4 (~100%)
      skimEffMap["enri3"]  = 1482956 /  5546413. ; //v4
      
      skimEffMap["bce1"]   =   91603 / 2761023. ; //v4
