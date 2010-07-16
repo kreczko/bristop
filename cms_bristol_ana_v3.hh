@@ -1588,6 +1588,11 @@ public:
   void    SetIntLumiForM3(double val) { m_intlumiForM3 = val; }; //scale factor = intlumi wanted / original run
   void    IncludeSingleTopInM3Fit(bool f) { m_inclStopM3 = f; } ;
 
+  void    M3Fit_range_tt(  double low, double up) { m_m3Fit_tt_low   = low; m_m3Fit_tt_up   = up; } ;
+  void    M3Fit_range_wj(  double low, double up) { m_m3Fit_wj_low   = low; m_m3Fit_wj_up   = up; } ;
+  void    M3Fit_range_qcd( double low, double up) { m_m3Fit_qcd_low  = low; m_m3Fit_qcd_up  = up; } ;
+  void    M3Fit_range_stop(double low, double up) { m_m3Fit_stop_low = low; m_m3Fit_stop_up = up; } ;
+
   void    SetEleETcut(float);
   void    SetMuonPTcut(float);
   void    SetMuonISOcut(float);
@@ -1942,6 +1947,14 @@ private:
   int    m_ntoy;
   double m_intlumiForM3;
   bool   m_inclStopM3;
+  double    m_m3Fit_tt_low;
+  double    m_m3Fit_tt_up;
+  double    m_m3Fit_wj_low;
+  double    m_m3Fit_wj_up;
+  double    m_m3Fit_qcd_low;
+  double    m_m3Fit_qcd_up;
+  double    m_m3Fit_stop_low;
+  double    m_m3Fit_stop_up;
   bool   useNewReliso;
   string doSystematics;
   string sysSample;

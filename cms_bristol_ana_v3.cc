@@ -1,13 +1,13 @@
 //
 // To Do: 1) validate error table code.
 //        2) add WW,ZZ,WZ.
-//        3) adapt cut to conform to Reference Selection of Top Lepton+Jets
-//        4) exploit "goodrun" (stage 1) for event cleaning: NoScraping, goodPV
-//        5) switch to els3_d0_bs for abs d0(BS) in get_d0_BS(). Need v2 ntuple.
-//        6) may need to add HBHENoiseFilter for MC.
+//        3) may need to add HBHENoiseFilter for MC.
+//        4) add photon+jets to QCD in m3 fit.
 //#====================================================#
 //# Last update:
 //  
+// 15 July 2010: Update cross section: tt, wj, zj, t-chan, s-chan.
+// 14 July 2010: Update M3 code. Add private var in .hh. Clean up. Remove changelog older than 1 May.
 // 14 July 2010: Update enri2 e20 stat.
 // 13 July 2010: Switch to els3_d0_bs/mus_d0_bs in get_d0_BS().
 // 13 July 2010: Change PrimaryVertex to consider the leading PV only.
@@ -109,94 +109,6 @@
 //               - when run on old summer09 sample, use the old els_eta.                                
 //               - add functions: eleInBarrel(), eleInEndcap(), eleInGap(). 
 //
-//  26 Apr 2010: - Tidied up conversion code - removed redundant function, and altered parameters  
-//
-//  21 Apr 2010: - Made changes to jet cleaning (3H). Cleans using most isolated electron, but all isolated electrons 
-//                 if there is more than one.
-//               - added branches for els_scEta and els_dB and els_edB
-//               - TODO: check whether we're going to replace all els_eta with els_scEta, or just for synch exercise
-//
-//  16 Apr 2010: - Added QCD_AES plots: planB3_e5/10/15.
-//               - Reverted to old Z veto (ie Reference Selection)
-//               - Switched to explicit isolation variables: els_dr04TkSumPt; mus_iso03_sumPt/_emEt/_hadEt.
-//               - Conform muon veto to Ref. Sel.: Added MU_ISOCUT option.
-//
-//  13 Apr 2010: - Added met_ex and met_ey to validation code. Applied filtering requirements for validation.
-//
-//  13 Apr 2010: - Updated skim efficiency for new ttjets MG ntuples (31X).
-//               - Added Kachanon's plots (jet cleaning eff, njet_pass).
-//               - Added NoScrapingFilter() and PrimaryVertexFilter().
-//
-//  12 Apr 2010: - Added this_weight initialization
-//
-//  10 Apr 2010: - Updated OptimiseConversionFinder code, added ML distributions.
-//
-//  2 Apr 2010: - investigating glibc memory error. Fixed.
-//
-//  1 Apr 2010: - continue revision of error table code.
-//              - add PrintErrorTable_MC(); move variables to private.
-//              - add PrintErrorTable_NjetVcut_Data() for data mode.
-//              - remove log older than 1 Mar.
-//              - fix typo (bc3->bce3).
-// 
-// 31 Mar 2010: - review and fix bug in PrintErrorTable, add getTotalEvents(),
-//              - add PrintTableError_QCD(), PrintTableError_SingleTop(),PrintTableError_SignalBG().
-//              - add skimEffMap to account for skim eff when calculating error. 
-//              - add PrintEventCounter().
-//
-// 30 Mar 2010: - clean up old z veto code (NES)              
-// 29 Mar 2010: - fix bug: reliso AES, isConversionMIGE.
-//              - add 2D plot m3Vmjj
-//
-// 28 Mar 2010: - clean up, re-order .hh
-//              - rename: SetMCFlag() -> SetGlobalMCFlag()
-//              - add ResetLocalMCFlags()
-//              - add IdentifyMcEventTypeFromFilePath()
-//              - add SetLocalMCFlagAndType()
-//              - add StudyRelisoNESatEachStage()
-//              - move some variables to private (see hh)
-//              - remove one calcDeltaR()
-//
-// 27 Mar 2010: - global replace: TH1F->TH1D, TH2F->TH2D.
-//              - clean up m3 plots.
-//              - moved QCD AES plan A/B out of EventLoop.
-//              - m_nGoodJet -> nGoodJet.
-//
-// 26 Mar 2010: - change SetJetETcut() to SetJetPTcut().
-//              - add study_mjj (mass of W->jj), add this_m3 and ii_which_3j_m3 (private).
-//              - add pass flags, replace isBarrel with pass_barrel, make goodrun, fired_single_em private.
-//
-// 25 Mar 2010: revise eid and muon plots.
-// 24 Mar 2010: - add public method SetIntLuminosity(), replaced intlumi with m_intlumi.
-//              - changed default int lumi from 20/pb to 10/pb.
-//              - add public method SetIntLumiForM3(m_intlumiForM3).
-//              - write some info to file.
-//              - revise m3 fit.
-// 23 Mar 2010: - update drive script & HLT skim eff for new MG W/Z+jets samples.
-//              - small update in DefineCrossSectionAlpgen7TeV().
-// 20 Mar 2010: add Begin() - call before EventLoop().
-//              add public method to PrintGenParticles(n).
-// 18 Mar 2010: remove 1D reliso NES plots (redundant).
-//              update HLT skim eff for new MG w/z+jets (pending).
-// 17 Mar 2010: small correction (h_QCDest_isoVmet_NES_barrel/endcap not filled).
-// 16 Mar 2010: clean up, small correction.
-// 15 Mar 2010: - take out redundant weight parameter in fillHistoDataAndMC().
-//              - revise. review QCD plot making.
-// 14 Mar 2010: - change histo array to vector. Add BookHistograms() suite.
-//              - Revert all short to int to optimize code.
-//              - remove doValidaion(), replaced with m_doValidation.
-//              - add switch StudyZveto (D=on).
-//
-// 12 Mar 2010: fix small bug.
-// 11 Mar 2010: replace 3D arrays (e_plus_jet & e_plus_jets_weighted) with 
-//              private vectors. Simplify and imporve codes.
-//
-//  9 Mar 2010: - Adapt to accommodate tt0j-tt4j alpgen signal samples. 
-//              - Add methods: DefineCrossSectionAlpgen7TeV, DrawTTnjetTable.
-//              - Consistent use of GetNinit() & GetCrossSection().
-//              - Remove old logs, keep only this year's.
-//
-//  3 Mar 2010: add DPhiMetJet, genMET plots.
 //#====================================================#
 #include <iostream>
 #include <iomanip>
@@ -240,8 +152,6 @@ using namespace RooFit;
 typedef unsigned int uint;
 
 
-// TEMPORARY
-//const bool has_d0_pvbs = false; //on latest data //moved to configurable
 
 
 // Global variables/constants
@@ -605,10 +515,10 @@ void ana::SetGlobalMCFlag(){
   if(GetNinit("bce3")>0)   mc_sample_has_bce3  = true;
   if(GetNinit("vqq")>0)    mc_sample_has_VQQ   = true;
   if( (GetNinit("tW") + GetNinit("tchan") + GetNinit("schan")) > 0 )  mc_sample_has_singleTop = true;
-  if(GetNinit("tW")   >0)     mc_sample_has_tW    = true;
+  if(GetNinit("tW")   >0)  mc_sample_has_tW    = true;
   if(GetNinit("tchan")>0)  mc_sample_has_tchan = true;
   if(GetNinit("schan")>0)  mc_sample_has_schan = true;
-  if(GetNinit("pj1")+GetNinit("pj2")+GetNinit("pj3")>0)  mc_sample_has_photonjet = true;
+  if( (GetNinit("pj1")+GetNinit("pj2")+GetNinit("pj3")) > 0 )  mc_sample_has_photonjet = true;
   if(GetNinit("pj1")>0)  mc_sample_has_pj1 = true;
   if(GetNinit("pj2")>0)  mc_sample_has_pj2 = true;
   if(GetNinit("pj3")>0)  mc_sample_has_pj3 = true;
@@ -647,12 +557,18 @@ void ana::DefineCrossSection(){
   } 
   else if (m_LHCEnergyInTeV==7) { //7TeV
 
-    cross_section["ttbar"] =          165. ;  //was 187 pb
-    cross_section["ttjet"] =          165. ;
+    //    cross_section["ttbar"] =          165. ;  //was 187 pb
+    //    cross_section["ttjet"] =          165. ;
 
-    cross_section["wjet"]  =  28049; //28000.; //was 24e3 * 1.14
-    cross_section["zjet"]  =  2907;  // 2800.; //was 2.3e3 * 1.14
+    //    cross_section["wjet"]  =  28000.; //was 24e3 * 1.14
+    //    cross_section["zjet"]  =  2800.; //was 2.3e3 * 1.14
     
+      // Updated 15 Jul to https://twiki.cern.ch/twiki/pub/CMS/GeneratorMain/ShortXsec.pdf
+    cross_section["ttbar"] =    157.5 ;  //in pb
+    cross_section["ttjet"] =    157.5 ;
+    cross_section["wjet"]  =  31314.  ;
+    cross_section["zjet"]  =   3048.  ;
+
     cross_section["wenu"]  =  7899 * 0.779 * 1.14 ; //xs 7899 pb (pythia LO) (eff=0.779) (K-fac=1.14)
     cross_section["zee"]   =  1300 * 1.14 ;        //xs 1300 pb (pythia LO) (K-fac=1.14)
     
@@ -664,13 +580,11 @@ void ana::DefineCrossSection(){
     cross_section["bce2"]  = 0.0593e9 * 0.00234;  //xs 0.0593 mb
     cross_section["bce3"]  =  0.906e6 * 0.0104 ;  //xs 0.906e-3 mb
     
-    //cross_section["tW"]    =  11.0  ;   //xs  11 pb (NLO MCFM) inclusive t,W decay
-    //cross_section["tchan"] =  20.7  ;   //xs  64 pb (NLO MCFM) * 0.324 (Br(t->blnu)) ~ 20.7
-    //cross_section["schan"] =   0.99 ;   //0.99 pb is Madgraph value incl. BR(B->e,mu,tau), take from 'ProductionSummer2009at7TeV' Twiki
-
     cross_section["tW"]    =  10.6  ;         //xs  11 pb (NLO MCFM) inclusive t,W decay
-    cross_section["tchan"] =   63.2 * 0.324;   //xs  63 pb (NLO MCFM) * 0.324 (Br(t->blnu)) = 20.412
-    cross_section["schan"] =   4.6 * 0.324 ;  //4.6 pb x 0.324 (4.6pb is NNNLO) = 1.4904
+    // cross_section["tchan"] =  63.2 * 0.324;   //xs  63 pb (NLO MCFM) * 0.324 (Br(t->blnu)) = 20.412
+    // cross_section["schan"] =   4.6 * 0.324 ;  //4.6 pb x 0.324 (4.6pb is NNNLO) = 1.4904
+    cross_section["tchan"] =  21.53 ;  //=64.6/3 15Jul
+    cross_section["schan"] =   1.40 ;  //-4.21/3 15Jul
 
     // photon+jets MadGraph
     cross_section["pj1"] =   23620. ; //pb
@@ -1063,10 +977,10 @@ ana::ana(){
    m_applyMETcut             = false;
    m_rejectEndcapEle         = false;
    m_runOnSD                 = false;
-   m_runOnMyHLTskim          = true;
+   m_runOnMyHLTskim          = false;
    m_runOnMyE20skim          = false;
    m_runOn35Xntuples         = true;
-   m_runOnV4ntuples          = false;
+   m_runOnV4ntuples          = true;
    m_ntupleHasD0PVBS         = false;
    m_cleanEvents             = true;
    m_removeScrap             = false;
@@ -1078,7 +992,18 @@ ana::ana(){
    m_muonCutNum              = 0;
    m_ntoy                    = 2;
    m_intlumiForM3            = 10.0; //pb-1
-   m_inclStopM3              = false;
+   m_inclStopM3              = true;
+
+   // default values to define x-range for n(m3 fit)
+   m_m3Fit_tt_low   = -40;
+   m_m3Fit_tt_up    = 240;
+   m_m3Fit_wj_low   = -80;
+   m_m3Fit_wj_up    = 200;
+   m_m3Fit_qcd_low  =   0;
+   m_m3Fit_qcd_up   =  10;
+   m_m3Fit_stop_low =   0;
+   m_m3Fit_stop_up  =  10;
+
    useNewReliso            = true;
    doSystematics           = "";
    sysSample               = "";
@@ -1160,9 +1085,9 @@ void ana::ResetLocalMCFlags(){
    isTchan     = false;
    isSchan     = false;
    isPhotonJet = false;
-   isPJ1 = false;
-   isPJ2 = false;
-   isPJ3 = false;
+   isPJ1       = false;
+   isPJ2       = false;
+   isPJ3       = false;
 }
 //---------------------------------------------------------------------------------------------
 
@@ -1297,17 +1222,6 @@ void ana::ReadSelectedBranches() const {
    chain->SetBranchStatus("PFMets_ey",1);
    chain->SetBranchStatus("tcmets_ex",1);
    chain->SetBranchStatus("tcmets_ey",1);
-   /*
-   if(m_metAlgo=="Default") { //muCor caloMET
-     chain->SetBranchStatus("Nmets",1);
-     chain->SetBranchStatus("mets_et_muonCor",1);
-     chain->SetBranchStatus("mets_phi_muonCor",1);
-
-   } else if(m_metAlgo=="calomet_mujes") {
-     chain->SetBranchStatus("Nmets",1);
-     chain->SetBranchStatus("mets_et",1);
-     chain->SetBranchStatus("mets_phi",1);
-   */
    chain->SetBranchStatus("PFMets_et",1);
    chain->SetBranchStatus("tcmets_et",1);
 
@@ -5183,28 +5097,11 @@ bool ana::EventLoop(){
 
 
    //Summary Info
-   cout << "\n\\begin{verbatim}";
+   //cout << "\n\\begin{verbatim}";
    cout << "\n%------------------------------------------------------------------------------------\n";
    cout << "                             Summary Information";
    cout << "\n%------------------------------------------------------------------------------------\n";
-
-//    cout << "Integrated luminosity assumed = " << m_intlumi << "/pb" << endl;
-//    if( GetTrigger() ) cout << "Applied HLT trigger: " << HLTBit << endl;
-//    cout << " Electron ET cut  =  " << ELE_ETCUT << "  GeV" << endl;
-//    cout << " Electron ID      = " << printEleID() << endl;
-//    cout << " Electron d0      =  " << m_d0RefPoint << ", cut = " << ELE_D0CUT << endl;
-//    cout << "     Muon PT cut  =  " << MU_PTCUT  << "  GeV" << endl;
-//    cout << "     Muon iso cut =  " << MU_ISOCUT  << endl;
-//    cout << "      Jet PT cut  =  " << JET_PTCUT << "  GeV" << endl;
-//    cout << "      MET    cut  =  " << METCUT    << "  GeV" << endl;
-
-//   cout << " Electron RelIso formula = " ;
-//    if(useNewReliso) cout << "new"; else cout << "old";
-//    if(!m_applyMETcut && m_rejectEndcapEle) 
-//      cout << "\n Using plan B, does not use MET, use barrel ele only (eta<1.442)" << endl;
-//    if(m_applyMETcut && m_rejectEndcapEle) 
-//      cout << "\n Using plan C, both MET & ele eta cuts are used (eta<1.442)" << endl;
-   cout << "\n\\end{verbatim}\n"<< endl;
+   //cout << "\n\\end{verbatim}\n"<< endl;
 
 
    cout << "\n Monitor:" << endl;
@@ -7633,8 +7530,8 @@ void ana::study_mjj( const vector<TLorentzVector>& j ){ //reference to jets
 //   o  The fit produces the number of ttbar, W+jets and QCD. It also produces a root file 
 //      called m3_out.root to store histograms.
 //
-// IMPORTANT NOTICE: the fit code requires ROOT v5.22.00.
-//
+// IMPORTANT NOTICE: the fit code requires ROOT v5.22.00 or higher.
+//---------------------------------------------------------------------------------------------
 
 void ana::EstimateWjets() {
 
@@ -7665,7 +7562,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   }
 
   cout << "inputFile_data = " << inputFile_data << endl;
-  cout << "inputFile_mc = " << inputFile_mc << endl;
+  cout << "inputFile_mc   = " << inputFile_mc << endl;
 
 
 
@@ -7696,8 +7593,8 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 
   if (IsData()==false) { //MC
     //h_m3_qcd    = (TH1D*)fmc->Get(Form("%s/m3_qcd",dirW.c_str()));
-    h_m3_zj     = (TH1D*)fmc->Get(Form("%s/m3__zj",dirW.c_str()));
-    h_m3_stop   = (TH1D*)fmc->Get(Form("%s/m3__singleTop",dirW.c_str()));
+    h_m3_zj          = (TH1D*)fmc->Get(Form("%s/m3__zj",         dirW.c_str()));
+    h_m3_stop        = (TH1D*)fmc->Get(Form("%s/m3__singleTop",  dirW.c_str()));
     h_m3_qcd_control = (TH1D*)fmc->Get(Form("%s/m3_control__QCD",dirW.c_str()));
   }
 
@@ -7708,32 +7605,7 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 
 
 
-  //-----------------------------------------------------
-  // May 22: adapt code to use Thorsten's M3 histograms
-  //-----------------------------------------------------
-  const bool use_Thorsten_histo = false;
-  const bool use_Thorsten_eventNo = false;
 
-  if(use_Thorsten_histo) {
-    cout << "\n *** Using Thorsten's M3 histograms to fit ***" << endl;
-  
-    TFile *ftt = new TFile("Thorsten/ttbar.root");
-    TFile *fwj = new TFile("Thorsten/wjets_Fastsim.root"); //from FASTsim
-    TFile *fqcd = new TFile("Thorsten/QCD_template.root");
-    TFile *fstop = new TFile("Thorsten/stop.root");
-    
-    h_m3_tt = (TH1D*)ftt->Get("h_m3_100");
-    h_m3_wj = (TH1D*)fwj->Get("h_m3_100");
-    control_all = (TH1D*)fqcd->Get("h_m3_100");
-    h_m3_stop = (TH1D*)fstop->Get("h_m3_100");
-  }
-
-  /*
-  // 27 May 09: use KA's ttjet shape  
-  TFile *ftt = new TFile("Thorsten/ttbar.root");
-  h_m3_tt = (TH1D*)ftt->Get("h_m3_100");
-  cout << "\n*** NOTE: For signal ttjet, use KA shape. ***" << endl;
-  */
   /*
   // 27 May 09: use ttbar pythia as default shape  
   TFile *ftt = new TFile("test_mc_ttbar.root");
@@ -7847,63 +7719,41 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
     // (1) if vary  ttbar
     if ( sysSample.find( "tt" ) != string::npos ) { //match "tt"
 
-      if(!use_Thorsten_histo) { //use our histo
 
-	if(sysSample=="ttbar")                 fmc2 = new TFile("test_mc_ttbar.root");
-	else if(sysSample=="ttjet_largerISR")  fmc2 = new TFile("test_mc_ttjet_largerISR.root"); //old
-	else if(sysSample=="ttjet_smallerISR") fmc2 = new TFile("test_mc_ttjet_smallerISR.root"); //old
-	// new pythia ttbar ISR/FSR sample (1 June)
-	//else if(sysSample=="ttbar_fastsim_ISRFSR_nom")   fmc2 = new TFile("test_mc_ttbar_fastsim_ISRFSR_nom.root");
-	else if(sysSample=="ttbar_fastsim_ISRFSR_large") fmc2 = new TFile("test_mc_ttbar_fastsim_ISRFSR_large.root");
-	else if(sysSample=="ttbar_fastsim_ISRFSR_small") fmc2 = new TFile("test_mc_ttbar_fastsim_ISRFSR_small.root");
-	// new sample 15-Jun-09
-	else if(sysSample=="ttjet_fastsim_nom")  fmc2 = new TFile("test_mc_ttjet_fastsim_nom.root");
-	else if(sysSample=="ttjet_fastsim_T40")  fmc2 = new TFile("test_mc_ttjet_fastsim_T40.root");
-	else if(sysSample=="ttjet_fastsim_T10")  fmc2 = new TFile("test_mc_ttjet_fastsim_T10.root");
-	else if(sysSample=="ttjet_fastsim_scaleUp")   fmc2 = new TFile("test_mc_ttjet_fastsim_scaleUp.root");
-	else if(sysSample=="ttjet_fastsim_scaleDown") fmc2 = new TFile("test_mc_ttjet_fastsim_scaleDown.root");
+      if(sysSample=="ttbar")                 fmc2 = new TFile("test_mc_ttbar.root");
+      else if(sysSample=="ttjet_largerISR")  fmc2 = new TFile("test_mc_ttjet_largerISR.root"); //old
+      else if(sysSample=="ttjet_smallerISR") fmc2 = new TFile("test_mc_ttjet_smallerISR.root"); //old
+      // new pythia ttbar ISR/FSR sample (1 June)
+      //else if(sysSample=="ttbar_fastsim_ISRFSR_nom")   fmc2 = new TFile("test_mc_ttbar_fastsim_ISRFSR_nom.root");
+      else if(sysSample=="ttbar_fastsim_ISRFSR_large") fmc2 = new TFile("test_mc_ttbar_fastsim_ISRFSR_large.root");
+      else if(sysSample=="ttbar_fastsim_ISRFSR_small") fmc2 = new TFile("test_mc_ttbar_fastsim_ISRFSR_small.root");
+      // new sample 15-Jun-09
+      else if(sysSample=="ttjet_fastsim_nom")  fmc2 = new TFile("test_mc_ttjet_fastsim_nom.root");
+      else if(sysSample=="ttjet_fastsim_T40")  fmc2 = new TFile("test_mc_ttjet_fastsim_T40.root");
+      else if(sysSample=="ttjet_fastsim_T10")  fmc2 = new TFile("test_mc_ttjet_fastsim_T10.root");
+      else if(sysSample=="ttjet_fastsim_scaleUp")   fmc2 = new TFile("test_mc_ttjet_fastsim_scaleUp.root");
+      else if(sysSample=="ttjet_fastsim_scaleDown") fmc2 = new TFile("test_mc_ttjet_fastsim_scaleDown.root");
+      
+      if(fmc2>0) model_tt = (TH1D*)fmc2->Get(Form("%s/m3__ttbar",dirW.c_str()))->Clone("model_tt");
 
-	if(fmc2>0) model_tt = (TH1D*)fmc2->Get(Form("%s/m3__ttbar",dirW.c_str()))->Clone("model_tt");
-
-      }else{ //use Thorsten's histo
-	cout << "NOTE: Use Thorsten's histo for ttbar shape" << endl;
-	if(sysSample=="ttbar")  fmc2 = new TFile("Thorsten/ttbar_Pythia.root");
-	model_tt = (TH1D*)fmc2->Get("h_m3_100")->Clone("model_tt");
-      }
     }
     
     // (2) if vary  wj    
     //  TFile *fmc2 = new TFile("test_mc_SETTHIS.root");    
     else if ( sysSample.find( "wj" ) != string::npos ) { //match "wj"
 
-      if(!use_Thorsten_histo) { //use our histo
 
-	if(sysSample=="wjet_fastsim_nom")    fmc2 = new TFile("test_mc_wjet_fastsim_nom.root");
-	else if(sysSample=="wjet_thres20")   fmc2 = new TFile("test_mc_wjet_thres20.root");
-	else if(sysSample=="wjet_thres5")    fmc2 = new TFile("test_mc_wjet_thres5.root");
-	else if(sysSample=="wjet_scaleUp")   fmc2 = new TFile("test_mc_wjet_scaleUp.root");
-	else if(sysSample=="wjet_scaleDown") fmc2 = new TFile("test_mc_wjet_scaleDown.root");
-	model_wj = (TH1D*)fmc2->Get(Form("%s/m3__wj",dirW.c_str()))->Clone("model_wj");
-      
-      }else{ //use Thorsten's histo
-	cout << "NOTE: Use Thorsten's histo for wj systematics shape" << endl;
-	if(sysSample=="wjet_fastsim_nom")    fmc2 = new TFile("Thorsten/wjets_FastSim.root");
-	else if(sysSample=="wjet_thres20")   fmc2 = new TFile("Thorsten/wjets_FastSim_T20.root");
-	else if(sysSample=="wjet_thres5")    fmc2 = new TFile("Thorsten/wjets_FastSim_T5.root");
-	else if(sysSample=="wjet_scaleUp")   fmc2 = new TFile("Thorsten/wjets_FastSim_scaleup.root");
-	else if(sysSample=="wjet_scaleDown") fmc2 = new TFile("Thorsten/wjets_FastSim_scaledown.root");
-	model_wj = (TH1D*)fmc2->Get("h_m3_100")->Clone("model_wj");       
-      }
+      if(sysSample=="wjet_fastsim_nom")    fmc2 = new TFile("test_mc_wjet_fastsim_nom.root");
+      else if(sysSample=="wjet_thres20")   fmc2 = new TFile("test_mc_wjet_thres20.root");
+      else if(sysSample=="wjet_thres5")    fmc2 = new TFile("test_mc_wjet_thres5.root");
+      else if(sysSample=="wjet_scaleUp")   fmc2 = new TFile("test_mc_wjet_scaleUp.root");
+      else if(sysSample=="wjet_scaleDown") fmc2 = new TFile("test_mc_wjet_scaleDown.root");
+      model_wj = (TH1D*)fmc2->Get(Form("%s/m3__wj",dirW.c_str()))->Clone("model_wj");
+            
     }
     cout << ",  file: " << fmc2->GetName() << endl;
   }//end if vary shape
 
-  /*
-  // 27 May 09
-  cout << "NOTE: Use Thorsten's pythia histo for ttbar shape (as model)" << endl;
-  TFile *fmc2 = new TFile("Thorsten/ttbar_Pythia.root");
-  model_tt = (TH1D*)fmc2->Get("h_m3_100")->Clone("model_tt");
-  */
   
 
   /*
@@ -8029,13 +7879,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   const double  ntrue_ttjet_fastsim_scaleDown = 191.8;
 
 
-  if(use_Thorsten_eventNo){
-    ntrue_wjet_T20 = 74;
-    ntrue_wjet_T5  = 55;
-    ntrue_wjet_scaleUp = 36;
-    ntrue_wjet_scaleDown = 99;
-    ntrue_ttbar = 172;
-  }
 
 
   int kstage = 4; //D=conv
@@ -8056,15 +7899,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   */
 
 
-  if(use_Thorsten_eventNo){
-    // Use Thorsten's event yields
-    cout << "NOTE: Using Thorsten's event numbers." << endl;
-    ntt_true = 177;
-    nwj_true = 60;
-    nzj_true = 12;
-    nqcd_true = 30;
-    nstop_true = 8;    
-  }
 
   const double nstop_exp = nstop_true; //used in Gaus-constrain
 
@@ -8095,18 +7929,6 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   }
 
   
-  if(use_Thorsten_eventNo) {
-    // Thorsten's numbers
-    if(doSystematics=="QCDnorm_genest15" ) {
-      nqcd_true    = 45;  // QCD est +50%
-      nqcd_est     = 30;
-      nqcd_est_err = 15;
-    } else if(doSystematics=="QCDnorm_genest05" ) {
-      nqcd_true    = 15;  // QCD est -50%
-      nqcd_est     = 30;
-      nqcd_est_err = 15;
-    }
-  }
   cout << "QCD mean of pseudodata (true) = " << nqcd_true << endl;
   cout << "QCD Gaussian-constraint, mean = " << nqcd_est;
   cout << "  width = " << nqcd_est_err << endl;
@@ -8227,13 +8049,19 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
 
   // Book histograms to store fit results
   // numbers assumed 20/pb.  amituofo
-  TH1D *h_ntt_fit     = new TH1D("ntt_fit",   "n(tt) fit",         100, -40*sf, 240*sf );
+  //  TH1D *h_ntt_fit     = new TH1D("ntt_fit",   "n(tt) fit",         100, -40*sf, 240*sf );
+  TH1D *h_ntt_fit     = new TH1D("ntt_fit",   "n(tt) fit",         100, m_m3Fit_tt_low*sf, m_m3Fit_tt_up*sf );
  
   //  TH1D *h_ntt_fit     = new TH1D("ntt_fit",   "n(tt) fit",         100, -3*sqrt(ndata), ndata + 3*sqrt(ndata) );
 
-  TH1D *h_nwj_fit     = new TH1D("nwj_fit",   "n(wj) fit",         100, -80*sf, 200*sf );
-  TH1D *h_nqcd_fit    = new TH1D("nqcd_fit",  "n(qcd) fit",       1000,      0,  10*sf ); //expect 2 QCD for 10/pb
-  TH1D *h_nstop_fit   = new TH1D("nstop_fit", "n(singletop) fit", 1000,      0,  10*sf ); //expect 2 QCD for 10/pb
+  //TH1D *h_nwj_fit     = new TH1D("nwj_fit",   "n(wj) fit",         100, -80*sf, 200*sf );
+  //TH1D *h_nqcd_fit    = new TH1D("nqcd_fit",  "n(qcd) fit",       1000,      0,  10*sf ); //expect 2 QCD for 10/pb
+  //TH1D *h_nstop_fit   = new TH1D("nstop_fit", "n(singletop) fit", 1000,      0,  10*sf ); //expect 2 QCD for 10/pb
+
+  TH1D *h_nwj_fit    = new TH1D("nwj_fit",   "n(wj) fit",         100,   m_m3Fit_tt_low*sf,    m_m3Fit_tt_up*sf );
+  TH1D *h_nqcd_fit   = new TH1D("nqcd_fit",  "n(qcd) fit",       1000,  m_m3Fit_qcd_low*sf,   m_m3Fit_qcd_up*sf ); //expect 2 QCD for 10/pb
+  TH1D *h_nstop_fit  = new TH1D("nstop_fit", "n(singletop) fit", 1000, m_m3Fit_stop_low*sf,  m_m3Fit_stop_up*sf );
+
 
 
   // good fit only
@@ -8906,75 +8734,55 @@ void ana::PrintNumIsolated() const{
   printf("note: if there is an 'x', it means there is underflow.\n\n");
   printf("               0j          1j          2j          3j        >=4j         allj\n");
   if(IsData()){
+    printf("\n data ");
     GetNumIso(0);
   }
   else{ // MC
 
     printf("\n tt   ");
-    if(mc_sample_has_ttbar){//mcname(tt)=1
-      GetNumIso(1);
-    }
+    if(mc_sample_has_ttbar) GetNumIso(1); //mcname(tt)=1
   
     printf("\n wj   ");
-    if(mc_sample_has_Wjet){ //mcname(wj)=9
-      GetNumIso(9);
-    }
+    if(mc_sample_has_Wjet) GetNumIso(9); //mcname(wj)=9
+
     printf("\n zj   ");
-    if(mc_sample_has_Zjet){ //mcname(zj)=10
-      GetNumIso(10);
-    }
+    if(mc_sample_has_Zjet) GetNumIso(10); //mcname(zj)=10
 
     printf("\n QCD  ");
-    if(mc_sample_has_QCD){ //mcname(QCD)=2
-      GetNumIso(2);
-    }
+    if(mc_sample_has_QCD) GetNumIso(2); //mcname(QCD)=2
 
     printf("\n enri1");
-    if(mc_sample_has_enri1){ //mcname(enri1)=3
-      GetNumIso(3);
-    }
+    if(mc_sample_has_enri1) GetNumIso(3); //mcname(enri1)=3
+
     printf("\n enri2");
-    if(mc_sample_has_enri2){ //mcname(enri2)=4
-      GetNumIso(4);
-    }
+    if(mc_sample_has_enri2) GetNumIso(4); //mcname(enri2)=4
+
     printf("\n enri3");
-    if(mc_sample_has_enri3){ //mcname(enri3)=5
-      GetNumIso(5);
-    }
+    if(mc_sample_has_enri3) GetNumIso(5); //mcname(enri3)=5
      
     printf("\n bce1 ");
-    if(mc_sample_has_bce1){ //mcname(bce1)=6
-      GetNumIso(6);
-    }
+    if(mc_sample_has_bce1) GetNumIso(6); //mcname(bce1)=6
+
     printf("\n bce2 ");
-    if(mc_sample_has_bce2){ //mcname(bce2)=7
-      GetNumIso(7);
-    }
+    if(mc_sample_has_bce2) GetNumIso(7); //mcname(bce2)=7
+
     printf("\n bce3 ");
-    if(mc_sample_has_bce3){ //mcname(bce3)=8
-      GetNumIso(8);
-    }
+    if(mc_sample_has_bce3) GetNumIso(8); //mcname(bce3)=8
+
     printf("\n tW    ");
-    if(mc_sample_has_tW){ //mcname(tW)=13
-      GetNumIso(13);
-    }
+    if(mc_sample_has_tW) GetNumIso(13); //mcname(tW)=13
+          
     printf("\n tchan ");
-    if(mc_sample_has_tchan){ //mcname(tchan)=14
-      GetNumIso(14);
-    }
+    if(mc_sample_has_tchan) GetNumIso(14); //mcname(tchan)=14
 
     printf("\n pj1   ");
-    if(mc_sample_has_pj1){
-      GetNumIso(16);//mcname
-    }
+    if(mc_sample_has_pj1)  GetNumIso(16); //mcname(pj1)=16
+
     printf("\n pj2   ");
-    if(mc_sample_has_pj2){
-      GetNumIso(17);//mcname
-    }
+    if(mc_sample_has_pj2)  GetNumIso(17); //mcname(pj1)=17
+    
     printf("\n pj3   ");
-    if(mc_sample_has_pj3){ 
-      GetNumIso(18);//mcname
-    }
+    if(mc_sample_has_pj3)  GetNumIso(18); //mcname(pj1)=18
 
   }//end MC
   printf("\n\n");
