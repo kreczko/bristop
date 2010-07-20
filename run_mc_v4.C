@@ -6,7 +6,7 @@
 	watch.Start();
 
 
-	cout << "\n\n Testing v4 mc ntuples.\n" << endl;
+	cout << "\n\n Run on v4 mc ntuples.\n" << endl;
 	//cout << "\n\n Run on MC ntuples.\n" << endl;
 	//cout << "  e20 skim: tt, wj, zj, QCD, t-chan, s-chan, photon+jets." << endl;
 
@@ -31,7 +31,7 @@
 	// (b) CheckTrigger(true,"HLT_NEW"); to use other HLT bit
 	//myana->CheckTrigger(true); //0 for no trigger check, 1 for single electron trigger
 	//myana->CheckTrigger(true,"HLT_Ele15_SW_L1R"); //<-- uncomment this if want a diff trigger
-	myana->CheckTrigger(true,"HLT_Photon10_L1R"); //<-- uncomment this if want a diff trigger
+	myana->CheckTrigger(true,"HLT_Photon15_L1R"); //<-- uncomment this if want a diff trigger
 
 	myana->Validation(0);
 	myana->PlotRelisoNES( 1 );
@@ -87,13 +87,30 @@
 	//Note - for 35X samples, this bool applies to pythia samples as well
 
         myana->SetRunOnMyHLTskim( false ); //bristol HLT skim
-        myana->SetRunOnMyE20skim( false ); //bristol e20 skim
+        myana->SetRunOnMyE20skim( true ); //bristol e20 skim
 
 
 	myana->SetRunOnV4ntuples( true );
 
 	//Input files
-	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/link_ttjet/*.root");
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_ttjet/*.root");
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_wjet/*.root");
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_zjet/*.root");
+
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_bce1/*.root");
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_bce2/*.root");
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_bce3/*.root");
+
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_enri1/*.root");
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_enri2/*.root");
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_enri3/*.root");
+
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_tchan/*.root");
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_tW/*.root");
+
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_pj1/*.root");
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_pj2/*.root");
+        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_pj3/*.root");
 
 	myana->SetOutputFirstName("test");
 
