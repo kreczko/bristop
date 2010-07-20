@@ -1449,6 +1449,7 @@ public:
   Double_t        HLT_Ele20_LW_L1R;
   Double_t        HLT_Photon10_L1R; //NEW
   Double_t        HLT_Photon15_L1R; //NEW
+  Double_t        HLT_Photon15_Cleaned_L1R; //NEW
 
   TBranch        *b_HLT_Ele10_LW_EleId_L1R;   //!
   TBranch        *b_HLT_Ele10_SW_L1R;   //!
@@ -1459,6 +1460,7 @@ public:
   TBranch        *b_HLT_Ele20_LW_L1R;   //!
   TBranch        *b_HLT_Photon10_L1R;   //NEW
   TBranch        *b_HLT_Photon15_L1R;   //NEW
+  TBranch        *b_HLT_Photon15_Cleaned_L1R;   //NEW
 
   // PDF Weights
   //------------
@@ -1988,7 +1990,8 @@ private:
   int    m_nbtag_TCHE;
   int    m_nbtag_TCHP;
   int    m_nbtag_SSV;
-  double CombRelIso; //min reliso of GoodEle
+  //  double CombRelIso; //min reliso of GoodEle
+  double m_RelIso; //min reliso of GoodEle
 
   vector<TLorentzVector> electrons;
   vector<TLorentzVector> jets;
@@ -3897,6 +3900,7 @@ void ana::Init(){
      if(HLTBit=="HLT_Ele15_SW_L1R") chain2->SetBranchAddress("HLT_Ele15_SW_L1R", &HLT_Ele15_SW_L1R, &b_HLT_Ele15_SW_L1R);
      if(HLTBit=="HLT_Photon10_L1R") chain2->SetBranchAddress("HLT_Photon10_L1R", &HLT_Photon10_L1R, &b_HLT_Photon10_L1R);
      if(HLTBit=="HLT_Photon15_L1R") chain2->SetBranchAddress("HLT_Photon15_L1R", &HLT_Photon15_L1R, &b_HLT_Photon15_L1R);
+     if(HLTBit=="HLT_Photon15_Cleaned_L1R") chain2->SetBranchAddress("HLT_Photon15_Cleaned_L1R", &HLT_Photon15_Cleaned_L1R, &b_HLT_Photon15_Cleaned_L1R);
    }
    
    ///------------------------  MC Truth info  ------------------------------------

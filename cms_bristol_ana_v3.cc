@@ -6,6 +6,10 @@
 //#====================================================#
 //# Last update:
 //  
+// 19 July 2010: Continue trying to fix bug. Add missHit cut to M3 control region.
+//               - For data in run >= 140042, use HLT_Photon15_Cleaned_L1R.
+// 17 July 2010: Try to fix bug, m3 CR in data has 1 entry. Rename private var CombRelIso to m_RelIso as there
+//               are local variables with the same name.
 // 15 July 2010: Update cross section: tt, wj, zj, t-chan, s-chan.
 // 14 July 2010: Update M3 code. Add private var in .hh. Clean up. Remove changelog older than 1 May.
 // 14 July 2010: Update enri2 e20 stat.
@@ -433,6 +437,7 @@ void ana::PrintCuts() const {
   cout << "Note:"<< endl;
   cout << "   For Data in Runs < 137029, use emulated Photon15 (pass_photon15 in eventA)."<< endl;
   cout << "   For Data in Runs >= 137029, use HLT_Photon15_L1R."<< endl;
+  cout << "   For Data in Runs >= 140042, use HLT_Photon15_Cleaned_L1R."<< endl;
   cout << "   For all MC, use emulated Photon15."<< endl;  
   if( m_cleanEvents ){
     cout << "\n  Cleaning events: one good PV, No Scraping ";
@@ -1223,7 +1228,9 @@ void ana::ReadSelectedBranches() const {
    chain->SetBranchStatus("tcmets_ex",1);
    chain->SetBranchStatus("tcmets_ey",1);
    chain->SetBranchStatus("PFMets_et",1);
+   chain->SetBranchStatus("PFMets_phi",1);
    chain->SetBranchStatus("tcmets_et",1);
+   chain->SetBranchStatus("tcmets_phi",1);
 
    if (m_metAlgo=="tcmet"){  //tcMET
      chain->SetBranchStatus("Ntcmets",1);
@@ -2597,6 +2604,7 @@ bool ana::EventLoop(){
      m_nbtag_TCHE              = 0;
      m_nbtag_TCHP              = 0;
      m_nbtag_SSV               = 0;
+     m_RelIso                  = -100;
 
      printEventDetails = false;
      //-----------------------------------------------------------
@@ -3153,9 +3161,12 @@ bool ana::EventLoop(){
 	     double a_mtw_pf = compute_mtw( e2v, pfmet2v ); 
 	     double a_mtw_tc = compute_mtw( e2v, tcmet2v ); 
 
-	     myfile2 << "   MT(e,calomet): " << a_mtw    << " GeV  (calomet: " << mets_et->at(0)   << " GeV), Phi: " << mets_phi->at(0) << endl;
-	     myfile2 << "   MT(e,pfmet):   " << a_mtw_pf << " GeV  (pfmet:   " << PFMets_et->at(0) << " GeV)  " << endl;
-	     myfile2 << "   MT(e,tcmet):   " << a_mtw_tc << " GeV  (tcmet:   " << tcmets_et->at(0) << " GeV)  " << endl;
+	     myfile2 << "   MT(e,calomet): " << a_mtw    << " GeV  (calomet: " << mets_et->at(0)   << " GeV), Phi: " 
+		     << mets_phi->at(0) << endl;
+	     myfile2 << "   MT(e,pfmet):   " << a_mtw_pf << " GeV  (pfmet:   " << PFMets_et->at(0) << " GeV), Phi: "
+		     << PFMets_phi->at(0) << endl;
+	     myfile2 << "   MT(e,tcmet):   " << a_mtw_tc << " GeV  (tcmet:   " << tcmets_et->at(0) << " GeV), Phi: "	       
+		     << tcmets_phi->at(0) << endl;
 	     myfile2 << "************************************"<< endl;	   
 
 	   }//passID in data
@@ -3969,7 +3980,10 @@ bool ana::EventLoop(){
        myfile2 << "  Number of good calo jets: " << nGoodJet << endl;
        for(int i=0; i<nGoodJet; i++){
 	 myfile2 << "   jet #" << i+1 << ":  PT = " << jets[i].Pt() << ", eta = " << jets[i].Eta() ;
-	 myfile2 << ", phi = " << jets[i].Phi() << endl;;
+	 myfile2 << ", phi = " << jets[i].Phi();
+	 //BBBBBBBB Add DeltaR(e,jet) info
+	 if( iso_electrons.size() >= 1 ) { myfile2 << "  DR(e,j) = " << jets[i].DeltaR(iso_electrons.at(0)); }
+	 myfile2 << endl;
        }      
        myfile2 << "************************************" << endl;
        myfile2 << "  HT : " << ht << " GeV (= ET(isol e) + PT(isol mu) + PT(good clean calojets) + caloMET)" << endl;
@@ -4344,87 +4358,27 @@ bool ana::EventLoop(){
      }//epj pass
 
 
-
-     //---------------------------------------
-     // Add m3 plots for W+jets estimation
-     //---------------------------------------
-     // Compute m3 for events with 3 jets or more, but 
-     // only plot m3 for event with at least 4 jets.
-     // Require at least 3 jest to reconstruct t->jjj
-
-     if(m_debug) cout << "[EvLoop]  compute m3" << endl;
-
-     // notes: all cuts except ISO
-     if ( goodrun  &&  fired_single_em  &&  nGoodEle>0  && pass_missHits &&  pass_met  &&
-	  !isMuon  &&  !isZ  &&  !isConversion  &&  pass_barrel   &&
-	  nGoodJet >=3 ) {
-       reco_hadronicTop_highestTopPT( jets, nGoodIsoEle );
-     }
-
-
-
-
-
-
-     // (21 Feb 09) make some kinematics plots for events passing N-1 cuts (HT,MET)
-     if(m_debug) cout << "[EvLoop]  Filling N-1 histograms"<< endl;
-     if( goodrun  &&  fired_single_em  &&  pass_only1_isoele  && pass_missHits &&
-     	 !isMuon  &&  !isZ  &&  !isConversion  &&  pass_barrel ) {
-
-       if ( pass_met )    //after all but HT cut
-	 fillHisto_Njet_DataAndMC( h_HT, ht, this_weight );
-       
-       fillHisto_Njet_DataAndMC( h_met,    this_met,       this_weight ); //user-chosen MET
-       fillHisto_Njet_DataAndMC( h_met_mu, met2v_mu.Mod(), this_weight );
-       fillHisto_Njet_DataAndMC( h_met_t1, met2v_t1.Mod(), this_weight );
-       
-       if(!IsData()){//MC
-	 fillHisto_Njet_DataAndMC( h_met_gen,                        this_genmet,   this_weight );//NEW 3-3-10
-	 fillHisto_Njet_DataAndMC( h_met_gen_diff_mu, met2v_mu.Mod()-this_genmet,   this_weight );//NEW 3-3-10
-	 fillHisto_Njet_DataAndMC( h_met_gen_diff_t1, met2v_t1.Mod()-this_genmet,   this_weight );//NEW 3-3-10
-	 fillHisto_Njet_DataAndMC( h_met_gen_dphi_mu, met2v_mu.DeltaPhi(met2v_gen), this_weight );//NEW 3-3-10
-	 fillHisto_Njet_DataAndMC( h_met_gen_dphi_t1, met2v_t1.DeltaPhi(met2v_gen), this_weight );//NEW 3-3-10
-       }
-       if(pass_barrel){ //26-1-10
-	 fillHisto_Njet_DataAndMC( h_met_BA,    this_met,       this_weight );
-	 fillHisto_Njet_DataAndMC( h_met_mu_BA, met2v_mu.Mod(), this_weight );
-	 fillHisto_Njet_DataAndMC( h_met_t1_BA, met2v_t1.Mod(), this_weight );
-	 if(!IsData()){//MC
-	   fillHisto_Njet_DataAndMC( h_met_gen_BA,                        this_genmet,   this_weight );//NEW 3-3-10
-	   fillHisto_Njet_DataAndMC( h_met_gen_diff_mu_BA, met2v_mu.Mod()-this_genmet,   this_weight );//NEW 3-3-10
-	   fillHisto_Njet_DataAndMC( h_met_gen_diff_t1_BA, met2v_t1.Mod()-this_genmet,   this_weight );//NEW 3-3-10
-	   fillHisto_Njet_DataAndMC( h_met_gen_dphi_mu_BA, met2v_mu.DeltaPhi(met2v_gen), this_weight );//NEW 3-3-10
-	   fillHisto_Njet_DataAndMC( h_met_gen_dphi_t1_BA, met2v_t1.DeltaPhi(met2v_gen), this_weight );//NEW 3-3-10
-	 }
-       }
      
-       // after all but MET/Njet cuts
-       fillHisto_Njet_DataAndMC( h_mtw_mu, this_mu_mtw, this_weight );
-       fillHisto_Njet_DataAndMC( h_mtw_t1, this_t1_mtw, this_weight );       
-       fillHisto_Njet_DataAndMC( h_DPhiEmet_mu, this_mu_DPhiEmet, this_weight );
-       fillHisto_Njet_DataAndMC( h_DPhiEmet_t1, this_t1_DPhiEmet, this_weight );
+//      //---------------------------------------
+//      // Add m3 plots for W+jets estimation
+//      //---------------------------------------
+//      // Compute m3 for events with 3 jets or more, but 
+//      // only plot m3 for event with at least 4 jets.
+//      // Require at least 3 jest to reconstruct t->jjj
 
-       // inspect distributions of the selected events
-       if( nGoodJet >= 4 ) {
-	 fillHistoDataAndMC( h_exp_ele_et,  iso_electrons.at(0).Et()  );
-	 fillHistoDataAndMC( h_exp_ele_eta, iso_electrons.at(0).Eta() );
-	 fillHistoDataAndMC( h_exp_j0_pt,   jets.at(0).Pt()           );
-	 fillHistoDataAndMC( h_exp_j1_pt,   jets.at(1).Pt()           );
-	 fillHistoDataAndMC( h_exp_DRej,    iso_electrons.at(0).DeltaR(   jets.at(0) ) );
-	 fillHistoDataAndMC( h_exp_DPhiej,  iso_electrons.at(0).DeltaPhi( jets.at(0) ) );
-	 fillHistoDataAndMC( h_exp_DRjj,    jets.at(0).DeltaR(   jets.at(1) ) );
-	 fillHistoDataAndMC( h_exp_DPhijj,  jets.at(0).DeltaPhi( jets.at(1) ) );
-	 fillHistoDataAndMC( h_exp_met_v_eeta,  this_met, iso_electrons.at(0).Eta(), this_weight );
+//      if(m_debug) cout << "[EvLoop]  compute m3" << endl;
 
-       }
-       // study mjj after all cuts (except 4j)
-       if( pass_met  && nGoodJet>=3 ){
-	 if(m_debug) cout << "[explore]  this_m3: " << this_m3 << endl;
-	 study_mjj(jets);
-       }
+//      // notes: all cuts except ISO
+//      if ( goodrun  &&  fired_single_em  &&  nGoodEle>0  && nGoodIsoEle<2 && pass_missHits &&  pass_met  &&
+// 	  !isMuon  &&  !isZ  &&  !isConversion  &&  pass_barrel   &&
+// 	  nGoodJet >=3 ) {
+//        reco_hadronicTop_highestTopPT( jets, nGoodIsoEle );
+//      }
+     
 
-     }
-     if(m_debug) cout << "[EvLoop] After N-1"<< endl;
+
+
+
 
 
 
@@ -4450,7 +4404,7 @@ bool ana::EventLoop(){
 	 // need isolation values of the GoodEle but not available!!
 	 // can resolve this by creating a companion vector to store the CombRelIso values of the GoodEles
 	 //  <electrons> ++ <electrons_isoval>
-	 CombRelIso = electrons_isoval.at(0);
+	 m_RelIso = electrons_isoval.at(0);
 	 //NormCombRelIso = electrons_isoval2.at(0);
 	 ii_GoodEle_mostIso = ii_electrons.at(0); 
        } else {
@@ -4469,7 +4423,7 @@ bool ana::EventLoop(){
 	   }
 	   //if(thisIso2 > mostIso2) { mostIso2 = thisIso2; } //NormReliso
 	 }
-	 CombRelIso = mostIso;
+	 m_RelIso = mostIso;
 	 //NormCombRelIso = mostIso2;
        }
        //cout << "ii_GoodEle_mostIso = " << ii_GoodEle_mostIso << endl;
@@ -4487,7 +4441,7 @@ bool ana::EventLoop(){
 	 cout << "event number is" << ev << endl;
 	 cout << " index of most isolated GoodEle (ii_GoodEle_mostIso): " << ii_GoodEle_mostIso << endl;
 	 cout << " Nels: "<< Nels << ",  nGoodEle: "<< nGoodEle << endl;
-	 printf(" smallest isolation: %12.10f\n" ,CombRelIso);
+	 printf(" smallest isolation: %12.10f\n" ,m_RelIso);
 	 cout << " Isolation of all electrons: " << endl;	 
 	 for(unsigned int j=0; j<Nels; ++j){
 	   float tmpIso = getRelIso(j);
@@ -4510,7 +4464,7 @@ bool ana::EventLoop(){
      mige_isConversion = isConversion;
 
      if ( m_applyConVeto && 
-	  CombRelIso>0.1 && nGoodEle>0 ){
+	  m_RelIso>0.1 && nGoodEle>0 ){
        //cout <<"ii_GoodEle_mostIso = "<< ii_GoodEle_mostIso  << endl;
        TLorentzVector eles_temp(els_px->at(ii_GoodEle_mostIso),els_py->at(ii_GoodEle_mostIso),els_pz->at(ii_GoodEle_mostIso),els_energy->at(ii_GoodEle_mostIso));
        //isConversionMIGE = ConversionFinder(eles_temp, mctype, ii_GoodEle_mostIso);
@@ -4558,20 +4512,37 @@ bool ana::EventLoop(){
        if (passALL) {
 	 if(m_debug) cout << "QCDest: event pass all cuts (except isol and nj), make isolation plots" << endl;
 	 //fill histo (with weight) accord to nGoodJet (16-8-09)
-	 if(CombRelIso < 0) {
+	 if( m_RelIso > -100 && m_RelIso < 0 ) {
 	   static int ppp = 0;
-	   if(ppp<100) cout << "Signal Region: RelIso ("<< CombRelIso << ") is negative, reset to 0." << endl;
+	   if(ppp<100) cout << "Signal Region: RelIso ("<< m_RelIso << ") is negative, reset to 0." << endl;
 	   if(ppp==0) cout << "will print the first 100 such instances." << endl;
 	   ppp++;
-	   CombRelIso = 0;	  
+	   m_RelIso = 0;	  
 	 }
-	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso,      CombRelIso,    this_weight );
-	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIsoUW,    CombRelIso,    1.0         );
+	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso,      m_RelIso,    this_weight );
+	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIsoUW,    m_RelIso,    1.0         );
 	 
+	 /// AAAAAAAAA
 	 if(IsData()) printRelIsoList();
 
-	 if( pass_4jets && CombRelIso < 0.1 ) nDebugIso++;
-       }
+	 if( pass_4jets && m_RelIso < 0.1 ) nDebugIso++;
+
+
+     
+	 //---------------------------------------
+	 // Fill m3 plots for W+jets estimation
+	 //---------------------------------------
+	 // Compute m3 for events with 3 jets or more, but 
+	 // only plot m3 for event with at least 4 jets.
+	 // Require at least 3 jest to reconstruct t->jjj
+	 
+	 if(m_debug) cout << "[EvLoop]  compute m3" << endl;
+
+	 if ( nGoodJet >=3 ) {
+	   reco_hadronicTop_highestTopPT( jets, nGoodIsoEle );
+	 }
+	 
+       }//pass ALL selection
 
        
        if( pass_4jets && nDebugIso != nDebugIsoTable ) {
@@ -4586,7 +4557,7 @@ bool ana::EventLoop(){
 	 cout << "n in reliso: " << nDebugIso << endl;       
 	 cout << "\nHLT: " << fired_single_em << endl;
 	 cout << "goodrun: " << goodrun << endl;
-	 cout << " CombRelIso: " << CombRelIso << endl;
+	 cout << " CombRelIso: " << m_RelIso << endl;
 	 cout << " isConversion:     " << isConversion     << endl;
 	 cout << " isConversionMIGE: " << mige_isConversion << endl;
 	 cout << "nGoodEle:    " << nGoodEle << endl;
@@ -4759,7 +4730,8 @@ bool ana::EventLoop(){
        // 8-6-09: fill histo for n-1 AES reliso plots
        //----------------------------------------------
        // Before AES cut
-       fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_before, CombRelIso, this_weight );
+       //       fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_before, CombRelIso, this_weight );
+       fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_before, m_RelIso, this_weight );
 
        
        // AES: all cut
@@ -4768,7 +4740,7 @@ bool ana::EventLoop(){
 	   flag_AES_pass_tighterZveto_mee && 
 	   flag_AES_pass_tighterZveto_mep ) {
 
-	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES, CombRelIso, this_weight ); //All AES cut
+	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES, m_RelIso, this_weight ); //All AES cut
 	 //cout << "AES pass all" << endl;
        }
               
@@ -4776,35 +4748,35 @@ bool ana::EventLoop(){
        // AES: N-1 (met)
        if( flag_AES_pass_HTcut ){
 
-	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_justHT, CombRelIso, this_weight );
+	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_justHT, m_RelIso, this_weight );
 
 	 if( flag_AES_pass_tighterZveto_mee && flag_AES_pass_tighterZveto_mep ){
 	   //cout << "amtb AES - met" << endl;
-	   fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_minusMET, CombRelIso, this_weight );
+	   fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_minusMET, m_RelIso, this_weight );
 	 }
        }
        // AES: N-1 (HT)
        if( flag_AES_pass_metcut ) {
 
-	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_justMET, CombRelIso, this_weight );
+	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_justMET, m_RelIso, this_weight );
 
 	 if (flag_AES_pass_tighterZveto_mee && flag_AES_pass_tighterZveto_mep ){
 	   //cout << "amtb AES - ht" << endl;
-	   fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_minusHT, CombRelIso, this_weight );
+	   fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_minusHT, m_RelIso, this_weight );
 	 }
 	 
 	 // AES: N-1 (tighter Z, both mee, mep)
 	 if( flag_AES_pass_HTcut ){
 	   //cout << "amtb AES - Z" << endl;
-	   fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_minusTighterZ, CombRelIso, this_weight );
+	   fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_minusTighterZ, m_RelIso, this_weight );
 	 }
        }//pass AES_MET
        else { //event has high MET
-	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_justHighMET, CombRelIso, this_weight );
+	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_justHighMET, m_RelIso, this_weight );
        }
        // AES: just tighter Z
        if( flag_AES_pass_tighterZveto_mee && flag_AES_pass_tighterZveto_mep ) 
-	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_justZ, CombRelIso, this_weight );
+	 fillHisto_Njet_DataAndMC( h_QCDest_CombRelIso_AES_justZ, m_RelIso, this_weight );
 
      }//pass some cuts
      // TL: end  QCD RelIso NES, old AES------------------------------
@@ -4836,6 +4808,69 @@ bool ana::EventLoop(){
 
 
 
+
+
+
+
+     // (21 Feb 09) make some kinematics plots for events passing N-1 cuts (HT,MET)
+     if(m_debug) cout << "[EvLoop]  Filling N-1 histograms"<< endl;
+     if( goodrun  &&  fired_single_em  &&  pass_only1_isoele  && pass_missHits &&
+     	 !isMuon  &&  !isZ  &&  !isConversion  &&  pass_barrel ) {
+
+       if ( pass_met )    //after all but HT cut
+	 fillHisto_Njet_DataAndMC( h_HT, ht, this_weight );
+       
+       fillHisto_Njet_DataAndMC( h_met,    this_met,       this_weight ); //user-chosen MET
+       fillHisto_Njet_DataAndMC( h_met_mu, met2v_mu.Mod(), this_weight );
+       fillHisto_Njet_DataAndMC( h_met_t1, met2v_t1.Mod(), this_weight );
+       
+       if(!IsData()){//MC
+	 fillHisto_Njet_DataAndMC( h_met_gen,                        this_genmet,   this_weight );//NEW 3-3-10
+	 fillHisto_Njet_DataAndMC( h_met_gen_diff_mu, met2v_mu.Mod()-this_genmet,   this_weight );//NEW 3-3-10
+	 fillHisto_Njet_DataAndMC( h_met_gen_diff_t1, met2v_t1.Mod()-this_genmet,   this_weight );//NEW 3-3-10
+	 fillHisto_Njet_DataAndMC( h_met_gen_dphi_mu, met2v_mu.DeltaPhi(met2v_gen), this_weight );//NEW 3-3-10
+	 fillHisto_Njet_DataAndMC( h_met_gen_dphi_t1, met2v_t1.DeltaPhi(met2v_gen), this_weight );//NEW 3-3-10
+       }
+       if(pass_barrel){ //26-1-10
+	 fillHisto_Njet_DataAndMC( h_met_BA,    this_met,       this_weight );
+	 fillHisto_Njet_DataAndMC( h_met_mu_BA, met2v_mu.Mod(), this_weight );
+	 fillHisto_Njet_DataAndMC( h_met_t1_BA, met2v_t1.Mod(), this_weight );
+	 if(!IsData()){//MC
+	   fillHisto_Njet_DataAndMC( h_met_gen_BA,                        this_genmet,   this_weight );//NEW 3-3-10
+	   fillHisto_Njet_DataAndMC( h_met_gen_diff_mu_BA, met2v_mu.Mod()-this_genmet,   this_weight );//NEW 3-3-10
+	   fillHisto_Njet_DataAndMC( h_met_gen_diff_t1_BA, met2v_t1.Mod()-this_genmet,   this_weight );//NEW 3-3-10
+	   fillHisto_Njet_DataAndMC( h_met_gen_dphi_mu_BA, met2v_mu.DeltaPhi(met2v_gen), this_weight );//NEW 3-3-10
+	   fillHisto_Njet_DataAndMC( h_met_gen_dphi_t1_BA, met2v_t1.DeltaPhi(met2v_gen), this_weight );//NEW 3-3-10
+	 }
+       }
+     
+       // after all but MET/Njet cuts
+       fillHisto_Njet_DataAndMC( h_mtw_mu, this_mu_mtw, this_weight );
+       fillHisto_Njet_DataAndMC( h_mtw_t1, this_t1_mtw, this_weight );       
+       fillHisto_Njet_DataAndMC( h_DPhiEmet_mu, this_mu_DPhiEmet, this_weight );
+       fillHisto_Njet_DataAndMC( h_DPhiEmet_t1, this_t1_DPhiEmet, this_weight );
+
+       // inspect distributions of the selected events
+       if( nGoodJet >= 4 ) {
+	 fillHistoDataAndMC( h_exp_ele_et,  iso_electrons.at(0).Et()  );
+	 fillHistoDataAndMC( h_exp_ele_eta, iso_electrons.at(0).Eta() );
+	 fillHistoDataAndMC( h_exp_j0_pt,   jets.at(0).Pt()           );
+	 fillHistoDataAndMC( h_exp_j1_pt,   jets.at(1).Pt()           );
+	 fillHistoDataAndMC( h_exp_DRej,    iso_electrons.at(0).DeltaR(   jets.at(0) ) );
+	 fillHistoDataAndMC( h_exp_DPhiej,  iso_electrons.at(0).DeltaPhi( jets.at(0) ) );
+	 fillHistoDataAndMC( h_exp_DRjj,    jets.at(0).DeltaR(   jets.at(1) ) );
+	 fillHistoDataAndMC( h_exp_DPhijj,  jets.at(0).DeltaPhi( jets.at(1) ) );
+	 fillHistoDataAndMC( h_exp_met_v_eeta,  this_met, iso_electrons.at(0).Eta(), this_weight );
+
+       }
+       // study mjj after all cuts (except 4j)
+       if( pass_met  && nGoodJet>=3 ){
+	 if(m_debug) cout << "[explore]  this_m3: " << this_m3 << endl;
+	 study_mjj(jets);
+       }
+
+     }
+     if(m_debug) cout << "[EvLoop] After N-1"<< endl;
 
 
 
@@ -5599,31 +5634,31 @@ void ana::StudyRelisoNESatEachStage(){
 
       // cout << "** CombRelIso = " << CombRelIso << endl;
 
-      if(CombRelIso<0) {
+      if(m_RelIso<0) {
 	static int mm = 0;
 	if(mm==0) cout << "(Printing the first 20 occurances.)"<< endl;
 	if(mm<10) {
-	  cout << " info: negative CombRelIso: " << CombRelIso << endl;
+	  cout << " info: negative CombRelIso: " << m_RelIso << endl;
 	  ++mm;
 	}
       }
 	 
       if(m_debug) cout << "-> Filling Reliso NES histograms, L2" << endl;
 
-      iso_fillHisto_NES( 8, CombRelIso, this_met, mige_inBarrel );
+      iso_fillHisto_NES( 8, m_RelIso, this_met, mige_inBarrel );
 
       //  if( !isMuon  &&  !isZ ) {
       if( mige_pass_missHits  &&  !isMuon  &&  !isZ  ) { //<-- add missing hit cuts, 6 Jun
 
 	if(m_debug) cout << "-> Filling Reliso NES histograms, L3" << endl;
 
-	iso_fillHisto_NES( 9, CombRelIso, this_met, mige_inBarrel );
+	iso_fillHisto_NES( 9, m_RelIso, this_met, mige_inBarrel );
 
 	if( !mige_isConversion ) { //this is a private variable
 
 	  if(m_debug) cout << "-> Filling Reliso NES histograms, L4" << endl;
 
-	  iso_fillHisto_NES( 10, CombRelIso, this_met, mige_inBarrel );
+	  iso_fillHisto_NES( 10, m_RelIso, this_met, mige_inBarrel );
 	}
       }
     }//nGoodEle > 0
@@ -7367,6 +7402,7 @@ void ana::reco_hadronicTop_highestTopPT(const vector<TLorentzVector>& jetColl, c
 
       fillHistoDataAndMC( h_m3,      m3 );
       fillHistoDataAndMC( h_m3_1000, m3 );
+      if( IsData() ) { myfile3 << "m3 4mj Signal Region"<< endl; printRelIsoList(); myfile3 << "m3" << endl; }
     }
     //printf("selected combination = %d %d %d\n", which_3jet[0], which_3jet[1], which_3jet[2] ) ;
     //cout << "selected combination (idx) = " << which_3jet[0] << " "<< which_3jet[1] << " " << which_3jet[2] << endl;
@@ -7382,6 +7418,7 @@ void ana::reco_hadronicTop_highestTopPT(const vector<TLorentzVector>& jetColl, c
 
       fillHistoDataAndMC( h_m3_control,      m3 );
       fillHistoDataAndMC( h_m3_control_1000, m3 );
+      if( IsData() ) { myfile3 << "m3 4mj Control Region"<< endl; printRelIsoList(); myfile3 << "m3" << endl; }
     }//>=4j
 
   }//signal (iso) or control (nonIso) region
@@ -10981,17 +11018,26 @@ bool ana::passEleID_VBTF_W70(const uint& i) const{
 bool ana::passHLT() const {
   if ( m_runOnV4ntuples ){
 
-    if ( (IsData() && run < 137029) || IsData()==false ){//use emulated photon15 for MC and older data
+    if ( IsData()==false ){//use emulated photon15 for MC and older data
       return pass_photon15;
     }    
-    else if ( IsData() && run >= 137029 ){ //use HLT_Photon15 for newer data
-      return (bool)HLT_Photon15_L1R;
-      //if ( HLTBit=="HLT_Ele15_LW_L1R" ) return (bool)HLT_Ele15_LW_L1R;
-      //if ( HLTBit=="HLT_Ele15_SW_L1R" ) return (bool)HLT_Ele15_SW_L1R;
-      //if ( HLTBit=="HLT_Photon10_L1R" ) return (bool)HLT_Photon10_L1R;
-      //if ( HLTBit=="HLT_Photon15_L1R" ) return (bool)HLT_Photon15_L1R;
+
+    else { //REAL DATA
+      if( run < 137029 ){//use emulated photon15 for older data
+	return pass_photon15;
+      }    
+      else if ( run >= 137029 && run < 140042){ //use HLT_Photon15 for newer data
+	return (bool)HLT_Photon15_L1R;
+	//if ( HLTBit=="HLT_Ele15_LW_L1R" ) return (bool)HLT_Ele15_LW_L1R;
+	//if ( HLTBit=="HLT_Ele15_SW_L1R" ) return (bool)HLT_Ele15_SW_L1R;
+	//if ( HLTBit=="HLT_Photon10_L1R" ) return (bool)HLT_Photon10_L1R;
+	//if ( HLTBit=="HLT_Photon15_L1R" ) return (bool)HLT_Photon15_L1R;
+      }
+      else if ( run >= 140042 ){ //use HLT_Photon15 for newer data
+	return (bool)HLT_Photon15_Cleaned_L1R;
+      }
     }
-    
+
   }else{// OLD
     if ( HLTBit=="HLT_Ele15_LW_L1R" ) return (bool)HLT_Ele15_LW_L1R;
     if ( HLTBit=="HLT_Ele15_SW_L1R" ) return (bool)HLT_Ele15_SW_L1R;
@@ -11132,8 +11178,8 @@ void ana::printRelIsoList(){
 	  << setw(10) << lumiBlock
 	  << setw(14) << event 
 	  << setw(7)  << nGoodJet << "j"
-	  << setw(15) << CombRelIso;
-  if(CombRelIso<0.1) myfile3 << "  Iso";
+	  << setw(15) << m_RelIso;
+  if( m_RelIso < 0.1 ) myfile3 << "  Iso";
   else myfile3 << "  non-iso";
   myfile3  << endl;
 }
