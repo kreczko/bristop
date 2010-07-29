@@ -1640,6 +1640,7 @@ public:
   void UseD0Significance(bool val)     { m_used0Significance = val; };
   void D0ReferencePoint(string val)    { m_d0RefPoint        = val; };
   void PrintGenParticles(int nevent);
+  void AfterCutsPlots(bool val)        {m_doPostCutPlots = val;};
 
   //switch to preclue missing layers as these are not in 314 data samples
   void UseMissLayers(bool val)         { m_useMisslayers     = val; };
@@ -1904,7 +1905,16 @@ private:
   vector<TH1*> AN_jet2_eta;
   vector<TH1*> AN_jet3_eta;
   vector<TH1*> AN_jet4_eta;
-
+  vector<TH1*> AN_met;
+  vector<TH1*> AN_HT;
+  vector<TH1*> AN_SigmaIetaIeta;
+  vector<TH1*> AN_DelEta;
+  vector<TH1*> AN_DelPhi;
+  vector<TH1*> AN_HoE;
+  vector<TH1*> AN_EE_SigmaIetaIeta;
+  vector<TH1*> AN_EE_DelEta;
+  vector<TH1*> AN_EE_DelPhi;
+  vector<TH1*> AN_EE_HoE;
 
 
   //--------------------
@@ -1923,6 +1933,7 @@ private:
   string outputTextFileName;
   float  m_QCDest_reliso_bin_width;
   bool   m_doValidation;
+  bool   m_doPostCutPlots;
   bool   m_studyZveto;
   bool   m_plotRelisoNES;
   bool   m_debug;
@@ -3899,8 +3910,8 @@ void ana::Init(){
      if(HLTBit=="HLT_Ele15_LW_L1R") chain2->SetBranchAddress("HLT_Ele15_LW_L1R", &HLT_Ele15_LW_L1R, &b_HLT_Ele15_LW_L1R); //v2 (1E31, ideal)
      if(HLTBit=="HLT_Ele15_SW_L1R") chain2->SetBranchAddress("HLT_Ele15_SW_L1R", &HLT_Ele15_SW_L1R, &b_HLT_Ele15_SW_L1R);
      if(HLTBit=="HLT_Photon10_L1R") chain2->SetBranchAddress("HLT_Photon10_L1R", &HLT_Photon10_L1R, &b_HLT_Photon10_L1R);
-     if(HLTBit=="HLT_Photon15_L1R") chain2->SetBranchAddress("HLT_Photon15_L1R", &HLT_Photon15_L1R, &b_HLT_Photon15_L1R);
-     if(HLTBit=="HLT_Photon15_Cleaned_L1R") chain2->SetBranchAddress("HLT_Photon15_Cleaned_L1R", &HLT_Photon15_Cleaned_L1R, &b_HLT_Photon15_Cleaned_L1R);
+     if(HLTBit=="HLT_Photon15_Cleaned_L1R") {chain2->SetBranchAddress("HLT_Photon15_L1R", &HLT_Photon15_L1R, &b_HLT_Photon15_L1R);
+       chain2->SetBranchAddress("HLT_Photon15_Cleaned_L1R", &HLT_Photon15_Cleaned_L1R, &b_HLT_Photon15_Cleaned_L1R);}
    }
    
    ///------------------------  MC Truth info  ------------------------------------

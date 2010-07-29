@@ -6,8 +6,9 @@
 	watch.Start();
 
 
-	cout << "\n\n Run on v4 mc ntuples.\n" << endl;
-	//cout << "\n\n Run on MC ntuples.\n" << endl;
+	cout << "\n\n Run on  v4 e20 mc ntuples.\n" << endl;
+	cout << " Use updated cross section as of 15 July" << endl;
+	//cout << " all processes excpet enri1 (e20 not done yet, and it is small)" << endl;
 	//cout << "  e20 skim: tt, wj, zj, QCD, t-chan, s-chan, photon+jets." << endl;
 
 	// include roofit
@@ -34,11 +35,12 @@
 	myana->CheckTrigger(true,"HLT_Photon15_L1R"); //<-- uncomment this if want a diff trigger
 
 	myana->Validation(0);
+	myana->AfterCutsPlots( 0 );
 	myana->PlotRelisoNES( 1 );
 	myana->SetDebug( 0 );
         myana->ConversionStudySwitch(0);
         myana->UseMissLayers( true );
-        myana->ApplyConversionVeto( false );
+        myana->ApplyConversionVeto( true );
 
 	// 35X 
 	myana->SetRunOn35Xntuples(1);
@@ -68,6 +70,7 @@
 
 	// valid options: robustTight (Def), robustLoose, loose, tight, VBTF_W70
         myana->SetEleID( ana::VBTF_W70 );
+        //myana->SetEleID( ana::robustTight );
 
 	myana->RejectEndcapEle(false); //Def=false. Note this cut is applied after the conversion veto.
 
@@ -83,38 +86,41 @@
 	// SD - default is false. These are relevant for 314 samples
         //myana->SetRunOnSD( false );
 
-	//bool use_MG_HLT_skims = true;
+
 	//Note - for 35X samples, this bool applies to pythia samples as well
 
-        myana->SetRunOnMyHLTskim( false ); //bristol HLT skim
-        myana->SetRunOnMyE20skim( true ); //bristol e20 skim
+        myana->SetRunOnMyHLTskim( false ); // HLT skim
+        myana->SetRunOnMyE20skim( true ); // e20 skim
 
 
 	myana->SetRunOnV4ntuples( true );
 
-	//Input files
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_ttjet/*.root");
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_wjet/*.root");
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_zjet/*.root");
+	//Input files	
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_ttjet/*11*.root");
+	/*
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_ttjet/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_wjet/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_zjet/*.root");
 
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_bce1/*.root");
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_bce2/*.root");
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_bce3/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_bce1/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_bce2/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_bce3/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_enri1/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_enri2/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_enri3/*.root");
 
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_enri1/*.root");
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_enri2/*.root");
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/pythia/e20skim_enri3/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_tchan/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_tW/*.root");
 
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_tchan/*.root");
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_tW/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_pj1/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_pj2/*.root");
+	myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_pj3/*.root");
+	*/
 
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_pj1/*.root");
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_pj2/*.root");
-        myana->SetInputFile("/storage/top/mc/spring10_7TeV_v4/MG/e20skim_pj3/*.root");
 
 	myana->SetOutputFirstName("test");
 
-	myana->SetLimit( -10 );
+	myana->SetLimit( -10000 );
 	
 	myana->Begin();
 	myana->EventLoop();

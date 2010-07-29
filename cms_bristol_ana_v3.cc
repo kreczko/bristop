@@ -3,9 +3,20 @@
 //        2) add WW,ZZ,WZ.
 //        3) may need to add HBHENoiseFilter for MC.
 //        4) add photon+jets to QCD in m3 fit.
+//        5) robustLoose and robustTight should be removed (esp. in passEleID since function is incorrect
+//           for these due to the ID bit pattern)
 //#====================================================#
 //# Last update:
+//
+//
+// 27 July 2010: Added switch to control plots after final selection (thesis plots)
 //  
+// 24 July 2010: Change passHLT requirement: For runs above 137028, use the cleaned photon trigger (This covers
+//               everything beyond the JuneRereco).
+//               When running on data, code now outputs file list (like for MC).
+//       
+// 23 July 2010: Added M3 printout to interesting events
+// ------------------------------------------------------------------------------
 // 19 July 2010: Continue trying to fix bug. Add missHit cut to M3 control region.
 //               - For data in run >= 140042, use HLT_Photon15_Cleaned_L1R.
 // 17 July 2010: Try to fix bug, m3 CR in data has 1 entry. Rename private var CombRelIso to m_RelIso as there
@@ -237,6 +248,16 @@ void ana::SetOutputFirstName(const string name) {
   if (IsData()) {
 
     secondname = "data";
+
+    TObjArray *fileElements = chain->GetListOfFiles();
+    TIter next(fileElements);
+    TChainElement *chEl=0;
+
+    while (( chEl=(TChainElement*)next() )) {
+
+      const string fname( chEl->GetTitle() );
+      cout << fname << ":  "<< chEl->GetEntries() << " events\n";
+    }
 
   } else {
 
@@ -973,6 +994,7 @@ ana::ana(){
    nfile                     = 0;
    m_QCDest_reliso_bin_width = 0.01;
    m_doValidation            = false;
+   m_doPostCutPlots          = false;
    m_studyZveto              = true;
    m_plotRelisoNES           = true;
    m_debug                   = false;
@@ -2063,6 +2085,7 @@ void ana::BookHistograms_conv(){
    Converted_ML[1] = new TH1F("Converted_ML_Flagged","Converted_ML_Flagged",10,-0.5,9.5);
    Converted_ML[2] = new TH1F("Converted_ML_nonFlagged","Converted_ML_nonFlagged",10,-0.5,9.5);
 
+   if(m_doPostCutPlots){
    addHistoDataAndMC( AN_et,       "AN_et",     "AN_et",      200,0,200);
    addHistoDataAndMC( AN_eta,       "AN_eta",     "AN_eta",      100,-2.5,2.5);
    addHistoDataAndMC( AN_d0,       "AN_d0",     "AN_d0",      1000,0,1);
@@ -2080,6 +2103,18 @@ void ana::BookHistograms_conv(){
    addHistoDataAndMC( AN_jet2_eta,       "AN_jet2_eta",     "AN_jet2_eta",      100,-2.5,2.5);
    addHistoDataAndMC( AN_jet3_eta,       "AN_jet3_eta",     "AN_jet3_eta",      100,-2.5,2.5);
    addHistoDataAndMC( AN_jet4_eta,       "AN_jet4_eta",     "AN_jet4_eta",      100,-2.5,2.5);
+   addHistoDataAndMC( AN_met,       "AN_met",     "AN_met",      1000,0,1000);
+   addHistoDataAndMC( AN_HT,       "AN_HT",     "AN_HT",      1000,0,1000);
+   addHistoDataAndMC( AN_SigmaIetaIeta,       "AN_SigmaIetaIeta",     "AN_SigmaIetaIeta",      100,0,0.1);
+   addHistoDataAndMC( AN_DelEta,       "AN_DelEta",     "AN_DelEta",      100,-0.05,0.05);
+   addHistoDataAndMC( AN_DelPhi,       "AN_DelPhi",     "AN_DelPhi",      1000,-0.5,0.5);
+   addHistoDataAndMC( AN_HoE,       "AN_HoE",     "AN_HoE",      100,0,2);
+   addHistoDataAndMC( AN_EE_SigmaIetaIeta,       "AN_EE_SigmaIetaIeta",     "AN_EE_SigmaIetaIeta",      100,0,0.1);
+   addHistoDataAndMC( AN_EE_DelEta,       "AN_EE_DelEta",     "AN_EE_DelEta",      100,-0.05,0.05);
+   addHistoDataAndMC( AN_EE_DelPhi,       "AN_EE_DelPhi",     "AN_EE_DelPhi",      1000,-0.5,0.5);
+   addHistoDataAndMC( AN_EE_HoE,       "AN_EE_HoE",     "AN_EE_HoE",      100,0,2);
+
+   }
 
 }
 //---------------------------------------------------------------------------------------------
@@ -3988,8 +4023,12 @@ bool ana::EventLoop(){
        myfile2 << "************************************" << endl;
        myfile2 << "  HT : " << ht << " GeV (= ET(isol e) + PT(isol mu) + PT(good clean calojets) + caloMET)" << endl;
        myfile2 << "************************************" << endl;
+       if(ntj>2){
+	 pair<double,double> res = compute_M3(jets);
+	 myfile2 << " M3 :  " << res.first << ", PT of M3 jets:  " << res.second << endl;
+       }
      }
-
+     
 
 
 
@@ -4158,7 +4197,7 @@ bool ana::EventLoop(){
 	   // Isolated electron
 	   if(nGoodIsoEle > 0){
 	     FillEventCounter(4, ntj, mctype);
-	     
+    
 	     if(nGoodIsoEle == 1){
 	       FillEventCounter(5, ntj, mctype);
 	       
@@ -4213,7 +4252,7 @@ bool ana::EventLoop(){
      if(m_debug) cout << " Starting << ANALYSIS >>" << endl;
 
 
-     if(!isMuon && !isZ && fired_single_em && goodrun && Nels>0){
+     if(m_doPostCutPlots && !isMuon && !isZ && fired_single_em && goodrun && Nels>0){
 
        bool bp_et;
        bool bp_eta;
@@ -4263,27 +4302,30 @@ bool ana::EventLoop(){
        if(bf_d0 <10 ){ fillHistoDataAndMC( AN_d0 , fabs(bf_d0) );}
        if( bf_mh < 10 ) { fillHistoDataAndMC( AN_mh , bf_mh );}
        
-       /*
-       if(bf_et > 0) { AN_et->Fill( bf_et, this_weight ); }
-       if( bf_eta < 10) {AN_eta->Fill( bf_eta, this_weight );}
-       if(bf_iso < 100 ){AN_iso->Fill( bf_iso, this_weight );
-         AN_trkiso->Fill( bf_trkiso, this_weight );
-         AN_ecaliso->Fill( bf_ecalIso, this_weight );
-         AN_hcaliso->Fill( bf_hcalIso, this_weight );
-       }
-       if(bf_d0 <10 ){AN_d0->Fill( fabs(bf_d0), this_weight );}
-       if( bf_mh < 10 ) {AN_mh->Fill( bf_mh, this_weight );}
-       
-	 */
         
 
        if(nGoodIsoEle == 1 && pass_missHits){
-	 
+	
+	 if(eleInBarrel(index_selected_ele) ){
+	   fillHistoDataAndMC( AN_HoE , els_hadOverEm->at(index_selected_ele) );
+	   fillHistoDataAndMC( AN_SigmaIetaIeta , els_sigmaIEtaIEta->at(index_selected_ele)  );
+	   fillHistoDataAndMC( AN_DelEta , els_dEtaIn->at(index_selected_ele) );
+	   fillHistoDataAndMC(  AN_DelPhi, els_dPhiIn->at(index_selected_ele) );
+	 } else{
+	   fillHistoDataAndMC( AN_EE_HoE , els_hadOverEm->at(index_selected_ele) );
+	   fillHistoDataAndMC( AN_EE_SigmaIetaIeta , els_sigmaIEtaIEta->at(index_selected_ele)  );
+	   fillHistoDataAndMC( AN_EE_DelEta , els_dEtaIn->at(index_selected_ele) );
+	   fillHistoDataAndMC(  AN_EE_DelPhi, els_dPhiIn->at(index_selected_ele) );
+	 }
+
+
+
 	 if(ntj>0){fillHistoDataAndMC (AN_jet1_pt , jets.at(0).Pt() );fillHistoDataAndMC(AN_jet1_eta ,jets.at(0).PseudoRapidity()); }
 	 if(ntj>1){fillHistoDataAndMC (AN_jet2_pt , jets.at(1).Pt() );fillHistoDataAndMC(AN_jet2_eta ,jets.at(1).PseudoRapidity()); }
 	 if(ntj>2){fillHistoDataAndMC (AN_jet3_pt , jets.at(2).Pt() );fillHistoDataAndMC(AN_jet3_eta ,jets.at(2).PseudoRapidity()); }
 	 if(ntj>3){fillHistoDataAndMC (AN_jet4_pt , jets.at(3).Pt() );fillHistoDataAndMC(AN_jet4_eta ,jets.at(3).PseudoRapidity()); }
 
+	 fillHistoDataAndMC( AN_met, this_met );
        }
      }
 
@@ -8137,9 +8179,9 @@ bool ana::EstimateWjets(const string inputFile_data, const string inputFile_mc) 
   if ( IsData()==false ) {
     const double len_tt = 3*sqrt(ntt_true); //histo bound: [N-3sigma, N+3sigma], sigma=sqrt(N)
     const double len_wj = 3*sqrt(nwj_true);
-
-    h_ntt_fluc   = new TH1D("ntt_fluc",  "generated number of tt events (Poisson)",        100, ntt_true-len_tt, ntt_true+len_tt );
-    h_nwj_fluc   = new TH1D("nwj_fluc",  "generated number of wj events (Poisson)",        100, nwj_true-len_wj, nwj_true+len_wj );
+    
+    h_ntt_fluc   = new TH1D("ntt_fluc",  "generated number of tt events (Poisson)",        100, ntt_true - len_tt, ntt_true + len_tt );
+    h_nwj_fluc   = new TH1D("nwj_fluc",  "generated number of wj events (Poisson)",        100, nwj_true - len_wj, nwj_true + len_wj );
     h_nzj_fluc   = new TH1D("nzj_fluc",  "generated number of zj events (Poisson)",        100, 0,  50*sf );
     h_nqcd_fluc  = new TH1D("nqcd_fluc", "generated number of qcd events (Poisson)",       100, 0,  10*sf );
     h_nstop_fluc = new TH1D("nstop_fluc","generated number of singletop events (Poisson)", 100, 0,  10*sf );
@@ -11026,18 +11068,17 @@ bool ana::passHLT() const {
       if( run < 137029 ){//use emulated photon15 for older data
 	return pass_photon15;
       }    
-      else if ( run >= 137029 && run < 140042){ //use HLT_Photon15 for newer data
-	return (bool)HLT_Photon15_L1R;
+      else if ( run >= 137029 ){ //use HLT_Photon15 for newer data
+	return (bool)HLT_Photon15_Cleaned_L1R;
+
+	//return (bool)HLT_Photon15_L1R;
 	//if ( HLTBit=="HLT_Ele15_LW_L1R" ) return (bool)HLT_Ele15_LW_L1R;
 	//if ( HLTBit=="HLT_Ele15_SW_L1R" ) return (bool)HLT_Ele15_SW_L1R;
 	//if ( HLTBit=="HLT_Photon10_L1R" ) return (bool)HLT_Photon10_L1R;
 	//if ( HLTBit=="HLT_Photon15_L1R" ) return (bool)HLT_Photon15_L1R;
       }
-      else if ( run >= 140042 ){ //use HLT_Photon15 for newer data
-	return (bool)HLT_Photon15_Cleaned_L1R;
-      }
     }
-
+    
   }else{// OLD
     if ( HLTBit=="HLT_Ele15_LW_L1R" ) return (bool)HLT_Ele15_LW_L1R;
     if ( HLTBit=="HLT_Ele15_SW_L1R" ) return (bool)HLT_Ele15_SW_L1R;
