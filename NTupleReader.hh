@@ -698,7 +698,7 @@ private:
 	void LoadMCInformation();
 	void EnablePhotons();
 	void LoadPhotons();
-	void EnableTracks()
+	void EnableTracks();
 	void LoadTracks();
 
 
